@@ -93,7 +93,7 @@ function AppFeed() {
 
   return (
     <div className="px-4 pt-5 pb-6 space-y-4">
-      <header className="space-y-1">
+      <header className="space-y-2">
         <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
           <span className="text-neon-crimson flicker">● LIVE · ROMÂNIA</span>
           <Link to="/app/top" className="text-muted-foreground">vezi top →</Link>
@@ -101,7 +101,18 @@ function AppFeed() {
         <h1 className="font-display uppercase text-2xl leading-none tracking-tight">
           Ce s-a întâmplat <span className="text-gradient-chaos">azi-noapte</span>
         </h1>
+        <Link
+          to="/app/faze"
+          className="mt-2 flex items-center justify-between p-3 rounded-lg bg-foreground/[0.06] border border-foreground/10 hover:border-neon-crimson/40"
+        >
+          <div>
+            <div className="font-display uppercase text-sm">🎬 Cele mai tari faze</div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">postează ce-ai prins în club / la șpriț</div>
+          </div>
+          <div className="font-mono text-xs text-neon-crimson">→</div>
+        </Link>
       </header>
+
 
       {isLoading ? (
         <div className="space-y-3">
