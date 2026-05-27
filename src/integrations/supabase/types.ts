@@ -14,7 +14,313 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      check_ins: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          lat: number | null
+          lng: number | null
+          user_id: string
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          user_id: string
+          venue_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          user_id?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "check_ins_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cities: {
+        Row: {
+          chaos_level: number
+          created_at: string
+          id: string
+          lat: number
+          lng: number
+          name: string
+          region: string | null
+          slug: string
+        }
+        Insert: {
+          chaos_level?: number
+          created_at?: string
+          id?: string
+          lat: number
+          lng: number
+          name: string
+          region?: string | null
+          slug: string
+        }
+        Update: {
+          chaos_level?: number
+          created_at?: string
+          id?: string
+          lat?: number
+          lng?: number
+          name?: string
+          region?: string | null
+          slug?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          aura: number
+          avatar_url: string | null
+          bio: string | null
+          city_id: string | null
+          created_at: string
+          display_name: string | null
+          handle: string | null
+          id: string
+          lifetime_sprits: number
+          location_consent: boolean
+          onboarded: boolean
+          rank: Database["public"]["Enums"]["balkan_rank"]
+          updated_at: string
+        }
+        Insert: {
+          aura?: number
+          avatar_url?: string | null
+          bio?: string | null
+          city_id?: string | null
+          created_at?: string
+          display_name?: string | null
+          handle?: string | null
+          id: string
+          lifetime_sprits?: number
+          location_consent?: boolean
+          onboarded?: boolean
+          rank?: Database["public"]["Enums"]["balkan_rank"]
+          updated_at?: string
+        }
+        Update: {
+          aura?: number
+          avatar_url?: string | null
+          bio?: string | null
+          city_id?: string | null
+          created_at?: string
+          display_name?: string | null
+          handle?: string | null
+          id?: string
+          lifetime_sprits?: number
+          location_consent?: boolean
+          onboarded?: boolean
+          rank?: Database["public"]["Enums"]["balkan_rank"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_city_fk"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sprit_proofs: {
+        Row: {
+          ai_confidence: number | null
+          ai_reason: string | null
+          ai_verified: boolean
+          created_at: string
+          id: string
+          lat: number | null
+          lng: number | null
+          photo_url: string
+          user_id: string
+          venue_id: string | null
+        }
+        Insert: {
+          ai_confidence?: number | null
+          ai_reason?: string | null
+          ai_verified?: boolean
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          photo_url: string
+          user_id: string
+          venue_id?: string | null
+        }
+        Update: {
+          ai_confidence?: number | null
+          ai_reason?: string | null
+          ai_verified?: boolean
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          photo_url?: string
+          user_id?: string
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sprit_proofs_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      streets: {
+        Row: {
+          city_id: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          city_id: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          city_id?: string
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "streets_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_photos: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          photo_url: string
+          taken_at: string
+          user_id: string
+          venue_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          photo_url: string
+          taken_at?: string
+          user_id: string
+          venue_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          photo_url?: string
+          taken_at?: string
+          user_id?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_photos_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venues: {
+        Row: {
+          address: string | null
+          city_id: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          ig_handle: string | null
+          lat: number | null
+          lng: number | null
+          name: string
+          slug: string
+          street_id: string
+          type: Database["public"]["Enums"]["venue_type"]
+          verified: boolean
+        }
+        Insert: {
+          address?: string | null
+          city_id: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          ig_handle?: string | null
+          lat?: number | null
+          lng?: number | null
+          name: string
+          slug: string
+          street_id: string
+          type?: Database["public"]["Enums"]["venue_type"]
+          verified?: boolean
+        }
+        Update: {
+          address?: string | null
+          city_id?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          ig_handle?: string | null
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          slug?: string
+          street_id?: string
+          type?: Database["public"]["Enums"]["venue_type"]
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venues_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "venues_street_id_fkey"
+            columns: ["street_id"]
+            isOneToOne: false
+            referencedRelation: "streets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +329,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      balkan_rank:
+        | "MDS"
+        | "CRAI_DE_CARTIER"
+        | "SPRITARUL"
+        | "CAMATARU_DE_PAHAR"
+        | "BOIERUL_NOPTII"
+        | "REGELE_CENTRULUI"
+        | "ZEU_BALCANIC"
+      venue_type: "club" | "bar" | "terasa" | "after" | "pub"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +464,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      balkan_rank: [
+        "MDS",
+        "CRAI_DE_CARTIER",
+        "SPRITARUL",
+        "CAMATARU_DE_PAHAR",
+        "BOIERUL_NOPTII",
+        "REGELE_CENTRULUI",
+        "ZEU_BALCANIC",
+      ],
+      venue_type: ["club", "bar", "terasa", "after", "pub"],
+    },
   },
 } as const
