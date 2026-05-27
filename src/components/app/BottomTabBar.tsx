@@ -1,12 +1,12 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Map, Trophy, Camera, Users, User } from "lucide-react";
+import { Newspaper, Trophy, Camera, Users, User } from "lucide-react";
 
-type Tab = { to: string; icon: typeof Map; label: string; primary?: boolean };
+type Tab = { to: string; icon: typeof Newspaper; label: string; primary?: boolean; exact?: boolean };
 const tabs: Tab[] = [
-  { to: "/app/map", icon: Map, label: "Hartă" },
+  { to: "/app", icon: Newspaper, label: "Live", exact: true },
   { to: "/app/top", icon: Trophy, label: "Top" },
   { to: "/app/scan", icon: Camera, label: "Șpriț", primary: true },
-  { to: "/app/squad", icon: Users, label: "Squad" },
+  { to: "/app/squad", icon: Users, label: "Haită" },
   { to: "/app/me", icon: User, label: "Eu" },
 ];
 
@@ -17,7 +17,7 @@ export function BottomTabBar() {
       <div className="mx-auto max-w-md">
         <div className="m-2 rounded-2xl glass border border-foreground/10 grid grid-cols-5 backdrop-blur-xl">
           {tabs.map(t => {
-            const active = loc.pathname === t.to || loc.pathname.startsWith(t.to + "/");
+            const active = t.exact ? loc.pathname === t.to : (loc.pathname === t.to || loc.pathname.startsWith(t.to + "/"));
             const Icon = t.icon;
             return (
               <Link key={t.to} to={t.to as any}
