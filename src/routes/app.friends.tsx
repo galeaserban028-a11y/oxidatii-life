@@ -28,7 +28,7 @@ async function loadFriends(userId: string) {
     new Set(list.map((r) => (r.requester_id === userId ? r.addressee_id : r.requester_id))),
   );
   const { data: profiles } = otherIds.length
-    ? await supabase.from("profiles").select("id, handle, display_name, avatar_url, rank").in("id", otherIds)
+    ? await supabase.from("profiles").select("id, handle, display_name, avatar_url, rank, current_streak, longest_streak").in("id", otherIds)
     : { data: [] as any[] };
   const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
 
@@ -210,6 +210,7 @@ function FriendsPage() {
             ) : data.accepted.map((r) => {
               const otherId = r.requester_id === user.id ? r.addressee_id : r.requester_id;
               const p = data.profMap.get(otherId);
+              const streak = p?.current_streak ?? 0;
               return (
                 <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04]">
                   <Avatar p={p} />
@@ -217,6 +218,12 @@ function FriendsPage() {
                     <div className="font-display text-sm truncate">@{p?.handle ?? p?.display_name ?? "?"}</div>
                     <div className="font-mono text-[9px] uppercase text-muted-foreground">{p?.rank}</div>
                   </div>
+                  {streak > 0 && (
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-neon-crimson/10 border border-neon-crimson/30">
+                      <span className="text-sm leading-none">🔥</span>
+                      <span className="font-display text-xs leading-none text-neon-crimson">{streak}</span>
+                    </div>
+                  )}
                   <button onClick={() => remove(r.id)} className="font-mono text-[10px] uppercase text-muted-foreground px-2">scoate</button>
                 </div>
               );
