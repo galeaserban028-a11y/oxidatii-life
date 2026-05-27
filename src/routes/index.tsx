@@ -1,23 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Nav } from "@/components/oxidatii/Nav";
 import { Hero } from "@/components/oxidatii/Hero";
-import { Marquee } from "@/components/oxidatii/Marquee";
-import { CityMap } from "@/components/oxidatii/CityMap";
-import { ChaosEngine } from "@/components/oxidatii/ChaosEngine";
-import { Squads } from "@/components/oxidatii/Squads";
-import { Aura } from "@/components/oxidatii/Aura";
-import { NightPass } from "@/components/oxidatii/NightPass";
-import { LiveChaos } from "@/components/oxidatii/LiveChaos";
-import { SpritKing } from "@/components/oxidatii/SpritKing";
+import { HowItWorks } from "@/components/oxidatii/HowItWorks";
+import { CitiesPreview } from "@/components/oxidatii/CitiesPreview";
+import { Ranks } from "@/components/oxidatii/Ranks";
 import { CTA, Footer } from "@/components/oxidatii/CTA";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "OXIDAȚII — The city is alive." },
-      { name: "description", content: "AI-powered real-life social entertainment platform. Cities become maps, parties become events, people become players. Noaptea începe aici." },
-      { property: "og:title", content: "OXIDAȚII — The city is alive." },
-      { property: "og:description", content: "Real life, but multiplayer. Join the first true social nightlife metaverse." },
+      { title: "OXIDAȚII — Orașul e live." },
+      { name: "description", content: "Harta reală a vieții de noapte din România. Toate cluburile, toate străzile, toți oamenii. Scanezi șprițul, urci în top." },
+      { property: "og:title", content: "OXIDAȚII — Orașul e live." },
+      { property: "og:description", content: "Cluburi reale, străzi reale. Cine bea cel mai mult cu dovadă devine ZEU' BALCANIC." },
     ],
   }),
   component: Index,
@@ -28,14 +23,9 @@ function Index() {
     <main className="relative">
       <Nav />
       <Hero />
-      <Marquee />
-      <CityMap />
-        <SpritKing />
-        <LiveChaos />
-        <ChaosEngine />
-        <Squads />
-      <Aura />
-      <NightPass />
+      <HowItWorks />
+      <CitiesPreview />
+      <Ranks />
       <CTA />
       <Footer />
     </main>
