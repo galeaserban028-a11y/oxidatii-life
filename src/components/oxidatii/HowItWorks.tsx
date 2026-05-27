@@ -1,84 +1,111 @@
-// Tabloid-style LIVE FEED preview — looks like a real-time city scroll
-const feed = [
-  { city: "PITEȘTI", street: "Strada Victoriei", chaos: 94, head: "VICTORIEI ÎN STARE DE RĂZBOI", body: "7 BMW-uri parcate la o singură terasă. Haita Alcooliștilor domină centrul.", color: "var(--neon-crimson)" },
-  { city: "BUCUREȘTI", street: "Centrul Vechi", chaos: 88, head: "BERCENIUL IAR A INTRAT ÎN OVERTIME", body: "Un individ cu tricou Versace și IQ negativ a luat micul pe terasă la 04:17.", color: "var(--neon-purple)" },
-  { city: "CLUJ", street: "Piezișă", chaos: 76, head: "PHI 21 — coadă de 200m la fum", body: "Studenții au declarat oficial seara de marți drept weekend.", color: "var(--neon-blue)" },
-  { city: "TIMIȘOARA", street: "Piața Victoriei", chaos: 71, head: "NUBA — zeu de marți confirmat", body: "DANI_BMW raportat la al 14-lea șpriț. Echipa Top îl pune deja pe podium.", color: "#fde047" },
-  { city: "IAȘI", street: "Lăpușneanu", chaos: 65, head: "4 indivizi din Liga Ficatelor văzuți la shaormerie", body: "Comanda: 4 cu de toate, 2 fără ceapă, un șpriț de proteste.", color: "var(--neon-green)" },
-  { city: "ORADEA", street: "Piața Unirii", chaos: 58, head: "Moszkva Cafe — terasa e ruptă", body: "Crăii de cartier au mutat ședința la Insomnia după ora 02:00.", color: "var(--neon-purple)" },
-];
+import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
+
+type LiveCity = { slug: string; name: string; venue_count: number };
+type LiveStats = { users: number; venues: number; cities: number; proofs: number };
 
 export function HowItWorks() {
+  const [stats, setStats] = useState<LiveStats | null>(null);
+  const [hotCities, setHotCities] = useState<LiveCity[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const [users, venues, cities, proofs, hot] = await Promise.all([
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("venues").select("id", { count: "exact", head: true }),
+        supabase.from("cities").select("id", { count: "exact", head: true }),
+        supabase.from("sprit_proofs").select("id", { count: "exact", head: true }).eq("ai_verified", true),
+        supabase.from("cities").select("slug, name, venues(count)").order("name").limit(8),
+      ]);
+      setStats({
+        users: users.count ?? 0,
+        venues: venues.count ?? 0,
+        cities: cities.count ?? 0,
+        proofs: proofs.count ?? 0,
+      });
+      setHotCities(
+        (hot.data ?? []).map((c: any) => ({
+          slug: c.slug,
+          name: c.name,
+          venue_count: c.venues?.[0]?.count ?? 0,
+        })),
+      );
+    })();
+  }, []);
+
+  const steps = [
+    { n: "01", t: "Cont real", b: "Email sau Google. Alegi @handle-ul, orașul. 30 secunde." },
+    { n: "02", t: "Postezi ce vezi", b: "Poză de la club, terasă, after. Sau scanezi un șpriț — AI verifică dacă e real." },
+    { n: "03", t: "Urci în top", b: "Doar dovadă reală urcă. Top-ul orașului tău se resetează zilnic la 06:00." },
+  ];
+
   return (
     <section id="cum" className="relative py-20 px-5 md:px-8 border-y border-foreground/10">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-end justify-between mb-8 gap-4">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.4em] text-neon-crimson mb-2 flicker">
-              ● LIVE · ACUM
-            </div>
-            <h2 className="font-display uppercase text-3xl md:text-5xl tracking-tighter leading-none">
-              Ce <span className="text-gradient-chaos">URLĂ</span> orașele acum
-            </h2>
+        <div className="mb-10">
+          <div className="font-mono text-[10px] uppercase tracking-[0.4em] text-neon-purple mb-2">
+            // cum merge
           </div>
-          <div className="hidden md:block font-mono text-[10px] uppercase tracking-widest text-muted-foreground text-right">
-            simulare<br/>se actualizează<br/>la fiecare 30s
-          </div>
+          <h2 className="font-display uppercase text-3xl md:text-5xl tracking-tighter leading-none max-w-3xl">
+            Trei pași. <span className="text-gradient-chaos">Zero invenții.</span>
+          </h2>
+          <p className="mt-4 text-sm text-muted-foreground max-w-xl">
+            Tot ce vezi în aplicație vine de la oameni reali. Fără boți, fără conținut generat. Fără fake.
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-2">
-          {feed.map((f, i) => (
-            <article key={i} className="group relative bg-background/60 border border-foreground/10 hover:border-neon-purple/60 transition rounded-md overflow-hidden">
-              {/* chaos bar */}
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-foreground/10">
-                <div className="h-full" style={{ width: `${f.chaos}%`, background: f.color, boxShadow: `0 0 10px ${f.color}` }} />
+        {/* Real stats from DB */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-foreground/10 border border-foreground/10 rounded-md overflow-hidden mb-10">
+          {[
+            { k: "ORAȘE", v: stats?.cities },
+            { k: "CLUBURI INDEXATE", v: stats?.venues },
+            { k: "OXIDAȚI ÎNSCRIȘI", v: stats?.users },
+            { k: "ȘPRIȚURI VERIFICATE", v: stats?.proofs },
+          ].map((s) => (
+            <div key={s.k} className="bg-background/80 px-4 py-4">
+              <div className="font-display text-3xl text-neon-purple leading-none">
+                {s.v === undefined ? "—" : s.v}
               </div>
-
-              <div className="p-4 md:p-5">
-                <div className="flex items-center justify-between gap-2 font-mono text-[10px] uppercase tracking-widest">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: f.color, boxShadow: `0 0 8px ${f.color}` }} />
-                    <span style={{ color: f.color }}>{f.city}</span>
-                    <span className="text-muted-foreground">/ {f.street}</span>
-                  </div>
-                  <span className="text-muted-foreground">haos {f.chaos}%</span>
-                </div>
-
-                <h3 className="mt-3 font-display uppercase text-xl md:text-2xl leading-tight tracking-tight">
-                  {f.head}
-                </h3>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{f.body}</p>
-
-                <div className="mt-4 flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                  <span>● 247 oxidați</span>
-                  <span>● 18 clipuri</span>
-                  <span className="ml-auto group-hover:text-neon-purple transition">vezi feed →</span>
-                </div>
-              </div>
-            </article>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1.5">{s.k}</div>
+            </div>
           ))}
         </div>
 
-        {/* Marquee strip */}
-        <div className="mt-8 border border-foreground/10 rounded-md overflow-hidden bg-background/60">
-          <div className="flex whitespace-nowrap marquee py-2 font-mono text-[11px] uppercase tracking-widest">
-            {Array.from({ length: 2 }).map((_, k) => (
-              <div key={k} className="flex gap-8 px-4 shrink-0">
-                <span className="text-neon-crimson">● BREAKING</span>
-                <span>Sultanul Shoturilor a căzut la Fratelli</span>
-                <span className="text-neon-purple">●</span>
-                <span>Brașovul cere reînființarea afterului</span>
-                <span className="text-neon-green">●</span>
-                <span>Constanța: terasa de la mare = nivel zeu</span>
-                <span className="text-neon-blue">●</span>
-                <span>Călăul Ficatelor a fost văzut la Nuba</span>
-                <span className="text-neon-crimson">●</span>
-                <span>Haita BMW-urilor a luat strada</span>
-                <span className="text-neon-purple">●</span>
-              </div>
-            ))}
-          </div>
+        {/* Steps */}
+        <div className="grid md:grid-cols-3 gap-3 mb-12">
+          {steps.map((s) => (
+            <div key={s.n} className="border border-foreground/10 rounded-md p-5 bg-background/40">
+              <div className="font-display text-5xl text-neon-purple/30 leading-none">{s.n}</div>
+              <div className="mt-3 font-display uppercase text-lg">{s.t}</div>
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{s.b}</p>
+            </div>
+          ))}
         </div>
+
+        {/* Hot cities — real venue counts */}
+        {hotCities.length > 0 && (
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-3">
+              // orașe indexate · cluburi reale
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {hotCities.map((c) => (
+                <Link
+                  key={c.slug}
+                  to="/app/city/$slug"
+                  params={{ slug: c.slug }}
+                  className="border border-foreground/10 hover:border-neon-purple/60 transition rounded-md p-3 bg-background/60"
+                >
+                  <div className="font-display uppercase text-base">{c.name}</div>
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mt-1">
+                    {c.venue_count} cluburi
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
