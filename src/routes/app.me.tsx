@@ -112,13 +112,29 @@ function MePage() {
         <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full"
           style={{ background: "radial-gradient(circle, oklch(0.62 0.28 305 / 30%), transparent 70%)" }} />
         <div className="relative flex items-center gap-4">
-          <div className="h-20 w-20 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center text-3xl font-display overflow-hidden shrink-0">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="relative h-20 w-20 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center text-3xl font-display overflow-hidden shrink-0 group"
+          >
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
             ) : (
               (profile.handle ?? "?")[0].toUpperCase()
             )}
-          </div>
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition flex items-center justify-center">
+              <Camera size={18} />
+            </div>
+            {uploading && <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-[9px] font-mono uppercase">…</div>}
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); e.target.value = ""; }}
+          />
           <div className="min-w-0 flex-1">
             <div className="font-display uppercase text-2xl leading-tight truncate">@{profile.handle ?? "—"}</div>
             <div className="text-[10px] font-mono uppercase tracking-widest text-neon-crimson mt-0.5">
@@ -129,6 +145,17 @@ function MePage() {
                 din <span className="text-foreground">{moments.city.name}</span>
               </div>
             )}
+            <button
+              onClick={togglePrivacy}
+              disabled={savingPrivacy}
+              className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded-md border border-foreground/15 hover:border-foreground/30 transition"
+            >
+              {profile.is_public ? <Globe2 size={11} className="text-neon-green" /> : <Lock size={11} className="text-neon-crimson" />}
+              <span className={profile.is_public ? "text-neon-green" : "text-neon-crimson"}>
+                {profile.is_public ? "public" : "privat"}
+              </span>
+              <span className="text-muted-foreground">· schimbă</span>
+            </button>
           </div>
         </div>
 
@@ -138,6 +165,7 @@ function MePage() {
           <Stat label="momente" value={allMoments.length} color="var(--neon-green)" />
         </div>
       </div>
+
 
       {/* Top Momente */}
       <section>
