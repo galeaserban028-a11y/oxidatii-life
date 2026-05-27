@@ -68,7 +68,7 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
 }
 
 function MapPage() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { data: cities = [], isLoading } = useQuery({
     queryKey: ["cities"],
     queryFn: async () => {
@@ -90,31 +90,19 @@ function MapPage() {
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-4">
-      <header className="flex items-end justify-between">
-        <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-green">// HARTĂ · ROMÂNIA</div>
-          <h1 className="font-display font-black text-2xl mt-1">Cine-i în oraș.</h1>
-        </div>
-        <div className="text-right text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-          salut, <span className="text-neon-purple">@{profile?.handle ?? "tu"}</span>
-        </div>
+      <header className="flex items-baseline justify-between">
+        <h1 className="font-display font-black text-2xl tracking-tight">hartă.</h1>
+        <Link to="/app/friends" className="font-mono text-[10px] uppercase tracking-widest text-neon-green">
+          prieteni <span className="text-foreground/60">({friendPins.length})</span> →
+        </Link>
       </header>
-
-      {/* Friends CTA */}
-      <Link to="/app/friends"
-        className="flex items-center justify-between p-3 rounded-lg bg-foreground/[0.06] border border-foreground/10 hover:border-neon-green/40">
-        <div>
-          <div className="font-display uppercase text-sm">👥 Prieteni live <span className="text-neon-green">({friendPins.length})</span></div>
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">adaugă băieții → vezi-i pe hartă când ies</div>
-        </div>
-        <div className="font-mono text-xs text-neon-green">→</div>
-      </Link>
 
       {isLoading ? (
         <div className="aspect-[5/4] rounded-2xl bg-foreground/5 animate-pulse" />
       ) : (
         <RomaniaMap cities={cities} friends={friendPins} />
       )}
+
 
       {/* Friends-live list */}
       {friendPins.length > 0 && (
