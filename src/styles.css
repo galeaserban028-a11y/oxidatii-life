@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+/* Fonts loaded via @fontsource in __root.tsx: Archivo Black (display), Hind (body) */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -35,9 +35,9 @@
   --color-neon-green: var(--neon-green);
   --color-neon-crimson: var(--neon-crimson);
   --color-neon-chrome: var(--neon-chrome);
-  --font-display: 'Orbitron', sans-serif;
-  --font-sans: 'Space Grotesk', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Archivo Black', 'Impact', sans-serif;
+  --font-sans: 'Hind', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
 :root {
