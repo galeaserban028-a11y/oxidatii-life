@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import logoLight from "@/assets/logo-oxidatii-light.png";
 
 export function Hero() {
   return (
@@ -11,11 +12,20 @@ export function Hero() {
       <div className="absolute -bottom-40 -right-40 w-[80vmin] h-[80vmin] rounded-full pointer-events-none"
         style={{ background: "radial-gradient(circle, oklch(0.68 0.27 340 / 28%), transparent 60%)" }} />
 
+      {/* Mascot watermark */}
+      <img
+        src={logoLight}
+        alt=""
+        aria-hidden
+        className="absolute right-[-4vw] bottom-[6vh] w-[70vmin] max-w-[640px] opacity-[0.18] pointer-events-none select-none mix-blend-screen"
+      />
+
       {/* Tabloid stamp */}
-      <div className="absolute top-24 right-4 md:right-10 rotate-[6deg] border-2 border-neon-crimson px-3 py-1.5">
+      <div className="absolute top-24 right-4 md:right-10 rotate-[6deg] border-2 border-neon-crimson px-3 py-1.5 bg-background/60 backdrop-blur-sm">
         <div className="font-display text-neon-crimson text-[10px] md:text-xs uppercase leading-none">EDIȚIE LIVE · NOAPTE</div>
         <div className="font-mono text-[9px] text-neon-crimson/80 uppercase mt-1">nr. 001 · România</div>
       </div>
+
 
       <div className="relative z-10 w-full max-w-6xl mx-auto px-5 md:px-8">
         <div className="font-mono text-[10px] uppercase tracking-[0.4em] text-neon-purple mb-4">
