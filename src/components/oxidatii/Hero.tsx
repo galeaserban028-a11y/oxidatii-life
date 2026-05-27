@@ -1,81 +1,73 @@
 import { Link } from "@tanstack/react-router";
 
 export function Hero() {
-  const particles = Array.from({ length: 30 });
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden noise">
-      <div className="absolute inset-0 grid-bg" />
+    <section className="relative min-h-[100svh] flex items-end overflow-hidden noise pt-24 pb-10">
+      <div className="absolute inset-0 grid-bg opacity-60" />
 
-      <div className="absolute inset-0 pointer-events-none">
-        {particles.map((_, i) => {
-          const left = (i * 37) % 100;
-          const delay = (i * 0.7) % 12;
-          const dur = 10 + (i % 8);
-          const size = 1 + (i % 3);
-          const color = i % 3 === 0 ? 'var(--neon-purple)' : i % 3 === 1 ? 'var(--neon-blue)' : 'var(--neon-green)';
-          return (
-            <span
-              key={i}
-              className="float-particle absolute rounded-full"
-              style={{
-                left: `${left}%`,
-                width: size,
-                height: size,
-                background: color,
-                boxShadow: `0 0 12px ${color}`,
-                animationDelay: `-${delay}s`,
-                animationDuration: `${dur}s`,
-              }}
-            />
-          );
-        })}
+      {/* Glow blobs */}
+      <div className="absolute -top-40 -left-40 w-[80vmin] h-[80vmin] rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, oklch(0.62 0.28 305 / 35%), transparent 60%)" }} />
+      <div className="absolute -bottom-40 -right-40 w-[80vmin] h-[80vmin] rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, oklch(0.68 0.27 340 / 28%), transparent 60%)" }} />
+
+      {/* Tabloid stamp */}
+      <div className="absolute top-24 right-4 md:right-10 rotate-[6deg] border-2 border-neon-crimson px-3 py-1.5">
+        <div className="font-display text-neon-crimson text-[10px] md:text-xs uppercase leading-none">EDIȚIE LIVE · NOAPTE</div>
+        <div className="font-mono text-[9px] text-neon-crimson/80 uppercase mt-1">nr. 001 · România</div>
       </div>
 
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vmin] h-[120vmin] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, oklch(0.65 0.30 305 / 18%), transparent 60%)' }} />
-
-      <div className="relative z-10 max-w-6xl mx-auto px-6 text-center pt-24">
-        <div className="inline-flex items-center gap-2 glass rounded-full px-4 py-1.5 mb-8 flicker">
-          <span className="h-1.5 w-1.5 rounded-full bg-neon-crimson glow-crimson animate-pulse" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-            Live · România · noaptea începe aici
-          </span>
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-5 md:px-8">
+        <div className="font-mono text-[10px] uppercase tracking-[0.4em] text-neon-purple mb-4">
+          // ziarul nopții · scris de oraș
         </div>
 
-        <h1 className="font-display font-black text-[clamp(2.5rem,11vw,10rem)] leading-[0.85] tracking-tighter">
-          <span className="block">ORAȘUL</span>
-          <span className="block text-gradient-chaos">E LIVE.</span>
+        <h1 className="font-display uppercase text-[clamp(3rem,14vw,11rem)] leading-[0.82] tracking-tighter">
+          <span className="block">ORAȘUL TĂU</span>
+          <span className="block">E <span className="text-gradient-chaos">VIU</span> ACUM.</span>
         </h1>
 
-        <p className="mt-8 max-w-2xl mx-auto text-base md:text-lg text-muted-foreground leading-relaxed">
-          OXIDAȚII e harta reală a vieții de noapte din România. Toate cluburile, toate străzile, toți oamenii.
-          <span className="text-foreground"> Scanezi șprițul, urci în top. Cine bea cel mai mult cu dovadă — devine ZEU' BALCANIC.</span>
-        </p>
+        <div className="mt-6 max-w-2xl border-l-2 border-neon-purple pl-4">
+          <p className="text-base md:text-lg leading-relaxed text-foreground/85">
+            OXIDAȚII e <b>internetul real al nopții din România</b>. Toate cluburile, toate străzile,
+            toate haitele, toți oamenii. Vezi ce se întâmplă acum în Pitești pe Victoriei, în Centrul Vechi,
+            la Cluj pe Piezișă. <span className="text-neon-purple">Postezi. Urci. Devii legendă de cartier.</span>
+          </p>
+        </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex flex-wrap items-center gap-3">
           <Link
             to="/signup"
-            className="group relative font-display font-bold text-sm uppercase tracking-[0.2em] px-8 py-4 rounded-full text-primary-foreground glow-purple overflow-hidden"
-            style={{ background: 'var(--gradient-chaos)' }}
+            className="font-display uppercase text-sm tracking-[0.18em] px-7 py-4 rounded-md text-white glow-purple"
+            style={{ background: "var(--gradient-chaos)" }}
           >
-            <span className="relative z-10">Fă-ți cont · gratis</span>
-            <span className="absolute inset-0 shimmer" />
+            Intră în haos →
           </Link>
           <Link
             to="/login"
-            className="font-mono text-xs uppercase tracking-[0.25em] px-7 py-4 rounded-full border border-border hover:border-neon-blue hover:text-neon-blue transition"
+            className="font-mono text-xs uppercase tracking-[0.25em] px-6 py-4 rounded-md border border-foreground/20 hover:border-neon-purple hover:text-neon-purple transition"
           >
-            Am deja cont
+            Am cont
           </Link>
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+            18+ · bea cu cap
+          </span>
         </div>
 
-        <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-          email · google · 30 secunde
+        {/* Live stats strip */}
+        <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-px bg-foreground/10 border border-foreground/10 rounded-md overflow-hidden">
+          {[
+            { k: "ORAȘE LIVE", v: "16" },
+            { k: "CLUBURI", v: "120+" },
+            { k: "STRĂZI HOT", v: "47" },
+            { k: "HAITE ACTIVE", v: "23" },
+          ].map((s) => (
+            <div key={s.k} className="bg-background/80 px-4 py-3">
+              <div className="font-display text-2xl md:text-3xl text-neon-purple leading-none">{s.v}</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">{s.k}</div>
+            </div>
+          ))}
         </div>
-      </div>
-
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 font-mono text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
-        scroll · cum funcționează
       </div>
     </section>
   );
