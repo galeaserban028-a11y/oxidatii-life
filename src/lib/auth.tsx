@@ -15,7 +15,9 @@ type Profile = {
   lifetime_sprits: number;
   onboarded: boolean;
   location_consent: boolean;
+  is_public: boolean;
 };
+
 
 type Ctx = {
   user: User | null;
