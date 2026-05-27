@@ -164,6 +164,21 @@ function MePage() {
           <Stat label="șprițuri" value={profile.lifetime_sprits} color="var(--neon-crimson)" />
           <Stat label="momente" value={allMoments.length} color="var(--neon-green)" />
         </div>
+
+        {/* Șpriț Streak */}
+        <div className="relative mt-3 rounded-2xl p-4 border border-neon-crimson/30 bg-gradient-to-br from-neon-crimson/10 via-transparent to-neon-purple/10 flex items-center gap-4">
+          <div className="text-4xl leading-none">🔥</div>
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">șpriț streak</div>
+            <div className="font-display text-3xl leading-none mt-1">
+              {(profile as any).current_streak ?? 0}
+              <span className="text-sm text-muted-foreground ml-2">weekend-uri la rând</span>
+            </div>
+            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">
+              record: {(profile as any).longest_streak ?? 0} · ieși vineri/sâmbătă/duminică să-l ții
+            </div>
+          </div>
+        </div>
       </div>
 
 
