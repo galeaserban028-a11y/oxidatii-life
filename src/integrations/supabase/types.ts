@@ -122,6 +122,7 @@ export type Database = {
           display_name: string | null
           handle: string | null
           id: string
+          is_public: boolean
           lifetime_sprits: number
           location_consent: boolean
           onboarded: boolean
@@ -137,6 +138,7 @@ export type Database = {
           display_name?: string | null
           handle?: string | null
           id: string
+          is_public?: boolean
           lifetime_sprits?: number
           location_consent?: boolean
           onboarded?: boolean
@@ -152,6 +154,7 @@ export type Database = {
           display_name?: string | null
           handle?: string | null
           id?: string
+          is_public?: boolean
           lifetime_sprits?: number
           location_consent?: boolean
           onboarded?: boolean
