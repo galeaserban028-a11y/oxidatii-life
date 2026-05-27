@@ -1,13 +1,14 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { Map, Trophy, Camera, Users, User } from "lucide-react";
 
-const tabs = [
+type Tab = { to: string; icon: typeof Map; label: string; primary?: boolean };
+const tabs: Tab[] = [
   { to: "/app/map", icon: Map, label: "Hartă" },
   { to: "/app/top", icon: Trophy, label: "Top" },
   { to: "/app/scan", icon: Camera, label: "Șpriț", primary: true },
   { to: "/app/squad", icon: Users, label: "Squad" },
   { to: "/app/me", icon: User, label: "Eu" },
-] as const;
+];
 
 export function BottomTabBar() {
   const loc = useLocation();
@@ -19,7 +20,7 @@ export function BottomTabBar() {
             const active = loc.pathname === t.to || loc.pathname.startsWith(t.to + "/");
             const Icon = t.icon;
             return (
-              <Link key={t.to} to={t.to}
+              <Link key={t.to} to={t.to as any}
                 className="flex flex-col items-center gap-0.5 py-2.5 relative">
                 <div className={`flex items-center justify-center rounded-xl transition ${
                   t.primary
