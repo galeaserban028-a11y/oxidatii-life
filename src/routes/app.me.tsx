@@ -24,7 +24,48 @@ const RANK_LABELS: Record<string, string> = {
 
 function MePage() {
   const nav = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshProfile } = useAuth();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [savingPrivacy, setSavingPrivacy] = useState(false);
+
+  async function uploadAvatar(file: File) {
+    if (!user) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const { error: profErr } = await supabase.from("profiles").update({ avatar_url: pub.publicUrl }).eq("id", user.id);
+      if (profErr) throw profErr;
+      await refreshProfile();
+      toast.success("Poză actualizată");
+    } catch (e: any) {
+      toast.error(e.message ?? "Nu s-a putut încărca");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function togglePrivacy() {
+    if (!user || !profile) return;
+    setSavingPrivacy(true);
+    try {
+      const next = !profile.is_public;
+      const { error } = await supabase.from("profiles").update({ is_public: next } as any).eq("id", user.id);
+      if (error) throw error;
+      await refreshProfile();
+      toast.success(next ? "Cont public" : "Cont privat");
+    } catch (e: any) {
+      toast.error(e.message ?? "Eroare");
+    } finally {
+      setSavingPrivacy(false);
+    }
+  }
+
+
 
   const { data: moments } = useQuery({
     queryKey: ["my-moments", user?.id],
