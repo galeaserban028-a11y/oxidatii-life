@@ -119,12 +119,15 @@ export type Database = {
           bio: string | null
           city_id: string | null
           created_at: string
+          current_streak: number
           display_name: string | null
           handle: string | null
           id: string
           is_public: boolean
+          last_streak_week: string | null
           lifetime_sprits: number
           location_consent: boolean
+          longest_streak: number
           onboarded: boolean
           rank: Database["public"]["Enums"]["balkan_rank"]
           updated_at: string
@@ -135,12 +138,15 @@ export type Database = {
           bio?: string | null
           city_id?: string | null
           created_at?: string
+          current_streak?: number
           display_name?: string | null
           handle?: string | null
           id: string
           is_public?: boolean
+          last_streak_week?: string | null
           lifetime_sprits?: number
           location_consent?: boolean
+          longest_streak?: number
           onboarded?: boolean
           rank?: Database["public"]["Enums"]["balkan_rank"]
           updated_at?: string
@@ -151,12 +157,15 @@ export type Database = {
           bio?: string | null
           city_id?: string | null
           created_at?: string
+          current_streak?: number
           display_name?: string | null
           handle?: string | null
           id?: string
           is_public?: boolean
+          last_streak_week?: string | null
           lifetime_sprits?: number
           location_consent?: boolean
+          longest_streak?: number
           onboarded?: boolean
           rank?: Database["public"]["Enums"]["balkan_rank"]
           updated_at?: string
@@ -357,6 +366,7 @@ export type Database = {
     }
     Functions: {
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      iso_week_start: { Args: { _ts: string }; Returns: string }
     }
     Enums: {
       balkan_rank:
