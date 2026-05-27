@@ -6,7 +6,7 @@ const tabs: Tab[] = [
   { to: "/app", icon: Newspaper, label: "Live", exact: true },
   { to: "/app/top", icon: Trophy, label: "Top" },
   { to: "/app/scan", icon: Camera, label: "Șpriț", primary: true },
-  { to: "/app/squad", icon: Users, label: "Haită" },
+  { to: "/app/squad", icon: Users, label: "Grupuri" },
   { to: "/app/me", icon: User, label: "Eu" },
 ];
 
