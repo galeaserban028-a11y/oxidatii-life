@@ -7,6 +7,7 @@ import { ChaosEngine } from "@/components/oxidatii/ChaosEngine";
 import { Squads } from "@/components/oxidatii/Squads";
 import { Aura } from "@/components/oxidatii/Aura";
 import { NightPass } from "@/components/oxidatii/NightPass";
+import { LiveChaos } from "@/components/oxidatii/LiveChaos";
 import { CTA, Footer } from "@/components/oxidatii/CTA";
 
 export const Route = createFileRoute("/")({
@@ -29,6 +30,7 @@ function Index() {
       <Marquee />
       <CityMap />
       <ChaosEngine />
+      <LiveChaos />
       <Squads />
       <Aura />
       <NightPass />
