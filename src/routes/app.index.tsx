@@ -99,9 +99,12 @@ function AppFeed() {
           <span className="text-neon-crimson flicker">● LIVE · ROMÂNIA</span>
           <Link to="/app/top" className="text-muted-foreground">vezi top →</Link>
         </div>
-        <h1 className="font-display uppercase text-2xl leading-none tracking-tight">
-          Ce s-a întâmplat <span className="text-gradient-chaos">azi-noapte</span>
-        </h1>
+        <div className="flex items-end gap-3">
+          <img src={logoLight} alt="" aria-hidden width={56} height={56} className="h-14 w-14 object-contain shrink-0 -mb-1" />
+          <h1 className="font-display uppercase text-2xl leading-none tracking-tight">
+            Ce s-a întâmplat <span className="text-gradient-chaos">azi-noapte</span>
+          </h1>
+        </div>
         <Link
           to="/app/faze"
           className="mt-2 flex items-center justify-between p-3 rounded-lg bg-foreground/[0.06] border border-foreground/10 hover:border-neon-crimson/40"
