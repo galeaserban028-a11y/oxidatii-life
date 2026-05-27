@@ -1,29 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Nav } from "@/components/oxidatii/Nav";
+import { Hero } from "@/components/oxidatii/Hero";
+import { Marquee } from "@/components/oxidatii/Marquee";
+import { CityMap } from "@/components/oxidatii/CityMap";
+import { ChaosEngine } from "@/components/oxidatii/ChaosEngine";
+import { Squads } from "@/components/oxidatii/Squads";
+import { Aura } from "@/components/oxidatii/Aura";
+import { NightPass } from "@/components/oxidatii/NightPass";
+import { CTA, Footer } from "@/components/oxidatii/CTA";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "OXIDAȚII — The city is alive." },
+      { name: "description", content: "AI-powered real-life social entertainment platform. Cities become maps, parties become events, people become players. Noaptea începe aici." },
+      { property: "og:title", content: "OXIDAȚII — The city is alive." },
+      { property: "og:description", content: "Real life, but multiplayer. Join the first true social nightlife metaverse." },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="relative">
+      <Nav />
+      <Hero />
+      <Marquee />
+      <CityMap />
+      <ChaosEngine />
+      <Squads />
+      <Aura />
+      <NightPass />
+      <CTA />
+      <Footer />
+    </main>
   );
 }
