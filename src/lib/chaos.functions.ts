@@ -43,12 +43,22 @@ Vibe-uri:
 
 Răspunde DOAR în formatul cerut.`;
 
-    const { output } = await generateText({
-      model: gateway("google/gemini-3-flash-preview"),
-      system: systemPrompt,
-      prompt: `Cartier: ${data.district}\nVibe nopții: ${data.vibe}\n\nGenerează 4 evenimente live pentru următoarele 30 de minute. Adaugă o linie cinematic de broadcast (1 propoziție, ca o intro de film) și un chaos_level 0-100.`,
-      output: Output.object({ schema: EventSchema }),
-    });
-
-    return output;
+    try {
+      const { output } = await generateText({
+        model: gateway("google/gemini-3-flash-preview"),
+        system: systemPrompt,
+        prompt: `Cartier: ${data.district}\nVibe nopții: ${data.vibe}\n\nGenerează 4 evenimente live pentru următoarele 30 de minute. Adaugă o linie cinematic de broadcast (1 propoziție, ca o intro de film) și un chaos_level 0-100.`,
+        output: Output.object({ schema: EventSchema }),
+      });
+      return output;
+    } catch (err: unknown) {
+      const e = err as { statusCode?: number; message?: string };
+      if (e.statusCode === 402) {
+        throw new Error("AI credits epuizate. Adaugă credite din Settings → Workspace → Usage.");
+      }
+      if (e.statusCode === 429) {
+        throw new Error("Rate limit. Încearcă din nou în câteva secunde.");
+      }
+      throw new Error(`OXID-CORE offline: ${e.message ?? "unknown"}`);
+    }
   });
