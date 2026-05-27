@@ -170,7 +170,7 @@ export function CityMap() {
             <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">// străzi active</div>
             <div className="space-y-1.5 overflow-auto flex-1">
               {active.streets.map((s, i) => {
-                const heat = Math.round(40 + Math.random() * 800);
+                const heat = 40 + ((i * 137 + s.length * 53) % 800);
                 const lvl = Math.min(100, 30 + ((i * 17) % 70));
                 return (
                   <div key={s} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-foreground/5 hover:bg-foreground/10 transition cursor-pointer">
