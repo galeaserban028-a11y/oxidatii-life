@@ -108,25 +108,48 @@ function FriendsPage() {
       <header>
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-green">// PRIETENI</div>
         <h1 className="font-display uppercase text-2xl mt-1 leading-none">Băieții tăi.</h1>
-        <p className="text-xs text-muted-foreground mt-1">Vezi-i live pe hartă când ies în oraș. Adaugă-i după handle.</p>
+        <p className="text-xs text-muted-foreground mt-1">Adaugă prieteni după @handle ca să-i vezi pe hartă când ies în oraș.</p>
       </header>
+
+      {/* Step-by-step visual */}
+      <div className="rounded-xl border border-foreground/10 p-4 space-y-3 bg-foreground/[0.02]">
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">cum adaugi prieteni</div>
+        <div className="flex items-center gap-3">
+          <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">1</div>
+          <p className="text-sm">Scrie @handle-ul sau numele în căsuța de mai jos</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">2</div>
+          <p className="text-sm">Apasă <span className="font-display text-neon-crimson">+ adaugă</span> pe cel pe care-l cunoști</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">3</div>
+          <p className="text-sm">Când acceptă, îl vezi <span className="text-neon-purple font-display">live pe hartă</span> când iese</p>
+        </div>
+      </div>
 
       {/* Search */}
       <div className="space-y-2">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="caută @handle sau nume..."
-          className="w-full p-3 rounded-lg bg-foreground/[0.04] border border-foreground/10 text-sm"
-        />
+        <div className="relative">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="@handle sau nume..."
+            className="w-full p-3 pl-10 rounded-xl bg-foreground/[0.05] border border-foreground/15 text-sm focus:outline-none focus:border-neon-crimson/50 transition-colors"
+          />
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+          </svg>
+        </div>
+
         {searchResults && searchResults.length > 0 && (
-          <div className="space-y-1">
+          <div className="space-y-1 rounded-xl border border-foreground/10 overflow-hidden">
             {searchResults.map((p: any) => {
               const alreadyKnown = data?.accepted.some((f) => f.requester_id === p.id || f.addressee_id === p.id)
                 || data?.outgoing.some((f) => f.addressee_id === p.id)
                 || data?.incoming.some((f) => f.requester_id === p.id);
               return (
-                <div key={p.id} className="flex items-center gap-3 p-2 rounded-lg bg-foreground/[0.04]">
+                <div key={p.id} className="flex items-center gap-3 p-3 bg-foreground/[0.03] hover:bg-foreground/[0.06] transition-colors">
                   <Avatar p={p} />
                   <div className="flex-1 min-w-0">
                     <div className="font-display text-sm truncate">@{p.handle ?? p.display_name}</div>
@@ -136,7 +159,7 @@ function FriendsPage() {
                     <span className="font-mono text-[9px] uppercase text-muted-foreground">deja</span>
                   ) : (
                     <button onClick={() => sendRequest(p.id)}
-                      className="font-display uppercase text-[10px] tracking-widest px-3 py-2 rounded-md text-white"
+                      className="font-display uppercase text-[10px] tracking-widest px-4 py-2 rounded-lg text-white active:scale-95 transition-transform"
                       style={{ background: "var(--gradient-chaos)" }}>+ adaugă</button>
                   )}
                 </div>
@@ -144,10 +167,14 @@ function FriendsPage() {
             })}
           </div>
         )}
+
+        {search.trim().length >= 2 && (!searchResults || searchResults.length === 0) && (
+          <div className="text-center text-sm text-muted-foreground py-4">Niciun rezultat pentru "{search.trim()}"</div>
+        )}
       </div>
 
       {isLoading || !data ? (
-        <div className="space-y-2">{[0,1,2].map(i => <div key={i} className="h-14 rounded-lg bg-foreground/[0.04] animate-pulse" />)}</div>
+        <div className="space-y-2">{[0,1,2].map(i => <div key={i} className="h-14 rounded-xl bg-foreground/[0.04] animate-pulse" />)}</div>
       ) : (
         <>
           {/* Incoming */}
@@ -157,13 +184,13 @@ function FriendsPage() {
               {data.incoming.map((r) => {
                 const p = data.profMap.get(r.requester_id);
                 return (
-                  <div key={r.id} className="flex items-center gap-3 p-3 rounded-lg bg-foreground/[0.04] border border-neon-crimson/30">
+                  <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04] border border-neon-crimson/30">
                     <Avatar p={p} />
                     <div className="flex-1 min-w-0">
                       <div className="font-display text-sm truncate">@{p?.handle ?? p?.display_name ?? "?"}</div>
                       <div className="font-mono text-[9px] uppercase text-muted-foreground">vrea să fie prieten</div>
                     </div>
-                    <button onClick={() => accept(r.id)} className="font-display uppercase text-[10px] tracking-widest px-3 py-2 rounded-md text-white"
+                    <button onClick={() => accept(r.id)} className="font-display uppercase text-[10px] tracking-widest px-3 py-2 rounded-lg text-white active:scale-95 transition-transform"
                       style={{ background: "var(--gradient-chaos)" }}>accept</button>
                     <button onClick={() => remove(r.id)} className="font-mono text-[10px] uppercase text-muted-foreground px-2">x</button>
                   </div>
@@ -176,14 +203,15 @@ function FriendsPage() {
           <section className="space-y-2">
             <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">// prietenii tăi ({data.accepted.length})</div>
             {data.accepted.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-foreground/15 p-6 text-center text-sm text-muted-foreground">
-                Niciun prieten încă. Caută-i după handle ↑
+              <div className="rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-3">
+                <div className="text-3xl opacity-30">🍷</div>
+                <p className="text-sm text-muted-foreground">Niciun prieten încă.<br/>Caută-i după handle mai sus ↑</p>
               </div>
             ) : data.accepted.map((r) => {
               const otherId = r.requester_id === user.id ? r.addressee_id : r.requester_id;
               const p = data.profMap.get(otherId);
               return (
-                <div key={r.id} className="flex items-center gap-3 p-3 rounded-lg bg-foreground/[0.04]">
+                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04]">
                   <Avatar p={p} />
                   <div className="flex-1 min-w-0">
                     <div className="font-display text-sm truncate">@{p?.handle ?? p?.display_name ?? "?"}</div>
@@ -202,7 +230,7 @@ function FriendsPage() {
               {data.outgoing.map((r) => {
                 const p = data.profMap.get(r.addressee_id);
                 return (
-                  <div key={r.id} className="flex items-center gap-3 p-2 rounded-lg bg-foreground/[0.04] opacity-70">
+                  <div key={r.id} className="flex items-center gap-3 p-2 rounded-xl bg-foreground/[0.04] opacity-70">
                     <Avatar p={p} />
                     <div className="flex-1 min-w-0">
                       <div className="font-display text-sm truncate">@{p?.handle ?? p?.display_name ?? "?"}</div>
