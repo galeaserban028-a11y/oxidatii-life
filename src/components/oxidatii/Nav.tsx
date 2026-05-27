@@ -1,19 +1,24 @@
 import { Link } from "@tanstack/react-router";
+import logoUrl from "@/assets/logo-oxidatii.png";
 
 export function Nav() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-foreground/10 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto max-w-7xl px-4 md:px-6 py-3 flex items-center justify-between gap-3">
         <Link to="/" className="flex items-center gap-2.5 min-w-0">
-          <span className="relative inline-flex h-2.5 w-2.5">
-            <span className="absolute inset-0 rounded-full bg-neon-crimson pulse-ring" />
-            <span className="relative h-2.5 w-2.5 rounded-full bg-neon-crimson glow-crimson" />
-          </span>
+          <img
+            src={logoUrl}
+            alt="OXIDAȚII"
+            width={36}
+            height={36}
+            className="h-9 w-9 object-contain shrink-0 invert-0 dark:invert"
+          />
           <span className="font-display uppercase text-base md:text-lg tracking-[0.12em] leading-none">OXIDAȚII</span>
           <span className="hidden sm:inline font-mono text-[9px] uppercase tracking-widest text-muted-foreground border-l border-foreground/15 pl-2 ml-1">
             ediția nopții
           </span>
         </Link>
+
         <nav className="hidden md:flex items-center gap-6 text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
           <a href="#cum" className="hover:text-foreground transition">Live</a>
           <a href="#orase" className="hover:text-foreground transition">Orașe</a>
