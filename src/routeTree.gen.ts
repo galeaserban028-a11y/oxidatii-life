@@ -20,6 +20,7 @@ import { Route as AppSquadRouteImport } from './routes/app.squad'
 import { Route as AppScanRouteImport } from './routes/app.scan'
 import { Route as AppMeRouteImport } from './routes/app.me'
 import { Route as AppMapRouteImport } from './routes/app.map'
+import { Route as AppFriendsRouteImport } from './routes/app.friends'
 import { Route as AppFazeRouteImport } from './routes/app.faze'
 import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
@@ -80,6 +81,11 @@ const AppMapRoute = AppMapRouteImport.update({
   path: '/map',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFriendsRoute = AppFriendsRouteImport.update({
+  id: '/friends',
+  path: '/friends',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFazeRoute = AppFazeRouteImport.update({
   id: '/faze',
   path: '/faze',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/app/faze': typeof AppFazeRoute
+  '/app/friends': typeof AppFriendsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
   '/app/scan': typeof AppScanRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/app/faze': typeof AppFazeRoute
+  '/app/friends': typeof AppFriendsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
   '/app/scan': typeof AppScanRoute
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
   '/app/faze': typeof AppFazeRoute
+  '/app/friends': typeof AppFriendsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
   '/app/scan': typeof AppScanRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/signup'
     | '/app/faze'
+    | '/app/friends'
     | '/app/map'
     | '/app/me'
     | '/app/scan'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/signup'
     | '/app/faze'
+    | '/app/friends'
     | '/app/map'
     | '/app/me'
     | '/app/scan'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/signup'
     | '/app/faze'
+    | '/app/friends'
     | '/app/map'
     | '/app/me'
     | '/app/scan'
@@ -292,6 +304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMapRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/friends': {
+      id: '/app/friends'
+      path: '/friends'
+      fullPath: '/app/friends'
+      preLoaderRoute: typeof AppFriendsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/faze': {
       id: '/app/faze'
       path: '/faze'
@@ -325,6 +344,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppFazeRoute: typeof AppFazeRoute
+  AppFriendsRoute: typeof AppFriendsRoute
   AppMapRoute: typeof AppMapRoute
   AppMeRoute: typeof AppMeRoute
   AppScanRoute: typeof AppScanRoute
@@ -338,6 +358,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppFazeRoute: AppFazeRoute,
+  AppFriendsRoute: AppFriendsRoute,
   AppMapRoute: AppMapRoute,
   AppMeRoute: AppMeRoute,
   AppScanRoute: AppScanRoute,
