@@ -68,7 +68,7 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
 }
 
 function MapPage() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { data: cities = [], isLoading } = useQuery({
     queryKey: ["cities"],
     queryFn: async () => {
