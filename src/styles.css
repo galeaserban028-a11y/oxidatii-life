@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Fonts loaded via @fontsource in __root.tsx: Archivo Black (display), Hind (body) */
+/* Fonts loaded via @fontsource in __root.tsx: Space Grotesk (display), DM Sans (body) */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -30,68 +30,82 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-neon-purple: var(--neon-purple);
-  --color-neon-blue: var(--neon-blue);
-  --color-neon-green: var(--neon-green);
-  --color-neon-crimson: var(--neon-crimson);
-  --color-neon-chrome: var(--neon-chrome);
-  --font-display: 'Archivo Black', 'Impact', sans-serif;
-  --font-sans: 'Hind', system-ui, sans-serif;
+
+  /* Sunset Blaze brand colors */
+  --color-sunset-orange: var(--sunset-orange);
+  --color-sunset-amber: var(--sunset-amber);
+  --color-sunset-magenta: var(--sunset-magenta);
+  --color-sunset-indigo: var(--sunset-indigo);
+
+  /* Legacy aliases — keep app routes compiling while we migrate visuals */
+  --color-neon-purple: var(--sunset-magenta);
+  --color-neon-blue: var(--sunset-indigo);
+  --color-neon-green: var(--sunset-amber);
+  --color-neon-crimson: var(--sunset-orange);
+  --color-neon-chrome: var(--foreground);
+
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 1rem;
 
-  /* Obsidian night */
-  --background: oklch(0.13 0.02 280);
-  --foreground: oklch(0.97 0.01 280);
+  /* Warm off-white canvas — premium, calm, less AI */
+  --background: oklch(0.985 0.005 60);
+  --foreground: oklch(0.18 0.02 280);
 
-  --card: oklch(0.17 0.025 280);
-  --card-foreground: oklch(0.97 0.01 280);
-  --popover: oklch(0.15 0.025 280);
-  --popover-foreground: oklch(0.97 0.01 280);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.02 280);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.02 280);
 
-  /* Neon purple — primary brand */
-  --primary: oklch(0.62 0.28 305);
+  /* Sunset Blaze — primary is the warm orange */
+  --primary: oklch(0.68 0.21 38);
   --primary-foreground: oklch(0.99 0 0);
 
-  --secondary: oklch(0.22 0.04 280);
-  --secondary-foreground: oklch(0.97 0.01 280);
+  --secondary: oklch(0.96 0.01 60);
+  --secondary-foreground: oklch(0.18 0.02 280);
 
-  --muted: oklch(0.2 0.03 280);
-  --muted-foreground: oklch(0.68 0.04 280);
+  --muted: oklch(0.95 0.008 60);
+  --muted-foreground: oklch(0.45 0.03 280);
 
-  --accent: oklch(0.65 0.24 230);
+  --accent: oklch(0.62 0.24 350);
   --accent-foreground: oklch(0.99 0 0);
 
-  --destructive: oklch(0.58 0.27 22);
+  --destructive: oklch(0.62 0.25 25);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.28 0.04 285 / 60%);
-  --input: oklch(0.22 0.03 280);
-  --ring: oklch(0.62 0.28 305);
+  --border: oklch(0.92 0.01 60);
+  --input: oklch(0.96 0.008 60);
+  --ring: oklch(0.68 0.21 38);
 
-  /* Signature neons */
-  --neon-purple: oklch(0.65 0.30 305);
-  --neon-blue: oklch(0.70 0.24 230);
-  --neon-green: oklch(0.82 0.27 145);
-  --neon-crimson: oklch(0.62 0.28 18);
-  --neon-chrome: oklch(0.92 0.01 280);
+  /* Sunset palette */
+  --sunset-orange: oklch(0.72 0.20 40);     /* #ff6b35 */
+  --sunset-amber: oklch(0.78 0.16 65);      /* #f7931e */
+  --sunset-magenta: oklch(0.62 0.24 350);   /* #e84393 */
+  --sunset-indigo: oklch(0.55 0.20 290);    /* #6c5ce7 */
 
   /* Gradients */
-  --gradient-chaos: linear-gradient(135deg, oklch(0.65 0.30 305) 0%, oklch(0.62 0.28 18) 50%, oklch(0.70 0.24 230) 100%);
-  --gradient-night: radial-gradient(ellipse at top, oklch(0.22 0.06 290) 0%, oklch(0.10 0.02 280) 70%);
-  --gradient-toxic: linear-gradient(135deg, oklch(0.82 0.27 145) 0%, oklch(0.70 0.24 230) 100%);
-  --gradient-edge: linear-gradient(90deg, transparent, oklch(0.65 0.30 305 / 80%), transparent);
+  --gradient-sunset: linear-gradient(135deg, var(--sunset-orange) 0%, var(--sunset-magenta) 60%, var(--sunset-indigo) 100%);
+  --gradient-warm: linear-gradient(135deg, var(--sunset-orange) 0%, var(--sunset-amber) 100%);
 
-  /* Glows */
-  --glow-purple: 0 0 40px oklch(0.65 0.30 305 / 60%), 0 0 80px oklch(0.65 0.30 305 / 30%);
-  --glow-blue: 0 0 40px oklch(0.70 0.24 230 / 60%), 0 0 80px oklch(0.70 0.24 230 / 30%);
-  --glow-green: 0 0 30px oklch(0.82 0.27 145 / 70%);
-  --glow-crimson: 0 0 40px oklch(0.62 0.28 18 / 60%);
+  /* Legacy gradient aliases */
+  --gradient-chaos: var(--gradient-sunset);
+  --gradient-night: var(--background);
+  --gradient-toxic: var(--gradient-warm);
+  --gradient-edge: linear-gradient(90deg, transparent, var(--sunset-orange), transparent);
 
-  --shadow-elevated: 0 30px 80px -20px oklch(0.05 0 0 / 80%), 0 0 0 1px oklch(0.65 0.30 305 / 15%);
+  /* Soft shadows */
+  --shadow-card: 0 1px 2px oklch(0.18 0.02 280 / 4%), 0 8px 24px -8px oklch(0.18 0.02 280 / 8%);
+  --shadow-elevated: 0 20px 48px -16px oklch(0.62 0.24 350 / 20%), 0 4px 12px -4px oklch(0.18 0.02 280 / 10%);
+
+  /* Legacy glows neutralized */
+  --glow-purple: var(--shadow-elevated);
+  --glow-blue: var(--shadow-elevated);
+  --glow-green: var(--shadow-card);
+  --glow-crimson: var(--shadow-elevated);
 }
 
 @layer base {
@@ -107,17 +121,14 @@
     overflow-x: hidden;
   }
 
-  body {
-    background-image:
-      radial-gradient(ellipse 80% 50% at 20% 0%, oklch(0.65 0.30 305 / 18%), transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 30%, oklch(0.70 0.24 230 / 12%), transparent 60%),
-      radial-gradient(ellipse 50% 40% at 50% 100%, oklch(0.82 0.27 145 / 10%), transparent 60%);
-    background-attachment: fixed;
+  ::selection {
+    background: var(--sunset-orange);
+    color: white;
   }
 
-  ::selection {
-    background: var(--neon-purple);
-    color: white;
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
   }
 }
 
@@ -125,59 +136,41 @@
   .font-display { font-family: var(--font-display); letter-spacing: -0.02em; }
   .font-mono { font-family: var(--font-mono); }
 
-  .text-gradient-chaos {
-    background: var(--gradient-chaos);
+  .text-gradient-chaos,
+  .text-gradient-sunset {
+    background: var(--gradient-sunset);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
   .text-gradient-toxic {
-    background: var(--gradient-toxic);
+    background: var(--gradient-warm);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
-  .glow-purple { box-shadow: var(--glow-purple); }
-  .glow-blue { box-shadow: var(--glow-blue); }
-  .glow-green { box-shadow: var(--glow-green); }
-  .glow-crimson { box-shadow: var(--glow-crimson); }
+  /* Legacy glow utilities → soft elevated shadow so existing markup stays clean */
+  .glow-purple, .glow-blue, .glow-green, .glow-crimson { box-shadow: var(--shadow-card); }
 
   .glass {
-    background: oklch(0.17 0.03 285 / 60%);
+    background: oklch(1 0 0 / 70%);
     backdrop-filter: blur(20px) saturate(140%);
     -webkit-backdrop-filter: blur(20px) saturate(140%);
-    border: 1px solid oklch(0.65 0.30 305 / 20%);
+    border: 1px solid var(--border);
   }
 
-  .grid-bg {
-    background-image:
-      linear-gradient(oklch(0.65 0.30 305 / 8%) 1px, transparent 1px),
-      linear-gradient(90deg, oklch(0.65 0.30 305 / 8%) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+  .card-surface {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
   }
 
-  .noise::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.04;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-
-  .scanline {
-    background: repeating-linear-gradient(
-      to bottom,
-      transparent 0px,
-      transparent 3px,
-      oklch(0.65 0.30 305 / 4%) 3px,
-      oklch(0.65 0.30 305 / 4%) 4px
-    );
-  }
+  /* Neutralized legacy texture utilities */
+  .grid-bg, .noise::after, .scanline { background: transparent; }
+  .noise::after { content: none; }
 
   @keyframes pulse-ring {
     0% { transform: scale(0.6); opacity: 0.9; }
@@ -193,34 +186,16 @@
   }
   .float-particle { animation: float-up linear infinite; }
 
-  @keyframes flicker {
-    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
-    20%, 22%, 24%, 55% { opacity: 0.55; }
-  }
-  .flicker { animation: flicker 6s infinite; }
-
-  @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-  }
-  .marquee { animation: marquee 40s linear infinite; }
-
-  @keyframes glitch {
-    0%, 100% { transform: translate(0); }
-    20% { transform: translate(-2px, 1px); }
-    40% { transform: translate(2px, -1px); }
-    60% { transform: translate(-1px, -2px); }
-    80% { transform: translate(1px, 2px); }
-  }
-  .glitch:hover { animation: glitch 0.3s linear; }
-
   @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
   }
   .shimmer {
-    background: linear-gradient(90deg, transparent, oklch(1 0 0 / 20%), transparent);
+    background: linear-gradient(90deg, transparent, oklch(0 0 0 / 6%), transparent);
     background-size: 200% 100%;
     animation: shimmer 3s linear infinite;
   }
+
+  /* Disabled noisy legacy animations */
+  .flicker, .marquee, .glitch:hover { animation: none; }
 }

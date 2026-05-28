@@ -9,12 +9,14 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
-import "@fontsource/archivo-black/400.css";
-import "@fontsource/hind/300.css";
-import "@fontsource/hind/400.css";
-import "@fontsource/hind/500.css";
-import "@fontsource/hind/600.css";
-import "@fontsource/hind/700.css";
+import "@fontsource/space-grotesk/400.css";
+import "@fontsource/space-grotesk/500.css";
+import "@fontsource/space-grotesk/600.css";
+import "@fontsource/space-grotesk/700.css";
+import "@fontsource/dm-sans/400.css";
+import "@fontsource/dm-sans/500.css";
+import "@fontsource/dm-sans/600.css";
+import "@fontsource/dm-sans/700.css";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -75,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#0a0a14" },
+      { name: "theme-color", content: "#fdf9f2" },
       { title: "OXIDAȚII — Orașul e live" },
       { name: "description", content: "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România." },
     ],
