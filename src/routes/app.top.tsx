@@ -19,17 +19,22 @@ function TopPage() {
   const { data: roData = [] } = useQuery({
     queryKey: ["top-ro"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: photos, error } = await supabase
         .from("venue_photos")
-        .select("user_id, profiles:profiles!venue_photos_user_id_fkey(handle,display_name,avatar_url,city:cities(name))")
-        .limit(2000);
+        .select("user_id")
+        .limit(5000);
       if (error) throw error;
-      const counts = new Map<string, { user_id: string; profile: any; count: number }>();
-      for (const r of data ?? []) {
-        const e = counts.get(r.user_id) ?? { user_id: r.user_id, profile: r.profiles, count: 0 };
-        e.count += 1; counts.set(r.user_id, e);
-      }
-      return Array.from(counts.values()).sort((a, b) => b.count - a.count).slice(0, 100);
+      const counts = new Map<string, number>();
+      for (const r of photos ?? []) counts.set(r.user_id, (counts.get(r.user_id) ?? 0) + 1);
+      const top = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 100);
+      if (top.length === 0) return [];
+      const ids = top.map(([id]) => id);
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id,handle,display_name,avatar_url,city:cities(name)")
+        .in("id", ids);
+      const pmap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+      return top.map(([user_id, count]) => ({ user_id, count, profile: pmap.get(user_id) }));
     },
   });
 
