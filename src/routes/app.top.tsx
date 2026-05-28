@@ -4,206 +4,161 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useState } from "react";
 
-const RANK_LABELS: Record<string, string> = {
-  ZEU_BALCANIC: "ZEU' BALCANIC 👑",
-  REGELE_CENTRULUI: "REGELE CENTRULUI",
-  BOIERUL_NOPTII: "BOIERUL NOPȚII",
-  CAMATARU_DE_PAHAR: "CĂMĂTARU' DE PAHAR",
-  SPRITARUL: "ȘPRIȚARUL",
-  CRAI_DE_CARTIER: "CRAI DE CARTIER",
-  MDS: "MDS",
-};
-
-const RANK_COLORS: Record<string, string> = {
-  ZEU_BALCANIC: "var(--neon-crimson)",
-  REGELE_CENTRULUI: "var(--neon-purple)",
-  BOIERUL_NOPTII: "var(--neon-purple)",
-  CAMATARU_DE_PAHAR: "var(--neon-green)",
-  SPRITARUL: "var(--neon-blue)",
-  CRAI_DE_CARTIER: "var(--neon-chrome)",
-  MDS: "oklch(0.6 0.05 280)",
-};
-
 export const Route = createFileRoute("/app/top")({
   head: () => ({ meta: [{ title: "Top · OXIDAȚII" }] }),
   component: TopPage,
 });
 
+type Tab = "ro" | "city";
+
 function TopPage() {
   const { user, profile } = useAuth();
-  const [tab, setTab] = useState<"national" | "city">(profile?.city_id ? "city" : "national");
+  const [tab, setTab] = useState<Tab>("ro");
 
-  // National: today's verified proofs per user
-  const { data: nat = [] } = useQuery({
-    queryKey: ["top-today"],
+  // Top România — most spritz photos posted (all-time)
+  const { data: roData = [] } = useQuery({
+    queryKey: ["top-ro"],
     queryFn: async () => {
-      const since = new Date(); since.setHours(6, 0, 0, 0);
       const { data, error } = await supabase
-        .from("sprit_proofs")
-        .select("user_id, profiles:profiles!sprit_proofs_user_id_fkey(handle,display_name,avatar_url,rank,is_public,city:cities(name))")
-        .eq("ai_verified", true)
-        .gte("created_at", since.toISOString());
+        .from("venue_photos")
+        .select("user_id, profiles:profiles!venue_photos_user_id_fkey(handle,display_name,avatar_url,city:cities(name))")
+        .limit(2000);
       if (error) throw error;
       const counts = new Map<string, { user_id: string; profile: any; count: number }>();
       for (const r of data ?? []) {
-        const entry = counts.get(r.user_id) ?? { user_id: r.user_id, profile: r.profiles, count: 0 };
-        entry.count += 1;
-        counts.set(r.user_id, entry);
+        const e = counts.get(r.user_id) ?? { user_id: r.user_id, profile: r.profiles, count: 0 };
+        e.count += 1; counts.set(r.user_id, e);
       }
-      return Array.from(counts.values()).sort((a, b) => b.count - a.count).slice(0, 50);
+      return Array.from(counts.values()).sort((a, b) => b.count - a.count).slice(0, 100);
     },
   });
 
-  // City: top șprițari from same city by streak + lifetime
+  // City — top by spritz photos in user's city
   const cityId = profile?.city_id;
   const { data: cityData } = useQuery({
     queryKey: ["top-city", cityId],
     enabled: !!cityId,
     queryFn: async () => {
       const [cityRes, peopleRes] = await Promise.all([
-        supabase.from("cities").select("name,slug").eq("id", cityId!).maybeSingle(),
+        supabase.from("cities").select("name").eq("id", cityId!).maybeSingle(),
         supabase
           .from("profiles")
-          .select("id,handle,display_name,avatar_url,rank,current_streak,longest_streak,lifetime_sprits,aura,is_public")
+          .select("id,handle,display_name,avatar_url,city:cities(name)")
           .eq("city_id", cityId!)
-          .eq("is_public", true)
-          .order("current_streak", { ascending: false })
-          .order("longest_streak", { ascending: false })
-          .order("lifetime_sprits", { ascending: false })
-          .order("aura", { ascending: false })
-          .limit(50),
+          .eq("is_public", true),
       ]);
-      return { city: cityRes.data, people: peopleRes.data ?? [] };
+      const ids = (peopleRes.data ?? []).map((p: any) => p.id);
+      let photoCounts = new Map<string, number>();
+      if (ids.length) {
+        const { data: photos } = await supabase
+          .from("venue_photos").select("user_id").in("user_id", ids);
+        for (const p of photos ?? []) {
+          photoCounts.set(p.user_id, (photoCounts.get(p.user_id) ?? 0) + 1);
+        }
+      }
+      const ranked = (peopleRes.data ?? [])
+        .map((p: any) => ({ ...p, count: photoCounts.get(p.id) ?? 0 }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 100);
+      return { city: cityRes.data, people: ranked };
     },
   });
 
+  const list = tab === "ro" ? roData : (cityData?.people ?? []);
+
   return (
-    <div className="px-4 pt-6 pb-4 space-y-4">
-      <header>
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-crimson">// LEADERBOARD</div>
-        <h1 className="font-display font-black text-2xl mt-1">
+    <div className="px-5 pt-6 pb-8 max-w-xl mx-auto space-y-5">
+      <header className="space-y-1.5">
+        <div className="text-[11px] uppercase tracking-[0.2em] text-primary font-medium">Leaderboard</div>
+        <h1 className="font-display font-bold text-3xl leading-tight">
           {tab === "city" && cityData?.city
-            ? <>Cei mai înflăcărați șprițari din <span className="text-neon-crimson">{cityData.city.name}</span>.</>
-            : <>Cine bea mai mult, ăla-i <span className="text-neon-crimson">ZEU'</span>.</>}
+            ? <>Cei mai tari din <span className="text-gradient-sunset">{cityData.city.name}</span></>
+            : <>Top <span className="text-gradient-sunset">România</span></>}
         </h1>
-        <p className="text-xs text-muted-foreground mt-1">
-          {tab === "city" ? "Sortat după streak de weekend-uri și șprițuri lifetime. Doar conturi publice." : "Reset zilnic la 06:00. Doar proof-uri verificate de AI."}
+        <p className="text-sm text-muted-foreground">
+          {tab === "city" ? "Sortat după numărul de șprițuri postate." : "Cine pune cele mai multe poze de la șpriț. All-time."}
         </p>
       </header>
 
       {/* Tabs */}
-      <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-foreground/5 border border-foreground/10">
+      <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-secondary border border-border">
+        <button
+          onClick={() => setTab("ro")}
+          className={`py-2.5 rounded-xl text-xs font-semibold transition ${
+            tab === "ro" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+          }`}
+        >
+          🇷🇴 România
+        </button>
         <button
           onClick={() => setTab("city")}
           disabled={!cityId}
-          className={`py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest transition disabled:opacity-40 ${
-            tab === "city" ? "bg-neon-crimson/20 text-neon-crimson border border-neon-crimson/40" : "text-muted-foreground"
+          className={`py-2.5 rounded-xl text-xs font-semibold transition disabled:opacity-40 ${
+            tab === "city" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
           }`}
         >
-          📍 orașul meu
-        </button>
-        <button
-          onClick={() => setTab("national")}
-          className={`py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest transition ${
-            tab === "national" ? "bg-neon-purple/20 text-neon-purple border border-neon-purple/40" : "text-muted-foreground"
-          }`}
-        >
-          🇷🇴 național · azi
+          📍 {cityData?.city?.name ?? "orașul meu"}
         </button>
       </div>
 
-      {tab === "city" ? (
-        !cityId ? (
-          <EmptyHint icon="📍" title="Nu ai oraș setat." sub="Mergi pe Profil și setează orașul ca să vezi topul local." />
-        ) : (cityData?.people.length ?? 0) === 0 ? (
-          <EmptyHint icon="🥃" title="Niciun șprițar public încă." sub={`Fii primul din ${cityData?.city?.name ?? "oraș"} cu streak activ.`} />
-        ) : (
-          <div className="space-y-2">
-            {(cityData?.people ?? []).map((p: any, i) => {
-              const isMe = p.id === user?.id;
-              const isKing = i === 0;
-              const rank = p.rank ?? "MDS";
-              return (
-                <div key={p.id}
-                  className={`grid grid-cols-[36px_40px_1fr_auto] items-center gap-3 p-3 rounded-2xl ${
-                    isKing ? "bg-gradient-to-r from-neon-crimson/20 to-neon-purple/20 border border-neon-crimson/40"
-                    : isMe ? "bg-neon-purple/10 border border-neon-purple/40"
-                    : "bg-foreground/5 border border-foreground/10"
-                  }`}>
-                  <div className="font-display font-black text-2xl text-center"
-                    style={{ color: isKing ? "var(--neon-crimson)" : "var(--muted-foreground)" }}>
-                    {isKing ? "👑" : i + 1}
-                  </div>
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple overflow-hidden flex items-center justify-center font-display">
-                    {p.avatar_url
-                      ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
-                      : (p.handle ?? "?")[0].toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-display font-bold truncate">
-                      @{p.handle ?? "anonim"} {isMe && <span className="text-[9px] font-mono text-neon-purple">· tu</span>}
-                    </div>
-                    <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: RANK_COLORS[rank] }}>
-                      {RANK_LABELS[rank]} · {p.lifetime_sprits ?? 0} șprițuri
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-display font-black text-2xl flex items-center gap-1 justify-end" style={{ color: isKing ? "var(--neon-crimson)" : "var(--foreground)" }}>
-                      🔥 {p.current_streak ?? 0}
-                    </div>
-                    <div className="text-[9px] font-mono text-muted-foreground uppercase">record {p.longest_streak ?? 0}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )
+      {/* Leaderboard list */}
+      {list.length === 0 ? (
+        <EmptyHint
+          title={tab === "ro" ? "Topul e gol." : "Niciun șprițar încă."}
+          sub={tab === "ro" ? "Fii primul. Pune un șpriț acum." : "Fii primul din oraș cu o poză."}
+        />
       ) : (
-        nat.length === 0 ? (
-          <EmptyHint icon="🍷" title="Topul e gol astăzi." sub="Fii primul. Scanează un șpriț și ești ZEU' de azi." />
-        ) : (
-          <div className="space-y-2">
-            {nat.map((row, i) => {
-              const rank = row.profile?.rank ?? "MDS";
-              const isZeu = i === 0;
-              const isMe = row.user_id === user?.id;
-              return (
-                <div key={row.user_id}
-                  className={`grid grid-cols-[36px_1fr_auto] items-center gap-3 p-3 rounded-2xl ${
-                    isZeu ? "bg-gradient-to-r from-neon-crimson/20 to-neon-purple/20 border border-neon-crimson/40"
-                    : isMe ? "bg-neon-purple/10 border border-neon-purple/40"
-                    : "bg-foreground/5 border border-foreground/10"
-                  }`}>
-                  <div className="font-display font-black text-2xl text-center"
-                    style={{ color: isZeu ? "var(--neon-crimson)" : "var(--muted-foreground)" }}>
-                    {isZeu ? "👑" : i + 1}
+        <div className="space-y-2">
+          {list.map((row: any, i) => {
+            const p = tab === "ro" ? row.profile : row;
+            const uid = tab === "ro" ? row.user_id : row.id;
+            const isMe = uid === user?.id;
+            const isKing = i === 0;
+            const handle = p?.handle ?? p?.display_name ?? "anonim";
+            return (
+              <div key={uid}
+                className={`grid grid-cols-[36px_44px_1fr_auto] items-center gap-3 p-3 rounded-2xl border transition ${
+                  isKing ? "bg-card border-primary/40 shadow-md"
+                  : isMe ? "bg-primary/5 border-primary/30"
+                  : "bg-card border-border"
+                }`}>
+                <div className={`font-display font-bold text-xl text-center ${isKing ? "text-primary" : "text-muted-foreground"}`}>
+                  {isKing ? "👑" : i + 1}
+                </div>
+                <div className="h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-sunset-orange to-sunset-magenta flex items-center justify-center text-white font-display font-bold">
+                  {p?.avatar_url
+                    ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
+                    : handle[0]?.toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <div className="font-display font-semibold truncate">
+                    @{handle} {isMe && <span className="text-[10px] text-primary font-medium">· tu</span>}
                   </div>
-                  <div className="min-w-0">
-                    <div className="font-display font-bold truncate">@{row.profile?.handle ?? "anonim"} {isMe && <span className="text-[9px] font-mono text-neon-purple">· tu</span>}</div>
-                    <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: RANK_COLORS[rank] }}>
-                      {isZeu ? "ZEU' BALCANIC 👑" : RANK_LABELS[rank]} · {row.profile?.city?.name ?? "—"}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-display font-black text-2xl" style={{ color: isZeu ? "var(--neon-crimson)" : "var(--foreground)" }}>{row.count}</div>
-                    <div className="text-[9px] font-mono text-muted-foreground uppercase">șprițuri</div>
+                  <div className="text-[11px] text-muted-foreground truncate">
+                    {p?.city?.name ?? "—"}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )
+                <div className="text-right">
+                  <div className={`font-display font-bold text-2xl leading-none ${isKing ? "text-primary" : "text-foreground"}`}>
+                    {row.count}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">șprițuri</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
 }
 
-function EmptyHint({ icon, title, sub }: { icon: string; title: string; sub: string }) {
+function EmptyHint({ title, sub }: { title: string; sub: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-2">
-      <div className="text-4xl">{icon}</div>
-      <div className="font-display font-bold">{title}</div>
-      <div className="text-xs text-muted-foreground">{sub}</div>
+    <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center space-y-2">
+      <div className="text-4xl">🥃</div>
+      <div className="font-display font-semibold">{title}</div>
+      <div className="text-sm text-muted-foreground">{sub}</div>
     </div>
   );
 }
