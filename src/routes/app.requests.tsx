@@ -14,8 +14,11 @@ function RequestsPage() {
   const { accept, reject } = useRequestActions(user?.id);
 
   if (!user) {
-    nav({ to: "/login" });
-    return null;
+    return (
+      <div className="px-4 pt-6 text-center text-sm text-muted-foreground">
+        Fă-ți cont ca să vezi cererile.
+      </div>
+    );
   }
 
   return (
