@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">OXIDAȚII</string>
+    <string name="title_activity_main">OXIDAȚII</string>
+    <string name="package_name">com.oxidatii.app</string>
+    <string name="custom_url_scheme">com.oxidatii.app</string>
+</resources>
