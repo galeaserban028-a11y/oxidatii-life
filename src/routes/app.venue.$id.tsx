@@ -132,7 +132,7 @@ function VenuePage() {
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); e.target.value = ""; }}
             />
@@ -140,13 +140,20 @@ function VenuePage() {
 
           {data.photos.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground bg-card">
-              Încă nu sunt poze. Fii primul — apasă „pune poză".
+              Încă nu sunt poze sau clipuri. Fii primul — apasă „pune poză / clip".
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-1.5">
-              {data.photos.map(p => (
-                <div key={p.id} className="aspect-square rounded-lg overflow-hidden bg-muted">
-                  <img src={p.photo_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+              {data.photos.map((p: any) => (
+                <div key={p.id} className="aspect-square rounded-lg overflow-hidden bg-muted relative">
+                  {p.media_type === "video" ? (
+                    <>
+                      <video src={p.photo_url} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+                      <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded bg-black/80 font-mono text-[8px] uppercase tracking-widest text-white">▶</div>
+                    </>
+                  ) : (
+                    <img src={p.photo_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  )}
                 </div>
               ))}
             </div>
