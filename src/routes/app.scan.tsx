@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { Camera, Search, X } from "lucide-react";
+import { Camera, Search, X, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/app/scan")({
   head: () => ({ meta: [{ title: "Pune un șpriț · OXIDAȚII" }] }),
