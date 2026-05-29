@@ -79,6 +79,33 @@ function ScanPage() {
     }
   }
 
+  async function createVenue() {
+    if (!user) return toast.error("Trebuie să fii logat.");
+    const name = newVenueName.trim();
+    if (!name) return toast.error("Pune un nume.");
+    if (!newVenueCityId) return toast.error("Alege orașul.");
+    setCreating(true);
+    try {
+      const slug = name.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+        + "-" + Math.random().toString(36).slice(2, 6);
+      const { data, error } = await supabase.from("venues").insert({
+        name, slug, type: newVenueType, city_id: newVenueCityId,
+      }).select("id, name, city:cities(name)").single();
+      if (error) throw error;
+      setSelectedVenue(data as any);
+      setAddOpen(false);
+      setNewVenueName("");
+      toast.success("Locație adăugată.");
+    } catch (e: any) {
+      toast.error(e.message ?? "Nu s-a putut adăuga");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+
   const ready = !!file && !!selectedVenue && !uploading;
 
   return (
