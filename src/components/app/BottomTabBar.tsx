@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { MapPin, Camera, User, MessageCircle, Newspaper } from "lucide-react";
+import { MapPin, Camera, User, MessageCircle, Newspaper, Trophy, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
@@ -8,7 +8,9 @@ type Tab = { to: string; icon: typeof MapPin; label: string; primary?: boolean; 
 const tabs: Tab[] = [
   { to: "/app", icon: Newspaper, label: "Live", exact: true },
   { to: "/app/map", icon: MapPin, label: "Hartă" },
+  { to: "/app/top", icon: Trophy, label: "Top" },
   { to: "/app/scan", icon: Camera, label: "Șpriț", primary: true },
+  { to: "/app/squad", icon: Users, label: "Organiz." },
   { to: "/app/inbox", icon: MessageCircle, label: "Mesaje", badgeKey: "inbox" },
   { to: "/app/me", icon: User, label: "Eu" },
 ];
@@ -54,27 +56,27 @@ export function BottomTabBar() {
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto max-w-md">
-        <div className="m-2 rounded-2xl glass border border-foreground/10 grid grid-cols-5 backdrop-blur-xl">
+        <div className="m-1.5 rounded-2xl glass border border-foreground/10 grid grid-cols-7 backdrop-blur-xl px-1">
           {tabs.map(t => {
             const active = t.exact ? loc.pathname === t.to : (loc.pathname === t.to || loc.pathname.startsWith(t.to + "/"));
             const Icon = t.icon;
             const badge = t.badgeKey === "inbox" ? unread : 0;
             return (
               <Link key={t.to} to={t.to as any}
-                className="flex flex-col items-center gap-0.5 py-2.5 relative">
+                className="flex flex-col items-center gap-0.5 py-2 relative min-w-0">
                 <div className={`relative flex items-center justify-center rounded-xl transition ${
                   t.primary
-                    ? "h-12 w-12 -mt-6 bg-gradient-to-br from-neon-crimson to-neon-purple text-white shadow-[0_0_22px_var(--neon-crimson)] ring-4 ring-background"
-                    : `h-7 w-7 ${active ? "text-neon-crimson" : "text-muted-foreground"}`
+                    ? "h-11 w-11 -mt-5 bg-gradient-to-br from-neon-crimson to-neon-purple text-white shadow-[0_0_22px_var(--neon-crimson)] ring-4 ring-background"
+                    : `h-6 w-6 ${active ? "text-neon-crimson" : "text-muted-foreground"}`
                 }`}>
-                  <Icon size={t.primary ? 24 : 18} strokeWidth={2.2} />
+                  <Icon size={t.primary ? 22 : 16} strokeWidth={2.2} />
                   {badge > 0 && (
-                    <span className="absolute -top-1 -right-1.5 min-w-[16px] h-[16px] px-1 rounded-full bg-neon-crimson text-white text-[9px] font-mono font-bold flex items-center justify-center border-2 border-background">
+                    <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] px-1 rounded-full bg-neon-crimson text-white text-[8px] font-mono font-bold flex items-center justify-center border-2 border-background">
                       {badge > 9 ? "9+" : badge}
                     </span>
                   )}
                 </div>
-                <span className={`text-[9px] font-mono uppercase tracking-wider ${
+                <span className={`text-[8px] font-mono uppercase tracking-wider truncate w-full text-center ${
                   active && !t.primary ? "text-neon-crimson" : t.primary ? "text-foreground font-bold" : "text-muted-foreground"
                 }`}>{t.label}</span>
               </Link>
