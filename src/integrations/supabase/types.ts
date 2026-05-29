@@ -307,7 +307,7 @@ export type Database = {
           lng: number | null
           name: string
           slug: string
-          street_id: string
+          street_id: string | null
           type: Database["public"]["Enums"]["venue_type"]
           verified: boolean
         }
@@ -323,7 +323,7 @@ export type Database = {
           lng?: number | null
           name: string
           slug: string
-          street_id: string
+          street_id?: string | null
           type?: Database["public"]["Enums"]["venue_type"]
           verified?: boolean
         }
@@ -339,7 +339,7 @@ export type Database = {
           lng?: number | null
           name?: string
           slug?: string
-          street_id?: string
+          street_id?: string | null
           type?: Database["public"]["Enums"]["venue_type"]
           verified?: boolean
         }

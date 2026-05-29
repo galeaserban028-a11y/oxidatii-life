@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { Camera, Search, X } from "lucide-react";
+import { Camera, Search, X, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/app/scan")({
   head: () => ({ meta: [{ title: "Pune un șpriț · OXIDAȚII" }] }),
@@ -22,6 +23,20 @@ function ScanPage() {
   const [venueQuery, setVenueQuery] = useState("");
   const [selectedVenue, setSelectedVenue] = useState<{ id: string; name: string; city?: any } | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [newVenueName, setNewVenueName] = useState("");
+  const [newVenueType, setNewVenueType] = useState<"club" | "bar" | "terasa">("club");
+  const [newVenueCityId, setNewVenueCityId] = useState<string>("");
+  const [creating, setCreating] = useState(false);
+
+  const { data: cities = [] } = useQuery({
+    queryKey: ["all-cities"],
+    queryFn: async () => {
+      const { data } = await supabase.from("cities").select("id,name").order("name");
+      return data ?? [];
+    },
+  });
+
 
   const { data: venues = [] } = useQuery({
     queryKey: ["scan-venues", venueQuery],
@@ -63,6 +78,33 @@ function ScanPage() {
       setUploading(false);
     }
   }
+
+  async function createVenue() {
+    if (!user) return toast.error("Trebuie să fii logat.");
+    const name = newVenueName.trim();
+    if (!name) return toast.error("Pune un nume.");
+    if (!newVenueCityId) return toast.error("Alege orașul.");
+    setCreating(true);
+    try {
+      const slug = name.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+        + "-" + Math.random().toString(36).slice(2, 6);
+      const { data, error } = await supabase.from("venues").insert({
+        name, slug, type: newVenueType, city_id: newVenueCityId,
+      }).select("id, name, city:cities(name)").single();
+      if (error) throw error;
+      setSelectedVenue(data as any);
+      setAddOpen(false);
+      setNewVenueName("");
+      toast.success("Locație adăugată.");
+    } catch (e: any) {
+      toast.error(e.message ?? "Nu s-a putut adăuga");
+    } finally {
+      setCreating(false);
+    }
+  }
+
 
   const ready = !!file && !!selectedVenue && !uploading;
 
@@ -131,8 +173,57 @@ function ScanPage() {
               ))}
             </div>
           )}
+
+          {!addOpen ? (
+            <button
+              onClick={() => { setAddOpen(true); setNewVenueName(venueQuery); }}
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition"
+            >
+              <Plus size={14}/> {venueQuery ? `adaugă „${venueQuery}"` : "nu găsești? adaugă o locație"}
+            </button>
+          ) : (
+            <div className="p-3 rounded-2xl border border-primary/40 bg-card space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">Locație nouă</div>
+                <button onClick={() => setAddOpen(false)} className="text-muted-foreground"><X size={14}/></button>
+              </div>
+              <input
+                value={newVenueName} onChange={(e) => setNewVenueName(e.target.value)}
+                placeholder="nume locație"
+                className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <div className="grid grid-cols-3 gap-1.5">
+                {(["club", "bar", "terasa"] as const).map((t) => (
+                  <button key={t} onClick={() => setNewVenueType(t)}
+                    className={`py-2 rounded-xl text-xs font-medium border transition ${
+                      newVenueType === t ? "bg-primary text-primary-foreground border-primary" : "bg-secondary border-border text-muted-foreground"
+                    }`}>
+                    {t === "terasa" ? "terasă" : t}
+                  </button>
+                ))}
+              </div>
+              <select
+                value={newVenueCityId} onChange={(e) => setNewVenueCityId(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              >
+                <option value="">alege orașul...</option>
+                {(cities as any[]).map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <button
+                onClick={createVenue}
+                disabled={creating || !newVenueName.trim() || !newVenueCityId}
+                className="w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-40 active:scale-[0.98] transition"
+                style={{ background: "var(--gradient-sunset)" }}
+              >
+                {creating ? "se adaugă..." : "adaugă locație"}
+              </button>
+            </div>
+          )}
         </div>
       )}
+
 
       {/* Caption — inline, single line, optional */}
       <input

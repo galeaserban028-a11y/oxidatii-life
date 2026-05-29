@@ -1,0 +1,1 @@
+ALTER TABLE public.venues ALTER COLUMN street_id DROP NOT NULL;
