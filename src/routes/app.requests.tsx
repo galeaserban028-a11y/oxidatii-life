@@ -1,17 +1,66 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, X, UserPlus } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Check, X, UserPlus, Search, ArrowDownUp } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useIncomingFollowRequests, useRequestActions } from "@/lib/follows";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/app/requests")({
   head: () => ({ meta: [{ title: "Cereri · OXIDAȚII" }] }),
   component: RequestsPage,
 });
 
+type SortOrder = "newest" | "oldest";
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "acum";
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  const d = Math.floor(h / 24);
+  return `${d}z`;
+}
+
 function RequestsPage() {
   const { user } = useAuth();
   const { data: reqs, isLoading } = useIncomingFollowRequests(user?.id);
   const { accept, reject } = useRequestActions(user?.id);
+
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortOrder>("newest");
+  const [confirm, setConfirm] = useState<
+    | { id: string; action: "accept" | "reject"; name: string }
+    | null
+  >(null);
+
+  const filtered = useMemo(() => {
+    if (!reqs) return [];
+    const q = query.trim().toLowerCase();
+    const list = q
+      ? reqs.filter((r) => {
+          const h = (r.follower?.handle ?? "").toLowerCase();
+          const n = (r.follower?.display_name ?? "").toLowerCase();
+          return h.includes(q) || n.includes(q);
+        })
+      : reqs.slice();
+    list.sort((a, b) => {
+      const ta = new Date(a.created_at).getTime();
+      const tb = new Date(b.created_at).getTime();
+      return sort === "newest" ? tb - ta : ta - tb;
+    });
+    return list;
+  }, [reqs, query, sort]);
 
   if (!user) {
     return (
@@ -26,8 +75,31 @@ function RequestsPage() {
       <div>
         <h1 className="font-display uppercase text-2xl leading-none">Cereri de urmărire</h1>
         <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground mt-1">
-          oameni care vor să-ți vadă șprițurile
+          {reqs?.length ?? 0} {reqs?.length === 1 ? "cerere" : "cereri"} în așteptare
         </p>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="caută după @handle sau nume"
+            className="w-full h-10 pl-9 pr-3 rounded-xl bg-card border border-border text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:border-neon-crimson/60"
+          />
+        </div>
+        <button
+          onClick={() => setSort((s) => (s === "newest" ? "oldest" : "newest"))}
+          className="h-10 px-3 rounded-xl bg-card border border-border flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest active:scale-95 transition"
+          aria-label="Schimbă sortarea"
+        >
+          <ArrowDownUp size={13} />
+          {sort === "newest" ? "noi" : "vechi"}
+        </button>
       </div>
 
       {isLoading ? (
@@ -36,11 +108,17 @@ function RequestsPage() {
         <div className="rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-2">
           <UserPlus className="mx-auto opacity-50" />
           <div className="font-display uppercase">Nicio cerere.</div>
-          <p className="text-xs text-muted-foreground">Când cineva îți trimite request, apare aici.</p>
+          <p className="text-xs text-muted-foreground">
+            Când cineva îți trimite request, apare aici.
+          </p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-foreground/15 p-6 text-center text-sm text-muted-foreground">
+          Niciun rezultat pentru „{query}".
         </div>
       ) : (
         <ul className="space-y-2">
-          {reqs.map((r) => {
+          {filtered.map((r) => {
             const handle = r.follower?.handle ?? r.follower?.display_name ?? "anonim";
             return (
               <li
@@ -65,20 +143,20 @@ function RequestsPage() {
                 >
                   <div className="font-display font-semibold truncate">@{handle}</div>
                   <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                    vrea să te urmărească
+                    vrea să te urmărească · {timeAgo(r.created_at)}
                   </div>
                 </Link>
                 <button
-                  onClick={() => accept.mutate(r.id)}
-                  disabled={accept.isPending}
+                  onClick={() => setConfirm({ id: r.id, action: "accept", name: handle })}
+                  disabled={accept.isPending || reject.isPending}
                   className="h-9 w-9 rounded-full bg-neon-green text-background flex items-center justify-center active:scale-95 transition disabled:opacity-40"
                   aria-label="Acceptă"
                 >
                   <Check size={18} strokeWidth={3} />
                 </button>
                 <button
-                  onClick={() => reject.mutate(r.id)}
-                  disabled={reject.isPending}
+                  onClick={() => setConfirm({ id: r.id, action: "reject", name: handle })}
+                  disabled={accept.isPending || reject.isPending}
                   className="h-9 w-9 rounded-full border border-foreground/20 text-foreground flex items-center justify-center active:scale-95 transition disabled:opacity-40"
                   aria-label="Respinge"
                 >
@@ -89,6 +167,39 @@ function RequestsPage() {
           })}
         </ul>
       )}
+
+      <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirm?.action === "accept" ? "Acceptă cererea?" : "Respinge cererea?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirm?.action === "accept"
+                ? `@${confirm?.name} va putea să-ți vadă șprițurile și profilul.`
+                : `@${confirm?.name} nu va fi notificat că ai respins, dar va trebui să trimită cerere din nou.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anulează</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!confirm) return;
+                if (confirm.action === "accept") accept.mutate(confirm.id);
+                else reject.mutate(confirm.id);
+                setConfirm(null);
+              }}
+              className={
+                confirm?.action === "accept"
+                  ? "bg-neon-green text-background hover:bg-neon-green/90"
+                  : "bg-neon-crimson text-white hover:bg-neon-crimson/90"
+              }
+            >
+              {confirm?.action === "accept" ? "Acceptă" : "Respinge"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
