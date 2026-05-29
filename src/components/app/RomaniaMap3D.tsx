@@ -19,6 +19,19 @@ const towerSourceId = "oxidatii-3d-towers";
 const towerLayerId = "oxidatii-3d-towers-layer";
 const livePulseSourceId = "oxidatii-live-pulse";
 const livePulseLayerId = "oxidatii-live-pulse-layer";
+const fallbackZoom = 6;
+const fallbackTileSize = 256;
+
+function projectLngLat(lng: number, lat: number, zoom = fallbackZoom) {
+  const sinLat = Math.sin((lat * Math.PI) / 180);
+  const scale = 2 ** zoom;
+  return {
+    x: ((lng + 180) / 360) * scale,
+    y: (0.5 - Math.log((1 + sinLat) / (1 - sinLat)) / (4 * Math.PI)) * scale,
+  };
+}
+
+const mapCenter = projectLngLat(25.0, 45.9);
 
 function makeTowerFeature(lng: number, lat: number, height: number, size: number, kind: "city" | "venue") {
   return {
@@ -68,6 +81,36 @@ export function RomaniaMap3D({
       geometry: { type: "Point" as const, coordinates: [f.lng, f.lat] },
     })),
   }), [friends]);
+  const towerDataRef = useRef(towerData);
+  const liveDataRef = useRef(liveData);
+  towerDataRef.current = towerData;
+  liveDataRef.current = liveData;
+  const fallbackTiles = useMemo(() => {
+    const baseX = Math.floor(mapCenter.x);
+    const baseY = Math.floor(mapCenter.y);
+    const tiles: { key: string; url: string; x: number; y: number }[] = [];
+    const hosts = ["a", "b", "c", "d"];
+    for (let x = baseX - 3; x <= baseX + 3; x += 1) {
+      for (let y = baseY - 3; y <= baseY + 3; y += 1) {
+        const host = hosts[Math.abs(x + y) % hosts.length];
+        tiles.push({
+          key: `${x}-${y}`,
+          url: `https://${host}.basemaps.cartocdn.com/rastertiles/voyager/${fallbackZoom}/${x}/${y}@2x.png`,
+          x: (x - mapCenter.x) * fallbackTileSize,
+          y: (y - mapCenter.y) * fallbackTileSize,
+        });
+      }
+    }
+    return tiles;
+  }, []);
+  const fallbackPins = useMemo(() => [
+    ...cities.map((c) => ({ id: c.id, kind: "city" as const, name: c.name, lat: c.lat, lng: c.lng, height: 34 + c.chaos_level * 4 })),
+    ...venues
+      .filter((v) => v.lat != null && v.lng != null)
+      .slice(0, 320)
+      .map((v, index) => ({ id: v.id, kind: "venue" as const, name: v.name, lat: Number(v.lat), lng: Number(v.lng), height: 16 + (index % 7) * 5 })),
+    ...friends.map((f) => ({ id: f.user_id, kind: "friend" as const, name: f.handle ?? f.display_name ?? "oxidat live", lat: f.lat, lng: f.lng, height: 66 })),
+  ], [cities, venues, friends]);
 
   // Init map once
   useEffect(() => {
@@ -86,7 +129,7 @@ export function RomaniaMap3D({
     map.touchZoomRotate.enableRotation();
     map.dragRotate.enable();
     map.on("load", () => {
-      map.addSource(towerSourceId, { type: "geojson", data: towerData });
+      map.addSource(towerSourceId, { type: "geojson", data: towerDataRef.current });
       map.addLayer({
         id: towerLayerId,
         type: "fill-extrusion",
@@ -98,7 +141,7 @@ export function RomaniaMap3D({
           "fill-extrusion-opacity": 0.82,
         },
       });
-      map.addSource(livePulseSourceId, { type: "geojson", data: liveData });
+      map.addSource(livePulseSourceId, { type: "geojson", data: liveDataRef.current });
       map.addLayer({
         id: livePulseLayerId,
         type: "circle",
