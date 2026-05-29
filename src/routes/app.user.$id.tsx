@@ -306,6 +306,47 @@ function UserPage() {
           )}
         </>
       )}
+
+      <AlertDialog open={!!confirmBlock} onOpenChange={(o) => !o && setConfirmBlock(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmBlock === "block" ? `Blochează @${handle}?` : `Deblochează @${handle}?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmBlock === "block"
+                ? "Nu îți va mai putea trimite cereri de urmărire sau mesaje și nu îți va vedea profilul. Orice urmărire existentă va fi ștearsă."
+                : "Va putea din nou să-ți trimită cereri și mesaje și să-ți vadă profilul."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anulează</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmBlock === "block") {
+                  block.mutate(undefined, {
+                    onSuccess: () => toast.success(`@${handle} a fost blocat`),
+                    onError: (e: any) => toast.error(e.message ?? "Eroare"),
+                  });
+                } else if (confirmBlock === "unblock") {
+                  unblock.mutate(undefined, {
+                    onSuccess: () => toast.success(`@${handle} a fost deblocat`),
+                    onError: (e: any) => toast.error(e.message ?? "Eroare"),
+                  });
+                }
+                setConfirmBlock(null);
+              }}
+              className={
+                confirmBlock === "block"
+                  ? "bg-neon-crimson text-white hover:bg-neon-crimson/90"
+                  : ""
+              }
+            >
+              {confirmBlock === "block" ? "Blochează" : "Deblochează"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
