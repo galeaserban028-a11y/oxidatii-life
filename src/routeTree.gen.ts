@@ -27,6 +27,8 @@ import { Route as AppMeRouteImport } from './routes/app.me'
 import { Route as AppMapRouteImport } from './routes/app.map'
 import { Route as AppInboxRouteImport } from './routes/app.inbox'
 import { Route as AppFriendsRouteImport } from './routes/app.friends'
+import { Route as AppFollowersRouteImport } from './routes/app.followers'
+import { Route as AppFeedRouteImport } from './routes/app.feed'
 import { Route as AppFazeRouteImport } from './routes/app.faze'
 import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
@@ -124,6 +126,16 @@ const AppFriendsRoute = AppFriendsRouteImport.update({
   path: '/friends',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFollowersRoute = AppFollowersRouteImport.update({
+  id: '/followers',
+  path: '/followers',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFeedRoute = AppFeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFazeRoute = AppFazeRouteImport.update({
   id: '/faze',
   path: '/faze',
@@ -165,6 +177,8 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/app/faze': typeof AppFazeRoute
+  '/app/feed': typeof AppFeedRoute
+  '/app/followers': typeof AppFollowersRoute
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/map': typeof AppMapRoute
@@ -190,6 +204,8 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/app/faze': typeof AppFazeRoute
+  '/app/feed': typeof AppFeedRoute
+  '/app/followers': typeof AppFollowersRoute
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/map': typeof AppMapRoute
@@ -217,6 +233,8 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
   '/app/faze': typeof AppFazeRoute
+  '/app/feed': typeof AppFeedRoute
+  '/app/followers': typeof AppFollowersRoute
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/map': typeof AppMapRoute
@@ -245,6 +263,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/terms'
     | '/app/faze'
+    | '/app/feed'
+    | '/app/followers'
     | '/app/friends'
     | '/app/inbox'
     | '/app/map'
@@ -270,6 +290,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/terms'
     | '/app/faze'
+    | '/app/feed'
+    | '/app/followers'
     | '/app/friends'
     | '/app/inbox'
     | '/app/map'
@@ -296,6 +318,8 @@ export interface FileRouteTypes {
     | '/signup'
     | '/terms'
     | '/app/faze'
+    | '/app/feed'
+    | '/app/followers'
     | '/app/friends'
     | '/app/inbox'
     | '/app/map'
@@ -452,6 +476,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFriendsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/followers': {
+      id: '/app/followers'
+      path: '/followers'
+      fullPath: '/app/followers'
+      preLoaderRoute: typeof AppFollowersRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/feed': {
+      id: '/app/feed'
+      path: '/feed'
+      fullPath: '/app/feed'
+      preLoaderRoute: typeof AppFeedRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/faze': {
       id: '/app/faze'
       path: '/faze'
@@ -499,6 +537,8 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppFazeRoute: typeof AppFazeRoute
+  AppFeedRoute: typeof AppFeedRoute
+  AppFollowersRoute: typeof AppFollowersRoute
   AppFriendsRoute: typeof AppFriendsRoute
   AppInboxRoute: typeof AppInboxRoute
   AppMapRoute: typeof AppMapRoute
@@ -518,6 +558,8 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppFazeRoute: AppFazeRoute,
+  AppFeedRoute: AppFeedRoute,
+  AppFollowersRoute: AppFollowersRoute,
   AppFriendsRoute: AppFriendsRoute,
   AppInboxRoute: AppInboxRoute,
   AppMapRoute: AppMapRoute,
@@ -550,13 +592,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

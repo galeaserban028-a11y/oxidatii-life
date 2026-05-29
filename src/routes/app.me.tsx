@@ -166,9 +166,29 @@ function MePage() {
         <div className="relative grid grid-cols-4 gap-2 mt-5">
           <Stat label="aură" value={profile.aura} color="var(--neon-purple)" />
           <Stat label="șprițuri" value={profile.lifetime_sprits} color="var(--neon-crimson)" />
-          <Stat label="followers" value={followStats?.followers ?? 0} color="var(--neon-green)" />
-          <Stat label="urmărește" value={followStats?.following ?? 0} color="var(--neon-purple)" />
+          <Link to="/app/followers" search={{ tab: "followers" }} className="contents">
+            <Stat label="followers" value={followStats?.followers ?? 0} color="var(--neon-green)" />
+          </Link>
+          <Link to="/app/followers" search={{ tab: "following" }} className="contents">
+            <Stat label="urmărește" value={followStats?.following ?? 0} color="var(--neon-purple)" />
+          </Link>
         </div>
+
+        {/* Feed privat */}
+        <Link
+          to="/app/feed"
+          className="relative mt-3 flex items-center gap-3 p-3 rounded-2xl border border-neon-purple/40 bg-gradient-to-r from-neon-purple/10 to-neon-crimson/10 active:scale-[0.99] transition"
+        >
+          <div className="h-9 w-9 rounded-full bg-neon-purple text-white flex items-center justify-center">
+            <Lock size={15} strokeWidth={2.6} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-display uppercase text-sm">Feed privat · trupa ta</div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              cele mai tari faze + recomandări de la cei urmăriți →
+            </div>
+          </div>
+        </Link>
 
         {/* Requests link (if private + has pending) */}
         {pendingCount > 0 && (
