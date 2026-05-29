@@ -2,9 +2,10 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, Camera, Lock, Globe2 } from "lucide-react";
+import { LogOut, Camera, Lock, Globe2, UserPlus } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { useFollowStats, useIncomingFollowRequests } from "@/lib/follows";
 
 export const Route = createFileRoute("/app/me")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
