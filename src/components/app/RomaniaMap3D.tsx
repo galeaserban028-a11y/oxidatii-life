@@ -230,10 +230,19 @@ export function RomaniaMap3D({
     });
 
     map.on("error", (event) => { console.warn("Map tile error", event.error); });
-    map.getCanvas().addEventListener("webglcontextlost", (event) => {
+    const canvas = map.getCanvas();
+    const onLost = (event: Event) => {
       event.preventDefault();
-      setMapFailed(true);
-    }, { once: true });
+      // Let the browser try to restore the GL context instead of failing immediately.
+      // Only show the fallback if restoration doesn't happen quickly.
+      const t = window.setTimeout(() => setMapFailed(true), 4000);
+      canvas.addEventListener("webglcontextrestored", () => {
+        clearTimeout(t);
+        try { map.triggerRepaint(); } catch {}
+      }, { once: true });
+    };
+    canvas.addEventListener("webglcontextlost", onLost as any);
+
     mapRef.current = map;
     return () => {
       cityMarkers.current.forEach(m => m.remove()); cityMarkers.current = [];
