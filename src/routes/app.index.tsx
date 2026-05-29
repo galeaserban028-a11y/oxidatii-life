@@ -97,7 +97,7 @@ function AppFeed() {
       <header className="space-y-2">
         <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
           <span className="text-neon-crimson flicker">● LIVE · ROMÂNIA</span>
-          <Link to="/app/top" className="text-muted-foreground">vezi top →</Link>
+          <span className="text-muted-foreground">{new Date().toLocaleDateString("ro-RO", { weekday: "long" })}</span>
         </div>
         <div className="flex items-end gap-3">
           <img src={logoLight} alt="" aria-hidden width={56} height={56} className="h-14 w-14 object-contain shrink-0 -mb-1" />
