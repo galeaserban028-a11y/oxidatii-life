@@ -20,6 +20,55 @@ type LiveParty = {
 function SquadPage() {
   const { user } = useAuth();
   const nav = useNavigate();
+  const qc = useQueryClient();
+
+  // Live parties — locuri disponibile RIGHT NOW
+  const { data: liveParties = [] } = useQuery({
+    queryKey: ["squad-live-parties"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("parties")
+        .select("id,host_id,title,description,location_text,spots_total,starts_at,vibe")
+        .gt("expires_at", new Date().toISOString())
+        .order("starts_at", { ascending: true })
+        .limit(20);
+      return (data ?? []) as LiveParty[];
+    },
+    refetchInterval: 30_000,
+  });
+
+  const partyIds = liveParties.map(p => p.id);
+  const { data: joins = [] } = useQuery({
+    queryKey: ["squad-joins", partyIds.sort().join(",")],
+    enabled: partyIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("party_joins").select("party_id,user_id").in("party_id", partyIds);
+      return (data ?? []) as { party_id: string; user_id: string }[];
+    },
+    refetchInterval: 20_000,
+  });
+
+  const hostIds = Array.from(new Set(liveParties.map(p => p.host_id)));
+  const { data: hosts = [] } = useQuery({
+    queryKey: ["squad-hosts", hostIds.sort().join(",")],
+    enabled: hostIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id,handle,display_name,avatar_url").in("id", hostIds);
+      return (data ?? []) as { id: string; handle: string | null; display_name: string | null; avatar_url: string | null }[];
+    },
+  });
+  const hostMap = new Map(hosts.map(h => [h.id, h]));
+
+  const joinMutation = useMutation({
+    mutationFn: async ({ partyId, joined }: { partyId: string; joined: boolean }) => {
+      if (!user) throw new Error("login");
+      if (joined) await supabase.from("party_joins").delete().eq("party_id", partyId).eq("user_id", user.id);
+      else await supabase.from("party_joins").insert({ party_id: partyId, user_id: user.id });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["squad-joins"] }),
+  });
+
 
   // Friends list = haita ta
   const { data: friends = [], isLoading } = useQuery({
