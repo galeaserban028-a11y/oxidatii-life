@@ -8,6 +8,7 @@ import {
   type NotificationRow,
   type NotificationType,
 } from "@/lib/notifications";
+import { NotificationSettings } from "@/components/app/NotificationSettings";
 
 export const Route = createFileRoute("/app/notifications")({
   head: () => ({ meta: [{ title: "Notificări · OXIDAȚII" }] }),
