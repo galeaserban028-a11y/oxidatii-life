@@ -35,7 +35,7 @@ function ChatPage() {
         ? await supabase.from("profiles").select("id,handle,display_name,avatar_url").in("id", otherIds)
         : { data: [] };
       const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
-      return { conv, members: members ?? [], messages: messages ?? [], profMap };
+      return { conv: conv ?? { id, kind: "dm", title: null, party_id: null }, members: members ?? [], messages: messages ?? [], profMap };
     },
   });
 
