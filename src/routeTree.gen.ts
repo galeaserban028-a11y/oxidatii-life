@@ -18,6 +18,7 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppTopRouteImport } from './routes/app.top'
 import { Route as AppSquadRouteImport } from './routes/app.squad'
 import { Route as AppScanRouteImport } from './routes/app.scan'
+import { Route as AppPartiesRouteImport } from './routes/app.parties'
 import { Route as AppMeRouteImport } from './routes/app.me'
 import { Route as AppMapRouteImport } from './routes/app.map'
 import { Route as AppFriendsRouteImport } from './routes/app.friends'
@@ -72,6 +73,11 @@ const AppScanRoute = AppScanRouteImport.update({
   path: '/scan',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPartiesRoute = AppPartiesRouteImport.update({
+  id: '/parties',
+  path: '/parties',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMeRoute = AppMeRouteImport.update({
   id: '/me',
   path: '/me',
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/app/friends': typeof AppFriendsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
+  '/app/parties': typeof AppPartiesRoute
   '/app/scan': typeof AppScanRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/app/friends': typeof AppFriendsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
+  '/app/parties': typeof AppPartiesRoute
   '/app/scan': typeof AppScanRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/app/friends': typeof AppFriendsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
+  '/app/parties': typeof AppPartiesRoute
   '/app/scan': typeof AppScanRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/app/friends'
     | '/app/map'
     | '/app/me'
+    | '/app/parties'
     | '/app/scan'
     | '/app/squad'
     | '/app/top'
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/app/friends'
     | '/app/map'
     | '/app/me'
+    | '/app/parties'
     | '/app/scan'
     | '/app/squad'
     | '/app/top'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/app/friends'
     | '/app/map'
     | '/app/me'
+    | '/app/parties'
     | '/app/scan'
     | '/app/squad'
     | '/app/top'
@@ -302,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppScanRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/parties': {
+      id: '/app/parties'
+      path: '/parties'
+      fullPath: '/app/parties'
+      preLoaderRoute: typeof AppPartiesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/me': {
       id: '/app/me'
       path: '/me'
@@ -366,6 +385,7 @@ interface AppRouteChildren {
   AppFriendsRoute: typeof AppFriendsRoute
   AppMapRoute: typeof AppMapRoute
   AppMeRoute: typeof AppMeRoute
+  AppPartiesRoute: typeof AppPartiesRoute
   AppScanRoute: typeof AppScanRoute
   AppSquadRoute: typeof AppSquadRoute
   AppTopRoute: typeof AppTopRoute
@@ -381,6 +401,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFriendsRoute: AppFriendsRoute,
   AppMapRoute: AppMapRoute,
   AppMeRoute: AppMeRoute,
+  AppPartiesRoute: AppPartiesRoute,
   AppScanRoute: AppScanRoute,
   AppSquadRoute: AppSquadRoute,
   AppTopRoute: AppTopRoute,
