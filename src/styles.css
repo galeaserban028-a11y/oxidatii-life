@@ -156,8 +156,9 @@
   .glow-purple, .glow-blue, .glow-green, .glow-crimson { box-shadow: var(--shadow-card); }
 
   .glass {
-    background: oklch(1 0 0 / 70%);
+    background: oklch(0.21 0.018 30 / 75%);
     backdrop-filter: blur(20px) saturate(140%);
+
     -webkit-backdrop-filter: blur(20px) saturate(140%);
     border: 1px solid var(--border);
   }
