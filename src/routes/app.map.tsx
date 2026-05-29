@@ -115,30 +115,43 @@ function MapPage() {
         <RomaniaMap3D cities={cities} venues={venues} friends={friendPins} />
       )}
 
-      {/* FRIENDS CTA — big & loud */}
+      {/* FRIENDS CTA — MUCH louder */}
       <Link
         to="/app/friends"
-        className="block relative overflow-hidden rounded-2xl p-4 border border-neon-green/40 bg-gradient-to-br from-neon-green/15 via-transparent to-neon-purple/10 active:scale-[0.99] transition"
+        className="group block relative overflow-hidden rounded-2xl p-[2px] bg-gradient-to-r from-neon-green via-neon-purple to-neon-crimson active:scale-[0.98] transition"
       >
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-xl bg-neon-green/20 border border-neon-green/40 flex items-center justify-center shrink-0">
-            <UserPlus className="text-neon-green" size={22} strokeWidth={2.4} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="font-display uppercase text-base leading-tight">
-              Adaugă-ți prieteni
+        <div className="relative rounded-[14px] bg-background/95 p-4 overflow-hidden">
+          {/* animated glow blobs */}
+          <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-neon-green/30 blur-3xl animate-pulse" />
+          <div className="pointer-events-none absolute -bottom-12 -left-8 h-36 w-36 rounded-full bg-neon-crimson/25 blur-3xl animate-pulse" />
+
+          <div className="relative flex items-center gap-3">
+            <div className="relative h-14 w-14 rounded-2xl bg-neon-green/15 border border-neon-green/50 flex items-center justify-center shrink-0 shadow-[0_0_24px_-4px_var(--neon-green)]">
+              <UserPlus className="text-neon-green" size={26} strokeWidth={2.6} />
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="absolute inset-0 rounded-full bg-neon-green animate-ping opacity-80" />
+                <span className="relative h-3 w-3 rounded-full bg-neon-green" />
+              </span>
             </div>
-            <div className="font-mono text-[11px] uppercase tracking-widest text-neon-green/90 mt-0.5">
-              vezi-i pe mapă · live · în timp real
+            <div className="flex-1 min-w-0">
+              <div className="font-display font-black uppercase text-lg leading-none tracking-tight">
+                cheamă haita
+              </div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-neon-green mt-1.5">
+                adaugă prieteni → vezi-i pe hartă live
+              </div>
             </div>
+            <div className="font-display text-neon-green text-2xl group-active:translate-x-1 transition">→</div>
           </div>
-          <div className="font-mono text-neon-green text-lg">→</div>
+
+          {friendPins.length === 0 && (
+            <div className="relative mt-3 pt-3 border-t border-foreground/10">
+              <p className="text-xs text-foreground/80 leading-snug">
+                <span className="text-neon-crimson font-bold">0 oxidați</span> în haita ta. Nu mai bea singur ca un MDS — adaugă-ți gașca și vezi unde toarnă șpriț chiar acum.
+              </p>
+            </div>
+          )}
         </div>
-        {friendPins.length === 0 && (
-          <p className="mt-3 text-xs text-foreground/70 leading-relaxed">
-            Încă n-ai pe nimeni live. Adaugă-ți haita ca să vezi unde beau șpriț chiar acum.
-          </p>
-        )}
       </Link>
 
       {/* Live friends list — only if any */}
