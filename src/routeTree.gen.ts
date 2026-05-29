@@ -192,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/requests': typeof AppRequestsRoute
+  '/app/notifications': typeof AppNotificationsRoute
   '/app/scan': typeof AppScanRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
