@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Plus, Users, MapPin, Clock, X, Flame } from "lucide-react";
+import { Plus, Users, MapPin, Clock, X, Flame, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/app/parties")({
   head: () => ({ meta: [{ title: "Șprițuri · OXIDAȚII" }] }),
@@ -99,6 +99,21 @@ function PartiesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (partyId: string) => {
+      if (!user) throw new Error("login");
+      const { error } = await supabase.from("parties").delete().eq("id", partyId).eq("host_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["parties"] }),
+  });
+
+  const handleDelete = (partyId: string, title: string) => {
+    if (confirm(`Ștergi șprițul "${title}"? Nu se mai poate recupera.`)) {
+      deleteMutation.mutate(partyId);
+    }
+  };
+
   // hide full parties unless user is already in
   const takenFor = (id: string) => joins.filter(j => j.party_id === id).length;
   const visibleParties = parties.filter(p => {
@@ -171,7 +186,17 @@ function PartiesPage() {
                       </div>
                     </div>
                     {isHost && (
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-neon-green border border-neon-green/40 px-2 py-0.5 rounded-full">gazda</span>
+                      <>
+                        <span className="font-mono text-[9px] uppercase tracking-widest text-neon-green border border-neon-green/40 px-2 py-0.5 rounded-full">gazda</span>
+                        <button
+                          onClick={() => handleDelete(p.id, p.title)}
+                          disabled={deleteMutation.isPending}
+                          aria-label="șterge șpriț"
+                          className="h-8 w-8 rounded-full flex items-center justify-center text-neon-crimson border border-neon-crimson/40 hover:bg-neon-crimson/10 active:scale-95 disabled:opacity-40"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </>
                     )}
                   </div>
 
