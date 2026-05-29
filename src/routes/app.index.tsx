@@ -172,9 +172,22 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
         </div>
       </div>
 
-      {/* photo */}
+      {/* media */}
       <div className="relative aspect-[4/5] bg-background">
-        <img src={item.photo_url} alt={item.caption ?? ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        {item.media_type === "video" ? (
+          <video
+            src={item.photo_url}
+            className="absolute inset-0 h-full w-full object-cover"
+            controls
+            playsInline
+            preload="metadata"
+          />
+        ) : (
+          <img src={item.photo_url} alt={item.caption ?? ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        )}
+        {item.media_type === "video" && (
+          <div className="absolute top-2 right-2 px-2 py-1 rounded-sm bg-black/70 backdrop-blur-sm font-mono text-[9px] uppercase tracking-widest text-white">▶ clip</div>
+        )}
         {item.kind === "proof" && (
           <div className="absolute top-2 left-2 px-2 py-1 rounded-sm bg-neon-green/20 border border-neon-green/40 backdrop-blur-sm">
             <span className="font-mono text-[9px] uppercase tracking-widest text-neon-green">● șpriț verificat AI</span>
