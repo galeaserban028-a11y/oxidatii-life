@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, Camera, Lock, Globe2, UserPlus } from "lucide-react";
+import { LogOut, Camera, Lock, Globe2, UserPlus, ShieldOff } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { useFollowStats, useIncomingFollowRequests } from "@/lib/follows";
@@ -209,6 +209,21 @@ function MePage() {
             </div>
           </Link>
         )}
+
+        <Link
+          to="/app/blocked"
+          className="mt-3 flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 active:scale-[0.99] transition"
+        >
+          <div className="h-9 w-9 rounded-full bg-foreground/10 flex items-center justify-center shrink-0">
+            <ShieldOff size={16} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-display uppercase text-sm">Utilizatori blocați</div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              gestionează lista →
+            </div>
+          </div>
+        </Link>
 
         {/* Șpriț Streak */}
         <div className="relative mt-3 rounded-2xl p-4 border border-neon-crimson/30 bg-gradient-to-br from-neon-crimson/10 via-transparent to-neon-purple/10 flex items-center gap-4">
