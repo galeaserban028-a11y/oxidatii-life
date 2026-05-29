@@ -25,9 +25,11 @@ export type OpeningHours = Partial<Record<DayKey, DaySchedule>>;
 
 const JS_TO_KEY: DayKey[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
-function toMin(t: string): number {
+function toMin(t: unknown): number | null {
+  if (typeof t !== "string" || !t.includes(":")) return null;
   const [h, m] = t.split(":").map(Number);
-  return h * 60 + (m || 0);
+  if (Number.isNaN(h)) return null;
+  return h * 60 + (Number.isNaN(m) ? 0 : m);
 }
 
 function parseSlot(v: unknown): DaySchedule {
@@ -52,36 +54,43 @@ export function normalizeHours(raw: any): Record<DayKey, DaySchedule> {
 
 export function isOpenNow(oh: OpeningHours | null | undefined, now = new Date()): boolean | null {
   if (!oh) return null;
+  const norm = normalizeHours(oh);
   const today = JS_TO_KEY[now.getDay()];
   const yesterday = JS_TO_KEY[(now.getDay() + 6) % 7];
   const mins = now.getHours() * 60 + now.getMinutes();
 
-  const t = oh[today];
+  const t = norm[today];
   if (t) {
     const o = toMin(t.open), c = toMin(t.close);
-    if (c > o ? mins >= o && mins < c : mins >= o || mins < c) return true;
+    if (o != null && c != null) {
+      if (c > o ? mins >= o && mins < c : mins >= o || mins < c) return true;
+    }
   }
-  const y = oh[yesterday];
+  const y = norm[yesterday];
   if (y) {
     const o = toMin(y.open), c = toMin(y.close);
-    if (c <= o && mins < c) return true;
+    if (o != null && c != null && c <= o && mins < c) return true;
   }
   return false;
 }
 
 export function nextOpenLabel(oh: OpeningHours | null | undefined, now = new Date()): string | null {
   if (!oh) return null;
+  const norm = normalizeHours(oh);
   for (let i = 0; i < 7; i++) {
     const idx = (now.getDay() + i) % 7;
     const key = JS_TO_KEY[idx];
-    const t = oh[key];
+    const t = norm[key];
     if (!t) continue;
+    const openMin = toMin(t.open);
+    if (openMin == null) continue;
     const dayLabel = DAYS.find(d => d.key === key)?.label ?? "";
-    if (i === 0 && now.getHours() * 60 + now.getMinutes() < toMin(t.open)) return `azi ${t.open}`;
+    if (i === 0 && now.getHours() * 60 + now.getMinutes() < openMin) return `azi ${t.open}`;
     if (i > 0) return `${dayLabel} ${t.open}`;
   }
   return null;
 }
+
 
 /** Richer evaluation in Europe/Bucharest tz. */
 export function evalOpenNow(raw: any, now = new Date()) {
