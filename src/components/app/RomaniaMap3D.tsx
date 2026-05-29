@@ -392,7 +392,7 @@ export function RomaniaMap3D({
             <div className="font-display font-black text-xl">harta se reîncarcă</div>
             <div className="mt-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">telefonul a pierdut randarea hărții</div>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => { setMapFailed(false); setRetryKey(k => k + 1); }}
               className="mt-4 rounded-lg border border-neon-green/40 px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-neon-green"
             >
               reîncarcă
