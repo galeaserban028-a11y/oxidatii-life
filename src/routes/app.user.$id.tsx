@@ -145,7 +145,18 @@ function UserPage() {
 
             {!isMe && user && (
               <div className="mt-4 flex gap-2">
-                {followStatus === "accepted" ? (
+                {isBlocking ? (
+                  <button
+                    onClick={() => setConfirmBlock("unblock")}
+                    className="flex-1 py-3 rounded-xl bg-secondary border border-border text-foreground font-display font-bold uppercase text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition"
+                  >
+                    <ShieldOff size={16} /> deblochează
+                  </button>
+                ) : isBlockedBy ? (
+                  <div className="flex-1 py-3 rounded-xl bg-secondary border border-border text-muted-foreground font-display font-bold uppercase text-sm flex items-center justify-center gap-2">
+                    <ShieldOff size={16} /> indisponibil
+                  </div>
+                ) : followStatus === "accepted" ? (
                   <button
                     onClick={() => unfollow.mutate()}
                     disabled={unfollow.isPending}
@@ -171,17 +182,41 @@ function UserPage() {
                     {isPublic ? "urmărește" : "trimite cerere"}
                   </button>
                 )}
-                <button onClick={openDM} disabled={opening}
-                  className="px-4 py-3 rounded-xl bg-neon-green text-background font-display font-black flex items-center justify-center active:scale-[0.98] transition disabled:opacity-40"
-                  aria-label="Mesaj"
-                >
-                  {opening ? <Loader2 className="animate-spin" size={18} /> : <MessageCircle size={18} strokeWidth={2.6} />}
-                </button>
+                {!isBlocking && !isBlockedBy && (
+                  <button
+                    onClick={openDM}
+                    disabled={opening}
+                    className="px-4 py-3 rounded-xl bg-neon-green text-background font-display font-black flex items-center justify-center active:scale-[0.98] transition disabled:opacity-40"
+                    aria-label="Mesaj"
+                  >
+                    {opening ? <Loader2 className="animate-spin" size={18} /> : <MessageCircle size={18} strokeWidth={2.6} />}
+                  </button>
+                )}
+                {!isBlocking && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="px-3 py-3 rounded-xl bg-secondary border border-border text-foreground flex items-center justify-center active:scale-[0.98] transition"
+                        aria-label="Mai multe"
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => setConfirmBlock("block")}
+                        className="text-neon-crimson focus:text-neon-crimson"
+                      >
+                        <ShieldOff size={14} className="mr-2" /> Blochează @{handle}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             )}
           </div>
 
-          {/* Private gate */}
+          {/* Private / blocked gate */}
           {!canViewContent ? (
             <div className="rounded-3xl border border-dashed border-foreground/20 bg-card p-10 text-center space-y-3">
               <div className="mx-auto h-14 w-14 rounded-full bg-neon-crimson/15 flex items-center justify-center">
