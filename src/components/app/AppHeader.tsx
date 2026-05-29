@@ -1,6 +1,6 @@
 import { useLocation } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
-import logoSticker from "@/assets/logo-oxidatii.png";
+import logoBanner from "@/assets/logo-header.png";
 import { NotificationsBell } from "./NotificationsBell";
 
 export function AppHeader() {
@@ -22,13 +22,10 @@ export function AppHeader() {
           </button>
         )}
         <img
-          src={logoSticker}
+          src={logoBanner}
           alt="Oxidații"
-          className="h-9 w-9 object-contain drop-shadow-[0_2px_8px_rgba(255,49,88,0.4)]"
+          className="h-10 w-auto object-contain drop-shadow-[0_2px_8px_rgba(255,49,88,0.4)]"
         />
-        <span className="font-display font-black text-[13px] tracking-tight uppercase leading-none">
-          Oxida<span className="text-gradient-chaos">ții</span>
-        </span>
       </div>
       <div className="flex items-center gap-1">
         <NotificationsBell />
