@@ -30,12 +30,12 @@ const TYPE_COLOR: Record<string, string> = {
 const VOYAGER_STYLE = {
   version: 8,
   sources: {
-    "carto-voyager": {
+    "carto-dark": {
       type: "raster",
       tiles: [
-        "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
       ],
       tileSize: 256,
       attribution: "© CARTO, © OpenStreetMap contributors",
@@ -43,16 +43,17 @@ const VOYAGER_STYLE = {
     },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#0a0e1a" } },
-    { id: "carto-voyager", type: "raster", source: "carto-voyager", paint: { "raster-opacity": 1, "raster-saturation": 0.35, "raster-contrast": 0.05 } },
+    { id: "background", type: "background", paint: { "background-color": "#03040a" } },
+    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 0.85, "raster-saturation": -0.2, "raster-contrast": 0.15, "raster-brightness-max": 0.75 } },
   ],
   sky: {
-    "sky-color": "#0a0e1a",
-    "horizon-color": "#1a2440",
-    "fog-color": "#06070a",
-    "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 6, 0.5, 10, 0],
+    "sky-color": "#03040a",
+    "horizon-color": "#0a0a1f",
+    "fog-color": "#000000",
+    "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 6, 0.6, 10, 0],
   },
 } as unknown as maplibregl.StyleSpecification;
+
 
 
 const VENUES_SRC = "venues-src";
@@ -100,7 +101,8 @@ export function RomaniaMap3D({
         container: containerRef.current,
         style: VOYAGER_STYLE,
         center: [25.0, 45.9],
-        zoom: 5.2,
+        zoom: isSmall ? 3.2 : 3.8,
+        minZoom: 2.5,
         pitch: 0,
         bearing: 0,
         attributionControl: { compact: true },
@@ -109,7 +111,6 @@ export function RomaniaMap3D({
         fadeDuration: 80,
         refreshExpiredTiles: false,
         maxPitch: isSmall ? 45 : 60,
-        // Cap pixel ratio on mobile to halve GPU fill rate → smoother pan/zoom
         pixelRatio: isSmall ? Math.min(window.devicePixelRatio || 1, 1.5) : undefined,
         antialias: !isSmall,
       } as any);
@@ -119,10 +120,9 @@ export function RomaniaMap3D({
       return;
     }
 
-    // Globe projection only on larger screens — too heavy on low-end phones
-    if (!isSmall) {
-      try { (map as any).setProjection({ type: "globe" }); } catch {}
-    }
+    // Globe projection — gives the small planet / game feel
+    try { (map as any).setProjection({ type: "globe" }); } catch {}
+
 
 
 
@@ -359,15 +359,16 @@ export function RomaniaMap3D({
   }, [friends]);
 
   return (
-    <div className="relative w-full h-[62vh] min-h-[460px] max-h-[640px] rounded-3xl overflow-hidden border border-neon-purple/30 bg-[#06070a] shadow-[0_0_60px_-20px_var(--neon-purple)]">
+    <div className="relative w-full h-[54vh] min-h-[400px] max-h-[560px] rounded-3xl overflow-hidden border border-neon-purple/40 bg-[#03040a] shadow-[0_0_80px_-20px_var(--neon-purple),inset_0_0_120px_rgba(0,0,0,0.9)]">
       <style>{`
         @keyframes oxi-pulse-strong { 0% { transform: translateX(-50%) scale(0.6); opacity: 0.7; } 80% { transform: translateX(-50%) scale(1.5); opacity: 0; } 100% { opacity: 0; } }
+        @keyframes oxi-scan { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
         .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas { outline:none !important; }
         .maplibregl-marker { position:absolute !important; top:0; left:0; will-change:transform; z-index:2; }
         .maplibregl-ctrl-top-right { position:absolute; top:10px; right:10px; z-index:3; display:flex; flex-direction:column; gap:8px; }
-        .maplibregl-ctrl-group { background: rgba(6,7,10,0.85) !important; border: 1px solid rgba(255,255,255,0.1) !important; }
+        .maplibregl-ctrl-group { background: rgba(3,4,10,0.9) !important; border: 1px solid rgba(198,107,255,0.25) !important; }
         .maplibregl-ctrl-group button { background-color: transparent !important; }
         .maplibregl-ctrl-group button span { filter: invert(1) brightness(1.2); }
       `}</style>
@@ -387,11 +388,26 @@ export function RomaniaMap3D({
         </div>
       )}
 
-      {/* Neon vignette + atmospheric halo (over the globe) */}
+      {/* Deep space vignette — frames the globe like a tiny planet */}
       <div className="pointer-events-none absolute inset-0 z-[1]"
-           style={{ background: "radial-gradient(ellipse at 50% 45%, transparent 35%, rgba(198,107,255,0.10) 65%, rgba(6,7,10,0.7) 100%)" }} />
-      <div className="pointer-events-none absolute -inset-10 z-[1] opacity-60 blur-3xl"
-           style={{ background: "radial-gradient(circle at 30% 30%, rgba(57,255,136,0.25), transparent 50%), radial-gradient(circle at 75% 70%, rgba(255,49,88,0.22), transparent 55%)" }} />
+           style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 22%, rgba(3,4,10,0.55) 55%, rgba(3,4,10,0.98) 95%)" }} />
+      {/* Neon atmospheric halos */}
+      <div className="pointer-events-none absolute -inset-10 z-[1] opacity-70 blur-3xl mix-blend-screen"
+           style={{ background: "radial-gradient(circle at 30% 30%, rgba(57,255,136,0.22), transparent 45%), radial-gradient(circle at 75% 70%, rgba(255,49,88,0.28), transparent 50%), radial-gradient(circle at 50% 50%, rgba(198,107,255,0.18), transparent 60%)" }} />
+      {/* CRT scanlines — arcade feel */}
+      <div className="pointer-events-none absolute inset-0 z-[2] opacity-[0.08] mix-blend-overlay"
+           style={{ backgroundImage: "repeating-linear-gradient(0deg, rgba(255,255,255,0.6) 0 1px, transparent 1px 3px)" }} />
+      {/* Crosshair / HUD reticle */}
+      <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center">
+        <div className="relative h-40 w-40 rounded-full border border-neon-green/15">
+          <div className="absolute inset-3 rounded-full border border-neon-purple/15" />
+          <div className="absolute left-1/2 top-0 h-3 w-px -translate-x-1/2 bg-neon-green/40" />
+          <div className="absolute left-1/2 bottom-0 h-3 w-px -translate-x-1/2 bg-neon-green/40" />
+          <div className="absolute top-1/2 left-0 h-px w-3 -translate-y-1/2 bg-neon-green/40" />
+          <div className="absolute top-1/2 right-0 h-px w-3 -translate-y-1/2 bg-neon-green/40" />
+        </div>
+      </div>
+
 
 
       <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur font-mono text-[9px] uppercase tracking-widest text-neon-green pointer-events-none border border-neon-green/30">
