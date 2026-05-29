@@ -32,17 +32,14 @@ export function CitiesPreview() {
   }, []);
 
   return (
-    <section id="orase" className="relative py-24 px-6">
+    <section className="relative py-14 px-5 md:px-8">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <div className="font-mono text-[10px] uppercase tracking-[0.4em] text-muted-foreground mb-3">
-            // toată țara
-          </div>
-          <h2 className="font-display font-black text-4xl md:text-6xl tracking-tighter">
-            Cluburi reale. <span className="text-gradient-chaos">Străzi reale.</span>
+        <div className="mb-8">
+          <h2 className="font-display uppercase text-2xl md:text-4xl tracking-tighter">
+            Cluburi. <span className="text-gradient-chaos">Terase. Străzi.</span>
           </h2>
-          <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto">
-            Dai pe Oradea → Piața Unirii → vezi toate barurile cu poze, IG, ce s-a întâmplat aseară.
+          <p className="mt-2 text-sm text-muted-foreground max-w-lg">
+            Dai pe oraș, vezi ce-i acolo. Poze, oameni, ce s-a-ntâmplat aseară. Real, nu fake.
           </p>
         </div>
 
@@ -52,21 +49,14 @@ export function CitiesPreview() {
               key={c.slug}
               to="/app/city/$slug"
               params={{ slug: c.slug }}
-              className="glass rounded-xl p-4 hover:scale-[1.03] hover:border-neon-purple transition group"
+              className="border border-border hover:border-primary/60 rounded-md p-3 bg-card/40 transition"
             >
-              <div className="font-display font-black text-lg group-hover:text-gradient-chaos">
-                {c.name}
-              </div>
+              <div className="font-display font-bold text-sm">{c.name}</div>
               <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mt-1">
                 {c.region ?? "RO"}
               </div>
-              <div className="mt-3 flex items-baseline gap-1">
-                <span className="font-display font-black text-2xl text-neon-green">
-                  {c.venue_count}
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  cluburi
-                </span>
+              <div className="mt-2 font-display text-lg text-primary/80">
+                {c.venue_count}
               </div>
             </Link>
           ))}
