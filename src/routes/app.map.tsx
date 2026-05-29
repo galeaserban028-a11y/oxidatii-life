@@ -4,8 +4,10 @@ import { useMemo, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
-import { UserPlus, Users, MapPin } from "lucide-react";
+import { UserPlus, Users, MapPin, Clock } from "lucide-react";
 import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilters";
+import { AddVenueSheet } from "@/components/app/AddVenueSheet";
+import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
 
 export const Route = createFileRoute("/app/map")({
   head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
@@ -16,6 +18,7 @@ type Venue = {
   id: string; name: string; type: string;
   lat: number | null; lng: number | null;
   city_id: string; address: string | null;
+  opening_hours: OpeningHours | null;
 };
 
 async function loadFriendPins(userId: string): Promise<FriendPin[]> {
@@ -115,7 +118,7 @@ function MapPage() {
       while (true) {
         const { data, error } = await supabase
           .from("venues")
-          .select("id, name, type, lat, lng, city_id, address")
+          .select("id, name, type, lat, lng, city_id, address, opening_hours")
           .not("lat", "is", null).not("lng", "is", null)
           .order("name")
           .range(from, from + step - 1);
@@ -211,6 +214,9 @@ function MapPage() {
         <RomaniaMap3D cities={cities} venues={filtered} friends={friendPins} />
       )}
 
+      <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
+
+
       {/* FRIENDS CTA */}
       <Link
         to="/app/friends"
@@ -301,13 +307,27 @@ function MapPage() {
               const city = cityMap.get(v.city_id);
               const dist = geo && v.lat != null && v.lng != null
                 ? distanceKm(geo.lat, geo.lng, v.lat, v.lng) : null;
+              const openState = isOpenNow(v.opening_hours);
+              const nextOpen = openState === false ? nextOpenLabel(v.opening_hours) : null;
               return (
                 <div key={v.id} className="flex items-center gap-3 p-3 rounded-xl bg-foreground/5 border border-foreground/10">
                   <div className="h-10 w-10 rounded-lg bg-neon-green/10 border border-neon-green/30 flex items-center justify-center font-mono text-[9px] uppercase shrink-0 text-neon-green">
                     {v.type.slice(0, 4)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-display font-bold text-sm truncate">{v.name}</div>
+                    <div className="flex items-center gap-1.5">
+                      <div className="font-display font-bold text-sm truncate">{v.name}</div>
+                      {openState === true && (
+                        <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-green/15 border border-neon-green/40 font-mono text-[8px] uppercase tracking-wider text-neon-green">
+                          <span className="h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse" /> open
+                        </span>
+                      )}
+                      {openState === false && (
+                        <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-crimson/15 border border-neon-crimson/40 font-mono text-[8px] uppercase tracking-wider text-neon-crimson">
+                          <Clock size={8} /> {nextOpen ? nextOpen : "închis"}
+                        </span>
+                      )}
+                    </div>
                     <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate flex items-center gap-1">
                       <MapPin size={9} /> {city?.name ?? "?"}{v.address ? ` · ${v.address}` : ""}
                     </div>
