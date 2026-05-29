@@ -99,6 +99,21 @@ function PartiesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (partyId: string) => {
+      if (!user) throw new Error("login");
+      const { error } = await supabase.from("parties").delete().eq("id", partyId).eq("host_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["parties"] }),
+  });
+
+  const handleDelete = (partyId: string, title: string) => {
+    if (confirm(`Ștergi șprițul "${title}"? Nu se mai poate recupera.`)) {
+      deleteMutation.mutate(partyId);
+    }
+  };
+
   // hide full parties unless user is already in
   const takenFor = (id: string) => joins.filter(j => j.party_id === id).length;
   const visibleParties = parties.filter(p => {
