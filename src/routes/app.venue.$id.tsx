@@ -26,7 +26,7 @@ function VenuePage() {
         .eq("id", id).single();
       if (error) throw error;
       const { data: photos } = await supabase
-        .from("venue_photos").select("id,photo_url,caption,created_at,user_id")
+        .from("venue_photos").select("id,photo_url,media_type,caption,created_at,user_id")
         .eq("venue_id", id).order("created_at", { ascending: false }).limit(36);
       const { count: liveCount } = await supabase
         .from("check_ins").select("id", { count: "exact", head: true })
