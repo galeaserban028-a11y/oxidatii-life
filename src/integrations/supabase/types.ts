@@ -363,6 +363,7 @@ export type Database = {
           id: string
           lat: number | null
           lng: number | null
+          media_type: string
           photo_url: string
           user_id: string
           venue_id: string | null
@@ -375,6 +376,7 @@ export type Database = {
           id?: string
           lat?: number | null
           lng?: number | null
+          media_type?: string
           photo_url: string
           user_id: string
           venue_id?: string | null
@@ -387,6 +389,7 @@ export type Database = {
           id?: string
           lat?: number | null
           lng?: number | null
+          media_type?: string
           photo_url?: string
           user_id?: string
           venue_id?: string | null
@@ -435,6 +438,7 @@ export type Database = {
           caption: string | null
           created_at: string
           id: string
+          media_type: string
           photo_url: string
           taken_at: string
           user_id: string
@@ -444,6 +448,7 @@ export type Database = {
           caption?: string | null
           created_at?: string
           id?: string
+          media_type?: string
           photo_url: string
           taken_at?: string
           user_id: string
@@ -453,6 +458,7 @@ export type Database = {
           caption?: string | null
           created_at?: string
           id?: string
+          media_type?: string
           photo_url?: string
           taken_at?: string
           user_id?: string

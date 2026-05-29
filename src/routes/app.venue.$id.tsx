@@ -26,7 +26,7 @@ function VenuePage() {
         .eq("id", id).single();
       if (error) throw error;
       const { data: photos } = await supabase
-        .from("venue_photos").select("id,photo_url,caption,created_at,user_id")
+        .from("venue_photos").select("id,photo_url,media_type,caption,created_at,user_id")
         .eq("venue_id", id).order("created_at", { ascending: false }).limit(36);
       const { count: liveCount } = await supabase
         .from("check_ins").select("id", { count: "exact", head: true })
@@ -39,17 +39,19 @@ function VenuePage() {
     if (!user) { toast.error("Trebuie să fii logat"); return; }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const isVideo = file.type.startsWith("video/");
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? (isVideo ? "mp4" : "jpg");
       const path = `${user.id}/${id}/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, { contentType: file.type });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
       const { error: insErr } = await supabase.from("venue_photos").insert({
         venue_id: id, user_id: user.id, photo_url: pub.publicUrl,
+        media_type: isVideo ? "video" : "image",
       });
       if (insErr) throw insErr;
       await qc.invalidateQueries({ queryKey: ["venue", id] });
-      toast.success("Poză adăugată");
+      toast.success(isVideo ? "Clip adăugat" : "Poză adăugată");
     } catch (e: any) {
       toast.error(e.message ?? "Nu s-a putut încărca");
     } finally {
@@ -130,7 +132,7 @@ function VenuePage() {
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); e.target.value = ""; }}
             />
@@ -138,13 +140,20 @@ function VenuePage() {
 
           {data.photos.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground bg-card">
-              Încă nu sunt poze. Fii primul — apasă „pune poză".
+              Încă nu sunt poze sau clipuri. Fii primul — apasă „pune poză / clip".
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-1.5">
-              {data.photos.map(p => (
-                <div key={p.id} className="aspect-square rounded-lg overflow-hidden bg-muted">
-                  <img src={p.photo_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+              {data.photos.map((p: any) => (
+                <div key={p.id} className="aspect-square rounded-lg overflow-hidden bg-muted relative">
+                  {p.media_type === "video" ? (
+                    <>
+                      <video src={p.photo_url} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+                      <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded bg-black/80 font-mono text-[8px] uppercase tracking-widest text-white">▶</div>
+                    </>
+                  ) : (
+                    <img src={p.photo_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                  )}
                 </div>
               ))}
             </div>

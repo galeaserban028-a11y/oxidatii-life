@@ -8,6 +8,7 @@ type FeedItem = {
   kind: "photo" | "proof";
   created_at: string;
   photo_url: string;
+  media_type: "image" | "video";
   caption: string | null;
   user_id: string;
   venue_id: string | null;
@@ -22,12 +23,12 @@ async function loadFeed() {
   const [{ data: photos }, { data: proofs }] = await Promise.all([
     supabase
       .from("venue_photos")
-      .select("id, photo_url, caption, taken_at, user_id, venue_id")
+      .select("id, photo_url, media_type, caption, taken_at, user_id, venue_id")
       .order("taken_at", { ascending: false })
       .limit(30),
     supabase
       .from("sprit_proofs")
-      .select("id, photo_url, created_at, user_id, venue_id, ai_verified")
+      .select("id, photo_url, media_type, created_at, user_id, venue_id, ai_verified")
       .eq("ai_verified", true)
       .order("created_at", { ascending: false })
       .limit(30),
@@ -39,6 +40,7 @@ async function loadFeed() {
       kind: "photo" as const,
       created_at: p.taken_at,
       photo_url: p.photo_url,
+      media_type: (p.media_type ?? "image") as "image" | "video",
       caption: p.caption,
       user_id: p.user_id,
       venue_id: p.venue_id,
@@ -48,6 +50,7 @@ async function loadFeed() {
       kind: "proof" as const,
       created_at: p.created_at,
       photo_url: p.photo_url,
+      media_type: (p.media_type ?? "image") as "image" | "video",
       caption: null,
       user_id: p.user_id,
       venue_id: p.venue_id,
@@ -169,9 +172,22 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
         </div>
       </div>
 
-      {/* photo */}
+      {/* media */}
       <div className="relative aspect-[4/5] bg-background">
-        <img src={item.photo_url} alt={item.caption ?? ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        {item.media_type === "video" ? (
+          <video
+            src={item.photo_url}
+            className="absolute inset-0 h-full w-full object-cover"
+            controls
+            playsInline
+            preload="metadata"
+          />
+        ) : (
+          <img src={item.photo_url} alt={item.caption ?? ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        )}
+        {item.media_type === "video" && (
+          <div className="absolute top-2 right-2 px-2 py-1 rounded-sm bg-black/70 backdrop-blur-sm font-mono text-[9px] uppercase tracking-widest text-white">▶ clip</div>
+        )}
         {item.kind === "proof" && (
           <div className="absolute top-2 left-2 px-2 py-1 rounded-sm bg-neon-green/20 border border-neon-green/40 backdrop-blur-sm">
             <span className="font-mono text-[9px] uppercase tracking-widest text-neon-green">● șpriț verificat AI</span>
