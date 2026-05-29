@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { ChevronLeft } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Login · OXIDAȚII" }] }),
@@ -42,7 +43,12 @@ function LoginPage() {
 
   return (
     <main className="min-h-screen flex flex-col bg-background text-foreground px-6 py-10">
-      <Link to="/" className="font-display font-black text-xl tracking-widest text-gradient-chaos">OXIDAȚII</Link>
+      <div className="flex items-center justify-between mb-4">
+        <Link to="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition">
+          <ChevronLeft size={16} /> înapoi
+        </Link>
+        <Link to="/" className="font-display font-black text-xl tracking-widest text-gradient-chaos">OXIDAȚII</Link>
+      </div>
       <div className="flex-1 flex items-center">
         <div className="w-full max-w-sm mx-auto space-y-6">
           <div>
