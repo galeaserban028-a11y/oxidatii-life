@@ -261,7 +261,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="font-display font-black text-xl">chem haita.</h2>
+          <h2 className="font-display font-black text-xl">deschid un șpriț.</h2>
           <button onClick={onClose} className="h-9 w-9 rounded-full bg-foreground/5 flex items-center justify-center"><X size={16} /></button>
         </div>
 
