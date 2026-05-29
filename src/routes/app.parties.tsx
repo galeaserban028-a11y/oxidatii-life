@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { Plus, Users, MapPin, Clock, X, Flame } from "lucide-react";
 
 export const Route = createFileRoute("/app/parties")({
-  head: () => ({ meta: [{ title: "Haită · OXIDAȚII" }] }),
+  head: () => ({ meta: [{ title: "Șprițuri · OXIDAȚII" }] }),
   component: PartiesPage,
 });
 
