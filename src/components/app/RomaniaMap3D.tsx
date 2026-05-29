@@ -27,15 +27,15 @@ const TYPE_COLOR: Record<string, string> = {
   after: "#ff3158",
 };
 
-const CARTO_DARK_RASTER_STYLE = {
+const VOYAGER_STYLE = {
   version: 8,
   sources: {
-    "carto-dark": {
+    "carto-voyager": {
       type: "raster",
       tiles: [
-        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
       ],
       tileSize: 256,
       attribution: "© CARTO, © OpenStreetMap contributors",
@@ -43,10 +43,17 @@ const CARTO_DARK_RASTER_STYLE = {
     },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#050505" } },
-    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 1 } },
+    { id: "background", type: "background", paint: { "background-color": "#0a0e1a" } },
+    { id: "carto-voyager", type: "raster", source: "carto-voyager", paint: { "raster-opacity": 1, "raster-saturation": 0.35, "raster-contrast": 0.05 } },
   ],
-} as maplibregl.StyleSpecification;
+  sky: {
+    "sky-color": "#0a0e1a",
+    "horizon-color": "#1a2440",
+    "fog-color": "#06070a",
+    "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 6, 0.5, 10, 0],
+  },
+} as unknown as maplibregl.StyleSpecification;
+
 
 const VENUES_SRC = "venues-src";
 
@@ -75,18 +82,22 @@ export function RomaniaMap3D({
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: CARTO_DARK_RASTER_STYLE,
+      style: VOYAGER_STYLE,
       center: [25.0, 45.9],
-      zoom: 5.6,
-      pitch: 30,
-      bearing: -6,
+      zoom: 5.2,
+      pitch: 0,
+      bearing: 0,
       attributionControl: { compact: true },
       cooperativeGestures: false,
-      renderWorldCopies: false,
+      renderWorldCopies: true,
       fadeDuration: 80,
       refreshExpiredTiles: false,
-      maxPitch: 60,
+      maxPitch: 70,
     });
+
+    // Globe projection — small interactive "globuleț"
+    try { (map as any).setProjection({ type: "globe" }); } catch {}
+
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "top-right");
     map.addControl(
@@ -314,7 +325,7 @@ export function RomaniaMap3D({
   }, [friends, nav]);
 
   return (
-    <div className="relative w-full h-[62vh] min-h-[460px] max-h-[640px] rounded-2xl overflow-hidden border border-foreground/10 bg-black">
+    <div className="relative w-full h-[62vh] min-h-[460px] max-h-[640px] rounded-3xl overflow-hidden border border-neon-purple/30 bg-[#06070a] shadow-[0_0_60px_-20px_var(--neon-purple)]">
       <style>{`
         @keyframes oxi-pulse-strong { 0% { transform: translateX(-50%) scale(0.6); opacity: 0.7; } 80% { transform: translateX(-50%) scale(1.5); opacity: 0; } 100% { opacity: 0; } }
         .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; }
@@ -327,6 +338,13 @@ export function RomaniaMap3D({
         .maplibregl-ctrl-group button span { filter: invert(1) brightness(1.2); }
       `}</style>
       <div ref={containerRef} className="absolute inset-0" />
+
+      {/* Neon vignette + atmospheric halo (over the globe) */}
+      <div className="pointer-events-none absolute inset-0 z-[1]"
+           style={{ background: "radial-gradient(ellipse at 50% 45%, transparent 35%, rgba(198,107,255,0.10) 65%, rgba(6,7,10,0.7) 100%)" }} />
+      <div className="pointer-events-none absolute -inset-10 z-[1] opacity-60 blur-3xl"
+           style={{ background: "radial-gradient(circle at 30% 30%, rgba(57,255,136,0.25), transparent 50%), radial-gradient(circle at 75% 70%, rgba(255,49,88,0.22), transparent 55%)" }} />
+
 
       <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur font-mono text-[9px] uppercase tracking-widest text-neon-green pointer-events-none border border-neon-green/30">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse mr-1.5 align-middle" />
