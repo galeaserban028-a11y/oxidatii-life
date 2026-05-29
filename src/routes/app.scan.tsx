@@ -51,11 +51,12 @@ function ScanPage() {
 
   async function submit() {
     if (!user) return toast.error("Trebuie să fii logat.");
-    if (!file) return toast.error("Alege o poză.");
+    if (!file) return toast.error("Alege o poză sau un clip.");
     if (!selectedVenue) return toast.error("Alege locația.");
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const isVideo = file.type.startsWith("video/");
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? (isVideo ? "mp4" : "jpg");
       const path = `${user.id}/${selectedVenue.id}/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, { contentType: file.type });
       if (upErr) throw upErr;
@@ -64,10 +65,11 @@ function ScanPage() {
         venue_id: selectedVenue.id,
         user_id: user.id,
         photo_url: pub.publicUrl,
+        media_type: isVideo ? "video" : "image",
         caption: caption.trim() || null,
       });
       if (insErr) throw insErr;
-      toast.success("Șprițul tău e live.");
+      toast.success(isVideo ? "Clipul tău e live." : "Șprițul tău e live.");
       qc.invalidateQueries({ queryKey: ["faze"] });
       qc.invalidateQueries({ queryKey: ["top-ro"] });
       qc.invalidateQueries({ queryKey: ["venue", selectedVenue.id] });
