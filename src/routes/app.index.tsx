@@ -8,6 +8,7 @@ type FeedItem = {
   kind: "photo" | "proof";
   created_at: string;
   photo_url: string;
+  media_type: "image" | "video";
   caption: string | null;
   user_id: string;
   venue_id: string | null;
@@ -22,12 +23,12 @@ async function loadFeed() {
   const [{ data: photos }, { data: proofs }] = await Promise.all([
     supabase
       .from("venue_photos")
-      .select("id, photo_url, caption, taken_at, user_id, venue_id")
+      .select("id, photo_url, media_type, caption, taken_at, user_id, venue_id")
       .order("taken_at", { ascending: false })
       .limit(30),
     supabase
       .from("sprit_proofs")
-      .select("id, photo_url, created_at, user_id, venue_id, ai_verified")
+      .select("id, photo_url, media_type, created_at, user_id, venue_id, ai_verified")
       .eq("ai_verified", true)
       .order("created_at", { ascending: false })
       .limit(30),
@@ -39,6 +40,7 @@ async function loadFeed() {
       kind: "photo" as const,
       created_at: p.taken_at,
       photo_url: p.photo_url,
+      media_type: (p.media_type ?? "image") as "image" | "video",
       caption: p.caption,
       user_id: p.user_id,
       venue_id: p.venue_id,
@@ -48,6 +50,7 @@ async function loadFeed() {
       kind: "proof" as const,
       created_at: p.created_at,
       photo_url: p.photo_url,
+      media_type: (p.media_type ?? "image") as "image" | "video",
       caption: null,
       user_id: p.user_id,
       venue_id: p.venue_id,
