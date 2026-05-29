@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Camera, MapPin, Instagram, Upload } from "lucide-react";
+import { ArrowLeft, Camera, MapPin, Instagram, Upload, Clock } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { evalOpenNow, normalizeHours, formatSlot, DAY_KEYS, DAY_LABELS } from "@/lib/openingHours";
 
 export const Route = createFileRoute("/app/venue/$id")({
   component: VenuePage,
@@ -22,7 +23,7 @@ function VenuePage() {
     queryFn: async () => {
       const { data: venue, error } = await supabase
         .from("venues")
-        .select("id,name,type,description,ig_handle,address,cover_url,verified,street:streets(id,name,city:cities(name,slug))")
+        .select("id,name,type,description,ig_handle,address,cover_url,verified,opening_hours,street:streets(id,name,city:cities(name,slug))")
         .eq("id", id).single();
       if (error) throw error;
       const { data: photos } = await supabase
