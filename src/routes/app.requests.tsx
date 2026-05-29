@@ -1,5 +1,5 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Check, X, UserPlus } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Check, X, UserPlus } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useIncomingFollowRequests, useRequestActions } from "@/lib/follows";
 
