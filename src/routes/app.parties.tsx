@@ -274,7 +274,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
     mutationFn: async () => {
       if (!user) throw new Error("login");
       const starts_at = new Date(Date.now() + whenMin * 60_000).toISOString();
-      const { error } = await supabase.from("parties").insert({
+      const { data: inserted, error } = await supabase.from("parties").insert({
         host_id: user.id,
         title: title.trim(),
         description: desc.trim() || null,
@@ -282,8 +282,14 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
         spots_total: spots,
         starts_at,
         vibe: vibe.trim() || null,
-      });
+      }).select("id").single();
       if (error) throw error;
+      if (inserted?.id) {
+        try {
+          const { notifyNewPartyInCity } = await import("@/lib/notifications.functions");
+          notifyNewPartyInCity({ data: { partyId: inserted.id } }).catch(() => {});
+        } catch {}
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["parties"] });
