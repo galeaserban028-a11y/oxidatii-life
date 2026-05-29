@@ -1,12 +1,12 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Newspaper, Trophy, Camera, Users, User, MapPin } from "lucide-react";
+import { Newspaper, Trophy, Camera, User, MapPin } from "lucide-react";
 
 type Tab = { to: string; icon: typeof Newspaper; label: string; primary?: boolean; exact?: boolean };
 const tabs: Tab[] = [
   { to: "/app", icon: Newspaper, label: "Live", exact: true },
-  { to: "/app/map", icon: MapPin, label: "Hartă" },
+  { to: "/app/top", icon: Trophy, label: "Top" },
   { to: "/app/scan", icon: Camera, label: "Șpriț", primary: true },
-  { to: "/app/squad", icon: Users, label: "Haita" },
+  { to: "/app/map", icon: MapPin, label: "Hartă" },
   { to: "/app/me", icon: User, label: "Eu" },
 ];
 
