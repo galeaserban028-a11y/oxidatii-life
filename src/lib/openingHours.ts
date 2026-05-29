@@ -102,7 +102,7 @@ export function evalOpenNow(raw: any, now = new Date()) {
   const mm = parts.find(p => p.type === "minute")?.value ?? "00";
   const order = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
   const todayIdx = Math.max(0, order.indexOf(wd));
-  const nowMin = toMin(`${hh}:${mm}`);
+  const nowMin = toMin(`${hh}:${mm}`) ?? 0;
   const todayKey = DAY_KEYS[todayIdx];
   const yKey = DAY_KEYS[(todayIdx + 6) % 7];
   const today = hours[todayKey];
@@ -110,13 +110,15 @@ export function evalOpenNow(raw: any, now = new Date()) {
 
   if (yesterday) {
     const o = toMin(yesterday.open), c = toMin(yesterday.close);
-    if (c <= o && nowMin < c) return { isOpen: true, closesAt: yesterday.close, opensAt: null as string | null, todayKey };
+    if (o != null && c != null && c <= o && nowMin < c) return { isOpen: true, closesAt: yesterday.close, opensAt: null as string | null, todayKey };
   }
   if (today) {
     const o = toMin(today.open), c = toMin(today.close);
-    const closeAdj = c <= o ? c + 24 * 60 : c;
-    if (nowMin >= o && nowMin < closeAdj) return { isOpen: true, closesAt: today.close, opensAt: null, todayKey };
-    if (nowMin < o) return { isOpen: false, closesAt: null, opensAt: today.open, todayKey };
+    if (o != null && c != null) {
+      const closeAdj = c <= o ? c + 24 * 60 : c;
+      if (nowMin >= o && nowMin < closeAdj) return { isOpen: true, closesAt: today.close, opensAt: null, todayKey };
+      if (nowMin < o) return { isOpen: false, closesAt: null, opensAt: today.open, todayKey };
+    }
   }
   for (let i = 1; i <= 7; i++) {
     const k = DAY_KEYS[(todayIdx + i) % 7];
