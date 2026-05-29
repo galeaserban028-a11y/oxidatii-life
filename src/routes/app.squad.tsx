@@ -149,14 +149,14 @@ function SquadPage() {
       <section className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="font-mono text-[10px] uppercase tracking-widest text-neon-crimson flex items-center gap-1.5">
-            <Flame size={11} /> șprițuri deschise · {liveParties.length}
+            <Flame size={11} /> șprițuri deschise · {visibleParties.length}
           </div>
           <Link to="/app/parties" className="font-mono text-[9px] uppercase tracking-widest text-neon-purple">
             chem haita →
           </Link>
         </div>
 
-        {liveParties.length === 0 ? (
+        {visibleParties.length === 0 ? (
           <Link to="/app/parties" className="block p-4 rounded-2xl border border-dashed border-neon-crimson/30 bg-neon-crimson/[0.04] text-center">
             <div className="text-2xl mb-1">🍻</div>
             <div className="font-display font-bold text-sm">Zero șprițuri deschise acum.</div>
@@ -164,7 +164,7 @@ function SquadPage() {
           </Link>
         ) : (
           <div className="space-y-2">
-            {liveParties.map(p => {
+            {visibleParties.map(p => {
               const host = hostMap.get(p.host_id);
               const taken = joins.filter(j => j.party_id === p.id).length;
               const free = Math.max(0, p.spots_total - taken);
