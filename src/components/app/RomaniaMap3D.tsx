@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import maplibregl, { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -15,6 +15,28 @@ export type FriendPin = {
   venue_name?: string | null;
 };
 
+const towerSourceId = "oxidatii-3d-towers";
+const towerLayerId = "oxidatii-3d-towers-layer";
+const livePulseSourceId = "oxidatii-live-pulse";
+const livePulseLayerId = "oxidatii-live-pulse-layer";
+
+function makeTowerFeature(lng: number, lat: number, height: number, size: number, kind: "city" | "venue") {
+  return {
+    type: "Feature" as const,
+    properties: { height, kind },
+    geometry: {
+      type: "Polygon" as const,
+      coordinates: [[
+        [lng - size, lat - size],
+        [lng + size, lat - size],
+        [lng + size, lat + size],
+        [lng - size, lat + size],
+        [lng - size, lat - size],
+      ]],
+    },
+  };
+}
+
 export function RomaniaMap3D({
   cities,
   venues = [],
@@ -28,42 +50,87 @@ export function RomaniaMap3D({
   const mapRef = useRef<MlMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
   const nav = useNavigate();
+  const towerData = useMemo(() => ({
+    type: "FeatureCollection" as const,
+    features: [
+      ...cities.map((c) => makeTowerFeature(c.lng, c.lat, 18000 + c.chaos_level * 4200, 0.055, "city" as const)),
+      ...venues
+        .filter((v) => v.lat != null && v.lng != null)
+        .slice(0, 900)
+        .map((v, index) => makeTowerFeature(Number(v.lng), Number(v.lat), 4500 + (index % 9) * 1200, 0.018, "venue" as const)),
+    ],
+  }), [cities, venues]);
+  const liveData = useMemo(() => ({
+    type: "FeatureCollection" as const,
+    features: friends.map((f) => ({
+      type: "Feature" as const,
+      properties: {},
+      geometry: { type: "Point" as const, coordinates: [f.lng, f.lat] },
+    })),
+  }), [friends]);
 
   // Init map once
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      // Reliable no-key raster style (CARTO dark matter) — always renders
-      style: {
-        version: 8,
-        sources: {
-          "carto-dark": {
-            type: "raster",
-            tiles: [
-              "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-              "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-              "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-              "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-            ],
-            tileSize: 256,
-            attribution: "© OSM · © CARTO",
-          },
-        },
-        layers: [{ id: "carto-dark", type: "raster", source: "carto-dark" }],
-      },
+      style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
       center: [25.0, 45.9],
-      zoom: 5.4,
-      pitch: 45,
-      bearing: -10,
+      zoom: 5.65,
+      pitch: 62,
+      bearing: -18,
       attributionControl: { compact: true },
+      antialias: true,
     });
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
     map.touchZoomRotate.enableRotation();
+    map.dragRotate.enable();
+    map.on("load", () => {
+      map.addSource(towerSourceId, { type: "geojson", data: towerData });
+      map.addLayer({
+        id: towerLayerId,
+        type: "fill-extrusion",
+        source: towerSourceId,
+        paint: {
+          "fill-extrusion-color": ["match", ["get", "kind"], "city", "#ff3158", "#ffb000"],
+          "fill-extrusion-height": ["get", "height"],
+          "fill-extrusion-base": 0,
+          "fill-extrusion-opacity": 0.82,
+        },
+      });
+      map.addSource(livePulseSourceId, { type: "geojson", data: liveData });
+      map.addLayer({
+        id: livePulseLayerId,
+        type: "circle",
+        source: livePulseSourceId,
+        paint: {
+          "circle-radius": 18,
+          "circle-color": "#39ff88",
+          "circle-opacity": 0.22,
+          "circle-stroke-color": "#39ff88",
+          "circle-stroke-width": 2,
+        },
+      });
+      map.resize();
+    });
 
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; };
   }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    const towerSource = map.getSource(towerSourceId) as maplibregl.GeoJSONSource | undefined;
+    towerSource?.setData(towerData);
+  }, [towerData]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !map.isStyleLoaded()) return;
+    const liveSource = map.getSource(livePulseSourceId) as maplibregl.GeoJSONSource | undefined;
+    liveSource?.setData(liveData);
+  }, [liveData]);
 
   // Re-render markers when data changes
   useEffect(() => {
@@ -118,10 +185,14 @@ export function RomaniaMap3D({
   }, [cities, venues, friends, nav]);
 
   return (
-    <div className="relative w-full aspect-[5/4] rounded-2xl overflow-hidden border border-foreground/10 bg-black">
+    <div className="relative w-full h-[58vh] min-h-[420px] max-h-[620px] rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/5">
       <div ref={containerRef} className="absolute inset-0" />
-      <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded-md bg-background/70 backdrop-blur font-mono text-[9px] uppercase tracking-widest text-neon-green pointer-events-none">
-        ● 3D live
+      <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded-md bg-background/75 backdrop-blur font-mono text-[9px] uppercase tracking-widest text-neon-green pointer-events-none shadow-[0_0_24px_-8px_var(--neon-green)]">
+        ● hartă live 3D
+      </div>
+      <div className="absolute bottom-2 left-2 right-2 z-10 rounded-xl bg-background/78 backdrop-blur border border-foreground/10 px-3 py-2 pointer-events-none">
+        <div className="font-display font-black text-sm leading-none">{venues.length} cluburi pe mapă</div>
+        <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">turnurile = locuri de șpriț · verde = prieteni live</div>
       </div>
     </div>
   );
