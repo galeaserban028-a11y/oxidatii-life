@@ -242,7 +242,7 @@ export function RomaniaMap3D({
       src.setData({
         type: "FeatureCollection",
         features: venues
-          .filter(v => v.lat != null && v.lng != null)
+          .filter(v => isValidLngLat(v.lng, v.lat))
           .map(v => ({
             type: "Feature",
             geometry: { type: "Point", coordinates: [Number(v.lng), Number(v.lat)] },
@@ -259,6 +259,7 @@ export function RomaniaMap3D({
     cityMarkers.current.forEach(m => m.remove());
     cityMarkers.current = [];
     for (const c of cities) {
+      if (!isValidLngLat(c.lng, c.lat)) continue;
       const big = c.chaos_level >= 8;
       const wrap = document.createElement("button");
       wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:0;padding:0;transform:translateY(-50%);";
@@ -277,7 +278,7 @@ export function RomaniaMap3D({
         longPressed = false;
         pressTimer = window.setTimeout(() => {
           longPressed = true;
-          nav({ to: "/app/city/$slug", params: { slug: c.slug } });
+          navRef.current({ to: "/app/city/$slug", params: { slug: c.slug } });
         }, 550);
       };
       const clear = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
@@ -286,12 +287,12 @@ export function RomaniaMap3D({
         e.stopPropagation();
         clear();
         if (longPressed) return;
-        if (onCityClick) onCityClick(c);
-        else nav({ to: "/app/city/$slug", params: { slug: c.slug } });
+        if (onCityClickRef.current) onCityClickRef.current(c);
+        else navRef.current({ to: "/app/city/$slug", params: { slug: c.slug } });
       };
       cityMarkers.current.push(new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([c.lng, c.lat]).addTo(map));
     }
-  }, [cities, nav, onCityClick]);
+  }, [cities]);
 
   // FOCUS city programmatically (flyTo) when parent selects one
   useEffect(() => {
