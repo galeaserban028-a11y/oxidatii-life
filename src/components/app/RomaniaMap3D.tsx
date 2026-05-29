@@ -26,6 +26,27 @@ const VENUE_ICON: Record<string, string> = {
   after: "🌅",
 };
 
+const CARTO_DARK_RASTER_STYLE = {
+  version: 8,
+  sources: {
+    "carto-dark": {
+      type: "raster",
+      tiles: [
+        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      ],
+      tileSize: 256,
+      attribution: "© CARTO, © OpenStreetMap contributors",
+      maxzoom: 19,
+    },
+  },
+  layers: [
+    { id: "background", type: "background", paint: { "background-color": "#050505" } },
+    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 1 } },
+  ],
+} as maplibregl.StyleSpecification;
+
 export function RomaniaMap3D({
   cities,
   venues = [],
@@ -46,7 +67,7 @@ export function RomaniaMap3D({
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+      style: CARTO_DARK_RASTER_STYLE,
       center: [25.0, 45.9],
       zoom: 5.6,
       pitch: 45,
@@ -75,6 +96,10 @@ export function RomaniaMap3D({
       } catch {}
       // resize fix after mount
       requestAnimationFrame(() => map.resize());
+    });
+
+    map.on("error", (event) => {
+      console.warn("Map tile error", event.error);
     });
 
     mapRef.current = map;
@@ -177,6 +202,11 @@ export function RomaniaMap3D({
       <style>{`
         @keyframes oxi-pulse { 0% { transform: scale(0.9); opacity: 1; } 70% { transform: scale(1.6); opacity: 0; } 100% { opacity: 0; } }
         @keyframes oxi-pulse-strong { 0% { transform: translateX(-50%) scale(0.6); opacity: 0.7; } 80% { transform: translateX(-50%) scale(1.5); opacity: 0; } 100% { opacity: 0; } }
+        .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; }
+        .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
+        .maplibregl-canvas { outline:none !important; }
+        .maplibregl-marker { position:absolute !important; top:0; left:0; will-change:transform; z-index:2; }
+        .maplibregl-ctrl-top-right { position:absolute; top:10px; right:10px; z-index:3; display:flex; flex-direction:column; gap:8px; }
         .maplibregl-ctrl-group { background: rgba(6,7,10,0.85) !important; border: 1px solid rgba(255,255,255,0.1) !important; }
         .maplibregl-ctrl-group button { background-color: transparent !important; }
         .maplibregl-ctrl-group button span { filter: invert(1) brightness(1.2); }
