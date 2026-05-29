@@ -1,6 +1,7 @@
 import { useLocation } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import logoSticker from "@/assets/logo-oxidatii.png";
+import { NotificationsBell } from "./NotificationsBell";
 
 export function AppHeader() {
   const location = useLocation();
@@ -29,9 +30,12 @@ export function AppHeader() {
           Oxida<span className="text-gradient-chaos">ții</span>
         </span>
       </div>
-      <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground flicker">
-        ● live
-      </span>
+      <div className="flex items-center gap-1">
+        <NotificationsBell />
+        <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground flicker">
+          ● live
+        </span>
+      </div>
     </header>
   );
 }
