@@ -1,7 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { openOrCreateDM } from "@/lib/chat";
+import { ArrowLeft, MapPin, MessageCircle, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/app/user/$id")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -10,6 +13,19 @@ export const Route = createFileRoute("/app/user/$id")({
 
 function UserPage() {
   const { id } = Route.useParams();
+  const { user } = useAuth();
+  const nav = useNavigate();
+  const [opening, setOpening] = useState(false);
+  const isMe = user?.id === id;
+
+  const openDM = async () => {
+    if (!user || isMe) return;
+    setOpening(true);
+    try {
+      const cid = await openOrCreateDM(user.id, id);
+      nav({ to: "/app/chat/$id", params: { id: cid } });
+    } catch (e: any) { alert(e.message ?? "Eroare"); setOpening(false); }
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["user-detail", id],
@@ -85,6 +101,14 @@ function UserPage() {
               <Stat label="streak" value={profile.current_streak ?? 0} />
               <Stat label="record" value={profile.longest_streak ?? 0} />
             </div>
+
+            {!isMe && user && (
+              <button onClick={openDM} disabled={opening}
+                className="mt-4 w-full py-3 rounded-xl bg-neon-green text-background font-display font-black uppercase flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-40">
+                {opening ? <Loader2 className="animate-spin" size={18} /> : <MessageCircle size={18} strokeWidth={2.6} />}
+                trimite mesaj
+              </button>
+            )}
           </div>
 
           {/* Top venues */}
