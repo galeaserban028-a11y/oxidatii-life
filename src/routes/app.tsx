@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { BottomTabBar } from "@/components/app/BottomTabBar";
 import { AppHeader } from "@/components/app/AppHeader";
-import { AlcoholWarning } from "@/components/AlcoholWarning";
 import logoSticker from "@/assets/logo-oxidatii.png";
 
 export const Route = createFileRoute("/app")({
@@ -33,11 +32,10 @@ function AppLayout() {
 
 
   return (
-    <main className="min-h-screen bg-background text-foreground pb-24">
+    <main className="min-h-screen bg-background text-foreground pb-28">
       <AppHeader />
       <Outlet />
       <BottomTabBar />
-      <AlcoholWarning />
     </main>
   );
 
