@@ -99,6 +99,16 @@ function PartiesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
   });
 
+  // hide full parties unless user is already in
+  const takenFor = (id: string) => joins.filter(j => j.party_id === id).length;
+  const visibleParties = parties.filter(p => {
+    const taken = takenFor(p.id);
+    const free = p.spots_total - taken;
+    const inParty = !!user && joins.some(j => j.party_id === p.id && j.user_id === user.id);
+    const isHost = user?.id === p.host_id;
+    return free > 0 || inParty || isHost;
+  });
+
   return (
     <div className="px-4 pt-6 pb-4 space-y-4">
       <header className="flex items-end justify-between">
