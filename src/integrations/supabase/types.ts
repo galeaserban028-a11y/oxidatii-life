@@ -112,6 +112,86 @@ export type Database = {
         }
         Relationships: []
       }
+      parties: {
+        Row: {
+          created_at: string
+          description: string | null
+          expires_at: string
+          host_id: string
+          id: string
+          lat: number | null
+          lng: number | null
+          location_text: string
+          spots_total: number
+          starts_at: string
+          title: string
+          venue_id: string | null
+          vibe: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string
+          host_id: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          location_text: string
+          spots_total?: number
+          starts_at?: string
+          title: string
+          venue_id?: string | null
+          vibe?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string
+          host_id?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          location_text?: string
+          spots_total?: number
+          starts_at?: string
+          title?: string
+          venue_id?: string | null
+          vibe?: string | null
+        }
+        Relationships: []
+      }
+      party_joins: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          party_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          party_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          party_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "party_joins_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "parties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           aura: number
