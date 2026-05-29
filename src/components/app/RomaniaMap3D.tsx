@@ -86,6 +86,7 @@ export function RomaniaMap3D({
   const nav = useNavigate();
   const navRef = useRef(nav);
   const [mapFailed, setMapFailed] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => { navRef.current = nav; }, [nav]);
   useEffect(() => { onCityClickRef.current = onCityClick; }, [onCityClick]);
