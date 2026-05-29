@@ -4,8 +4,10 @@ import { useMemo, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
-import { UserPlus, Users, MapPin } from "lucide-react";
+import { UserPlus, Users, MapPin, Clock } from "lucide-react";
 import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilters";
+import { AddVenueSheet } from "@/components/app/AddVenueSheet";
+import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
 
 export const Route = createFileRoute("/app/map")({
   head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
@@ -16,6 +18,7 @@ type Venue = {
   id: string; name: string; type: string;
   lat: number | null; lng: number | null;
   city_id: string; address: string | null;
+  opening_hours: OpeningHours | null;
 };
 
 async function loadFriendPins(userId: string): Promise<FriendPin[]> {
@@ -115,7 +118,7 @@ function MapPage() {
       while (true) {
         const { data, error } = await supabase
           .from("venues")
-          .select("id, name, type, lat, lng, city_id, address")
+          .select("id, name, type, lat, lng, city_id, address, opening_hours")
           .not("lat", "is", null).not("lng", "is", null)
           .order("name")
           .range(from, from + step - 1);
