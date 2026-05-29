@@ -23,6 +23,20 @@ function ScanPage() {
   const [venueQuery, setVenueQuery] = useState("");
   const [selectedVenue, setSelectedVenue] = useState<{ id: string; name: string; city?: any } | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [newVenueName, setNewVenueName] = useState("");
+  const [newVenueType, setNewVenueType] = useState<"club" | "bar" | "terasa">("club");
+  const [newVenueCityId, setNewVenueCityId] = useState<string>("");
+  const [creating, setCreating] = useState(false);
+
+  const { data: cities = [] } = useQuery({
+    queryKey: ["all-cities"],
+    queryFn: async () => {
+      const { data } = await supabase.from("cities").select("id,name").order("name");
+      return data ?? [];
+    },
+  });
+
 
   const { data: venues = [] } = useQuery({
     queryKey: ["scan-venues", venueQuery],
