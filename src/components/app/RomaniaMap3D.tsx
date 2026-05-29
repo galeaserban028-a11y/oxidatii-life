@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import maplibregl, { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 type City = { id: string; slug: string; name: string; lat: number; lng: number; chaos_level: number };
-type Venue = { id: string; name: string; lat: number | null; lng: number | null };
+type Venue = {
+  id: string; name: string; type?: string;
+  lat: number | null; lng: number | null;
+};
 export type FriendPin = {
   user_id: string;
   handle: string | null;
@@ -15,40 +18,13 @@ export type FriendPin = {
   venue_name?: string | null;
 };
 
-const towerSourceId = "oxidatii-3d-towers";
-const towerLayerId = "oxidatii-3d-towers-layer";
-const livePulseSourceId = "oxidatii-live-pulse";
-const livePulseLayerId = "oxidatii-live-pulse-layer";
-const fallbackZoom = 6;
-const fallbackTileSize = 256;
-
-function projectLngLat(lng: number, lat: number, zoom = fallbackZoom) {
-  const sinLat = Math.sin((lat * Math.PI) / 180);
-  const scale = 2 ** zoom;
-  return {
-    x: ((lng + 180) / 360) * scale,
-    y: (0.5 - Math.log((1 + sinLat) / (1 - sinLat)) / (4 * Math.PI)) * scale,
-  };
-}
-
-const mapCenter = projectLngLat(25.0, 45.9);
-
-function makeTowerFeature(lng: number, lat: number, height: number, size: number, kind: "city" | "venue") {
-  return {
-    type: "Feature" as const,
-    properties: { height, kind },
-    geometry: {
-      type: "Polygon" as const,
-      coordinates: [[
-        [lng - size, lat - size],
-        [lng + size, lat - size],
-        [lng + size, lat + size],
-        [lng - size, lat + size],
-        [lng - size, lat - size],
-      ]],
-    },
-  };
-}
+const VENUE_ICON: Record<string, string> = {
+  club: "🎧",
+  bar: "🍷",
+  pub: "🍺",
+  terasa: "🍹",
+  after: "🌅",
+};
 
 export function RomaniaMap3D({
   cities,
@@ -62,120 +38,51 @@ export function RomaniaMap3D({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
+  const loadedRef = useRef(false);
   const nav = useNavigate();
-  const towerData = useMemo(() => ({
-    type: "FeatureCollection" as const,
-    features: [
-      ...cities.map((c) => makeTowerFeature(c.lng, c.lat, 18000 + c.chaos_level * 4200, 0.055, "city" as const)),
-      ...venues
-        .filter((v) => v.lat != null && v.lng != null)
-        .slice(0, 900)
-        .map((v, index) => makeTowerFeature(Number(v.lng), Number(v.lat), 4500 + (index % 9) * 1200, 0.018, "venue" as const)),
-    ],
-  }), [cities, venues]);
-  const liveData = useMemo(() => ({
-    type: "FeatureCollection" as const,
-    features: friends.map((f) => ({
-      type: "Feature" as const,
-      properties: {},
-      geometry: { type: "Point" as const, coordinates: [f.lng, f.lat] },
-    })),
-  }), [friends]);
-  const towerDataRef = useRef(towerData);
-  const liveDataRef = useRef(liveData);
-  towerDataRef.current = towerData;
-  liveDataRef.current = liveData;
-  const fallbackTiles = useMemo(() => {
-    const baseX = Math.floor(mapCenter.x);
-    const baseY = Math.floor(mapCenter.y);
-    const tiles: { key: string; url: string; x: number; y: number }[] = [];
-    const hosts = ["a", "b", "c", "d"];
-    for (let x = baseX - 3; x <= baseX + 3; x += 1) {
-      for (let y = baseY - 3; y <= baseY + 3; y += 1) {
-        const host = hosts[Math.abs(x + y) % hosts.length];
-        tiles.push({
-          key: `${x}-${y}`,
-          url: `https://${host}.basemaps.cartocdn.com/rastertiles/voyager/${fallbackZoom}/${x}/${y}@2x.png`,
-          x: (x - mapCenter.x) * fallbackTileSize,
-          y: (y - mapCenter.y) * fallbackTileSize,
-        });
-      }
-    }
-    return tiles;
-  }, []);
-  const fallbackPins = useMemo(() => [
-    ...cities.map((c) => ({ id: c.id, kind: "city" as const, name: c.name, lat: c.lat, lng: c.lng, height: 34 + c.chaos_level * 4 })),
-    ...venues
-      .filter((v) => v.lat != null && v.lng != null)
-      .slice(0, 320)
-      .map((v, index) => ({ id: v.id, kind: "venue" as const, name: v.name, lat: Number(v.lat), lng: Number(v.lng), height: 16 + (index % 7) * 5 })),
-    ...friends.map((f) => ({ id: f.user_id, kind: "friend" as const, name: f.handle ?? f.display_name ?? "oxidat live", lat: f.lat, lng: f.lng, height: 66 })),
-  ], [cities, venues, friends]);
 
-  // Init map once
+  // INIT map once
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+      style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
       center: [25.0, 45.9],
-      zoom: 5.65,
-      pitch: 62,
-      bearing: -18,
+      zoom: 5.6,
+      pitch: 45,
+      bearing: -8,
       attributionControl: { compact: true },
-      canvasContextAttributes: { antialias: true },
+      cooperativeGestures: false,
     });
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
+
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "top-right");
+    map.addControl(
+      new maplibregl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserHeading: true,
+        showUserLocation: true,
+      }),
+      "top-right"
+    );
     map.touchZoomRotate.enableRotation();
     map.dragRotate.enable();
+
     map.on("load", () => {
-      map.addSource(towerSourceId, { type: "geojson", data: towerDataRef.current });
-      map.addLayer({
-        id: towerLayerId,
-        type: "fill-extrusion",
-        source: towerSourceId,
-        paint: {
-          "fill-extrusion-color": ["match", ["get", "kind"], "city", "#ff3158", "#ffb000"],
-          "fill-extrusion-height": ["get", "height"],
-          "fill-extrusion-base": 0,
-          "fill-extrusion-opacity": 0.82,
-        },
-      });
-      map.addSource(livePulseSourceId, { type: "geojson", data: liveDataRef.current });
-      map.addLayer({
-        id: livePulseLayerId,
-        type: "circle",
-        source: livePulseSourceId,
-        paint: {
-          "circle-radius": 18,
-          "circle-color": "#39ff88",
-          "circle-opacity": 0.22,
-          "circle-stroke-color": "#39ff88",
-          "circle-stroke-width": 2,
-        },
-      });
-      map.resize();
+      loadedRef.current = true;
+      // subtle neon glow on the country
+      try {
+        map.setPaintProperty("background", "background-color", "#06070a");
+      } catch {}
+      // resize fix after mount
+      requestAnimationFrame(() => map.resize());
     });
 
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
+    return () => { map.remove(); mapRef.current = null; loadedRef.current = false; };
   }, []);
 
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
-    const towerSource = map.getSource(towerSourceId) as maplibregl.GeoJSONSource | undefined;
-    towerSource?.setData(towerData);
-  }, [towerData]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
-    const liveSource = map.getSource(livePulseSourceId) as maplibregl.GeoJSONSource | undefined;
-    liveSource?.setData(liveData);
-  }, [liveData]);
-
-  // Re-render markers when data changes
+  // RENDER markers whenever data changes
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -184,93 +91,111 @@ export function RomaniaMap3D({
     markersRef.current.forEach(m => m.remove());
     markersRef.current = [];
 
-    // City pins (always visible)
+    // ── CITIES — neon glow dot + label
     for (const c of cities) {
-      const el = document.createElement("button");
       const big = c.chaos_level >= 8;
-      el.className = "block";
-      el.style.cssText = `width:${big ? 14 : 9}px;height:${big ? 14 : 9}px;border-radius:9999px;background:${big ? "var(--neon-crimson)" : "var(--neon-purple)"};box-shadow:0 0 14px ${big ? "var(--neon-crimson)" : "var(--neon-purple)"},0 0 28px ${big ? "var(--neon-crimson)" : "var(--neon-purple)"};cursor:pointer;`;
-      el.title = c.name;
-      el.onclick = (e) => { e.stopPropagation(); nav({ to: "/app/city/$slug", params: { slug: c.slug } }); };
-      const m = new maplibregl.Marker({ element: el }).setLngLat([c.lng, c.lat]).addTo(map);
-      markersRef.current.push(m);
+      const wrap = document.createElement("button");
+      wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:0;padding:0;transform:translateY(-50%);";
+      wrap.title = c.name;
+
+      const dot = document.createElement("div");
+      const color = big ? "#ff3158" : "#c66bff";
+      dot.style.cssText = `width:${big ? 16 : 11}px;height:${big ? 16 : 11}px;border-radius:9999px;background:${color};border:2px solid rgba(255,255,255,0.85);box-shadow:0 0 16px ${color},0 0 32px ${color};animation:oxi-pulse 2.4s ease-out infinite;`;
+      wrap.appendChild(dot);
+
+      const label = document.createElement("div");
+      label.textContent = c.name.toUpperCase();
+      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:${big ? 11 : 9}px;letter-spacing:0.08em;color:#fff;text-shadow:0 0 6px #000,0 1px 3px #000;white-space:nowrap;`;
+      wrap.appendChild(label);
+
+      wrap.onclick = (e) => { e.stopPropagation(); nav({ to: "/app/city/$slug", params: { slug: c.slug } }); };
+      markersRef.current.push(new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([c.lng, c.lat]).addTo(map));
     }
 
-    // Venue pins (small dots)
-    for (const v of venues) {
-      if (v.lat == null || v.lng == null) continue;
+    // ── VENUES — emoji icons by type (capped for perf)
+    const visibleVenues = venues.filter(v => v.lat != null && v.lng != null).slice(0, 600);
+    for (const v of visibleVenues) {
+      const type = v.type ?? "club";
+      const emoji = VENUE_ICON[type] ?? "📍";
       const el = document.createElement("button");
-      el.style.cssText = "width:6px;height:6px;border-radius:9999px;background:oklch(0.85 0.20 60);box-shadow:0 0 6px oklch(0.85 0.20 60);cursor:pointer;";
       el.title = v.name;
-      el.onclick = (e) => { e.stopPropagation(); nav({ to: "/app/venue/$id", params: { id: v.id } }); };
-      const m = new maplibregl.Marker({ element: el }).setLngLat([Number(v.lng), Number(v.lat)]).addTo(map);
-      markersRef.current.push(m);
+      el.style.cssText = "width:28px;height:28px;border-radius:9999px;background:rgba(10,10,14,0.85);border:1.5px solid rgba(255,176,0,0.7);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;box-shadow:0 0 10px rgba(255,176,0,0.45);transition:transform .15s;padding:0;";
+      el.textContent = emoji;
+      el.onmouseenter = () => { el.style.transform = "scale(1.25)"; };
+      el.onmouseleave = () => { el.style.transform = "scale(1)"; };
+      el.onclick = (e) => {
+        e.stopPropagation();
+        nav({ to: "/app/venue/$id", params: { id: v.id } });
+      };
+      markersRef.current.push(new maplibregl.Marker({ element: el, anchor: "center" }).setLngLat([Number(v.lng), Number(v.lat)]).addTo(map));
     }
 
-    // Friend pins (avatars, big & green)
+    // ── FRIENDS — Snapchat-style avatar bubbles with pulse
     for (const f of friends) {
       const wrap = document.createElement("div");
-      wrap.style.cssText = "position:relative;transform:translateY(-50%);cursor:pointer;";
+      wrap.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);";
+
+      // pulsing ring
+      const pulse = document.createElement("div");
+      pulse.style.cssText = "position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:54px;height:54px;border-radius:9999px;background:#39ff88;opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;";
+      wrap.appendChild(pulse);
+
+      // avatar circle
       const ring = document.createElement("div");
-      ring.style.cssText = "width:36px;height:36px;border-radius:9999px;border:2px solid var(--neon-green);overflow:hidden;background:#000;box-shadow:0 0 14px var(--neon-green);";
+      ring.style.cssText = "position:relative;width:44px;height:44px;border-radius:9999px;border:3px solid #39ff88;overflow:hidden;background:linear-gradient(135deg,#ff3158,#c66bff);box-shadow:0 0 18px #39ff88,0 4px 14px rgba(0,0,0,0.6);";
       if (f.avatar_url) {
         const img = document.createElement("img");
-        img.src = f.avatar_url; img.style.cssText = "width:100%;height:100%;object-fit:cover;";
+        img.src = f.avatar_url;
+        img.alt = "";
+        img.style.cssText = "width:100%;height:100%;object-fit:cover;";
         ring.appendChild(img);
       } else {
-        ring.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-family:'Space Grotesk',sans-serif;">${((f.handle ?? f.display_name ?? "?")[0] ?? "?").toUpperCase()}</div>`;
+        const ini = document.createElement("div");
+        ini.textContent = ((f.handle ?? f.display_name ?? "?")[0] ?? "?").toUpperCase();
+        ini.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:'Space Grotesk',sans-serif;font-size:18px;";
+        ring.appendChild(ini);
       }
       wrap.appendChild(ring);
+
+      // live dot
+      const live = document.createElement("div");
+      live.style.cssText = "position:absolute;top:-2px;right:-2px;width:12px;height:12px;border-radius:9999px;background:#39ff88;border:2px solid #06070a;box-shadow:0 0 8px #39ff88;";
+      ring.appendChild(live);
+
+      // name pill
+      const pill = document.createElement("div");
+      pill.textContent = `@${f.handle ?? f.display_name ?? "live"}`;
+      pill.style.cssText = "margin-top:4px;padding:2px 6px;border-radius:9999px;background:rgba(6,7,10,0.92);color:#39ff88;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap;border:1px solid rgba(57,255,136,0.5);";
+      wrap.appendChild(pill);
+
       wrap.onclick = (e) => { e.stopPropagation(); nav({ to: "/app/user/$id", params: { id: f.user_id } }); };
-      const m = new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([f.lng, f.lat]).addTo(map);
-      markersRef.current.push(m);
+      markersRef.current.push(new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([f.lng, f.lat]).addTo(map));
     }
   }, [cities, venues, friends, nav]);
 
   return (
-    <div className="relative w-full h-[58vh] min-h-[420px] max-h-[620px] rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/5">
-      <div className="absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_center,var(--neon-green)_0_1px,transparent_1px)] [background-size:18px_18px] opacity-20" />
-      <div className="absolute inset-0 [perspective:900px] overflow-hidden">
-        <div className="absolute left-1/2 top-[52%] h-[1792px] w-[1792px] -translate-x-1/2 -translate-y-1/2 rotate-x-[62deg] rotate-z-[-18deg] opacity-95 shadow-[0_50px_120px_-70px_var(--neon-green)]">
-          {fallbackTiles.map((tile) => (
-            <img
-              key={tile.key}
-              src={tile.url}
-              alt=""
-              loading="lazy"
-              className="absolute h-64 w-64 max-w-none select-none opacity-95"
-              style={{ left: `calc(50% + ${tile.x}px)`, top: `calc(50% + ${tile.y}px)`, transform: "translate(-50%, -50%)" }}
-            />
-          ))}
-          {fallbackPins.map((pin) => {
-            const point = projectLngLat(pin.lng, pin.lat);
-            const x = (point.x - mapCenter.x) * fallbackTileSize;
-            const y = (point.y - mapCenter.y) * fallbackTileSize;
-            return (
-              <div
-                key={`${pin.kind}-${pin.id}`}
-                title={pin.name}
-                className="absolute w-2 rounded-t-full bg-neon-crimson shadow-[0_0_18px_var(--neon-crimson)]"
-                style={{
-                  left: `calc(50% + ${x}px)`,
-                  top: `calc(50% + ${y}px)`,
-                  height: `${pin.height}px`,
-                  transform: `translate(-50%, -100%) rotate-x(-62deg)`,
-                  background: pin.kind === "friend" ? "var(--neon-green)" : pin.kind === "city" ? "var(--neon-crimson)" : "oklch(0.85 0.20 60)",
-                  boxShadow: pin.kind === "friend" ? "0 0 22px var(--neon-green)" : undefined,
-                }}
-              />
-            );
-          })}
+    <div className="relative w-full h-[62vh] min-h-[460px] max-h-[640px] rounded-2xl overflow-hidden border border-foreground/10 bg-black">
+      <style>{`
+        @keyframes oxi-pulse { 0% { transform: scale(0.9); opacity: 1; } 70% { transform: scale(1.6); opacity: 0; } 100% { opacity: 0; } }
+        @keyframes oxi-pulse-strong { 0% { transform: translateX(-50%) scale(0.6); opacity: 0.7; } 80% { transform: translateX(-50%) scale(1.5); opacity: 0; } 100% { opacity: 0; } }
+        .maplibregl-ctrl-group { background: rgba(6,7,10,0.85) !important; border: 1px solid rgba(255,255,255,0.1) !important; }
+        .maplibregl-ctrl-group button { background-color: transparent !important; }
+        .maplibregl-ctrl-group button span { filter: invert(1) brightness(1.2); }
+      `}</style>
+      <div ref={containerRef} className="absolute inset-0" />
+
+      {/* top status pill */}
+      <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur font-mono text-[9px] uppercase tracking-widest text-neon-green pointer-events-none border border-neon-green/30">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse mr-1.5 align-middle" />
+        live · {friends.length} oxidați activi
+      </div>
+
+      {/* bottom legend */}
+      <div className="absolute bottom-2 left-2 right-2 z-10 rounded-xl bg-black/80 backdrop-blur border border-foreground/10 px-3 py-2 pointer-events-none flex items-center justify-between gap-2">
+        <div className="font-display font-black text-xs leading-none">{venues.length} locuri · {cities.length} orașe</div>
+        <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+          <span>🎧 club</span><span>🍷 bar</span><span>🍺 pub</span><span>🍹 terasă</span>
         </div>
-      </div>
-      <div ref={containerRef} className="absolute inset-0 opacity-80 mix-blend-screen" />
-      <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded-md bg-background/75 backdrop-blur font-mono text-[9px] uppercase tracking-widest text-neon-green pointer-events-none shadow-[0_0_24px_-8px_var(--neon-green)]">
-        ● hartă live 3D
-      </div>
-      <div className="absolute bottom-2 left-2 right-2 z-10 rounded-xl bg-background/78 backdrop-blur border border-foreground/10 px-3 py-2 pointer-events-none">
-        <div className="font-display font-black text-sm leading-none">{venues.length} cluburi pe mapă</div>
-        <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">turnurile = locuri de șpriț · verde = prieteni live</div>
       </div>
     </div>
   );
