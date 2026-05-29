@@ -369,7 +369,7 @@ export function RomaniaMap3D({
     for (const [id, marker] of friendMarkers.current) {
       if (!seen.has(id)) { marker.remove(); friendMarkers.current.delete(id); }
     }
-  }, [friends]);
+  }, [friends, retryKey]);
 
   return (
     <div className="relative w-full h-[54vh] min-h-[400px] max-h-[560px] rounded-3xl overflow-hidden border border-neon-purple/40 bg-[#03040a] shadow-[0_0_80px_-20px_var(--neon-purple),inset_0_0_120px_rgba(0,0,0,0.9)]">
