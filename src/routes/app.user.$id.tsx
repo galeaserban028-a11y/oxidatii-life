@@ -4,8 +4,26 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM } from "@/lib/chat";
-import { ArrowLeft, MapPin, MessageCircle, Loader2, Lock, UserPlus, UserCheck, Clock } from "lucide-react";
+import { ArrowLeft, MapPin, MessageCircle, Loader2, Lock, UserPlus, UserCheck, Clock, ShieldOff, MoreVertical } from "lucide-react";
 import { useFollowStats, useFollowStatus, useFollowMutations } from "@/lib/follows";
+import { useIsBlocked, useBlockMutations } from "@/lib/blocks";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/user/$id")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
