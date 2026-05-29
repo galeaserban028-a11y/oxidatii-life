@@ -312,7 +312,7 @@ export function RomaniaMap3D({
       };
       cityMarkers.current.push(new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([c.lng, c.lat]).addTo(map));
     }
-  }, [cities]);
+  }, [cities, retryKey]);
 
   // FOCUS city programmatically (flyTo) when parent selects one
   useEffect(() => {
