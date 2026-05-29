@@ -103,9 +103,10 @@ function PartiesPage() {
     <div className="px-4 pt-6 pb-4 space-y-4">
       <header className="flex items-end justify-between">
         <div>
-          <h1 className="font-display font-black text-2xl tracking-tight">haita.</h1>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-purple">// organizare șpriț</div>
+          <h1 className="font-display font-black text-2xl tracking-tight mt-1">șprițuri.</h1>
           <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mt-0.5">
-            {parties.length} șprițuri live · cheamă-i sau intră
+            {parties.length} șprițuri live · intră sau deschide unul
           </p>
         </div>
         <button
@@ -113,7 +114,7 @@ function PartiesPage() {
           disabled={!user}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-br from-neon-crimson to-neon-purple text-white font-mono text-[11px] uppercase tracking-widest shadow-[0_0_18px_-4px_var(--neon-crimson)] active:scale-95 disabled:opacity-40"
         >
-          <Plus size={14} strokeWidth={3} /> chem haita
+          <Plus size={14} strokeWidth={3} /> deschid șpriț
         </button>
       </header>
 
