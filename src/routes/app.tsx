@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { BottomTabBar } from "@/components/app/BottomTabBar";
 import { AppHeader } from "@/components/app/AppHeader";
-import { AlcoholWarning } from "@/components/AlcoholWarning";
 import logoSticker from "@/assets/logo-oxidatii.png";
 
 export const Route = createFileRoute("/app")({
