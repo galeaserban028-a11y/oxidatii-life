@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useState } from "react";
+
 
 export const Route = createFileRoute("/app/top")({
   head: () => ({ meta: [{ title: "Top · OXIDAȚII" }] }),
