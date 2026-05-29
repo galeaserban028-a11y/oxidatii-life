@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { Camera, ImagePlus, Search } from "lucide-react";
+import { Camera, Search, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -23,10 +23,10 @@ function ScanPage() {
   const [selectedVenue, setSelectedVenue] = useState<{ id: string; name: string; city?: any } | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const { data: venues } = useQuery({
+  const { data: venues = [] } = useQuery({
     queryKey: ["scan-venues", venueQuery],
     queryFn: async () => {
-      const base = supabase.from("venues").select("id, name, city:cities(name)").limit(6);
+      const base = supabase.from("venues").select("id, name, city:cities(name)").limit(8);
       const { data } = venueQuery.trim()
         ? await base.ilike("name", `%${venueQuery.trim()}%`)
         : await base.order("created_at", { ascending: false });
@@ -64,95 +64,92 @@ function ScanPage() {
     }
   }
 
+  const ready = !!file && !!selectedVenue && !uploading;
+
   return (
-    <div className="px-5 pt-6 pb-8 max-w-xl mx-auto space-y-5">
-      <header className="space-y-1">
-        <div className="text-[11px] uppercase tracking-[0.2em] text-primary font-medium">Postează</div>
-        <h1 className="font-display font-bold text-3xl leading-tight">Pune un șpriț.</h1>
-        <p className="text-sm text-muted-foreground">O poză + locația. Atât. Intri direct pe Top România.</p>
+    <div className="px-5 pt-6 pb-6 max-w-xl mx-auto space-y-4">
+      <header className="flex items-center justify-between">
+        <h1 className="font-display font-bold text-2xl leading-tight">Pune un șpriț</h1>
+        <Link to="/app" className="text-xs text-muted-foreground">închide</Link>
       </header>
 
+      {/* Photo */}
       <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
 
       <button
         onClick={() => fileRef.current?.click()}
-        className="block w-full aspect-[4/5] rounded-2xl overflow-hidden bg-card border-2 border-dashed border-border active:scale-[0.99] transition"
+        className="block w-full aspect-square rounded-3xl overflow-hidden bg-card border border-border active:scale-[0.99] transition relative"
       >
         {file ? (
-          <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
-        ) : (
-          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-2">
-            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
-              <Camera size={26} className="text-primary" />
+          <>
+            <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
+            <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs backdrop-blur">
+              schimbă
             </div>
-            <div className="font-display font-semibold text-foreground">Apasă să faci poza</div>
+          </>
+        ) : (
+          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-3">
+            <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "var(--gradient-sunset)" }}>
+              <Camera size={28} className="text-white" />
+            </div>
+            <div className="font-display font-semibold text-foreground text-lg">fă poza</div>
             <div className="text-xs">sau alege din galerie</div>
           </div>
         )}
       </button>
 
-      {file && (
-        <button onClick={() => fileRef.current?.click()}
-          className="w-full text-xs text-primary font-medium flex items-center justify-center gap-1.5">
-          <ImagePlus size={14}/> schimbă poza
-        </button>
-      )}
-
-      {/* Venue picker */}
-      <div className="space-y-2">
-        <label className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">Locația</label>
-        {selectedVenue ? (
-          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-card border border-border">
-            <div>
-              <div className="font-display font-semibold">{selectedVenue.name}</div>
-              <div className="text-[11px] text-muted-foreground">{selectedVenue.city?.name ?? ""}</div>
-            </div>
-            <button onClick={() => setSelectedVenue(null)} className="text-xs text-primary font-medium">schimbă</button>
+      {/* Venue — inline, always visible */}
+      {selectedVenue ? (
+        <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-primary/40">
+          <div className="min-w-0">
+            <div className="font-display font-semibold truncate">📍 {selectedVenue.name}</div>
+            <div className="text-[11px] text-muted-foreground truncate">{selectedVenue.city?.name ?? ""}</div>
           </div>
-        ) : (
-          <>
-            <div className="relative">
-              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                value={venueQuery}
-                onChange={(e) => setVenueQuery(e.target.value)}
-                placeholder="caută club, bar, terasă..."
-                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
-            </div>
-            <div className="space-y-1 max-h-56 overflow-y-auto">
-              {(venues ?? []).map((v: any) => (
+          <button onClick={() => setSelectedVenue(null)} className="p-2 text-muted-foreground">
+            <X size={16}/>
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="relative">
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={venueQuery}
+              onChange={(e) => setVenueQuery(e.target.value)}
+              placeholder="unde ești? club, bar, terasă..."
+              className="w-full pl-10 pr-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+            />
+          </div>
+          {venues.length > 0 && (
+            <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+              {venues.map((v: any) => (
                 <button key={v.id} onClick={() => setSelectedVenue(v)}
-                  className="w-full text-left p-3 rounded-xl hover:bg-secondary transition">
-                  <div className="font-display font-medium text-sm">{v.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{v.city?.name ?? ""}</div>
+                  className="shrink-0 px-3 py-2 rounded-full bg-card border border-border text-xs font-medium active:scale-95 transition">
+                  {v.name}
                 </button>
               ))}
             </div>
-          </>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
-      <textarea
+      {/* Caption — inline, single line, optional */}
+      <input
         value={caption} onChange={(e) => setCaption(e.target.value)}
-        placeholder="Spune ceva... (opțional)"
-        rows={2}
-        className="w-full p-3.5 rounded-2xl bg-card border border-border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+        placeholder="caption (opțional)"
+        className="w-full px-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
       />
 
+      {/* Submit */}
       <button
         onClick={submit}
-        disabled={uploading || !file || !selectedVenue}
-        className="w-full py-4 rounded-2xl text-white font-semibold disabled:opacity-40 shadow-md active:scale-[0.98] transition"
+        disabled={!ready}
+        className="w-full py-4 rounded-2xl text-white font-semibold disabled:opacity-40 shadow-[var(--shadow-elevated)] active:scale-[0.98] transition"
         style={{ background: "var(--gradient-sunset)" }}
       >
-        {uploading ? "Se postează..." : "Postează șprițul"}
+        {uploading ? "Se postează..." : "Postează"}
       </button>
-
-      <Link to="/app" className="block text-center text-xs text-muted-foreground pt-2">
-        ← înapoi
-      </Link>
     </div>
   );
 }
