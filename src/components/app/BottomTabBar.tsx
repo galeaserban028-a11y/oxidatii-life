@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { MapPin, Camera, User, MessageCircle, Newspaper, Trophy, Users } from "lucide-react";
+import { MapPin, Camera, User, MessageCircle, Newspaper, Trophy, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
@@ -9,8 +9,8 @@ const tabs: Tab[] = [
   { to: "/app", icon: Newspaper, label: "Live", exact: true },
   { to: "/app/map", icon: MapPin, label: "Hartă" },
   { to: "/app/top", icon: Trophy, label: "Top" },
-  { to: "/app/scan", icon: Camera, label: "Șpriț", primary: true },
-  { to: "/app/squad", icon: Users, label: "Organiz." },
+  { to: "/app/scan", icon: Camera, label: "Postează", primary: true },
+  { to: "/app/squad", icon: Flame, label: "Șprițuri" },
   { to: "/app/inbox", icon: MessageCircle, label: "Mesaje", badgeKey: "inbox" },
   { to: "/app/me", icon: User, label: "Eu" },
 ];
