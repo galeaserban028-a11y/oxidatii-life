@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { BottomTabBar } from "@/components/app/BottomTabBar";
+import { AppHeader } from "@/components/app/AppHeader";
 import { AlcoholWarning } from "@/components/AlcoholWarning";
 import logoSticker from "@/assets/logo-oxidatii.png";
 
@@ -33,18 +34,7 @@ function AppLayout() {
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-24">
-      {/* Sticky brand header — sticker logo on every app screen */}
-      <header className="sticky top-0 z-40 flex items-center justify-between gap-2 px-3 pt-[env(safe-area-inset-top)] pb-1.5 bg-background/70 backdrop-blur-md border-b border-foreground/5">
-        <div className="flex items-center gap-2">
-          <img src={logoSticker} alt="Oxidații" className="h-9 w-9 object-contain drop-shadow-[0_2px_8px_rgba(255,49,88,0.4)]" />
-          <span className="font-display font-black text-[13px] tracking-tight uppercase leading-none">
-            Oxida<span className="text-gradient-chaos">ții</span>
-          </span>
-        </div>
-        <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground flicker">
-          ● live
-        </span>
-      </header>
+      <AppHeader />
       <Outlet />
       <BottomTabBar />
       <AlcoholWarning />

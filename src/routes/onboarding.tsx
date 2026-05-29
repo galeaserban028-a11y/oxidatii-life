@@ -1,8 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { ChevronLeft } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Onboarding · OXIDAȚII" }] }),
@@ -55,6 +56,12 @@ function Onboarding() {
 
   return (
     <main className="min-h-screen bg-background text-foreground px-6 py-10">
+      <div className="flex items-center justify-between mb-4">
+        <Link to="/login" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition">
+          <ChevronLeft size={16} /> înapoi
+        </Link>
+        <Link to="/" className="font-display font-black text-xl tracking-widest text-gradient-chaos">OXIDAȚII</Link>
+      </div>
       <div className="max-w-sm mx-auto space-y-6">
         <div>
           <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-green mb-2">// PASUL 1</div>
