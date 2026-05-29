@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
@@ -135,6 +135,19 @@ function MapPage() {
     enabled: !!user,
     refetchInterval: 60_000,
   });
+
+  // Realtime: instantly refresh when anyone checks in/out
+  const qc = useQueryClient();
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel("live-checkins")
+      .on("postgres_changes", { event: "*", schema: "public", table: "check_ins" }, () => {
+        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user, qc]);
 
   const cityMap = useMemo(() => new Map(cities.map(c => [c.id, c])), [cities]);
 
