@@ -37,13 +37,17 @@ export function CTA() {
 export function Footer() {
   return (
     <footer className="relative py-8 px-6 border-t border-border">
-      <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-sunset-amber" />
           <span className="font-display font-bold text-sm tracking-[0.12em]">OXIDAȚII</span>
           <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             made in RO · 18+
           </span>
+        </div>
+        <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-neon-crimson">
+          <AlertTriangle size={12} />
+          Alcoolul dăunează grav sănătății
         </div>
         <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
           bea responsabil · noaptea începe aici

@@ -6,6 +6,7 @@ import { AddSpot, FindOxidati } from "@/components/oxidatii/AddSpot";
 import { CitiesPreview } from "@/components/oxidatii/CitiesPreview";
 import { Ranks } from "@/components/oxidatii/Ranks";
 import { CTA, Footer } from "@/components/oxidatii/CTA";
+import { AlcoholWarning } from "@/components/AlcoholWarning";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -31,6 +32,7 @@ function Index() {
       <Ranks />
       <CTA />
       <Footer />
+      <AlcoholWarning />
     </main>
   );
 }
