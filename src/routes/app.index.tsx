@@ -207,7 +207,7 @@ function EmptyFeed() {
     <div className="rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-3">
       <div className="text-5xl">🌃</div>
       <div className="font-display uppercase text-xl leading-tight">
-        Țara încă doarme.
+        Șprițurile încă sunt active.
       </div>
       <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
         Nimeni n-a postat încă. Nu inventăm conținut. Când oamenii reali încep să posteze, apar aici — nimic altceva.
