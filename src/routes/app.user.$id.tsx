@@ -220,11 +220,25 @@ function UserPage() {
           {!canViewContent ? (
             <div className="rounded-3xl border border-dashed border-foreground/20 bg-card p-10 text-center space-y-3">
               <div className="mx-auto h-14 w-14 rounded-full bg-neon-crimson/15 flex items-center justify-center">
-                <Lock className="text-neon-crimson" size={26} />
+                {isBlocking || isBlockedBy ? (
+                  <ShieldOff className="text-neon-crimson" size={26} />
+                ) : (
+                  <Lock className="text-neon-crimson" size={26} />
+                )}
               </div>
-              <div className="font-display uppercase text-lg">Cont privat</div>
+              <div className="font-display uppercase text-lg">
+                {isBlocking
+                  ? "Ai blocat acest cont"
+                  : isBlockedBy
+                  ? "Conținut indisponibil"
+                  : "Cont privat"}
+              </div>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                {followStatus === "pending"
+                {isBlocking
+                  ? "Deblochează-l ca să-i poți vedea profilul."
+                  : isBlockedBy
+                  ? "Nu poți vedea ce postează acest utilizator."
+                  : followStatus === "pending"
                   ? "Cererea ta a fost trimisă. Aștepți accept."
                   : "Urmărește-l ca să-i vezi șprițurile."}
               </p>
