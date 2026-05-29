@@ -120,8 +120,11 @@ export function RomaniaMap3D({
       return;
     }
 
-    // Globe projection — gives the small planet / game feel
-    try { (map as any).setProjection({ type: "globe" }); } catch {}
+    // Globe projection — desktop only. Software WebGL on mobile chokes on it.
+    if (!isSmall) {
+      try { (map as any).setProjection({ type: "globe" }); } catch {}
+    }
+
 
 
 
