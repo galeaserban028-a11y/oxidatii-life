@@ -21,12 +21,14 @@ import { Route as AppScanRouteImport } from './routes/app.scan'
 import { Route as AppPartiesRouteImport } from './routes/app.parties'
 import { Route as AppMeRouteImport } from './routes/app.me'
 import { Route as AppMapRouteImport } from './routes/app.map'
+import { Route as AppInboxRouteImport } from './routes/app.inbox'
 import { Route as AppFriendsRouteImport } from './routes/app.friends'
 import { Route as AppFazeRouteImport } from './routes/app.faze'
 import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
 import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
+import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -88,6 +90,11 @@ const AppMapRoute = AppMapRouteImport.update({
   path: '/map',
   getParentRoute: () => AppRoute,
 } as any)
+const AppInboxRoute = AppInboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFriendsRoute = AppFriendsRouteImport.update({
   id: '/friends',
   path: '/friends',
@@ -118,6 +125,11 @@ const AppCitySlugRoute = AppCitySlugRouteImport.update({
   path: '/city/$slug',
   getParentRoute: () => AppRoute,
 } as any)
+const AppChatIdRoute = AppChatIdRouteImport.update({
+  id: '/chat/$id',
+  path: '/chat/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -127,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/app/faze': typeof AppFazeRoute
   '/app/friends': typeof AppFriendsRoute
+  '/app/inbox': typeof AppInboxRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
   '/app/parties': typeof AppPartiesRoute
@@ -134,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
+  '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
@@ -146,6 +160,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/app/faze': typeof AppFazeRoute
   '/app/friends': typeof AppFriendsRoute
+  '/app/inbox': typeof AppInboxRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
   '/app/parties': typeof AppPartiesRoute
@@ -153,6 +168,7 @@ export interface FileRoutesByTo {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app': typeof AppIndexRoute
+  '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
@@ -167,6 +183,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/app/faze': typeof AppFazeRoute
   '/app/friends': typeof AppFriendsRoute
+  '/app/inbox': typeof AppInboxRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
   '/app/parties': typeof AppPartiesRoute
@@ -174,6 +191,7 @@ export interface FileRoutesById {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
+  '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
@@ -189,6 +207,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/faze'
     | '/app/friends'
+    | '/app/inbox'
     | '/app/map'
     | '/app/me'
     | '/app/parties'
@@ -196,6 +215,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/'
+    | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/street/$id'
     | '/app/user/$id'
@@ -208,6 +228,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/faze'
     | '/app/friends'
+    | '/app/inbox'
     | '/app/map'
     | '/app/me'
     | '/app/parties'
@@ -215,6 +236,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app'
+    | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/street/$id'
     | '/app/user/$id'
@@ -228,6 +250,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/app/faze'
     | '/app/friends'
+    | '/app/inbox'
     | '/app/map'
     | '/app/me'
     | '/app/parties'
@@ -235,6 +258,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/'
+    | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/street/$id'
     | '/app/user/$id'
@@ -335,6 +359,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMapRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/inbox': {
+      id: '/app/inbox'
+      path: '/inbox'
+      fullPath: '/app/inbox'
+      preLoaderRoute: typeof AppInboxRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/friends': {
       id: '/app/friends'
       path: '/friends'
@@ -377,12 +408,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCitySlugRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/chat/$id': {
+      id: '/app/chat/$id'
+      path: '/chat/$id'
+      fullPath: '/app/chat/$id'
+      preLoaderRoute: typeof AppChatIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppFazeRoute: typeof AppFazeRoute
   AppFriendsRoute: typeof AppFriendsRoute
+  AppInboxRoute: typeof AppInboxRoute
   AppMapRoute: typeof AppMapRoute
   AppMeRoute: typeof AppMeRoute
   AppPartiesRoute: typeof AppPartiesRoute
@@ -390,6 +429,7 @@ interface AppRouteChildren {
   AppSquadRoute: typeof AppSquadRoute
   AppTopRoute: typeof AppTopRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppChatIdRoute: typeof AppChatIdRoute
   AppCitySlugRoute: typeof AppCitySlugRoute
   AppStreetIdRoute: typeof AppStreetIdRoute
   AppUserIdRoute: typeof AppUserIdRoute
@@ -399,6 +439,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppFazeRoute: AppFazeRoute,
   AppFriendsRoute: AppFriendsRoute,
+  AppInboxRoute: AppInboxRoute,
   AppMapRoute: AppMapRoute,
   AppMeRoute: AppMeRoute,
   AppPartiesRoute: AppPartiesRoute,
@@ -406,6 +447,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSquadRoute: AppSquadRoute,
   AppTopRoute: AppTopRoute,
   AppIndexRoute: AppIndexRoute,
+  AppChatIdRoute: AppChatIdRoute,
   AppCitySlugRoute: AppCitySlugRoute,
   AppStreetIdRoute: AppStreetIdRoute,
   AppUserIdRoute: AppUserIdRoute,
@@ -424,3 +466,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
