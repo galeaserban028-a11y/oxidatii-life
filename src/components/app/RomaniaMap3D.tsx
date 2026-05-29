@@ -30,12 +30,12 @@ const TYPE_COLOR: Record<string, string> = {
 const VOYAGER_STYLE = {
   version: 8,
   sources: {
-    "carto-voyager": {
+    "carto-dark": {
       type: "raster",
       tiles: [
-        "https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
       ],
       tileSize: 256,
       attribution: "© CARTO, © OpenStreetMap contributors",
@@ -43,16 +43,17 @@ const VOYAGER_STYLE = {
     },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#0a0e1a" } },
-    { id: "carto-voyager", type: "raster", source: "carto-voyager", paint: { "raster-opacity": 1, "raster-saturation": 0.35, "raster-contrast": 0.05 } },
+    { id: "background", type: "background", paint: { "background-color": "#03040a" } },
+    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 0.85, "raster-saturation": -0.2, "raster-contrast": 0.15, "raster-brightness-max": 0.75 } },
   ],
   sky: {
-    "sky-color": "#0a0e1a",
-    "horizon-color": "#1a2440",
-    "fog-color": "#06070a",
-    "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 6, 0.5, 10, 0],
+    "sky-color": "#03040a",
+    "horizon-color": "#0a0a1f",
+    "fog-color": "#000000",
+    "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 6, 0.6, 10, 0],
   },
 } as unknown as maplibregl.StyleSpecification;
+
 
 
 const VENUES_SRC = "venues-src";
