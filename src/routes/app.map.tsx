@@ -214,6 +214,9 @@ function MapPage() {
         <RomaniaMap3D cities={cities} venues={filtered} friends={friendPins} />
       )}
 
+      <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
+
+
       {/* FRIENDS CTA */}
       <Link
         to="/app/friends"
