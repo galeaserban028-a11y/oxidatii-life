@@ -8,6 +8,7 @@ import {
   type NotificationRow,
   type NotificationType,
 } from "@/lib/notifications";
+import { NotificationSettings } from "@/components/app/NotificationSettings";
 
 export const Route = createFileRoute("/app/notifications")({
   head: () => ({ meta: [{ title: "Notificări · OXIDAȚII" }] }),
@@ -63,6 +64,8 @@ function NotificationsPage() {
         </div>
         <Bell size={22} className="text-muted-foreground shrink-0" />
       </div>
+
+      <NotificationSettings />
 
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Se încarcă...</div>

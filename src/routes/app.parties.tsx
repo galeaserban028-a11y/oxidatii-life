@@ -94,6 +94,10 @@ function PartiesPage() {
         await supabase.from("party_joins").delete().eq("party_id", partyId).eq("user_id", user.id);
       } else {
         await supabase.from("party_joins").insert({ party_id: partyId, user_id: user.id });
+        try {
+          const { notifyPartyJoin } = await import("@/lib/notifications.functions");
+          notifyPartyJoin({ data: { partyId } }).catch(() => {});
+        } catch {}
       }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
@@ -270,7 +274,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
     mutationFn: async () => {
       if (!user) throw new Error("login");
       const starts_at = new Date(Date.now() + whenMin * 60_000).toISOString();
-      const { error } = await supabase.from("parties").insert({
+      const { data: inserted, error } = await supabase.from("parties").insert({
         host_id: user.id,
         title: title.trim(),
         description: desc.trim() || null,
@@ -278,8 +282,14 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
         spots_total: spots,
         starts_at,
         vibe: vibe.trim() || null,
-      });
+      }).select("id").single();
       if (error) throw error;
+      if (inserted?.id) {
+        try {
+          const { notifyNewPartyInCity } = await import("@/lib/notifications.functions");
+          notifyNewPartyInCity({ data: { partyId: inserted.id } }).catch(() => {});
+        } catch {}
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["parties"] });

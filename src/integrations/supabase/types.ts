@@ -35,6 +35,39 @@ export type Database = {
         }
         Relationships: []
       }
+      challenges: {
+        Row: {
+          challenged_id: string
+          challenger_id: string
+          created_at: string
+          id: string
+          message: string | null
+          status: string
+          updated_at: string
+          venue_id: string | null
+        }
+        Insert: {
+          challenged_id: string
+          challenger_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Update: {
+          challenged_id?: string
+          challenger_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Relationships: []
+      }
       check_ins: {
         Row: {
           created_at: string
@@ -254,6 +287,33 @@ export type Database = {
           },
         ]
       }
+      notification_prefs: {
+        Row: {
+          challenge: boolean
+          friend_live: boolean
+          new_party_in_city: boolean
+          party_join: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge?: boolean
+          friend_live?: boolean
+          new_party_in_city?: boolean
+          party_join?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge?: boolean
+          friend_live?: boolean
+          new_party_in_city?: boolean
+          party_join?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           actor_id: string | null
@@ -431,6 +491,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       sprit_proofs: {
         Row: {
