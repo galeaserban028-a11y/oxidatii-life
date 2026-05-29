@@ -80,7 +80,7 @@ export function RomaniaMap3D({
       pitch: 62,
       bearing: -18,
       attributionControl: { compact: true },
-      antialias: true,
+      canvasContextAttributes: { antialias: true },
     });
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
     map.touchZoomRotate.enableRotation();
