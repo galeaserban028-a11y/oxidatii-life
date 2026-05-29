@@ -186,7 +186,17 @@ function PartiesPage() {
                       </div>
                     </div>
                     {isHost && (
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-neon-green border border-neon-green/40 px-2 py-0.5 rounded-full">gazda</span>
+                      <>
+                        <span className="font-mono text-[9px] uppercase tracking-widest text-neon-green border border-neon-green/40 px-2 py-0.5 rounded-full">gazda</span>
+                        <button
+                          onClick={() => handleDelete(p.id, p.title)}
+                          disabled={deleteMutation.isPending}
+                          aria-label="șterge șpriț"
+                          className="h-8 w-8 rounded-full flex items-center justify-center text-neon-crimson border border-neon-crimson/40 hover:bg-neon-crimson/10 active:scale-95 disabled:opacity-40"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </>
                     )}
                   </div>
 
