@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import maplibregl, { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -57,6 +57,12 @@ const VOYAGER_STYLE = {
 
 const VENUES_SRC = "venues-src";
 
+function isValidLngLat(lng: unknown, lat: unknown) {
+  const x = Number(lng);
+  const y = Number(lat);
+  return Number.isFinite(x) && Number.isFinite(y) && x >= -180 && x <= 180 && y >= -85 && y <= 85;
+}
+
 export function RomaniaMap3D({
   cities,
   venues = [],
@@ -75,25 +81,40 @@ export function RomaniaMap3D({
   const cityMarkers = useRef<Marker[]>([]);
   const friendMarkers = useRef<Map<string, Marker>>(new Map());
   const loadedRef = useRef(false);
+  const onCityClickRef = useRef<typeof onCityClick>(onCityClick);
   const nav = useNavigate();
+  const navRef = useRef(nav);
+  const [mapFailed, setMapFailed] = useState(false);
+
+  useEffect(() => { navRef.current = nav; }, [nav]);
+  useEffect(() => { onCityClickRef.current = onCityClick; }, [onCityClick]);
 
   // INIT map once
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: VOYAGER_STYLE,
-      center: [25.0, 45.9],
-      zoom: 5.2,
-      pitch: 0,
-      bearing: 0,
-      attributionControl: { compact: true },
-      cooperativeGestures: false,
-      renderWorldCopies: true,
-      fadeDuration: 80,
-      refreshExpiredTiles: false,
-      maxPitch: 70,
-    });
+    setMapFailed(false);
+    let map: MlMap;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style: VOYAGER_STYLE,
+        center: [25.0, 45.9],
+        zoom: 5.2,
+        pitch: 0,
+        bearing: 0,
+        attributionControl: { compact: true },
+        cooperativeGestures: false,
+        renderWorldCopies: false,
+        fadeDuration: 80,
+        refreshExpiredTiles: false,
+        maxPitch: 60,
+        preserveDrawingBuffer: false,
+      });
+    } catch (error) {
+      console.warn("Map init failed", error);
+      setMapFailed(true);
+      return;
+    }
 
     // Globe projection — small interactive "globuleț"
     try { (map as any).setProjection({ type: "globe" }); } catch {}
@@ -189,7 +210,7 @@ export function RomaniaMap3D({
       map.on("click", "venues-points", (e) => {
         const f = e.features?.[0]; if (!f) return;
         const id = (f.properties as any).id;
-        nav({ to: "/app/venue/$id", params: { id } });
+        navRef.current({ to: "/app/venue/$id", params: { id } });
       });
       for (const layer of ["venues-clusters", "venues-points"]) {
         map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
@@ -200,13 +221,18 @@ export function RomaniaMap3D({
     });
 
     map.on("error", (event) => { console.warn("Map tile error", event.error); });
+    map.getCanvas().addEventListener("webglcontextlost", (event) => {
+      event.preventDefault();
+      setMapFailed(true);
+    }, { once: true });
     mapRef.current = map;
     return () => {
       cityMarkers.current.forEach(m => m.remove()); cityMarkers.current = [];
       friendMarkers.current.forEach(m => m.remove()); friendMarkers.current.clear();
-      map.remove(); mapRef.current = null; loadedRef.current = false;
+      try { map.remove(); } catch {}
+      mapRef.current = null; loadedRef.current = false;
     };
-  }, [nav]);
+  }, []);
 
   // VENUES → GeoJSON (GPU layer)
   useEffect(() => {
