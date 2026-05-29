@@ -96,6 +96,7 @@ function MapPage() {
   const [maxKm, setMaxKm] = useState(0);
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
   const [visible, setVisible] = useState(40);
+  const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
 
   const { data: cities = [], isLoading } = useQuery({
     queryKey: ["cities"],
@@ -211,8 +212,44 @@ function MapPage() {
       {isLoading ? (
         <div className="aspect-[5/4] rounded-2xl bg-foreground/5 animate-pulse" />
       ) : (
-        <RomaniaMap3D cities={cities} venues={filtered} friends={friendPins} />
+        <RomaniaMap3D
+          cities={cities}
+          venues={filtered}
+          friends={friendPins}
+          focusCity={focusCity}
+          onCityClick={(c) => {
+            setCityId(c.id);
+            setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
+          }}
+        />
       )}
+
+      {cityId !== "all" && (() => {
+        const c = cityMap.get(cityId);
+        if (!c) return null;
+        return (
+          <div className="flex items-center gap-2 rounded-xl bg-neon-purple/10 border border-neon-purple/40 px-3 py-2">
+            <MapPin size={14} className="text-neon-purple" />
+            <div className="flex-1 min-w-0">
+              <div className="font-mono text-[9px] uppercase tracking-widest text-neon-purple">filtrat după</div>
+              <div className="font-display font-bold text-sm truncate">{c.name}</div>
+            </div>
+            <Link
+              to="/app/city/$slug"
+              params={{ slug: c.slug }}
+              className="font-mono text-[10px] uppercase tracking-widest text-neon-green border border-neon-green/40 rounded-md px-2 py-1"
+            >
+              străzi →
+            </Link>
+            <button
+              onClick={() => { setCityId("all"); setFocusCity(null); }}
+              className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground border border-foreground/20 rounded-md px-2 py-1"
+            >
+              ✕
+            </button>
+          </div>
+        );
+      })()}
 
       <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
 

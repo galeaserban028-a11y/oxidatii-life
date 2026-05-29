@@ -54,10 +54,14 @@ export function RomaniaMap3D({
   cities,
   venues = [],
   friends = [],
+  onCityClick,
+  focusCity,
 }: {
   cities: City[];
   venues?: Venue[];
   friends?: FriendPin[];
+  onCityClick?: (city: City) => void;
+  focusCity?: { lat: number; lng: number; zoom?: number } | null;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
@@ -231,10 +235,33 @@ export function RomaniaMap3D({
       label.textContent = c.name.toUpperCase();
       label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:${big ? 11 : 9}px;letter-spacing:0.08em;color:#fff;text-shadow:0 0 6px #000,0 1px 3px #000;white-space:nowrap;`;
       wrap.appendChild(label);
-      wrap.onclick = (e) => { e.stopPropagation(); nav({ to: "/app/city/$slug", params: { slug: c.slug } }); };
+      let pressTimer: number | null = null;
+      let longPressed = false;
+      wrap.onpointerdown = () => {
+        longPressed = false;
+        pressTimer = window.setTimeout(() => {
+          longPressed = true;
+          nav({ to: "/app/city/$slug", params: { slug: c.slug } });
+        }, 550);
+      };
+      const clear = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
+      wrap.onpointerup = wrap.onpointerleave = wrap.onpointercancel = clear;
+      wrap.onclick = (e) => {
+        e.stopPropagation();
+        clear();
+        if (longPressed) return;
+        if (onCityClick) onCityClick(c);
+        else nav({ to: "/app/city/$slug", params: { slug: c.slug } });
+      };
       cityMarkers.current.push(new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([c.lng, c.lat]).addTo(map));
     }
-  }, [cities, nav]);
+  }, [cities, nav, onCityClick]);
+
+  // FOCUS city programmatically (flyTo) when parent selects one
+  useEffect(() => {
+    const map = mapRef.current; if (!map || !focusCity) return;
+    map.flyTo({ center: [focusCity.lng, focusCity.lat], zoom: focusCity.zoom ?? 12.4, pitch: 45, bearing: 0, duration: 1100, essential: true });
+  }, [focusCity]);
 
   // FRIENDS → diff-only DOM markers (keep refs by user_id, no full rebuild)
   useEffect(() => {
