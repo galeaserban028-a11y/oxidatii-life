@@ -386,6 +386,8 @@ export type Database = {
           lat: number | null
           lng: number | null
           name: string
+          opening_hours: Json | null
+          phone: string | null
           slug: string
           street_id: string | null
           type: Database["public"]["Enums"]["venue_type"]
@@ -402,6 +404,8 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           name: string
+          opening_hours?: Json | null
+          phone?: string | null
           slug: string
           street_id?: string | null
           type?: Database["public"]["Enums"]["venue_type"]
@@ -418,6 +422,8 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           name?: string
+          opening_hours?: Json | null
+          phone?: string | null
           slug?: string
           street_id?: string | null
           type?: Database["public"]["Enums"]["venue_type"]
