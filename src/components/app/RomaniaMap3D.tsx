@@ -18,12 +18,13 @@ export type FriendPin = {
   venue_name?: string | null;
 };
 
-const VENUE_ICON: Record<string, string> = {
-  club: "🎧",
-  bar: "🍷",
-  pub: "🍺",
-  terasa: "🍹",
-  after: "🌅",
+const TYPE_COLOR: Record<string, string> = {
+  club: "#c66bff",
+  bar: "#ffb000",
+  pub: "#ff8a3d",
+  terasa: "#39ff88",
+  "terasă": "#39ff88",
+  after: "#ff3158",
 };
 
 const CARTO_DARK_RASTER_STYLE = {
@@ -47,6 +48,8 @@ const CARTO_DARK_RASTER_STYLE = {
   ],
 } as maplibregl.StyleSpecification;
 
+const VENUES_SRC = "venues-src";
+
 export function RomaniaMap3D({
   cities,
   venues = [],
@@ -58,7 +61,8 @@ export function RomaniaMap3D({
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
-  const markersRef = useRef<Marker[]>([]);
+  const cityMarkers = useRef<Marker[]>([]);
+  const friendMarkers = useRef<Map<string, Marker>>(new Map());
   const loadedRef = useRef(false);
   const nav = useNavigate();
 
@@ -70,10 +74,14 @@ export function RomaniaMap3D({
       style: CARTO_DARK_RASTER_STYLE,
       center: [25.0, 45.9],
       zoom: 5.6,
-      pitch: 45,
-      bearing: -8,
+      pitch: 30,
+      bearing: -6,
       attributionControl: { compact: true },
       cooperativeGestures: false,
+      renderWorldCopies: false,
+      fadeDuration: 80,
+      refreshExpiredTiles: false,
+      maxPitch: 60,
     });
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "top-right");
@@ -90,87 +98,165 @@ export function RomaniaMap3D({
 
     map.on("load", () => {
       loadedRef.current = true;
-      // subtle neon glow on the country
-      try {
-        map.setPaintProperty("background", "background-color", "#06070a");
-      } catch {}
-      // resize fix after mount
+      // GPU-rendered venue layer + clustering — handles thousands of points at 60fps
+      map.addSource(VENUES_SRC, {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+        cluster: true,
+        clusterRadius: 38,
+        clusterMaxZoom: 12,
+      });
+
+      // cluster bubbles
+      map.addLayer({
+        id: "venues-clusters",
+        type: "circle",
+        source: VENUES_SRC,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": [
+            "step", ["get", "point_count"],
+            "#ffb000", 10,
+            "#ff8a3d", 50,
+            "#ff3158",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 14, 10, 18, 50, 24],
+          "circle-opacity": 0.85,
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "rgba(0,0,0,0.6)",
+        },
+      });
+      map.addLayer({
+        id: "venues-cluster-count",
+        type: "symbol",
+        source: VENUES_SRC,
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": "{point_count_abbreviated}",
+          "text-size": 11,
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+        },
+        paint: { "text-color": "#0a0a0a" },
+      });
+
+      // unclustered points
+      map.addLayer({
+        id: "venues-points",
+        type: "circle",
+        source: VENUES_SRC,
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 3, 10, 5, 14, 8],
+          "circle-color": [
+            "match", ["get", "type"],
+            "club", TYPE_COLOR.club,
+            "bar", TYPE_COLOR.bar,
+            "pub", TYPE_COLOR.pub,
+            "terasa", TYPE_COLOR.terasa,
+            "terasă", TYPE_COLOR.terasa,
+            "after", TYPE_COLOR.after,
+            "#ffb000",
+          ],
+          "circle-opacity": 0.9,
+          "circle-stroke-width": 1.5,
+          "circle-stroke-color": "rgba(0,0,0,0.7)",
+        },
+      });
+
+      // click → zoom into cluster / navigate to venue
+      map.on("click", "venues-clusters", (e) => {
+        const f = e.features?.[0]; if (!f) return;
+        const id = (f.properties as any).cluster_id;
+        (map.getSource(VENUES_SRC) as maplibregl.GeoJSONSource).getClusterExpansionZoom(id).then((zoom) => {
+          map.easeTo({ center: (f.geometry as any).coordinates, zoom: zoom + 0.2, duration: 500 });
+        }).catch(() => {});
+      });
+      map.on("click", "venues-points", (e) => {
+        const f = e.features?.[0]; if (!f) return;
+        const id = (f.properties as any).id;
+        nav({ to: "/app/venue/$id", params: { id } });
+      });
+      for (const layer of ["venues-clusters", "venues-points"]) {
+        map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
+      }
+
       requestAnimationFrame(() => map.resize());
     });
 
-    map.on("error", (event) => {
-      console.warn("Map tile error", event.error);
-    });
-
+    map.on("error", (event) => { console.warn("Map tile error", event.error); });
     mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; loadedRef.current = false; };
-  }, []);
+    return () => {
+      cityMarkers.current.forEach(m => m.remove()); cityMarkers.current = [];
+      friendMarkers.current.forEach(m => m.remove()); friendMarkers.current.clear();
+      map.remove(); mapRef.current = null; loadedRef.current = false;
+    };
+  }, [nav]);
 
-  // RENDER markers whenever data changes
+  // VENUES → GeoJSON (GPU layer)
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
+    const map = mapRef.current; if (!map) return;
+    const apply = () => {
+      const src = map.getSource(VENUES_SRC) as maplibregl.GeoJSONSource | undefined;
+      if (!src) return;
+      src.setData({
+        type: "FeatureCollection",
+        features: venues
+          .filter(v => v.lat != null && v.lng != null)
+          .map(v => ({
+            type: "Feature",
+            geometry: { type: "Point", coordinates: [Number(v.lng), Number(v.lat)] },
+            properties: { id: v.id, name: v.name, type: v.type ?? "club" },
+          })),
+      });
+    };
+    if (loadedRef.current) apply(); else map.once("load", apply);
+  }, [venues]);
 
-    // Clear old
-    markersRef.current.forEach(m => m.remove());
-    markersRef.current = [];
-
-    // ── CITIES — neon glow dot + label
+  // CITIES → DOM markers (small count, re-render OK)
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return;
+    cityMarkers.current.forEach(m => m.remove());
+    cityMarkers.current = [];
     for (const c of cities) {
       const big = c.chaos_level >= 8;
       const wrap = document.createElement("button");
       wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:0;padding:0;transform:translateY(-50%);";
       wrap.title = c.name;
-
       const dot = document.createElement("div");
       const color = big ? "#ff3158" : "#c66bff";
-      dot.style.cssText = `width:${big ? 16 : 11}px;height:${big ? 16 : 11}px;border-radius:9999px;background:${color};border:2px solid rgba(255,255,255,0.85);box-shadow:0 0 16px ${color},0 0 32px ${color};animation:oxi-pulse 2.4s ease-out infinite;`;
+      dot.style.cssText = `width:${big ? 14 : 10}px;height:${big ? 14 : 10}px;border-radius:9999px;background:${color};border:2px solid rgba(255,255,255,0.85);box-shadow:0 0 12px ${color};`;
       wrap.appendChild(dot);
-
       const label = document.createElement("div");
       label.textContent = c.name.toUpperCase();
       label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:${big ? 11 : 9}px;letter-spacing:0.08em;color:#fff;text-shadow:0 0 6px #000,0 1px 3px #000;white-space:nowrap;`;
       wrap.appendChild(label);
-
       wrap.onclick = (e) => { e.stopPropagation(); nav({ to: "/app/city/$slug", params: { slug: c.slug } }); };
-      markersRef.current.push(new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([c.lng, c.lat]).addTo(map));
+      cityMarkers.current.push(new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([c.lng, c.lat]).addTo(map));
     }
+  }, [cities, nav]);
 
-    // ── VENUES — emoji icons by type (capped for perf)
-    const visibleVenues = venues.filter(v => v.lat != null && v.lng != null).slice(0, 600);
-    for (const v of visibleVenues) {
-      const type = v.type ?? "club";
-      const emoji = VENUE_ICON[type] ?? "📍";
-      const el = document.createElement("button");
-      el.title = v.name;
-      el.style.cssText = "width:28px;height:28px;border-radius:9999px;background:rgba(10,10,14,0.85);border:1.5px solid rgba(255,176,0,0.7);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;box-shadow:0 0 10px rgba(255,176,0,0.45);transition:transform .15s;padding:0;";
-      el.textContent = emoji;
-      el.onmouseenter = () => { el.style.transform = "scale(1.25)"; };
-      el.onmouseleave = () => { el.style.transform = "scale(1)"; };
-      el.onclick = (e) => {
-        e.stopPropagation();
-        nav({ to: "/app/venue/$id", params: { id: v.id } });
-      };
-      markersRef.current.push(new maplibregl.Marker({ element: el, anchor: "center" }).setLngLat([Number(v.lng), Number(v.lat)]).addTo(map));
-    }
-
-    // ── FRIENDS — Snapchat-style avatar bubbles with pulse
+  // FRIENDS → diff-only DOM markers (keep refs by user_id, no full rebuild)
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return;
+    const seen = new Set<string>();
     for (const f of friends) {
-      const wrap = document.createElement("div");
-      wrap.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);";
+      seen.add(f.user_id);
+      const existing = friendMarkers.current.get(f.user_id);
+      if (existing) { existing.setLngLat([f.lng, f.lat]); continue; }
 
-      // pulsing ring
+      const wrap = document.createElement("div");
+      wrap.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);z-index:10;";
+
       const pulse = document.createElement("div");
       pulse.style.cssText = "position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:54px;height:54px;border-radius:9999px;background:#39ff88;opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;";
       wrap.appendChild(pulse);
 
-      // avatar circle
       const ring = document.createElement("div");
       ring.style.cssText = "position:relative;width:44px;height:44px;border-radius:9999px;border:3px solid #39ff88;overflow:hidden;background:linear-gradient(135deg,#ff3158,#c66bff);box-shadow:0 0 18px #39ff88,0 4px 14px rgba(0,0,0,0.6);";
       if (f.avatar_url) {
         const img = document.createElement("img");
-        img.src = f.avatar_url;
-        img.alt = "";
+        img.src = f.avatar_url; img.alt = "";
         img.style.cssText = "width:100%;height:100%;object-fit:cover;";
         ring.appendChild(img);
       } else {
@@ -181,26 +267,28 @@ export function RomaniaMap3D({
       }
       wrap.appendChild(ring);
 
-      // live dot
       const live = document.createElement("div");
       live.style.cssText = "position:absolute;top:-2px;right:-2px;width:12px;height:12px;border-radius:9999px;background:#39ff88;border:2px solid #06070a;box-shadow:0 0 8px #39ff88;";
       ring.appendChild(live);
 
-      // name pill
       const pill = document.createElement("div");
       pill.textContent = `@${f.handle ?? f.display_name ?? "live"}`;
       pill.style.cssText = "margin-top:4px;padding:2px 6px;border-radius:9999px;background:rgba(6,7,10,0.92);color:#39ff88;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap;border:1px solid rgba(57,255,136,0.5);";
       wrap.appendChild(pill);
 
       wrap.onclick = (e) => { e.stopPropagation(); nav({ to: "/app/user/$id", params: { id: f.user_id } }); };
-      markersRef.current.push(new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([f.lng, f.lat]).addTo(map));
+      const marker = new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([f.lng, f.lat]).addTo(map);
+      friendMarkers.current.set(f.user_id, marker);
     }
-  }, [cities, venues, friends, nav]);
+    // remove markers for friends no longer present
+    for (const [id, marker] of friendMarkers.current) {
+      if (!seen.has(id)) { marker.remove(); friendMarkers.current.delete(id); }
+    }
+  }, [friends, nav]);
 
   return (
     <div className="relative w-full h-[62vh] min-h-[460px] max-h-[640px] rounded-2xl overflow-hidden border border-foreground/10 bg-black">
       <style>{`
-        @keyframes oxi-pulse { 0% { transform: scale(0.9); opacity: 1; } 70% { transform: scale(1.6); opacity: 0; } 100% { opacity: 0; } }
         @keyframes oxi-pulse-strong { 0% { transform: translateX(-50%) scale(0.6); opacity: 0.7; } 80% { transform: translateX(-50%) scale(1.5); opacity: 0; } 100% { opacity: 0; } }
         .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
@@ -213,17 +301,17 @@ export function RomaniaMap3D({
       `}</style>
       <div ref={containerRef} className="absolute inset-0" />
 
-      {/* top status pill */}
       <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur font-mono text-[9px] uppercase tracking-widest text-neon-green pointer-events-none border border-neon-green/30">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse mr-1.5 align-middle" />
         live · {friends.length} oxidați activi
       </div>
 
-      {/* bottom legend */}
       <div className="absolute bottom-2 left-2 right-2 z-10 rounded-xl bg-black/80 backdrop-blur border border-foreground/10 px-3 py-2 pointer-events-none flex items-center justify-between gap-2">
         <div className="font-display font-black text-xs leading-none">{venues.length} locuri · {cities.length} orașe</div>
         <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-          <span>🎧 club</span><span>🍷 bar</span><span>🍺 pub</span><span>🍹 terasă</span>
+          <span style={{color:"#c66bff"}}>● club</span>
+          <span style={{color:"#ffb000"}}>● bar</span>
+          <span style={{color:"#39ff88"}}>● terasă</span>
         </div>
       </div>
     </div>
