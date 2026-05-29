@@ -117,8 +117,8 @@ function ScanPage() {
         <Link to="/app" className="text-xs text-muted-foreground">închide</Link>
       </header>
 
-      {/* Photo */}
-      <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden"
+      {/* Media (photo or video) */}
+      <input ref={fileRef} type="file" accept="image/*,video/*" capture="environment" className="hidden"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
 
       <button
@@ -127,7 +127,14 @@ function ScanPage() {
       >
         {file ? (
           <>
-            <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
+            {file.type.startsWith("video/") ? (
+              <video src={URL.createObjectURL(file)} className="h-full w-full object-cover" autoPlay muted loop playsInline />
+            ) : (
+              <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
+            )}
+            <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-black/70 text-white text-[10px] font-mono uppercase tracking-widest backdrop-blur">
+              {file.type.startsWith("video/") ? "▶ clip" : "📷 poză"}
+            </div>
             <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs backdrop-blur">
               schimbă
             </div>
@@ -137,8 +144,8 @@ function ScanPage() {
             <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "var(--gradient-sunset)" }}>
               <Camera size={28} className="text-white" />
             </div>
-            <div className="font-display font-semibold text-foreground text-lg">fă poza</div>
-            <div className="text-xs">sau alege din galerie</div>
+            <div className="font-display font-semibold text-foreground text-lg">fă poza / clip</div>
+            <div className="text-xs">sau alege din galerie · poză sau video</div>
           </div>
         )}
       </button>
