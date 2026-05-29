@@ -116,7 +116,7 @@ function PartiesPage() {
           <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-purple">// organizare șpriț</div>
           <h1 className="font-display font-black text-2xl tracking-tight mt-1">șprițuri.</h1>
           <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mt-0.5">
-            {parties.length} șprițuri live · intră sau deschide unul
+            {visibleParties.length} șprițuri live · intră sau deschide unul
           </p>
         </div>
         <button
@@ -138,7 +138,7 @@ function PartiesPage() {
         <div className="space-y-2">
           {[...Array(3)].map((_, i) => <div key={i} className="h-32 rounded-2xl bg-foreground/5 animate-pulse" />)}
         </div>
-      ) : parties.length === 0 ? (
+      ) : visibleParties.length === 0 ? (
         <div className="py-16 text-center space-y-3">
           <Flame className="mx-auto text-muted-foreground" size={48} strokeWidth={1.5} />
           <div className="font-display font-black text-lg">zero șprițuri acum</div>
@@ -148,7 +148,7 @@ function PartiesPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {parties.map(p => {
+          {visibleParties.map(p => {
             const host = hostMap.get(p.host_id);
             const taken = joins.filter(j => j.party_id === p.id).length;
             const free = Math.max(0, p.spots_total - taken);
