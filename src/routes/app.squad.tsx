@@ -125,6 +125,102 @@ function SquadPage() {
         <p className="text-xs text-muted-foreground mt-1">Cheamă haita, fă o gașcă, stabiliți unde turnați diseară.</p>
       </header>
 
+      {/* LIVE ȘPRIȚURI — locuri disponibile acum */}
+      <section className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-crimson flex items-center gap-1.5">
+            <Flame size={11} /> șprițuri deschise · {liveParties.length}
+          </div>
+          <Link to="/app/parties" className="font-mono text-[9px] uppercase tracking-widest text-neon-purple">
+            chem haita →
+          </Link>
+        </div>
+
+        {liveParties.length === 0 ? (
+          <Link to="/app/parties" className="block p-4 rounded-2xl border border-dashed border-neon-crimson/30 bg-neon-crimson/[0.04] text-center">
+            <div className="text-2xl mb-1">🍻</div>
+            <div className="font-display font-bold text-sm">Zero șprițuri deschise acum.</div>
+            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">fii primul → deschide unul</div>
+          </Link>
+        ) : (
+          <div className="space-y-2">
+            {liveParties.map(p => {
+              const host = hostMap.get(p.host_id);
+              const taken = joins.filter(j => j.party_id === p.id).length;
+              const free = Math.max(0, p.spots_total - taken);
+              const joined = !!user && joins.some(j => j.party_id === p.id && j.user_id === user.id);
+              const isHost = user?.id === p.host_id;
+              const full = free === 0 && !joined;
+              const city = (p.location_text.split(/[,·\-—]/)[0] ?? p.location_text).trim().toUpperCase();
+              const note = p.description?.trim();
+              return (
+                <article key={p.id} className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-foreground/[0.04]">
+                  <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-neon-crimson/20 blur-2xl pointer-events-none" />
+                  <div className="relative p-3.5 space-y-2.5">
+                    <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest">
+                      <span className="px-1.5 py-0.5 rounded bg-neon-crimson/15 text-neon-crimson border border-neon-crimson/30 flex items-center gap-1">
+                        <MapPin size={9} /> {city}
+                      </span>
+                      {p.vibe && (
+                        <span className="px-1.5 py-0.5 rounded bg-neon-purple/15 text-neon-purple border border-neon-purple/30">
+                          {p.vibe}
+                        </span>
+                      )}
+                      <span className="ml-auto text-muted-foreground flex items-center gap-1">
+                        <Clock size={9} /> {timeShort(p.starts_at)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-end justify-between gap-3">
+                      <h3 className="font-display font-black text-base leading-tight flex-1 break-words">
+                        {p.title}
+                      </h3>
+                      <div className={`text-right shrink-0 ${free === 0 ? "text-neon-crimson" : "text-neon-green"}`}>
+                        <div className="font-display font-black text-lg leading-none">
+                          {taken}<span className="text-muted-foreground">/</span>{p.spots_total}
+                        </div>
+                        <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground mt-0.5">
+                          {free === 0 ? "plin" : `${free} libere`}
+                        </div>
+                      </div>
+                    </div>
+
+                    {note && (
+                      <p className="text-xs text-foreground/75 leading-snug line-clamp-2">
+                        „{note}"
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-2 pt-1.5 border-t border-foreground/5">
+                      <div className="h-6 w-6 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-[10px] text-white shrink-0">
+                        {host?.avatar_url ? <img src={host.avatar_url} alt="" className="h-full w-full object-cover" /> : (host?.handle ?? "?")[0]?.toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0 font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
+                        @{host?.handle ?? host?.display_name ?? "anonim"}
+                      </div>
+                      <button
+                        onClick={() => joinMutation.mutate({ partyId: p.id, joined })}
+                        disabled={!user || joinMutation.isPending || (full && !joined) || isHost}
+                        className={`shrink-0 px-3 py-1.5 rounded-lg font-mono text-[10px] uppercase tracking-widest active:scale-95 disabled:opacity-30 transition ${
+                          joined
+                            ? "bg-neon-green/15 text-neon-green border border-neon-green/50"
+                            : full
+                              ? "bg-foreground/10 text-muted-foreground"
+                              : "bg-neon-crimson text-white shadow-[0_0_12px_-4px_var(--neon-crimson)]"
+                        }`}
+                      >
+                        {isHost ? "ești gazdă" : joined ? "✓ vin" : full ? "plin" : "vin și eu"}
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+
       {/* New group CTA */}
       <Link
         to="/app/inbox"
