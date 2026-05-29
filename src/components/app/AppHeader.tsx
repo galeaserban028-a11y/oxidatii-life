@@ -1,6 +1,6 @@
 import { useLocation } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
-import logoBanner from "@/assets/logo-header.png";
+import logoBanner from "@/assets/logo-oxidatii.png";
 import { NotificationsBell } from "./NotificationsBell";
 
 export function AppHeader() {
