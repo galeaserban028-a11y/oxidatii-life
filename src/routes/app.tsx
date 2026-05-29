@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { BottomTabBar } from "@/components/app/BottomTabBar";
+import { AlcoholWarning } from "@/components/AlcoholWarning";
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
@@ -31,6 +32,7 @@ function AppLayout() {
     <main className="min-h-screen bg-background text-foreground pb-24">
       <Outlet />
       <BottomTabBar />
+      <AlcoholWarning />
     </main>
   );
 }

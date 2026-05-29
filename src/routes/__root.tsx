@@ -20,6 +20,7 @@ import "@fontsource/dm-sans/700.css";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { CookieConsent } from "@/components/CookieConsent";
+import { AgeGate } from "@/components/AgeGate";
 
 
 function NotFoundComponent() {
@@ -113,6 +114,7 @@ function RootComponent() {
         <Outlet />
         <Toaster />
         <CookieConsent />
+        <AgeGate />
       </AuthProvider>
     </QueryClientProvider>
 
