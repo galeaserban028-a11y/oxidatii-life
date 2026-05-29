@@ -65,8 +65,14 @@ function UserPage() {
   const { data: stats } = useFollowStats(id);
   const { data: followStatus = "none" } = useFollowStatus(user?.id, id);
   const { follow, unfollow } = useFollowMutations(user?.id, id);
+  const { data: blockState } = useIsBlocked(user?.id, id);
+  const { block, unblock } = useBlockMutations(user?.id, id);
+  const isBlocking = !!blockState?.blocking;
+  const isBlockedBy = !!blockState?.blockedBy;
+  const [confirmBlock, setConfirmBlock] = useState<"block" | "unblock" | null>(null);
 
-  const canViewContent = isMe || isPublic || followStatus === "accepted";
+  const canViewContent =
+    isMe || ((isPublic || followStatus === "accepted") && !isBlocking && !isBlockedBy);
 
   const { data: photos = [] } = useQuery({
     queryKey: ["user-photos", id, canViewContent],
