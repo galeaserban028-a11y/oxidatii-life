@@ -211,8 +211,6 @@ function MapPage() {
 
       {isLoading ? (
         <div className="aspect-[5/4] rounded-2xl bg-foreground/5 animate-pulse" />
-      {isLoading ? (
-        <div className="aspect-[5/4] rounded-2xl bg-foreground/5 animate-pulse" />
       ) : (
         <RomaniaMap3D
           cities={cities}
