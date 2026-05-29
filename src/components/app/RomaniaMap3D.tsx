@@ -229,7 +229,42 @@ export function RomaniaMap3D({
 
   return (
     <div className="relative w-full h-[58vh] min-h-[420px] max-h-[620px] rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/5">
-      <div ref={containerRef} className="absolute inset-0" />
+      <div className="absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_center,var(--neon-green)_0_1px,transparent_1px)] [background-size:18px_18px] opacity-20" />
+      <div className="absolute inset-0 [perspective:900px] overflow-hidden">
+        <div className="absolute left-1/2 top-[52%] h-[1792px] w-[1792px] -translate-x-1/2 -translate-y-1/2 rotate-x-[62deg] rotate-z-[-18deg] opacity-95 shadow-[0_50px_120px_-70px_var(--neon-green)]">
+          {fallbackTiles.map((tile) => (
+            <img
+              key={tile.key}
+              src={tile.url}
+              alt=""
+              loading="lazy"
+              className="absolute h-64 w-64 max-w-none select-none opacity-95"
+              style={{ left: `calc(50% + ${tile.x}px)`, top: `calc(50% + ${tile.y}px)`, transform: "translate(-50%, -50%)" }}
+            />
+          ))}
+          {fallbackPins.map((pin) => {
+            const point = projectLngLat(pin.lng, pin.lat);
+            const x = (point.x - mapCenter.x) * fallbackTileSize;
+            const y = (point.y - mapCenter.y) * fallbackTileSize;
+            return (
+              <div
+                key={`${pin.kind}-${pin.id}`}
+                title={pin.name}
+                className="absolute w-2 rounded-t-full bg-neon-crimson shadow-[0_0_18px_var(--neon-crimson)]"
+                style={{
+                  left: `calc(50% + ${x}px)`,
+                  top: `calc(50% + ${y}px)`,
+                  height: `${pin.height}px`,
+                  transform: `translate(-50%, -100%) rotate-x(-62deg)`,
+                  background: pin.kind === "friend" ? "var(--neon-green)" : pin.kind === "city" ? "var(--neon-crimson)" : "oklch(0.85 0.20 60)",
+                  boxShadow: pin.kind === "friend" ? "0 0 22px var(--neon-green)" : undefined,
+                }}
+              />
+            );
+          })}
+        </div>
+      </div>
+      <div ref={containerRef} className="absolute inset-0 opacity-80 mix-blend-screen" />
       <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded-md bg-background/75 backdrop-blur font-mono text-[9px] uppercase tracking-widest text-neon-green pointer-events-none shadow-[0_0_24px_-8px_var(--neon-green)]">
         ● hartă live 3D
       </div>
