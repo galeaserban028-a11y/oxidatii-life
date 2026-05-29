@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { RomaniaMap, type FriendPin } from "@/components/app/RomaniaMap";
+import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
+import { UserPlus, Users } from "lucide-react";
 
 export const Route = createFileRoute("/app/map")({
   head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
@@ -10,7 +11,6 @@ export const Route = createFileRoute("/app/map")({
 });
 
 async function loadFriendPins(userId: string): Promise<FriendPin[]> {
-  // 1. accepted friendships
   const { data: rows } = await supabase
     .from("friendships")
     .select("requester_id, addressee_id, status")
@@ -21,7 +21,6 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   );
   if (friendIds.length === 0) return [];
 
-  // 2. their live check-ins (expires_at > now())
   const { data: checkins } = await supabase
     .from("check_ins")
     .select("user_id, venue_id, lat, lng, expires_at, created_at")
@@ -30,7 +29,6 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
     .order("created_at", { ascending: false });
   if (!checkins || checkins.length === 0) return [];
 
-  // dedupe — most recent per user
   const seen = new Set<string>();
   const latest = checkins.filter((c: any) => {
     if (seen.has(c.user_id)) return false;
@@ -69,6 +67,7 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
 
 function MapPage() {
   const { user } = useAuth();
+
   const { data: cities = [], isLoading } = useQuery({
     queryKey: ["cities"],
     queryFn: async () => {
@@ -81,6 +80,19 @@ function MapPage() {
     },
   });
 
+  const { data: venues = [] } = useQuery({
+    queryKey: ["map-venues"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("venues")
+        .select("id, name, lat, lng")
+        .not("lat", "is", null)
+        .not("lng", "is", null)
+        .limit(2000);
+      return (data ?? []) as { id: string; name: string; lat: number | null; lng: number | null }[];
+    },
+  });
+
   const { data: friendPins = [] } = useQuery({
     queryKey: ["friend-pins", user?.id],
     queryFn: () => loadFriendPins(user!.id),
@@ -90,26 +102,58 @@ function MapPage() {
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-4">
-      <header className="flex items-baseline justify-between">
+      <header>
         <h1 className="font-display font-black text-2xl tracking-tight">hartă.</h1>
-        <Link to="/app/friends" className="font-mono text-[10px] uppercase tracking-widest text-neon-green">
-          prieteni <span className="text-foreground/60">({friendPins.length})</span> →
-        </Link>
+        <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mt-0.5">
+          {venues.length} cluburi · {friendPins.length} prieteni live
+        </p>
       </header>
 
       {isLoading ? (
         <div className="aspect-[5/4] rounded-2xl bg-foreground/5 animate-pulse" />
       ) : (
-        <RomaniaMap cities={cities} friends={friendPins} />
+        <RomaniaMap3D cities={cities} venues={venues} friends={friendPins} />
       )}
 
+      {/* FRIENDS CTA — big & loud */}
+      <Link
+        to="/app/friends"
+        className="block relative overflow-hidden rounded-2xl p-4 border border-neon-green/40 bg-gradient-to-br from-neon-green/15 via-transparent to-neon-purple/10 active:scale-[0.99] transition"
+      >
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 rounded-xl bg-neon-green/20 border border-neon-green/40 flex items-center justify-center shrink-0">
+            <UserPlus className="text-neon-green" size={22} strokeWidth={2.4} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-display uppercase text-base leading-tight">
+              Adaugă-ți prieteni
+            </div>
+            <div className="font-mono text-[11px] uppercase tracking-widest text-neon-green/90 mt-0.5">
+              vezi-i pe mapă · live · în timp real
+            </div>
+          </div>
+          <div className="font-mono text-neon-green text-lg">→</div>
+        </div>
+        {friendPins.length === 0 && (
+          <p className="mt-3 text-xs text-foreground/70 leading-relaxed">
+            Încă n-ai pe nimeni live. Adaugă-ți haita ca să vezi unde beau șpriț chiar acum.
+          </p>
+        )}
+      </Link>
 
-      {/* Friends-live list */}
+      {/* Live friends list — only if any */}
       {friendPins.length > 0 && (
         <section className="space-y-2">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-green">// live acum</div>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-green flex items-center gap-1.5">
+            <Users size={11} /> live acum
+          </div>
           {friendPins.map((f) => (
-            <div key={f.user_id} className="flex items-center gap-3 p-3 rounded-lg bg-foreground/[0.04] border border-neon-green/20">
+            <Link
+              key={f.user_id}
+              to="/app/user/$id"
+              params={{ id: f.user_id }}
+              className="flex items-center gap-3 p-3 rounded-lg bg-foreground/[0.04] border border-neon-green/20"
+            >
               <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-sm">
                 {f.avatar_url ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" /> : (f.handle ?? "?")[0]?.toUpperCase()}
               </div>
@@ -123,7 +167,7 @@ function MapPage() {
                 <span className="absolute inset-0 rounded-full bg-neon-green animate-ping opacity-75" />
                 <span className="relative h-2 w-2 rounded-full bg-neon-green" />
               </span>
-            </div>
+            </Link>
           ))}
         </section>
       )}
