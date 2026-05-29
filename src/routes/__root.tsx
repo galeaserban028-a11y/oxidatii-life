@@ -114,6 +114,7 @@ function RootComponent() {
         <Outlet />
         <Toaster />
         <CookieConsent />
+        <AgeGate />
       </AuthProvider>
     </QueryClientProvider>
 
