@@ -60,7 +60,16 @@ function SquadPage() {
     refetchInterval: 20_000,
   });
 
-  const hostIds = Array.from(new Set(liveParties.map(p => p.host_id)));
+  // hide full parties unless user is already in or is host
+  const visibleParties = liveParties.filter(p => {
+    const taken = joins.filter(j => j.party_id === p.id).length;
+    const free = p.spots_total - taken;
+    const inParty = !!user && joins.some(j => j.party_id === p.id && j.user_id === user.id);
+    const isHost = user?.id === p.host_id;
+    return free > 0 || inParty || isHost;
+  });
+
+  const hostIds = Array.from(new Set(visibleParties.map(p => p.host_id)));
   const { data: hosts = [] } = useQuery({
     queryKey: ["squad-hosts", hostIds.sort().join(",")],
     enabled: hostIds.length > 0,

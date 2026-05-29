@@ -167,11 +167,21 @@ function LiveSpritzStrip() {
     queryKey: ["home-live-spritz-joins", ids.sort().join(",")],
     queryFn: async () => {
       if (!ids.length) return [];
-      const { data } = await supabase.from("party_joins").select("party_id").in("party_id", ids);
+      const { data } = await supabase.from("party_joins").select("party_id,user_id").in("party_id", ids);
       return data ?? [];
     },
     enabled: ids.length > 0,
     refetchInterval: 30_000,
+  });
+
+  // hide full parties unless user is already in
+  const { user } = useAuth();
+  const visibleParties = parties.filter((p: any) => {
+    const taken = joins.filter((j: any) => j.party_id === p.id).length;
+    const free = p.spots_total - taken;
+    const inParty = !!user && joins.some((j: any) => j.party_id === p.id && j.user_id === user.id);
+    const isHost = user?.id === p.host_id;
+    return free > 0 || inParty || isHost;
   });
 
   return (
