@@ -233,3 +233,12 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
+
+@layer utilities {
+  /* Mobile perf utilities */
+  .cv-auto { content-visibility: auto; contain-intrinsic-size: 200px; }
+  .gpu { transform: translateZ(0); will-change: transform; backface-visibility: hidden; }
+  .smooth-scroll { -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-top { padding-top: env(safe-area-inset-top); }
+}
