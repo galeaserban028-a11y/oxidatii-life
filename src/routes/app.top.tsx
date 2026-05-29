@@ -16,13 +16,22 @@ function TopPage() {
   const { user, profile } = useAuth();
   const [tab, setTab] = useState<Tab>("ro");
 
-  // Top România — most spritz photos posted (all-time)
+  // Start of current month (local time), serialized as ISO for queries
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const monthKey = `${now.getFullYear()}-${now.getMonth() + 1}`;
+  const monthLabel = now.toLocaleDateString("ro-RO", { month: "long", year: "numeric" });
+  const daysLeft = Math.max(1, Math.ceil((nextMonth.getTime() - now.getTime()) / 86400000));
+
+  // Top România — most spritz photos posted THIS MONTH
   const { data: roData = [] } = useQuery({
-    queryKey: ["top-ro"],
+    queryKey: ["top-ro-month", monthKey],
     queryFn: async () => {
       const { data: photos, error } = await supabase
         .from("venue_photos")
         .select("user_id")
+        .gte("taken_at", monthStart)
         .limit(5000);
       if (error) throw error;
       const counts = new Map<string, number>();
@@ -39,10 +48,10 @@ function TopPage() {
     },
   });
 
-  // City — top by spritz photos in user's city
+  // City — top by spritz photos in user's city THIS MONTH
   const cityId = profile?.city_id;
   const { data: cityData } = useQuery({
-    queryKey: ["top-city", cityId],
+    queryKey: ["top-city-month", cityId, monthKey],
     enabled: !!cityId,
     queryFn: async () => {
       const [cityRes, peopleRes] = await Promise.all([
@@ -57,7 +66,10 @@ function TopPage() {
       let photoCounts = new Map<string, number>();
       if (ids.length) {
         const { data: photos } = await supabase
-          .from("venue_photos").select("user_id").in("user_id", ids);
+          .from("venue_photos")
+          .select("user_id")
+          .in("user_id", ids)
+          .gte("taken_at", monthStart);
         for (const p of photos ?? []) {
           photoCounts.set(p.user_id, (photoCounts.get(p.user_id) ?? 0) + 1);
         }
@@ -75,16 +87,19 @@ function TopPage() {
   return (
     <div className="px-5 pt-6 pb-8 max-w-xl mx-auto space-y-5">
       <header className="space-y-1.5">
-        <div className="text-[11px] uppercase tracking-[0.2em] text-primary font-medium">Leaderboard</div>
+        <div className="text-[11px] uppercase tracking-[0.2em] text-primary font-medium">
+          Leaderboard · {monthLabel}
+        </div>
         <h1 className="font-display font-bold text-3xl leading-tight">
           {tab === "city" && cityData?.city
             ? <>Cei mai tari din <span className="text-gradient-sunset">{cityData.city.name}</span></>
             : <>Top <span className="text-gradient-sunset">România</span></>}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {tab === "city" ? "Sortat după numărul de șprițuri postate." : "Cine pune cele mai multe poze de la șpriț. All-time."}
+          Topul lunii. Se resetează în {daysLeft} {daysLeft === 1 ? "zi" : "zile"}.
         </p>
       </header>
+
 
       {/* Tabs */}
       <div className="grid grid-cols-2 gap-1 p-1 rounded-2xl bg-secondary border border-border">
