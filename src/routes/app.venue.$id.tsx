@@ -39,17 +39,19 @@ function VenuePage() {
     if (!user) { toast.error("Trebuie să fii logat"); return; }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const isVideo = file.type.startsWith("video/");
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? (isVideo ? "mp4" : "jpg");
       const path = `${user.id}/${id}/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, { contentType: file.type });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
       const { error: insErr } = await supabase.from("venue_photos").insert({
         venue_id: id, user_id: user.id, photo_url: pub.publicUrl,
+        media_type: isVideo ? "video" : "image",
       });
       if (insErr) throw insErr;
       await qc.invalidateQueries({ queryKey: ["venue", id] });
-      toast.success("Poză adăugată");
+      toast.success(isVideo ? "Clip adăugat" : "Poză adăugată");
     } catch (e: any) {
       toast.error(e.message ?? "Nu s-a putut încărca");
     } finally {
