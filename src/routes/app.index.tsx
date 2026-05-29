@@ -105,7 +105,7 @@ function AppFeed() {
         <div className="flex items-end gap-3">
           <img src={logoLight} alt="" aria-hidden width={56} height={56} className="h-14 w-14 object-contain shrink-0 -mb-1" />
           <h1 className="font-display uppercase text-2xl leading-none tracking-tight">
-            Ce s-a întâmplat <span className="text-gradient-chaos">azi-noapte</span>
+            Ce șprițuri sunt în <span className="text-gradient-chaos">această seară</span>
           </h1>
         </div>
         <Link
@@ -207,7 +207,7 @@ function EmptyFeed() {
     <div className="rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-3">
       <div className="text-5xl">🌃</div>
       <div className="font-display uppercase text-xl leading-tight">
-        Țara încă doarme.
+        Șprițurile încă sunt active.
       </div>
       <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
         Nimeni n-a postat încă. Nu inventăm conținut. Când oamenii reali încep să posteze, apar aici — nimic altceva.
