@@ -10,7 +10,6 @@ export const Route = createFileRoute("/app/requests")({
 
 function RequestsPage() {
   const { user } = useAuth();
-  const nav = useNavigate();
   const { data: reqs, isLoading } = useIncomingFollowRequests(user?.id);
   const { accept, reject } = useRequestActions(user?.id);
 
@@ -21,10 +20,6 @@ function RequestsPage() {
 
   return (
     <div className="px-5 pt-5 pb-10 max-w-xl mx-auto space-y-4">
-      <Link to="/app/me" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-        <ArrowLeft size={14} /> înapoi
-      </Link>
-
       <div>
         <h1 className="font-display uppercase text-2xl leading-none">Cereri de urmărire</h1>
         <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground mt-1">
