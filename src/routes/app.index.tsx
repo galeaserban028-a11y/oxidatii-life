@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Flame, MapPin, Users, Plus } from "lucide-react";
 import logoLight from "@/assets/logo-oxidatii-light.png";
 
 type FeedItem = {
@@ -120,6 +121,10 @@ function AppFeed() {
         </Link>
       </header>
 
+      <LiveSpritzStrip />
+
+
+
 
       {isLoading ? (
         <div className="space-y-3">
@@ -141,6 +146,100 @@ function AppFeed() {
     </div>
   );
 }
+
+function LiveSpritzStrip() {
+  const { data: parties = [] } = useQuery({
+    queryKey: ["home-live-spritz"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("parties")
+        .select("id, title, location_text, spots_total, starts_at, vibe")
+        .gt("expires_at", new Date().toISOString())
+        .order("starts_at", { ascending: true })
+        .limit(6);
+      return data ?? [];
+    },
+    refetchInterval: 30_000,
+  });
+
+  const ids = parties.map((p: any) => p.id);
+  const { data: joins = [] } = useQuery({
+    queryKey: ["home-live-spritz-joins", ids.sort().join(",")],
+    queryFn: async () => {
+      if (!ids.length) return [];
+      const { data } = await supabase.from("party_joins").select("party_id").in("party_id", ids);
+      return data ?? [];
+    },
+    enabled: ids.length > 0,
+    refetchInterval: 30_000,
+  });
+
+  return (
+    <section className="space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-neon-crimson">
+          <Flame size={12} /> șprițuri deschise · {parties.length}
+        </div>
+        <Link to="/app/squad" className="font-mono text-[10px] uppercase tracking-widest text-neon-purple">
+          toate →
+        </Link>
+      </div>
+
+      {parties.length === 0 ? (
+        <Link
+          to="/app/parties"
+          className="flex items-center justify-between p-3 rounded-xl border border-dashed border-neon-crimson/40 bg-neon-crimson/[0.04]"
+        >
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-neon-crimson/15 flex items-center justify-center">
+              <Plus size={14} className="text-neon-crimson" strokeWidth={3} />
+            </div>
+            <div>
+              <div className="font-display font-bold text-sm">deschide un șpriț</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">cheamă haita la tine</div>
+            </div>
+          </div>
+          <span className="font-mono text-[10px] text-neon-crimson">→</span>
+        </Link>
+      ) : (
+        <div className="flex gap-2 overflow-x-auto -mx-4 px-4 no-scrollbar pb-1">
+          {parties.map((p: any) => {
+            const taken = joins.filter((j: any) => j.party_id === p.id).length;
+            const free = Math.max(0, p.spots_total - taken);
+            return (
+              <Link
+                key={p.id}
+                to="/app/parties"
+                className="shrink-0 w-[220px] p-3 rounded-xl border border-foreground/10 bg-foreground/[0.04] hover:border-neon-crimson/40 space-y-1.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-neon-crimson flex items-center gap-1">
+                    <Flame size={10} /> șpriț
+                  </span>
+                  <span className={`font-mono text-[9px] uppercase tracking-widest ${free === 0 ? "text-neon-crimson" : "text-neon-green"}`}>
+                    {free === 0 ? "plin" : `${free}/${p.spots_total} libere`}
+                  </span>
+                </div>
+                <div className="font-display font-bold text-sm leading-tight line-clamp-2">{p.title}</div>
+                <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                  <span className="flex items-center gap-1 truncate"><MapPin size={9} /> {p.location_text}</span>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  {p.vibe && <span className="font-mono text-[9px] uppercase tracking-widest text-neon-purple truncate">{p.vibe}</span>}
+                  <span className="font-mono text-[9px] uppercase tracking-widest text-neon-green flex items-center gap-1 ml-auto">
+                    <Users size={9} /> {taken} vin
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+
 
 function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venue: any }) {
   const handle = profile?.handle ?? profile?.display_name ?? "anonim";

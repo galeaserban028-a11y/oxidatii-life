@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { Plus, Users, MapPin, Clock, X, Flame } from "lucide-react";
 
 export const Route = createFileRoute("/app/parties")({
-  head: () => ({ meta: [{ title: "Haită · OXIDAȚII" }] }),
+  head: () => ({ meta: [{ title: "Șprițuri · OXIDAȚII" }] }),
   component: PartiesPage,
 });
 
@@ -103,9 +103,10 @@ function PartiesPage() {
     <div className="px-4 pt-6 pb-4 space-y-4">
       <header className="flex items-end justify-between">
         <div>
-          <h1 className="font-display font-black text-2xl tracking-tight">haita.</h1>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-purple">// organizare șpriț</div>
+          <h1 className="font-display font-black text-2xl tracking-tight mt-1">șprițuri.</h1>
           <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mt-0.5">
-            {parties.length} șprițuri live · cheamă-i sau intră
+            {parties.length} șprițuri live · intră sau deschide unul
           </p>
         </div>
         <button
@@ -113,7 +114,7 @@ function PartiesPage() {
           disabled={!user}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-br from-neon-crimson to-neon-purple text-white font-mono text-[11px] uppercase tracking-widest shadow-[0_0_18px_-4px_var(--neon-crimson)] active:scale-95 disabled:opacity-40"
         >
-          <Plus size={14} strokeWidth={3} /> chem haita
+          <Plus size={14} strokeWidth={3} /> deschid șpriț
         </button>
       </header>
 
@@ -132,7 +133,7 @@ function PartiesPage() {
           <Flame className="mx-auto text-muted-foreground" size={48} strokeWidth={1.5} />
           <div className="font-display font-black text-lg">zero șprițuri acum</div>
           <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-            fii primul. cheamă haita.
+            fii primul · deschide un șpriț
           </div>
         </div>
       ) : (
@@ -260,7 +261,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="font-display font-black text-xl">chem haita.</h2>
+          <h2 className="font-display font-black text-xl">deschid un șpriț.</h2>
           <button onClick={onClose} className="h-9 w-9 rounded-full bg-foreground/5 flex items-center justify-center"><X size={16} /></button>
         </div>
 
