@@ -34,6 +34,7 @@ function AppLayout() {
 
   return (
     <main className="min-h-screen bg-background text-foreground pb-28">
+      <InstallBanner />
       <AppHeader />
       <Outlet />
       <BottomTabBar />
