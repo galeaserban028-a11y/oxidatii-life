@@ -19,6 +19,8 @@ import "@fontsource/dm-sans/600.css";
 import "@fontsource/dm-sans/700.css";
 import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
+import { CookieConsent } from "@/components/CookieConsent";
+
 
 function NotFoundComponent() {
   return (
@@ -110,7 +112,9 @@ function RootComponent() {
       <AuthProvider>
         <Outlet />
         <Toaster />
+        <CookieConsent />
       </AuthProvider>
     </QueryClientProvider>
+
   );
 }
