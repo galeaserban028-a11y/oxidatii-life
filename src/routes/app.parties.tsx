@@ -133,7 +133,7 @@ function PartiesPage() {
           <Flame className="mx-auto text-muted-foreground" size={48} strokeWidth={1.5} />
           <div className="font-display font-black text-lg">zero șprițuri acum</div>
           <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-            fii primul. cheamă haita.
+            fii primul · deschide un șpriț
           </div>
         </div>
       ) : (
