@@ -22,7 +22,6 @@ import { Route as AppTopRouteImport } from './routes/app.top'
 import { Route as AppSquadRouteImport } from './routes/app.squad'
 import { Route as AppScanRouteImport } from './routes/app.scan'
 import { Route as AppRequestsRouteImport } from './routes/app.requests'
-import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
 import { Route as AppPartiesRouteImport } from './routes/app.parties'
 import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
 import { Route as AppMeRouteImport } from './routes/app.me'
@@ -101,6 +100,11 @@ const AppScanRoute = AppScanRouteImport.update({
 const AppRequestsRoute = AppRequestsRouteImport.update({
   id: '/requests',
   path: '/requests',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPartiesRoute = AppPartiesRouteImport.update({
