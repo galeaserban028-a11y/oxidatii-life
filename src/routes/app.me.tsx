@@ -2,9 +2,10 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, Camera, Lock, Globe2 } from "lucide-react";
+import { LogOut, Camera, Lock, Globe2, UserPlus } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { useFollowStats, useIncomingFollowRequests } from "@/lib/follows";
 
 export const Route = createFileRoute("/app/me")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -28,6 +29,9 @@ function MePage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [savingPrivacy, setSavingPrivacy] = useState(false);
+  const { data: followStats } = useFollowStats(user?.id);
+  const { data: incomingReqs } = useIncomingFollowRequests(user?.id);
+  const pendingCount = incomingReqs?.length ?? 0;
 
   async function uploadAvatar(file: File) {
     if (!user) return;
@@ -159,11 +163,32 @@ function MePage() {
           </div>
         </div>
 
-        <div className="relative grid grid-cols-3 gap-2 mt-5">
+        <div className="relative grid grid-cols-4 gap-2 mt-5">
           <Stat label="aură" value={profile.aura} color="var(--neon-purple)" />
           <Stat label="șprițuri" value={profile.lifetime_sprits} color="var(--neon-crimson)" />
-          <Stat label="momente" value={allMoments.length} color="var(--neon-green)" />
+          <Stat label="followers" value={followStats?.followers ?? 0} color="var(--neon-green)" />
+          <Stat label="urmărește" value={followStats?.following ?? 0} color="var(--neon-purple)" />
         </div>
+
+        {/* Requests link (if private + has pending) */}
+        {pendingCount > 0 && (
+          <Link
+            to="/app/requests"
+            className="relative mt-3 flex items-center gap-3 p-3 rounded-2xl border border-neon-crimson/40 bg-neon-crimson/10 active:scale-[0.99] transition"
+          >
+            <div className="h-9 w-9 rounded-full bg-neon-crimson text-white flex items-center justify-center">
+              <UserPlus size={16} strokeWidth={2.6} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-display uppercase text-sm">
+                {pendingCount} cerere{pendingCount === 1 ? "" : "i"} de urmărire
+              </div>
+              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                acceptă sau respinge →
+              </div>
+            </div>
+          </Link>
+        )}
 
         {/* Șpriț Streak */}
         <div className="relative mt-3 rounded-2xl p-4 border border-neon-crimson/30 bg-gradient-to-br from-neon-crimson/10 via-transparent to-neon-purple/10 flex items-center gap-4">
