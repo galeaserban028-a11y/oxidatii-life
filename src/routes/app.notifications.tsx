@@ -65,6 +65,8 @@ function NotificationsPage() {
         <Bell size={22} className="text-muted-foreground shrink-0" />
       </div>
 
+      <NotificationSettings />
+
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Se încarcă...</div>
       ) : !items || items.length === 0 ? (
