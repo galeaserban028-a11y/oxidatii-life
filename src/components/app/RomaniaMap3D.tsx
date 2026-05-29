@@ -94,6 +94,7 @@ export function RomaniaMap3D({
     if (!containerRef.current || mapRef.current) return;
     setMapFailed(false);
     let map: MlMap;
+    const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
     try {
       map = new maplibregl.Map({
         container: containerRef.current,
@@ -107,16 +108,22 @@ export function RomaniaMap3D({
         renderWorldCopies: false,
         fadeDuration: 80,
         refreshExpiredTiles: false,
-        maxPitch: 60,
-      });
+        maxPitch: isSmall ? 45 : 60,
+        // Cap pixel ratio on mobile to halve GPU fill rate → smoother pan/zoom
+        pixelRatio: isSmall ? Math.min(window.devicePixelRatio || 1, 1.5) : undefined,
+        antialias: !isSmall,
+      } as any);
     } catch (error) {
       console.warn("Map init failed", error);
       setMapFailed(true);
       return;
     }
 
-    // Globe projection — small interactive "globuleț"
-    try { (map as any).setProjection({ type: "globe" }); } catch {}
+    // Globe projection only on larger screens — too heavy on low-end phones
+    if (!isSmall) {
+      try { (map as any).setProjection({ type: "globe" }); } catch {}
+    }
+
 
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "top-right");
