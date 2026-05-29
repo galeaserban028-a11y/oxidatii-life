@@ -1,16 +1,36 @@
-// Helpers for venue opening_hours (jsonb).
-// Accepted shape: { mon: {open:"18:00", close:"03:00"} | "18:00-03:00" | null, ... }
-// Keys: mon,tue,wed,thu,fri,sat,sun. close < open => overnight (rolls to next day).
+// Opening hours utilities. Format:
+// { mon: { open: "18:00", close: "04:00" } | null, tue: ..., ... }
+// close < open => closes after midnight (next day).
 
-export const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
-export const DAY_LABELS: Record<(typeof DAY_KEYS)[number], string> = {
+export type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export const DAYS: { key: DayKey; label: string }[] = [
+  { key: "mon", label: "Lu" },
+  { key: "tue", label: "Ma" },
+  { key: "wed", label: "Mi" },
+  { key: "thu", label: "Jo" },
+  { key: "fri", label: "Vi" },
+  { key: "sat", label: "Sâ" },
+  { key: "sun", label: "Du" },
+];
+
+export const DAY_KEYS: readonly DayKey[] = ["mon","tue","wed","thu","fri","sat","sun"] as const;
+export const DAY_LABELS: Record<DayKey, string> = {
   mon: "Luni", tue: "Marți", wed: "Miercuri", thu: "Joi",
   fri: "Vineri", sat: "Sâmbătă", sun: "Duminică",
 };
 
-export type DaySlot = { open: string; close: string } | null;
+export type DaySchedule = { open: string; close: string } | null;
+export type DaySlot = DaySchedule;
+export type OpeningHours = Partial<Record<DayKey, DaySchedule>>;
 
-function parseSlot(v: unknown): DaySlot {
+const JS_TO_KEY: DayKey[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+
+function toMin(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + (m || 0);
+}
+
+function parseSlot(v: unknown): DaySchedule {
   if (!v) return null;
   if (typeof v === "string") {
     const m = v.match(/^(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})$/);
@@ -19,61 +39,76 @@ function parseSlot(v: unknown): DaySlot {
   if (typeof v === "object") {
     const o = v as any;
     if (o.closed) return null;
-    if (typeof o.open === "string" && typeof o.close === "string") {
-      return { open: o.open, close: o.close };
-    }
+    if (typeof o.open === "string" && typeof o.close === "string") return { open: o.open, close: o.close };
   }
   return null;
 }
 
-export function normalizeHours(raw: any): Record<string, DaySlot> {
-  const out: Record<string, DaySlot> = {};
+export function normalizeHours(raw: any): Record<DayKey, DaySchedule> {
+  const out = {} as Record<DayKey, DaySchedule>;
   for (const k of DAY_KEYS) out[k] = parseSlot(raw?.[k]);
   return out;
 }
 
-function toMin(hm: string) {
-  const [h, m] = hm.split(":").map(Number);
-  return h * 60 + m;
+export function isOpenNow(oh: OpeningHours | null | undefined, now = new Date()): boolean | null {
+  if (!oh) return null;
+  const today = JS_TO_KEY[now.getDay()];
+  const yesterday = JS_TO_KEY[(now.getDay() + 6) % 7];
+  const mins = now.getHours() * 60 + now.getMinutes();
+
+  const t = oh[today];
+  if (t) {
+    const o = toMin(t.open), c = toMin(t.close);
+    if (c > o ? mins >= o && mins < c : mins >= o || mins < c) return true;
+  }
+  const y = oh[yesterday];
+  if (y) {
+    const o = toMin(y.open), c = toMin(y.close);
+    if (c <= o && mins < c) return true;
+  }
+  return false;
 }
 
-/** Returns { isOpen, closesAt, opensAt, todayKey } evaluated in Europe/Bucharest. */
+export function nextOpenLabel(oh: OpeningHours | null | undefined, now = new Date()): string | null {
+  if (!oh) return null;
+  for (let i = 0; i < 7; i++) {
+    const idx = (now.getDay() + i) % 7;
+    const key = JS_TO_KEY[idx];
+    const t = oh[key];
+    if (!t) continue;
+    const dayLabel = DAYS.find(d => d.key === key)?.label ?? "";
+    if (i === 0 && now.getHours() * 60 + now.getMinutes() < toMin(t.open)) return `azi ${t.open}`;
+    if (i > 0) return `${dayLabel} ${t.open}`;
+  }
+  return null;
+}
+
+/** Richer evaluation in Europe/Bucharest tz. */
 export function evalOpenNow(raw: any, now = new Date()) {
   const hours = normalizeHours(raw);
-  // Day-of-week in Bucharest tz, Mon=0..Sun=6
   const fmt = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Bucharest", weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false });
   const parts = fmt.formatToParts(now);
   const wd = parts.find(p => p.type === "weekday")?.value ?? "Mon";
   const hh = parts.find(p => p.type === "hour")?.value ?? "00";
   const mm = parts.find(p => p.type === "minute")?.value ?? "00";
   const order = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-  const todayIdx = order.indexOf(wd);
+  const todayIdx = Math.max(0, order.indexOf(wd));
   const nowMin = toMin(`${hh}:${mm}`);
-
   const todayKey = DAY_KEYS[todayIdx];
   const yKey = DAY_KEYS[(todayIdx + 6) % 7];
   const today = hours[todayKey];
   const yesterday = hours[yKey];
 
-  // Overnight from yesterday still running?
   if (yesterday) {
     const o = toMin(yesterday.open), c = toMin(yesterday.close);
-    if (c <= o && nowMin < c) {
-      return { isOpen: true, closesAt: yesterday.close, opensAt: null, todayKey };
-    }
+    if (c <= o && nowMin < c) return { isOpen: true, closesAt: yesterday.close, opensAt: null as string | null, todayKey };
   }
   if (today) {
     const o = toMin(today.open), c = toMin(today.close);
     const closeAdj = c <= o ? c + 24 * 60 : c;
-    const nowAdj = nowMin;
-    if (nowAdj >= o && nowAdj < closeAdj) {
-      return { isOpen: true, closesAt: today.close, opensAt: null, todayKey };
-    }
-    if (nowMin < o) {
-      return { isOpen: false, closesAt: null, opensAt: today.open, todayKey };
-    }
+    if (nowMin >= o && nowMin < closeAdj) return { isOpen: true, closesAt: today.close, opensAt: null, todayKey };
+    if (nowMin < o) return { isOpen: false, closesAt: null, opensAt: today.open, todayKey };
   }
-  // Find next open day
   for (let i = 1; i <= 7; i++) {
     const k = DAY_KEYS[(todayIdx + i) % 7];
     const s = hours[k];
@@ -82,6 +117,6 @@ export function evalOpenNow(raw: any, now = new Date()) {
   return { isOpen: false, closesAt: null, opensAt: null, todayKey };
 }
 
-export function formatSlot(s: DaySlot) {
+export function formatSlot(s: DaySchedule) {
   return s ? `${s.open} – ${s.close}` : "Închis";
 }
