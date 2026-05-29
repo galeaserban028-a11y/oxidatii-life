@@ -30,7 +30,6 @@ function AppLayout() {
   return (
     <main className="min-h-screen bg-background text-foreground pb-24">
       <Outlet />
-      <InboxFab />
       <BottomTabBar />
     </main>
   );
