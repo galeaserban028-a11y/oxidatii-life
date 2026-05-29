@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { AlertTriangle, ShieldAlert } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import logoSticker from "@/assets/logo-oxidatii.png";
+
 
 const AGE_KEY = "oxi-age-verified-v1";
 
