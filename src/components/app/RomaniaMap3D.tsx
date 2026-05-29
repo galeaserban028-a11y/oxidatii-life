@@ -34,29 +34,32 @@ export function RomaniaMap3D({
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      // Free, no-API-key vector style with 3D building extrusions
-      style: "https://tiles.openfreemap.org/styles/liberty",
-      center: [25.0, 45.9], // RO center
+      // Reliable no-key raster style (CARTO dark matter) — always renders
+      style: {
+        version: 8,
+        sources: {
+          "carto-dark": {
+            type: "raster",
+            tiles: [
+              "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+              "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+              "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+              "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
+            ],
+            tileSize: 256,
+            attribution: "© OSM · © CARTO",
+          },
+        },
+        layers: [{ id: "carto-dark", type: "raster", source: "carto-dark" }],
+      },
+      center: [25.0, 45.9],
       zoom: 5.4,
-      pitch: 55,
-      bearing: -12,
+      pitch: 45,
+      bearing: -10,
       attributionControl: { compact: true },
     });
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
     map.touchZoomRotate.enableRotation();
-
-    map.on("style.load", () => {
-      // Boost 3D building extrusions if present in the style
-      const layers = map.getStyle().layers ?? [];
-      for (const l of layers) {
-        if (l.type === "fill-extrusion") {
-          try {
-            map.setPaintProperty(l.id, "fill-extrusion-opacity", 0.85);
-            map.setPaintProperty(l.id, "fill-extrusion-color", "#3a2150");
-          } catch {/* ignore */}
-        }
-      }
-    });
 
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; };
