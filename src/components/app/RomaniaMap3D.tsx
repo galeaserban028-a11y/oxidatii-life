@@ -255,7 +255,13 @@ export function RomaniaMap3D({
       };
       cityMarkers.current.push(new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([c.lng, c.lat]).addTo(map));
     }
-  }, [cities, nav]);
+  }, [cities, nav, onCityClick]);
+
+  // FOCUS city programmatically (flyTo) when parent selects one
+  useEffect(() => {
+    const map = mapRef.current; if (!map || !focusCity) return;
+    map.flyTo({ center: [focusCity.lng, focusCity.lat], zoom: focusCity.zoom ?? 12.4, pitch: 45, bearing: 0, duration: 1100, essential: true });
+  }, [focusCity]);
 
   // FRIENDS → diff-only DOM markers (keep refs by user_id, no full rebuild)
   useEffect(() => {
