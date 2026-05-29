@@ -108,7 +108,6 @@ export function RomaniaMap3D({
         fadeDuration: 80,
         refreshExpiredTiles: false,
         maxPitch: 60,
-        preserveDrawingBuffer: false,
       });
     } catch (error) {
       console.warn("Map init failed", error);
