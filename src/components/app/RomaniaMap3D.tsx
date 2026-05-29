@@ -251,7 +251,7 @@ export function RomaniaMap3D({
       try { map.remove(); } catch {}
       mapRef.current = null; loadedRef.current = false;
     };
-  }, []);
+  }, [retryKey]);
 
   // VENUES → GeoJSON (GPU layer)
   useEffect(() => {
