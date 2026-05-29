@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { AlertTriangle, ShieldAlert } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import logoSticker from "@/assets/logo-oxidatii.png";
+
 
 const AGE_KEY = "oxi-age-verified-v1";
 
@@ -27,9 +29,10 @@ export function AgeGate() {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
       <div className="w-full max-w-sm rounded-2xl border border-neon-crimson/30 bg-background p-6 text-center shadow-2xl">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-neon-crimson/10">
-          <ShieldAlert className="h-7 w-7 text-neon-crimson" />
+        <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center">
+          <img src={logoSticker} alt="Oxidații" className="h-20 w-20 object-contain drop-shadow-[0_4px_18px_rgba(255,49,88,0.45)]" />
         </div>
+
 
         <h2 className="font-display text-2xl font-bold tracking-tight">
           Ai peste 18 ani?
