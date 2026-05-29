@@ -135,7 +135,7 @@ function MapPage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-display font-black uppercase text-lg leading-none tracking-tight">
-                cheamă haita
+                cheamă oxidații la șprițtt
               </div>
               <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-neon-green mt-1.5">
                 adaugă prieteni → vezi-i pe hartă live
