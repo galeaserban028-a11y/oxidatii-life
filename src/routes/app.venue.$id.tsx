@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Camera, MapPin, Instagram, Upload } from "lucide-react";
+import { ArrowLeft, Camera, MapPin, Instagram, Upload, Clock } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { evalOpenNow, normalizeHours, formatSlot, DAY_KEYS, DAY_LABELS } from "@/lib/openingHours";
 
 export const Route = createFileRoute("/app/venue/$id")({
   component: VenuePage,
@@ -22,7 +23,7 @@ function VenuePage() {
     queryFn: async () => {
       const { data: venue, error } = await supabase
         .from("venues")
-        .select("id,name,type,description,ig_handle,address,cover_url,verified,street:streets(id,name,city:cities(name,slug))")
+        .select("id,name,type,description,ig_handle,address,cover_url,verified,opening_hours,street:streets(id,name,city:cities(name,slug))")
         .eq("id", id).single();
       if (error) throw error;
       const { data: photos } = await supabase
@@ -62,6 +63,9 @@ function VenuePage() {
   if (isLoading || !data) return <div className="p-6 text-sm text-muted-foreground">Se încarcă...</div>;
   const v = data.venue as any;
   const heroCover = data.photos[0]?.photo_url || v.cover_url;
+  const status = evalOpenNow(v.opening_hours);
+  const hoursNorm = normalizeHours(v.opening_hours);
+  const hasHours = DAY_KEYS.some((k) => hoursNorm[k]);
 
   return (
     <div className="pb-8">
@@ -92,6 +96,39 @@ function VenuePage() {
 
       <div className="px-5 pt-5 space-y-5 max-w-xl mx-auto">
         {v.description && <p className="text-sm text-muted-foreground leading-relaxed">{v.description}</p>}
+
+        {/* Open now status */}
+        {hasHours && (
+          <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className={`h-2.5 w-2.5 rounded-full ${status.isOpen ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold">
+                    {status.isOpen ? "Acum e deschis" : "Acum e închis"}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground truncate">
+                    {status.isOpen && status.closesAt ? `Închide la ${status.closesAt}` :
+                     status.opensAt ? `Deschide ${status.opensAt}` : "Program necunoscut"}
+                  </div>
+                </div>
+              </div>
+              <Clock size={16} className="text-muted-foreground shrink-0" />
+            </div>
+            <div className="mt-3 grid grid-cols-1 gap-1">
+              {DAY_KEYS.map((k) => (
+                <div
+                  key={k}
+                  className={`flex items-center justify-between text-xs px-2 py-1 rounded ${k === status.todayKey ? "bg-secondary font-semibold text-foreground" : "text-muted-foreground"}`}
+                >
+                  <span>{DAY_LABELS[k]}{k === status.todayKey ? " (azi)" : ""}</span>
+                  <span className="font-mono">{formatSlot(hoursNorm[k])}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
 
         <div className="flex items-center gap-2 flex-wrap">
           {v.ig_handle && (
