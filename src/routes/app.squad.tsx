@@ -1,15 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM } from "@/lib/chat";
 import { useNavigate } from "@tanstack/react-router";
-import { Users, Plus, MessageCircle } from "lucide-react";
+import { Users, Plus, MessageCircle, MapPin, Clock, Flame } from "lucide-react";
 
 export const Route = createFileRoute("/app/squad")({
   head: () => ({ meta: [{ title: "Organizare șpriț · OXIDAȚII" }] }),
   component: SquadPage,
 });
+
+type LiveParty = {
+  id: string; host_id: string; title: string; description: string | null;
+  location_text: string; spots_total: number; starts_at: string; vibe: string | null;
+};
+
 
 function SquadPage() {
   const { user } = useAuth();
