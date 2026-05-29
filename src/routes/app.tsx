@@ -32,11 +32,10 @@ function AppLayout() {
 
 
   return (
-    <main className="min-h-screen bg-background text-foreground pb-24">
+    <main className="min-h-screen bg-background text-foreground pb-28">
       <AppHeader />
       <Outlet />
       <BottomTabBar />
-      <AlcoholWarning />
     </main>
   );
 
