@@ -208,7 +208,6 @@ function MapPage() {
         hasGeo={!!geo} requestGeo={requestGeo}
         count={filtered.length}
       />
-
       {isLoading ? (
         <div className="aspect-[5/4] rounded-2xl bg-foreground/5 animate-pulse" />
       ) : (
