@@ -82,18 +82,22 @@ export function RomaniaMap3D({
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: CARTO_DARK_RASTER_STYLE,
+      style: VOYAGER_STYLE,
       center: [25.0, 45.9],
-      zoom: 5.6,
-      pitch: 30,
-      bearing: -6,
+      zoom: 5.2,
+      pitch: 0,
+      bearing: 0,
       attributionControl: { compact: true },
       cooperativeGestures: false,
-      renderWorldCopies: false,
+      renderWorldCopies: true,
       fadeDuration: 80,
       refreshExpiredTiles: false,
-      maxPitch: 60,
+      maxPitch: 70,
     });
+
+    // Globe projection — small interactive "globuleț"
+    try { (map as any).setProjection({ type: "globe" }); } catch {}
+
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "top-right");
     map.addControl(
