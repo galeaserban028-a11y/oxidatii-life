@@ -122,8 +122,9 @@ function TopPage() {
             const isKing = i === 0;
             const handle = p?.handle ?? p?.display_name ?? "anonim";
             return (
-              <div key={uid}
-                className={`grid grid-cols-[36px_44px_1fr_auto] items-center gap-3 p-3 rounded-2xl border transition ${
+              <Link key={uid}
+                to="/app/user/$id" params={{ id: uid }}
+                className={`grid grid-cols-[36px_44px_1fr_auto] items-center gap-3 p-3 rounded-2xl border transition active:scale-[0.99] ${
                   isKing ? "bg-card border-primary/40 shadow-md"
                   : isMe ? "bg-primary/5 border-primary/30"
                   : "bg-card border-border"
@@ -150,7 +151,8 @@ function TopPage() {
                   </div>
                   <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">șprițuri</div>
                 </div>
-              </div>
+              </Link>
+
             );
           })}
         </div>
