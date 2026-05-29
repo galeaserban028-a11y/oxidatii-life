@@ -101,7 +101,8 @@ export function RomaniaMap3D({
         container: containerRef.current,
         style: VOYAGER_STYLE,
         center: [25.0, 45.9],
-        zoom: 5.2,
+        zoom: isSmall ? 3.2 : 3.8,
+        minZoom: 2.5,
         pitch: 0,
         bearing: 0,
         attributionControl: { compact: true },
@@ -110,7 +111,6 @@ export function RomaniaMap3D({
         fadeDuration: 80,
         refreshExpiredTiles: false,
         maxPitch: isSmall ? 45 : 60,
-        // Cap pixel ratio on mobile to halve GPU fill rate → smoother pan/zoom
         pixelRatio: isSmall ? Math.min(window.devicePixelRatio || 1, 1.5) : undefined,
         antialias: !isSmall,
       } as any);
@@ -120,10 +120,9 @@ export function RomaniaMap3D({
       return;
     }
 
-    // Globe projection only on larger screens — too heavy on low-end phones
-    if (!isSmall) {
-      try { (map as any).setProjection({ type: "globe" }); } catch {}
-    }
+    // Globe projection — gives the small planet / game feel
+    try { (map as any).setProjection({ type: "globe" }); } catch {}
+
 
 
 
