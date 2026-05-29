@@ -29,6 +29,9 @@ function MePage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [savingPrivacy, setSavingPrivacy] = useState(false);
+  const { data: followStats } = useFollowStats(user?.id);
+  const { data: incomingReqs } = useIncomingFollowRequests(user?.id);
+  const pendingCount = incomingReqs?.length ?? 0;
 
   async function uploadAvatar(file: File) {
     if (!user) return;
