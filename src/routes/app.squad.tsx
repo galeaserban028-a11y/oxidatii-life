@@ -16,6 +16,17 @@ type LiveParty = {
   location_text: string; spots_total: number; starts_at: string; vibe: string | null;
 };
 
+function timeShort(iso: string) {
+  const diff = new Date(iso).getTime() - Date.now();
+  const mins = Math.round(diff / 60000);
+  if (mins < -30) return `${Math.abs(Math.round(mins / 60))}h în urmă`;
+  if (mins < 0) return "live";
+  if (mins < 60) return `în ${mins}m`;
+  if (mins < 60 * 24) return `în ${Math.round(mins / 60)}h`;
+  return new Date(iso).toLocaleDateString("ro-RO", { day: "numeric", month: "short" });
+}
+
+
 
 function SquadPage() {
   const { user } = useAuth();
