@@ -271,7 +271,7 @@ export function RomaniaMap3D({
       });
     };
     if (loadedRef.current) apply(); else map.once("load", apply);
-  }, [venues]);
+  }, [venues, retryKey]);
 
   // CITIES → DOM markers (small count, re-render OK)
   useEffect(() => {
