@@ -305,6 +305,7 @@ export function RomaniaMap3D({
     const map = mapRef.current; if (!map) return;
     const seen = new Set<string>();
     for (const f of friends) {
+      if (!isValidLngLat(f.lng, f.lat)) continue;
       seen.add(f.user_id);
       const existing = friendMarkers.current.get(f.user_id);
       if (existing) { existing.setLngLat([f.lng, f.lat]); continue; }
@@ -340,7 +341,7 @@ export function RomaniaMap3D({
       pill.style.cssText = "margin-top:4px;padding:2px 6px;border-radius:9999px;background:rgba(6,7,10,0.92);color:#39ff88;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap;border:1px solid rgba(57,255,136,0.5);";
       wrap.appendChild(pill);
 
-      wrap.onclick = (e) => { e.stopPropagation(); nav({ to: "/app/user/$id", params: { id: f.user_id } }); };
+      wrap.onclick = (e) => { e.stopPropagation(); navRef.current({ to: "/app/user/$id", params: { id: f.user_id } }); };
       const marker = new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([f.lng, f.lat]).addTo(map);
       friendMarkers.current.set(f.user_id, marker);
     }
@@ -348,7 +349,7 @@ export function RomaniaMap3D({
     for (const [id, marker] of friendMarkers.current) {
       if (!seen.has(id)) { marker.remove(); friendMarkers.current.delete(id); }
     }
-  }, [friends, nav]);
+  }, [friends]);
 
   return (
     <div className="relative w-full h-[62vh] min-h-[460px] max-h-[640px] rounded-3xl overflow-hidden border border-neon-purple/30 bg-[#06070a] shadow-[0_0_60px_-20px_var(--neon-purple)]">
@@ -364,6 +365,20 @@ export function RomaniaMap3D({
         .maplibregl-ctrl-group button span { filter: invert(1) brightness(1.2); }
       `}</style>
       <div ref={containerRef} className="absolute inset-0" />
+      {mapFailed && (
+        <div className="absolute inset-0 z-20 grid place-items-center bg-background/95 px-6 text-center">
+          <div>
+            <div className="font-display font-black text-xl">harta se reîncarcă</div>
+            <div className="mt-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">telefonul a pierdut randarea hărții</div>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded-lg border border-neon-green/40 px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-neon-green"
+            >
+              reîncarcă
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Neon vignette + atmospheric halo (over the globe) */}
       <div className="pointer-events-none absolute inset-0 z-[1]"
