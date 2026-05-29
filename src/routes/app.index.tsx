@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { Flame, MapPin, Users, Plus } from "lucide-react";
 import logoLight from "@/assets/logo-oxidatii-light.png";
 
@@ -167,25 +168,35 @@ function LiveSpritzStrip() {
     queryKey: ["home-live-spritz-joins", ids.sort().join(",")],
     queryFn: async () => {
       if (!ids.length) return [];
-      const { data } = await supabase.from("party_joins").select("party_id").in("party_id", ids);
+      const { data } = await supabase.from("party_joins").select("party_id,user_id").in("party_id", ids);
       return data ?? [];
     },
     enabled: ids.length > 0,
     refetchInterval: 30_000,
   });
 
+  // hide full parties unless user is already in
+  const { user } = useAuth();
+  const visibleParties = parties.filter((p: any) => {
+    const taken = joins.filter((j: any) => j.party_id === p.id).length;
+    const free = p.spots_total - taken;
+    const inParty = !!user && joins.some((j: any) => j.party_id === p.id && j.user_id === user.id);
+    const isHost = user?.id === p.host_id;
+    return free > 0 || inParty || isHost;
+  });
+
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-neon-crimson">
-          <Flame size={12} /> șprițuri deschise · {parties.length}
+          <Flame size={12} /> șprițuri deschise · {visibleParties.length}
         </div>
         <Link to="/app/squad" className="font-mono text-[10px] uppercase tracking-widest text-neon-purple">
           toate →
         </Link>
       </div>
 
-      {parties.length === 0 ? (
+      {visibleParties.length === 0 ? (
         <Link
           to="/app/parties"
           className="flex items-center justify-between p-3 rounded-xl border border-dashed border-neon-crimson/40 bg-neon-crimson/[0.04]"
@@ -203,7 +214,7 @@ function LiveSpritzStrip() {
         </Link>
       ) : (
         <div className="flex gap-2 overflow-x-auto -mx-4 px-4 no-scrollbar pb-1">
-          {parties.map((p: any) => {
+          {visibleParties.map((p: any) => {
             const taken = joins.filter((j: any) => j.party_id === p.id).length;
             const free = Math.max(0, p.spots_total - taken);
             return (
