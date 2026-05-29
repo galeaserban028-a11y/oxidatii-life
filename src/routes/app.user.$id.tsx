@@ -4,8 +4,26 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM } from "@/lib/chat";
-import { ArrowLeft, MapPin, MessageCircle, Loader2, Lock, UserPlus, UserCheck, Clock } from "lucide-react";
+import { ArrowLeft, MapPin, MessageCircle, Loader2, Lock, UserPlus, UserCheck, Clock, ShieldOff, MoreVertical } from "lucide-react";
 import { useFollowStats, useFollowStatus, useFollowMutations } from "@/lib/follows";
+import { useIsBlocked, useBlockMutations } from "@/lib/blocks";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/user/$id")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -47,8 +65,14 @@ function UserPage() {
   const { data: stats } = useFollowStats(id);
   const { data: followStatus = "none" } = useFollowStatus(user?.id, id);
   const { follow, unfollow } = useFollowMutations(user?.id, id);
+  const { data: blockState } = useIsBlocked(user?.id, id);
+  const { block, unblock } = useBlockMutations(user?.id, id);
+  const isBlocking = !!blockState?.blocking;
+  const isBlockedBy = !!blockState?.blockedBy;
+  const [confirmBlock, setConfirmBlock] = useState<"block" | "unblock" | null>(null);
 
-  const canViewContent = isMe || isPublic || followStatus === "accepted";
+  const canViewContent =
+    isMe || ((isPublic || followStatus === "accepted") && !isBlocking && !isBlockedBy);
 
   const { data: photos = [] } = useQuery({
     queryKey: ["user-photos", id, canViewContent],
@@ -121,7 +145,18 @@ function UserPage() {
 
             {!isMe && user && (
               <div className="mt-4 flex gap-2">
-                {followStatus === "accepted" ? (
+                {isBlocking ? (
+                  <button
+                    onClick={() => setConfirmBlock("unblock")}
+                    className="flex-1 py-3 rounded-xl bg-secondary border border-border text-foreground font-display font-bold uppercase text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition"
+                  >
+                    <ShieldOff size={16} /> deblochează
+                  </button>
+                ) : isBlockedBy ? (
+                  <div className="flex-1 py-3 rounded-xl bg-secondary border border-border text-muted-foreground font-display font-bold uppercase text-sm flex items-center justify-center gap-2">
+                    <ShieldOff size={16} /> indisponibil
+                  </div>
+                ) : followStatus === "accepted" ? (
                   <button
                     onClick={() => unfollow.mutate()}
                     disabled={unfollow.isPending}
@@ -147,25 +182,63 @@ function UserPage() {
                     {isPublic ? "urmărește" : "trimite cerere"}
                   </button>
                 )}
-                <button onClick={openDM} disabled={opening}
-                  className="px-4 py-3 rounded-xl bg-neon-green text-background font-display font-black flex items-center justify-center active:scale-[0.98] transition disabled:opacity-40"
-                  aria-label="Mesaj"
-                >
-                  {opening ? <Loader2 className="animate-spin" size={18} /> : <MessageCircle size={18} strokeWidth={2.6} />}
-                </button>
+                {!isBlocking && !isBlockedBy && (
+                  <button
+                    onClick={openDM}
+                    disabled={opening}
+                    className="px-4 py-3 rounded-xl bg-neon-green text-background font-display font-black flex items-center justify-center active:scale-[0.98] transition disabled:opacity-40"
+                    aria-label="Mesaj"
+                  >
+                    {opening ? <Loader2 className="animate-spin" size={18} /> : <MessageCircle size={18} strokeWidth={2.6} />}
+                  </button>
+                )}
+                {!isBlocking && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="px-3 py-3 rounded-xl bg-secondary border border-border text-foreground flex items-center justify-center active:scale-[0.98] transition"
+                        aria-label="Mai multe"
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => setConfirmBlock("block")}
+                        className="text-neon-crimson focus:text-neon-crimson"
+                      >
+                        <ShieldOff size={14} className="mr-2" /> Blochează @{handle}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             )}
           </div>
 
-          {/* Private gate */}
+          {/* Private / blocked gate */}
           {!canViewContent ? (
             <div className="rounded-3xl border border-dashed border-foreground/20 bg-card p-10 text-center space-y-3">
               <div className="mx-auto h-14 w-14 rounded-full bg-neon-crimson/15 flex items-center justify-center">
-                <Lock className="text-neon-crimson" size={26} />
+                {isBlocking || isBlockedBy ? (
+                  <ShieldOff className="text-neon-crimson" size={26} />
+                ) : (
+                  <Lock className="text-neon-crimson" size={26} />
+                )}
               </div>
-              <div className="font-display uppercase text-lg">Cont privat</div>
+              <div className="font-display uppercase text-lg">
+                {isBlocking
+                  ? "Ai blocat acest cont"
+                  : isBlockedBy
+                  ? "Conținut indisponibil"
+                  : "Cont privat"}
+              </div>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                {followStatus === "pending"
+                {isBlocking
+                  ? "Deblochează-l ca să-i poți vedea profilul."
+                  : isBlockedBy
+                  ? "Nu poți vedea ce postează acest utilizator."
+                  : followStatus === "pending"
                   ? "Cererea ta a fost trimisă. Aștepți accept."
                   : "Urmărește-l ca să-i vezi șprițurile."}
               </p>
@@ -233,6 +306,47 @@ function UserPage() {
           )}
         </>
       )}
+
+      <AlertDialog open={!!confirmBlock} onOpenChange={(o) => !o && setConfirmBlock(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmBlock === "block" ? `Blochează @${handle}?` : `Deblochează @${handle}?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmBlock === "block"
+                ? "Nu îți va mai putea trimite cereri de urmărire sau mesaje și nu îți va vedea profilul. Orice urmărire existentă va fi ștearsă."
+                : "Va putea din nou să-ți trimită cereri și mesaje și să-ți vadă profilul."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anulează</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmBlock === "block") {
+                  block.mutate(undefined, {
+                    onSuccess: () => toast.success(`@${handle} a fost blocat`),
+                    onError: (e: any) => toast.error(e.message ?? "Eroare"),
+                  });
+                } else if (confirmBlock === "unblock") {
+                  unblock.mutate(undefined, {
+                    onSuccess: () => toast.success(`@${handle} a fost deblocat`),
+                    onError: (e: any) => toast.error(e.message ?? "Eroare"),
+                  });
+                }
+                setConfirmBlock(null);
+              }}
+              className={
+                confirmBlock === "block"
+                  ? "bg-neon-crimson text-white hover:bg-neon-crimson/90"
+                  : ""
+              }
+            >
+              {confirmBlock === "block" ? "Blochează" : "Deblochează"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

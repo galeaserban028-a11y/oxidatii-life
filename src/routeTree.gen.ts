@@ -31,6 +31,7 @@ import { Route as AppFriendsRouteImport } from './routes/app.friends'
 import { Route as AppFollowersRouteImport } from './routes/app.followers'
 import { Route as AppFeedRouteImport } from './routes/app.feed'
 import { Route as AppFazeRouteImport } from './routes/app.faze'
+import { Route as AppBlockedRouteImport } from './routes/app.blocked'
 import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
 import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
@@ -147,6 +148,11 @@ const AppFazeRoute = AppFazeRouteImport.update({
   path: '/faze',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBlockedRoute = AppBlockedRouteImport.update({
+  id: '/blocked',
+  path: '/blocked',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppVenueIdRoute = AppVenueIdRouteImport.update({
   id: '/venue/$id',
   path: '/venue/$id',
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/app/blocked': typeof AppBlockedRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
   '/app/followers': typeof AppFollowersRoute
@@ -210,6 +217,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/app/blocked': typeof AppBlockedRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
   '/app/followers': typeof AppFollowersRoute
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/app/blocked': typeof AppBlockedRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
   '/app/followers': typeof AppFollowersRoute
@@ -271,6 +280,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/terms'
+    | '/app/blocked'
     | '/app/faze'
     | '/app/feed'
     | '/app/followers'
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/terms'
+    | '/app/blocked'
     | '/app/faze'
     | '/app/feed'
     | '/app/followers'
@@ -328,6 +339,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/terms'
+    | '/app/blocked'
     | '/app/faze'
     | '/app/feed'
     | '/app/followers'
@@ -516,6 +528,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFazeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/blocked': {
+      id: '/app/blocked'
+      path: '/blocked'
+      fullPath: '/app/blocked'
+      preLoaderRoute: typeof AppBlockedRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/venue/$id': {
       id: '/app/venue/$id'
       path: '/venue/$id'
@@ -555,6 +574,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppBlockedRoute: typeof AppBlockedRoute
   AppFazeRoute: typeof AppFazeRoute
   AppFeedRoute: typeof AppFeedRoute
   AppFollowersRoute: typeof AppFollowersRoute
@@ -577,6 +597,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppBlockedRoute: AppBlockedRoute,
   AppFazeRoute: AppFazeRoute,
   AppFeedRoute: AppFeedRoute,
   AppFollowersRoute: AppFollowersRoute,
