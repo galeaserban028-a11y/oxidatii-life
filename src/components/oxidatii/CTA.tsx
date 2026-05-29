@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { AlertTriangle } from "lucide-react";
 
 export function CTA() {
   return (
