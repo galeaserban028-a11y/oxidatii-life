@@ -121,6 +121,10 @@ function AppFeed() {
         </Link>
       </header>
 
+      <LiveSpritzStrip />
+
+
+
 
       {isLoading ? (
         <div className="space-y-3">
