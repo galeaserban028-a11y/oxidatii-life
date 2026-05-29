@@ -90,6 +90,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      { rel: "icon", href: "/icon-192.png", type: "image/png" },
       { rel: "dns-prefetch", href: "https://qzxvnjpumtujfylfofmg.supabase.co" },
       { rel: "preconnect", href: "https://qzxvnjpumtujfylfofmg.supabase.co", crossOrigin: "anonymous" },
     ],
