@@ -216,14 +216,23 @@ function FeedPage() {
                 </header>
 
                 {it.photo_url && (
-                  <Link to={v ? "/app/venue/$id" : "/app/feed"} params={v ? { id: v.id } : undefined as any}>
+                  v ? (
+                    <Link to="/app/venue/$id" params={{ id: v.id }}>
+                      <img
+                        src={it.photo_url}
+                        alt={it.caption ?? ""}
+                        className="w-full aspect-[4/5] object-cover bg-foreground/5"
+                        loading="lazy"
+                      />
+                    </Link>
+                  ) : (
                     <img
                       src={it.photo_url}
                       alt={it.caption ?? ""}
                       className="w-full aspect-[4/5] object-cover bg-foreground/5"
                       loading="lazy"
                     />
-                  </Link>
+                  )
                 )}
 
                 {it.kind === "party" && (
