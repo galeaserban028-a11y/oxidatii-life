@@ -158,16 +158,19 @@ function MapPage() {
     queryKey: ["friend-pins", user?.id],
     queryFn: () => loadFriendPins(user!.id),
     enabled: !!user,
-    refetchInterval: 60_000,
+    refetchInterval: 30_000,
   });
 
-  // Realtime: instantly refresh when anyone checks in/out
+  // Realtime: refresh on check-ins AND live GPS updates from friends
   const qc = useQueryClient();
   useEffect(() => {
     if (!user) return;
     const ch = supabase
-      .channel("live-checkins")
+      .channel("live-presence")
       .on("postgres_changes", { event: "*", schema: "public", table: "check_ins" }, () => {
+        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_locations" }, () => {
         qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
       })
       .subscribe();
