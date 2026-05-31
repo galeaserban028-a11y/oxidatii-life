@@ -117,16 +117,45 @@ function ScanPage() {
         <Link to="/app" className="text-xs text-muted-foreground">închide</Link>
       </header>
 
-      {/* Media (photo or video) */}
+      {/* Hidden picker */}
       <input ref={fileRef} type="file" accept="image/*,video/*" capture="environment" className="hidden"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
 
-      <button
-        onClick={() => fileRef.current?.click()}
-        className="block w-full aspect-square rounded-3xl overflow-hidden bg-card border border-border active:scale-[0.99] transition relative"
-      >
-        {file ? (
-          <>
+      {!file ? (
+        /* STEP 1 — camera only, full-bleed prompt */
+        <div className="space-y-3">
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="block w-full aspect-[3/4] rounded-3xl overflow-hidden bg-card border border-border active:scale-[0.99] transition relative"
+          >
+            <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-4">
+              <div className="h-20 w-20 rounded-full flex items-center justify-center shadow-[var(--shadow-elevated)]" style={{ background: "var(--gradient-sunset)" }}>
+                <Camera size={34} className="text-white" />
+              </div>
+              <div className="text-center space-y-1">
+                <div className="font-display font-bold text-foreground text-xl">fă o poză sau un clip</div>
+                <div className="text-xs">apasă să deschizi camera</div>
+              </div>
+            </div>
+          </button>
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="w-full py-3 rounded-2xl text-white font-semibold shadow-[var(--shadow-elevated)] active:scale-[0.98] transition"
+            style={{ background: "var(--gradient-sunset)" }}
+          >
+            deschide camera
+          </button>
+          <p className="text-center text-[11px] text-muted-foreground">
+            după ce faci poza alegi locul și postezi.
+          </p>
+        </div>
+      ) : (
+        /* STEP 2 — preview + venue + caption + submit */
+        <>
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="block w-full aspect-square rounded-3xl overflow-hidden bg-card border border-border active:scale-[0.99] transition relative"
+          >
             {file.type.startsWith("video/") ? (
               <video src={URL.createObjectURL(file)} className="h-full w-full object-cover" autoPlay muted loop playsInline />
             ) : (
@@ -138,118 +167,110 @@ function ScanPage() {
             <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs backdrop-blur">
               schimbă
             </div>
-          </>
-        ) : (
-          <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-3">
-            <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: "var(--gradient-sunset)" }}>
-              <Camera size={28} className="text-white" />
-            </div>
-            <div className="font-display font-semibold text-foreground text-lg">fă poza / clip</div>
-            <div className="text-xs">sau alege din galerie · poză sau video</div>
-          </div>
-        )}
-      </button>
-
-      {/* Venue — inline, always visible */}
-      {selectedVenue ? (
-        <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-primary/40">
-          <div className="min-w-0">
-            <div className="font-display font-semibold truncate">📍 {selectedVenue.name}</div>
-            <div className="text-[11px] text-muted-foreground truncate">{selectedVenue.city?.name ?? ""}</div>
-          </div>
-          <button onClick={() => setSelectedVenue(null)} className="p-2 text-muted-foreground">
-            <X size={16}/>
           </button>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <div className="relative">
-            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={venueQuery}
-              onChange={(e) => setVenueQuery(e.target.value)}
-              placeholder="unde ești? club, bar, terasă..."
-              className="w-full pl-10 pr-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-            />
-          </div>
-          {venues.length > 0 && (
-            <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
-              {venues.map((v: any) => (
-                <button key={v.id} onClick={() => setSelectedVenue(v)}
-                  className="shrink-0 px-3 py-2 rounded-full bg-card border border-border text-xs font-medium active:scale-95 transition">
-                  {v.name}
-                </button>
-              ))}
-            </div>
-          )}
 
-          {!addOpen ? (
-            <button
-              onClick={() => { setAddOpen(true); setNewVenueName(venueQuery); }}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition"
-            >
-              <Plus size={14}/> {venueQuery ? `adaugă „${venueQuery}"` : "nu găsești? adaugă o locație"}
-            </button>
-          ) : (
-            <div className="p-3 rounded-2xl border border-primary/40 bg-card space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">Locație nouă</div>
-                <button onClick={() => setAddOpen(false)} className="text-muted-foreground"><X size={14}/></button>
+          {/* Venue */}
+          {selectedVenue ? (
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-primary/40">
+              <div className="min-w-0">
+                <div className="font-display font-semibold truncate">📍 {selectedVenue.name}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{selectedVenue.city?.name ?? ""}</div>
               </div>
-              <input
-                value={newVenueName} onChange={(e) => setNewVenueName(e.target.value)}
-                placeholder="nume locație"
-                className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              />
-              <div className="grid grid-cols-3 gap-1.5">
-                {(["club", "bar", "terasa"] as const).map((t) => (
-                  <button key={t} onClick={() => setNewVenueType(t)}
-                    className={`py-2 rounded-xl text-xs font-medium border transition ${
-                      newVenueType === t ? "bg-primary text-primary-foreground border-primary" : "bg-secondary border-border text-muted-foreground"
-                    }`}>
-                    {t === "terasa" ? "terasă" : t}
-                  </button>
-                ))}
-              </div>
-              <select
-                value={newVenueCityId} onChange={(e) => setNewVenueCityId(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-              >
-                <option value="">alege orașul...</option>
-                {(cities as any[]).map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-              <button
-                onClick={createVenue}
-                disabled={creating || !newVenueName.trim() || !newVenueCityId}
-                className="w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-40 active:scale-[0.98] transition"
-                style={{ background: "var(--gradient-sunset)" }}
-              >
-                {creating ? "se adaugă..." : "adaugă locație"}
+              <button onClick={() => setSelectedVenue(null)} className="p-2 text-muted-foreground">
+                <X size={16}/>
               </button>
             </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">unde ai făcut șprițul?</div>
+              <div className="relative">
+                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={venueQuery}
+                  onChange={(e) => setVenueQuery(e.target.value)}
+                  placeholder="club, bar, terasă..."
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                />
+              </div>
+              {venues.length > 0 && (
+                <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
+                  {venues.map((v: any) => (
+                    <button key={v.id} onClick={() => setSelectedVenue(v)}
+                      className="shrink-0 px-3 py-2 rounded-full bg-card border border-border text-xs font-medium active:scale-95 transition">
+                      {v.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {!addOpen ? (
+                <button
+                  onClick={() => { setAddOpen(true); setNewVenueName(venueQuery); }}
+                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition"
+                >
+                  <Plus size={14}/> {venueQuery ? `adaugă „${venueQuery}"` : "nu găsești? adaugă o locație"}
+                </button>
+              ) : (
+                <div className="p-3 rounded-2xl border border-primary/40 bg-card space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">Locație nouă</div>
+                    <button onClick={() => setAddOpen(false)} className="text-muted-foreground"><X size={14}/></button>
+                  </div>
+                  <input
+                    value={newVenueName} onChange={(e) => setNewVenueName(e.target.value)}
+                    placeholder="nume locație"
+                    className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  />
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {(["club", "bar", "terasa"] as const).map((t) => (
+                      <button key={t} onClick={() => setNewVenueType(t)}
+                        className={`py-2 rounded-xl text-xs font-medium border transition ${
+                          newVenueType === t ? "bg-primary text-primary-foreground border-primary" : "bg-secondary border-border text-muted-foreground"
+                        }`}>
+                        {t === "terasa" ? "terasă" : t}
+                      </button>
+                    ))}
+                  </div>
+                  <select
+                    value={newVenueCityId} onChange={(e) => setNewVenueCityId(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  >
+                    <option value="">alege orașul...</option>
+                    {(cities as any[]).map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={createVenue}
+                    disabled={creating || !newVenueName.trim() || !newVenueCityId}
+                    className="w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-40 active:scale-[0.98] transition"
+                    style={{ background: "var(--gradient-sunset)" }}
+                  >
+                    {creating ? "se adaugă..." : "adaugă locație"}
+                  </button>
+                </div>
+              )}
+            </div>
           )}
-        </div>
+
+          {/* Caption */}
+          <input
+            value={caption} onChange={(e) => setCaption(e.target.value)}
+            placeholder="caption (opțional)"
+            className="w-full px-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+
+          {/* Submit */}
+          <button
+            onClick={submit}
+            disabled={!ready}
+            className="w-full py-4 rounded-2xl text-white font-semibold disabled:opacity-40 shadow-[var(--shadow-elevated)] active:scale-[0.98] transition"
+            style={{ background: "var(--gradient-sunset)" }}
+          >
+            {uploading ? "Se postează..." : "Postează"}
+          </button>
+        </>
       )}
-
-
-      {/* Caption — inline, single line, optional */}
-      <input
-        value={caption} onChange={(e) => setCaption(e.target.value)}
-        placeholder="caption (opțional)"
-        className="w-full px-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
-      />
-
-      {/* Submit */}
-      <button
-        onClick={submit}
-        disabled={!ready}
-        className="w-full py-4 rounded-2xl text-white font-semibold disabled:opacity-40 shadow-[var(--shadow-elevated)] active:scale-[0.98] transition"
-        style={{ background: "var(--gradient-sunset)" }}
-      >
-        {uploading ? "Se postează..." : "Postează"}
-      </button>
     </div>
   );
 }
