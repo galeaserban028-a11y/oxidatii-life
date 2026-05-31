@@ -202,11 +202,14 @@ function MePage() {
               <SheetTitle className="font-display uppercase">Meniu</SheetTitle>
             </SheetHeader>
             <nav className="py-2">
+              <MenuItem to="/app/settings" icon={<Settings size={16} className="text-neon-green" />} onSelect={() => setMenuOpen(false)} label="Setări" />
+              <div className="my-1 border-t border-foreground/10" />
               <MenuItem to="/app/notifications" icon={<Bell size={16} />} onSelect={() => setMenuOpen(false)} label="Notificări" />
               <MenuItem to="/app/requests" icon={<UserPlus size={16} />} onSelect={() => setMenuOpen(false)}
                 label="Cereri urmărire" badge={pendingCount > 0 ? pendingCount : undefined} />
               <MenuItem to="/app/blocked" icon={<ShieldOff size={16} />} onSelect={() => setMenuOpen(false)} label="Utilizatori blocați" />
               <MenuItem to="/app/inbox" icon={<UserSquare2 size={16} />} onSelect={() => setMenuOpen(false)} label="Mesaje" />
+
               <button
                 onClick={() => { setMenuOpen(false); togglePrivacy(); }}
                 disabled={savingPrivacy}
