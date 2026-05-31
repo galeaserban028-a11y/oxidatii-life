@@ -41,8 +41,6 @@ export function Hero() {
         <h1 className="font-display uppercase text-[clamp(3.2rem,15vw,6rem)] leading-[0.82] tracking-[-0.04em]">
           <span className="block">HAI LA</span>
           <span className="block text-gradient-chaos">ȘPRIȚ</span>
-          <span className="block">ÎN DUMNEZEUL</span>
-          <span className="block">OXIDAȚILOR.</span>
         </h1>
 
         <p className="mt-5 text-base leading-snug text-foreground/85 max-w-sm">
