@@ -25,6 +25,11 @@ function AppLayout() {
   const nav = useNavigate();
   const { user, profile, loading } = useAuth();
 
+  const loadingLine = useMemo(
+    () => LOADING_LINES[Math.floor(Math.random() * LOADING_LINES.length)],
+    [],
+  );
+
   useEffect(() => {
     if (loading) return;
     if (!user) nav({ to: "/login", replace: true });
@@ -36,20 +41,21 @@ function AppLayout() {
       <main className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <img src={logoSticker} alt="Oxidații" className="h-24 w-24 object-contain animate-pulse drop-shadow-[0_4px_22px_rgba(198,107,255,0.5)]" />
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-          se încarcă...
+          {loadingLine}
         </div>
       </main>
     );
   }
 
-
   return (
     <main className="min-h-screen bg-background text-foreground pb-20">
       <InstallBanner />
       <AppHeader />
-      <Outlet />
+      <PageTransition>
+        <Outlet />
+      </PageTransition>
       <BottomTabBar />
     </main>
   );
-
 }
+
