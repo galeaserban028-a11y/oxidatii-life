@@ -98,34 +98,47 @@ function AppFeed() {
   });
 
   return (
-    <div className="px-4 pt-5 pb-6 space-y-4">
-      <header className="space-y-2">
+    <div className="px-4 pt-4 pb-6 space-y-4">
+      {/* Compact header */}
+      <header className="space-y-2.5">
         <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
           <span className="text-neon-crimson flicker">● LIVE · ROMÂNIA</span>
           <span className="text-muted-foreground">{new Date().toLocaleDateString("ro-RO", { weekday: "long" })}</span>
         </div>
-        <div className="flex items-end gap-3">
-          <img src={logoLight} alt="" aria-hidden width={56} height={56} className="h-14 w-14 object-contain shrink-0 -mb-1" />
-          <h1 className="font-display uppercase text-2xl leading-none tracking-tight">
-            Ce șprițuri sunt în <span className="text-gradient-chaos">această seară</span>
+        <div className="flex items-center gap-2.5">
+          <img src={logoLight} alt="" aria-hidden width={40} height={40} className="h-10 w-10 object-contain shrink-0" />
+          <h1 className="font-display uppercase text-xl leading-[1.05] tracking-tight">
+            Ce șprițuri sunt <span className="text-gradient-chaos">diseară</span>
           </h1>
         </div>
-        <Link
-          to="/app/faze"
-          className="mt-2 flex items-center justify-between p-3 rounded-lg bg-foreground/[0.06] border border-foreground/10 hover:border-neon-crimson/40"
-        >
-          <div>
-            <div className="font-display uppercase text-sm">🎬 Cele mai tari faze</div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">postează ce-ai prins în club / la șpriț</div>
-          </div>
-          <div className="font-mono text-xs text-neon-crimson">→</div>
-        </Link>
+
+        {/* Quick actions row */}
+        <div className="grid grid-cols-3 gap-1.5">
+          <Link
+            to="/app/scan"
+            className="flex flex-col items-start gap-1 p-2.5 rounded-xl bg-neon-crimson/10 border border-neon-crimson/30 active:scale-[0.97] transition"
+          >
+            <Plus size={16} className="text-neon-crimson" strokeWidth={2.6} />
+            <span className="font-display font-bold text-[11px] leading-tight">deschide șpriț</span>
+          </Link>
+          <Link
+            to="/app/faze"
+            className="flex flex-col items-start gap-1 p-2.5 rounded-xl bg-foreground/[0.05] border border-foreground/10 active:scale-[0.97] transition"
+          >
+            <span className="text-base leading-none">🎬</span>
+            <span className="font-display font-bold text-[11px] leading-tight">faze din teren</span>
+          </Link>
+          <Link
+            to="/app/squad"
+            className="flex flex-col items-start gap-1 p-2.5 rounded-xl bg-foreground/[0.05] border border-foreground/10 active:scale-[0.97] transition"
+          >
+            <Users size={16} className="text-neon-purple" />
+            <span className="font-display font-bold text-[11px] leading-tight">haita ta</span>
+          </Link>
+        </div>
       </header>
 
       <LiveSpritzStrip />
-
-
-
 
       {isLoading ? (
         <div className="space-y-3">
