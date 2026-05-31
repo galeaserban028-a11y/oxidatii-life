@@ -198,6 +198,8 @@ function LiveSpritzStrip() {
     return free > 0 || inParty || isHost;
   });
 
+  if (visibleParties.length === 0) return null;
+
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between">
@@ -209,23 +211,8 @@ function LiveSpritzStrip() {
         </Link>
       </div>
 
-      {visibleParties.length === 0 ? (
-        <Link
-          to="/app/parties"
-          className="flex items-center justify-between p-3 rounded-xl border border-dashed border-neon-crimson/40 bg-neon-crimson/[0.04]"
-        >
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-neon-crimson/15 flex items-center justify-center">
-              <Plus size={14} className="text-neon-crimson" strokeWidth={3} />
-            </div>
-            <div>
-              <div className="font-display font-bold text-sm">deschide un șpriț</div>
-              <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">cheamă haita la tine</div>
-            </div>
-          </div>
-          <span className="font-mono text-[10px] text-neon-crimson">→</span>
-        </Link>
-      ) : (
+      {(
+
         <div className="flex gap-2 overflow-x-auto -mx-4 px-4 no-scrollbar pb-1">
           {visibleParties.map((p: any) => {
             const taken = joins.filter((j: any) => j.party_id === p.id).length;
