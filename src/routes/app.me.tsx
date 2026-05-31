@@ -110,17 +110,17 @@ function MePage() {
   ].sort((a, b) => +new Date(b._date) - +new Date(a._date));
 
   return (
-    <div className="px-4 pt-6 pb-4 space-y-5">
+    <div className="px-3 pt-4 pb-3 space-y-3">
       {/* Header card */}
-      <div className="relative border border-foreground/10 rounded-2xl p-5 bg-foreground/[0.04] overflow-hidden">
+      <div className="relative border border-foreground/10 rounded-2xl p-4 bg-foreground/[0.04] overflow-hidden">
         <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full"
           style={{ background: "radial-gradient(circle, oklch(0.62 0.28 305 / 30%), transparent 70%)" }} />
-        <div className="relative flex items-center gap-4">
+        <div className="relative flex items-center gap-3">
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="relative h-20 w-20 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center text-3xl font-display overflow-hidden shrink-0 group"
+            className="relative h-16 w-16 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center text-2xl font-display overflow-hidden shrink-0 group"
           >
             {profile.avatar_url ? (
               <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -128,7 +128,7 @@ function MePage() {
               (profile.handle ?? "?")[0].toUpperCase()
             )}
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition flex items-center justify-center">
-              <Camera size={18} />
+              <Camera size={16} />
             </div>
             {uploading && <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-[9px] font-mono uppercase">…</div>}
           </button>
@@ -140,7 +140,7 @@ function MePage() {
             onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); e.target.value = ""; }}
           />
           <div className="min-w-0 flex-1">
-            <div className="font-display uppercase text-2xl leading-tight truncate">@{profile.handle ?? "—"}</div>
+            <div className="font-display uppercase text-xl leading-tight truncate">@{profile.handle ?? "—"}</div>
             <div className="text-[10px] font-mono uppercase tracking-widest text-neon-crimson mt-0.5">
               {RANK_LABELS[profile.rank] ?? profile.rank}
             </div>
@@ -152,7 +152,7 @@ function MePage() {
             <button
               onClick={togglePrivacy}
               disabled={savingPrivacy}
-              className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded-md border border-foreground/15 hover:border-foreground/30 transition"
+              className="mt-1.5 inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-md border border-foreground/15 hover:border-foreground/30 transition"
             >
               {profile.is_public ? <Globe2 size={11} className="text-neon-green" /> : <Lock size={11} className="text-neon-crimson" />}
               <span className={profile.is_public ? "text-neon-green" : "text-neon-crimson"}>
@@ -163,7 +163,22 @@ function MePage() {
           </div>
         </div>
 
-        <div className="relative grid grid-cols-4 gap-2 mt-5">
+        {/* Șpriț Streak — mutat mai sus */}
+        <div className="relative mt-3 rounded-2xl p-3 border border-neon-crimson/30 bg-gradient-to-br from-neon-crimson/10 via-transparent to-neon-purple/10 flex items-center gap-3">
+          <div className="text-3xl leading-none">🔥</div>
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">șpriț streak</div>
+            <div className="font-display text-2xl leading-none mt-0.5">
+              {(profile as any).current_streak ?? 0}
+              <span className="text-xs text-muted-foreground ml-2">weekend-uri la rând</span>
+            </div>
+            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">
+              record: {(profile as any).longest_streak ?? 0} · vineri/sâmbătă/duminică
+            </div>
+          </div>
+        </div>
+
+        <div className="relative grid grid-cols-4 gap-1.5 mt-3">
           <Stat label="aură" value={profile.aura} color="var(--neon-purple)" />
           <Stat label="șprițuri" value={profile.lifetime_sprits} color="var(--neon-crimson)" />
           <Link to="/app/followers" search={{ tab: "followers" }} className="contents">
@@ -177,15 +192,15 @@ function MePage() {
         {/* Feed privat */}
         <Link
           to="/app/feed"
-          className="relative mt-3 flex items-center gap-3 p-3 rounded-2xl border border-neon-purple/40 bg-gradient-to-r from-neon-purple/10 to-neon-crimson/10 active:scale-[0.99] transition"
+          className="relative mt-2.5 flex items-center gap-2.5 p-2.5 rounded-2xl border border-neon-purple/40 bg-gradient-to-r from-neon-purple/10 to-neon-crimson/10 active:scale-[0.99] transition"
         >
-          <div className="h-9 w-9 rounded-full bg-neon-purple text-white flex items-center justify-center">
-            <Lock size={15} strokeWidth={2.6} />
+          <div className="h-8 w-8 rounded-full bg-neon-purple text-white flex items-center justify-center shrink-0">
+            <Lock size={14} strokeWidth={2.6} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-display uppercase text-sm">Feed privat · trupa ta</div>
+            <div className="font-display uppercase text-sm leading-tight">Feed privat · trupa ta</div>
             <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              cele mai tari faze + recomandări de la cei urmăriți →
+              faze + recomandări de la cei urmăriți →
             </div>
           </div>
         </Link>
@@ -194,13 +209,13 @@ function MePage() {
         {pendingCount > 0 && (
           <Link
             to="/app/requests"
-            className="relative mt-3 flex items-center gap-3 p-3 rounded-2xl border border-neon-crimson/40 bg-neon-crimson/10 active:scale-[0.99] transition"
+            className="relative mt-2 flex items-center gap-2.5 p-2.5 rounded-2xl border border-neon-crimson/40 bg-neon-crimson/10 active:scale-[0.99] transition"
           >
-            <div className="h-9 w-9 rounded-full bg-neon-crimson text-white flex items-center justify-center">
-              <UserPlus size={16} strokeWidth={2.6} />
+            <div className="h-8 w-8 rounded-full bg-neon-crimson text-white flex items-center justify-center shrink-0">
+              <UserPlus size={14} strokeWidth={2.6} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-display uppercase text-sm">
+              <div className="font-display uppercase text-sm leading-tight">
                 {pendingCount} cerere{pendingCount === 1 ? "" : "i"} de urmărire
               </div>
               <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
@@ -212,34 +227,20 @@ function MePage() {
 
         <Link
           to="/app/blocked"
-          className="mt-3 flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 active:scale-[0.99] transition"
+          className="mt-2 flex items-center gap-2.5 rounded-2xl border border-border bg-card px-3 py-2.5 active:scale-[0.99] transition"
         >
-          <div className="h-9 w-9 rounded-full bg-foreground/10 flex items-center justify-center shrink-0">
-            <ShieldOff size={16} />
+          <div className="h-8 w-8 rounded-full bg-foreground/10 flex items-center justify-center shrink-0">
+            <ShieldOff size={14} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-display uppercase text-sm">Utilizatori blocați</div>
+            <div className="font-display uppercase text-sm leading-tight">Utilizatori blocați</div>
             <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
               gestionează lista →
             </div>
           </div>
         </Link>
-
-        {/* Șpriț Streak */}
-        <div className="relative mt-3 rounded-2xl p-4 border border-neon-crimson/30 bg-gradient-to-br from-neon-crimson/10 via-transparent to-neon-purple/10 flex items-center gap-4">
-          <div className="text-4xl leading-none">🔥</div>
-          <div className="flex-1 min-w-0">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">șpriț streak</div>
-            <div className="font-display text-3xl leading-none mt-1">
-              {(profile as any).current_streak ?? 0}
-              <span className="text-sm text-muted-foreground ml-2">weekend-uri la rând</span>
-            </div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">
-              record: {(profile as any).longest_streak ?? 0} · ieși vineri/sâmbătă/duminică să-l ții
-            </div>
-          </div>
-        </div>
       </div>
+
 
 
       {/* Top Momente */}
