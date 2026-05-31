@@ -167,7 +167,7 @@ function LiveSpritzStrip() {
     queryFn: async () => {
       const { data } = await supabase
         .from("parties")
-        .select("id, title, location_text, spots_total, starts_at, vibe")
+        .select("id, host_id, title, location_text, spots_total, starts_at, vibe")
         .gt("expires_at", new Date().toISOString())
         .order("starts_at", { ascending: true })
         .limit(6);

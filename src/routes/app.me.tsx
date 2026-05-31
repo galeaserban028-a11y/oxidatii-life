@@ -50,7 +50,7 @@ function MePage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   async function shareProfile() {
-    const url = `${window.location.origin}/u/${profile?.handle ?? user?.id}`;
+    const url = `${window.location.origin}/app/user/${user?.id}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: `@${profile?.handle ?? "oxidat"} pe OXIDAȚII`, url });
