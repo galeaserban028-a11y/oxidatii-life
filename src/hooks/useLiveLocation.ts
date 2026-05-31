@@ -79,8 +79,9 @@ export function useLiveLocation(userId: string | null | undefined, enabled: bool
       cancelled = true;
       document.removeEventListener("visibilitychange", onVisibility);
       stop();
-      // best-effort: drop the live row when the user leaves the app shell
-      void supabase.from("live_locations").delete().eq("user_id", userId);
+      // Don't delete the live row on cleanup — the row expires naturally
+      // after 15 minutes and deleting it on every effect re-run causes the
+      // user's pin to flicker off the map for friends.
     };
   }, [userId, enabled]);
 }

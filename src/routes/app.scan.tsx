@@ -71,9 +71,10 @@ function ScanPage() {
       if (insErr) throw insErr;
       toast.success(isVideo ? "Clipul tău e live." : "Șprițul tău e live.");
       qc.invalidateQueries({ queryKey: ["faze"] });
-      qc.invalidateQueries({ queryKey: ["top-ro"] });
+      qc.invalidateQueries({ queryKey: ["app-feed"] });
+      qc.invalidateQueries({ queryKey: ["app-private-feed"] });
       qc.invalidateQueries({ queryKey: ["venue", selectedVenue.id] });
-      nav({ to: "/app/top" });
+      nav({ to: "/app" });
     } catch (e: any) {
       toast.error(e.message ?? "Nu s-a putut încărca");
     } finally {

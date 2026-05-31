@@ -23,7 +23,7 @@ function Onboarding() {
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/login", replace: true });
-    if (profile?.onboarded) nav({ to: "/app/map", replace: true });
+    if (profile?.onboarded) nav({ to: "/app", replace: true });
   }, [user, profile, loading, nav]);
 
   useEffect(() => {

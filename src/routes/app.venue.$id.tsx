@@ -77,13 +77,22 @@ function VenuePage() {
           <div className="h-full w-full bg-gradient-to-br from-sunset-orange/30 via-sunset-magenta/20 to-sunset-indigo/30" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-        <Link to="/app/street/$id" params={{ id: v.street.id }}
-          className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-foreground shadow-md">
-          <ArrowLeft size={18}/>
-        </Link>
+        {v.street?.id ? (
+          <Link to="/app/street/$id" params={{ id: v.street.id }}
+            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-foreground shadow-md">
+            <ArrowLeft size={18}/>
+          </Link>
+        ) : (
+          <Link to="/app/map"
+            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-foreground shadow-md">
+            <ArrowLeft size={18}/>
+          </Link>
+        )}
         <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between text-white">
           <div className="min-w-0">
-            <div className="text-[11px] uppercase tracking-[0.18em] opacity-80">{v.street.city.name}</div>
+            {v.street?.city?.name && (
+              <div className="text-[11px] uppercase tracking-[0.18em] opacity-80">{v.street.city.name}</div>
+            )}
             <h1 className="font-display font-bold text-3xl leading-tight drop-shadow truncate">{v.name}</h1>
           </div>
           {data.liveCount > 0 && (
@@ -137,9 +146,11 @@ function VenuePage() {
               <Instagram size={12}/> @{v.ig_handle}
             </a>
           )}
-          <div className="text-xs px-3 py-1.5 rounded-full bg-secondary text-foreground flex items-center gap-1.5">
-            <MapPin size={12}/> {v.street.name}
-          </div>
+          {v.street?.name && (
+            <div className="text-xs px-3 py-1.5 rounded-full bg-secondary text-foreground flex items-center gap-1.5">
+              <MapPin size={12}/> {v.street.name}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -147,7 +158,15 @@ function VenuePage() {
             className="rounded-2xl bg-primary text-primary-foreground py-3.5 text-center text-sm font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition">
             <Camera size={16}/> Pune un șpriț
           </Link>
-          <button className="rounded-2xl bg-card border border-border text-foreground py-3.5 text-sm font-semibold active:scale-[0.98] transition">
+          <button
+            onClick={async () => {
+              if (!user) { toast.error("Trebuie să fii logat"); return; }
+              const { error } = await supabase.from("check_ins").insert({ venue_id: id, user_id: user.id });
+              if (error) { toast.error(error.message); return; }
+              toast.success("Ești aici · vizibil 4h");
+              qc.invalidateQueries({ queryKey: ["venue", id] });
+            }}
+            className="rounded-2xl bg-card border border-border text-foreground py-3.5 text-sm font-semibold active:scale-[0.98] transition">
             Sunt aici
           </button>
         </div>
