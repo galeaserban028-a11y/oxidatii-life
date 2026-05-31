@@ -2,7 +2,7 @@ const tiers = [
   {
     label: "MDS-uri (începători)",
     color: "var(--muted-foreground)",
-    ranks: ["Băiat de Scară", "Client la Nonstop", "Ucenic de Șpriț", "Lord al Semințelor", "Rookie de Terasă"],
+    ranks: ["Băiat de Scară", "Client la Nonstop", "Ucenic de Șpriț", "Hai la Șpriț", "Rookie de Terasă"],
   },
   {
     label: "Mid — oameni serioși",
@@ -27,7 +27,7 @@ export function Ranks() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h2 className="font-display uppercase text-2xl md:text-4xl tracking-tighter leading-none">
-            De la <span className="text-muted-foreground">Lord al Semințelor</span> la <span className="text-gradient-chaos">Dumnezeul Oxidaților</span>
+            De la <span className="text-muted-foreground">Hai la Șpriț</span> la <span className="text-gradient-chaos">Dumnezeul Oxidaților</span>
           </h2>
           <p className="mt-2 text-sm text-muted-foreground max-w-lg">
             Fiecare șpriț, fiecare poză, fiecare seară te urcă. Nimic fake. Doar dovadă.

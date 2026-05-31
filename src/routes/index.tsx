@@ -8,7 +8,7 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "OXIDAȚII — Aplicația de șpriț" },
       { name: "description", content: "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă. Doar pentru +18." },
-      { property: "og:title", content: "OXIDAȚII — Din lord al semințelor în Dumnezeul oxidaților." },
+      { property: "og:title", content: "OXIDAȚII — Hai la șpriț în Dumnezeul oxidaților." },
       { property: "og:description", content: "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă." },
     ],
   }),
@@ -63,8 +63,8 @@ function Index() {
           <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-primary">sezonul șprițului · 2026</span>
         </div>
         <h1 className="font-display uppercase text-[clamp(2.2rem,9vw,3rem)] leading-[0.85] tracking-[-0.03em]">
-          <span className="block">Din lord al</span>
-          <span className="block text-gradient-chaos">semințelor</span>
+          <span className="block">Hai la</span>
+          <span className="block text-gradient-chaos">șpriț</span>
           <span className="block">în zeu' oxidaților.</span>
         </h1>
         <p className="mt-3 text-sm leading-snug text-foreground/85">
