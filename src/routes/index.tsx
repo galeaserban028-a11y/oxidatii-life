@@ -65,7 +65,6 @@ function Index() {
         <h1 className="font-display uppercase text-[clamp(2.2rem,9vw,3rem)] leading-[0.85] tracking-[-0.03em]">
           <span className="block">Hai la</span>
           <span className="block text-gradient-chaos">șpriț</span>
-          <span className="block">în zeu' oxidaților.</span>
         </h1>
         <p className="mt-3 text-sm leading-snug text-foreground/85">
           Unde se bea șpriț <b>acum</b>. Cu cine. Și cine-i <span className="text-sunset-orange">rege la masă</span>.
