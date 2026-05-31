@@ -33,7 +33,7 @@ function AppLayout() {
 
 
   return (
-    <main className="min-h-screen bg-background text-foreground pb-28">
+    <main className="min-h-screen bg-background text-foreground pb-20">
       <InstallBanner />
       <AppHeader />
       <Outlet />
