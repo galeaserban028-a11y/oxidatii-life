@@ -145,8 +145,8 @@ function SquadPage() {
     <div className="pb-4">
       {/* Header — compact */}
       <header className="px-4 pt-5 pb-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-purple">// organizare șpriț</div>
-        <h1 className="font-display font-black text-2xl mt-1 tracking-tight leading-none">organizare șpriț.</h1>
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">organizare</div>
+        <h1 className="font-display font-black text-2xl mt-1 tracking-tight leading-none">cu cine ieșim?</h1>
       </header>
 
       {/* Quick stats strip */}
@@ -175,8 +175,8 @@ function SquadPage() {
         >
           <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-neon-crimson/30 blur-2xl pointer-events-none" />
           <Flame className="text-neon-crimson mb-2" size={20} />
-          <div className="font-display font-black text-sm leading-tight">Chem haita</div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">deschide șpriț</div>
+          <div className="font-display font-black text-sm leading-tight">deschide unul</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">cheamă lumea</div>
         </Link>
         <Link
           to="/app/inbox"
@@ -184,16 +184,16 @@ function SquadPage() {
         >
           <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-neon-purple/30 blur-2xl pointer-events-none" />
           <Plus className="text-neon-purple mb-2" size={20} strokeWidth={2.6} />
-          <div className="font-display font-black text-sm leading-tight">Fă gașcă</div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">invită oxidați</div>
+          <div className="font-display font-black text-sm leading-tight">grup nou</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">cu prietenii tăi</div>
         </Link>
       </div>
 
       {/* LIVE ȘPRIȚURI */}
       <section id="live" className="px-4 space-y-2 scroll-mt-4">
         <div className="flex items-center justify-between">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-crimson flex items-center gap-1.5">
-            <Flame size={11} /> șprițuri deschise · {openCount}
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+            <Flame size={11} className="text-neon-crimson" /> deschise acum · {openCount}
           </div>
           {openCount > 0 && (
             <Link to="/app/parties" className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
@@ -203,10 +203,9 @@ function SquadPage() {
         </div>
 
         {visibleParties.length === 0 ? (
-          <Link to="/app/parties" className="block p-5 rounded-2xl border border-dashed border-neon-crimson/25 bg-neon-crimson/[0.03] text-center">
-            <div className="text-2xl mb-1">🍻</div>
-            <div className="font-display font-bold text-sm">Zero șprițuri deschise.</div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">fii primul → deschide unul</div>
+          <Link to="/app/parties" className="block p-5 rounded-2xl border border-dashed border-foreground/15 text-center">
+            <div className="font-display font-bold text-sm">nimic deschis acum</div>
+            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">deschide tu primul →</div>
           </Link>
         ) : (
           <div className="space-y-2">
@@ -275,7 +274,7 @@ function SquadPage() {
                               : "bg-neon-crimson text-white shadow-[0_0_12px_-4px_var(--neon-crimson)]"
                         }`}
                       >
-                        {isHost ? "ești gazdă" : joined ? "✓ vin" : full ? "plin" : "vin și eu"}
+                        {isHost ? "ești gazdă" : joined ? "vii" : full ? "plin" : "vin și eu"}
                       </button>
                     </div>
                   </div>
@@ -292,8 +291,8 @@ function SquadPage() {
       {/* Active groups */}
       {groups.length > 0 && (
         <section id="groups" className="px-4 space-y-2 scroll-mt-4 mb-5">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-green flex items-center gap-1.5">
-            <Users size={11} /> găști active · {groups.length}
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+            <Users size={11} className="text-neon-green" /> grupuri · {groups.length}
           </div>
           {groups.map((g: any) => (
             <Link key={g.id} to="/app/chat/$id" params={{ id: g.id }}
@@ -302,8 +301,8 @@ function SquadPage() {
                 {(g.title ?? "G")[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-display font-bold text-sm truncate">{g.title ?? "Haită fără nume"}</div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">grup · {new Date(g.last_message_at).toLocaleDateString("ro-RO")}</div>
+                <div className="font-display font-bold text-sm truncate">{g.title ?? "grup fără nume"}</div>
+                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{new Date(g.last_message_at).toLocaleDateString("ro-RO")}</div>
               </div>
               <MessageCircle className="text-neon-green" size={18} />
             </Link>
@@ -314,8 +313,8 @@ function SquadPage() {
       {/* Friends */}
       <section id="friends" className="px-4 space-y-2 scroll-mt-4">
         <div className="flex items-center justify-between">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-purple flex items-center gap-1.5">
-            <Users size={11} /> haita ta · {friends.length}
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+            <Users size={11} className="text-neon-purple" /> prieteni · {friends.length}
           </div>
           {friends.length > 0 && (
             <Link to="/app/friends" className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
@@ -324,12 +323,11 @@ function SquadPage() {
           )}
         </div>
         {isLoading ? (
-          <div className="py-8 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground">se încarcă…</div>
+          <div className="py-8 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground">o secundă…</div>
         ) : friends.length === 0 ? (
           <Link to="/app/friends" className="block py-6 rounded-2xl border border-dashed border-foreground/15 text-center">
-            <div className="text-2xl mb-1">🍷</div>
-            <div className="font-display font-bold text-sm">Zero oxidați în haită</div>
-            <div className="text-xs text-muted-foreground mt-1">Adaugă prieteni →</div>
+            <div className="font-display font-bold text-sm">nu ai adăugat încă pe nimeni</div>
+            <div className="text-xs text-muted-foreground mt-1">caută prieteni →</div>
           </Link>
         ) : (
           <div className="space-y-1.5">
