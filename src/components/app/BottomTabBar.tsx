@@ -56,34 +56,43 @@ export function BottomTabBar() {
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto max-w-md">
-        <div className="m-1 rounded-xl glass border border-foreground/10 grid grid-cols-7 backdrop-blur-xl px-0.5">
-          {tabs.map(t => {
-            const active = t.exact ? loc.pathname === t.to : (loc.pathname === t.to || loc.pathname.startsWith(t.to + "/"));
-            const Icon = t.icon;
-            const badge = t.badgeKey === "inbox" ? unread : 0;
-            return (
-              <Link key={t.to} to={t.to as any}
-                className="flex flex-col items-center gap-0 py-1 relative min-w-0">
-                <div className={`relative flex items-center justify-center rounded-lg transition ${
-                  t.primary
-                    ? "h-9 w-9 -mt-4 bg-gradient-to-br from-neon-crimson to-neon-purple text-white shadow-[0_0_18px_var(--neon-crimson)] ring-[3px] ring-background"
-                    : `h-5 w-5 ${active ? "text-neon-crimson" : "text-muted-foreground"}`
-                }`}>
-                  <Icon size={t.primary ? 19 : 14} strokeWidth={2.2} />
-                  {badge > 0 && (
-                    <span className="absolute -top-0.5 -right-1 min-w-[13px] h-[13px] px-0.5 rounded-full bg-neon-crimson text-white text-[7px] font-mono font-bold flex items-center justify-center border-2 border-background">
-                      {badge > 9 ? "9+" : badge}
-                    </span>
-                  )}
-                </div>
-                <span className={`text-[7px] font-mono uppercase tracking-wider truncate w-full text-center leading-none mt-0.5 ${
-                  active && !t.primary ? "text-neon-crimson" : t.primary ? "text-foreground font-bold" : "text-muted-foreground"
-                }`}>{t.label}</span>
-              </Link>
-            );
-          })}
+        <div className="m-1 rounded-xl glass border border-foreground/10 backdrop-blur-xl overflow-hidden">
+          <div className="grid grid-cols-7 px-0.5">
+            {tabs.map(t => {
+              const active = t.exact ? loc.pathname === t.to : (loc.pathname === t.to || loc.pathname.startsWith(t.to + "/"));
+              const Icon = t.icon;
+              const badge = t.badgeKey === "inbox" ? unread : 0;
+              return (
+                <Link key={t.to} to={t.to as any}
+                  className="flex flex-col items-center gap-0 py-1 relative min-w-0">
+                  <div className={`relative flex items-center justify-center rounded-lg transition ${
+                    t.primary
+                      ? "h-9 w-9 -mt-4 bg-gradient-to-br from-neon-crimson to-neon-purple text-white shadow-[0_0_18px_var(--neon-crimson)] ring-[3px] ring-background"
+                      : `h-5 w-5 ${active ? "text-neon-crimson" : "text-muted-foreground"}`
+                  }`}>
+                    <Icon size={t.primary ? 19 : 14} strokeWidth={2.2} />
+                    {badge > 0 && (
+                      <span className="absolute -top-0.5 -right-1 min-w-[13px] h-[13px] px-0.5 rounded-full bg-neon-crimson text-white text-[7px] font-mono font-bold flex items-center justify-center border-2 border-background">
+                        {badge > 9 ? "9+" : badge}
+                      </span>
+                    )}
+                  </div>
+                  <span className={`text-[7px] font-mono uppercase tracking-wider truncate w-full text-center leading-none mt-0.5 ${
+                    active && !t.primary ? "text-neon-crimson" : t.primary ? "text-foreground font-bold" : "text-muted-foreground"
+                  }`}>{t.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+          <div className="border-t border-neon-crimson/20 px-2 py-1 flex items-center justify-center gap-1.5">
+            <AlertTriangle size={9} className="shrink-0 text-neon-crimson" />
+            <span className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground">
+              Alcoolul dăunează grav sănătății. Consumați responsabil.
+            </span>
+          </div>
         </div>
       </div>
+
     </nav>
   );
 }
