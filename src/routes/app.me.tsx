@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LogOut, Camera, Lock, Globe2, UserPlus, ShieldOff, ChevronDown, Menu, Plus,
-  Grid3x3, Bookmark, UserSquare2, Flame, Share2, Bell, Settings, Pencil, Check,
+  Grid3x3, Bookmark, UserSquare2, Flame, Share2, Bell, Pencil, Check,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
