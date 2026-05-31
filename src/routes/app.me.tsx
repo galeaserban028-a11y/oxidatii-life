@@ -187,6 +187,12 @@ function MePage() {
 
         <div className="flex-1" />
 
+        <Link to="/app/settings" className="p-1.5 active:scale-95 transition" aria-label="Setări">
+          <Settings size={22} strokeWidth={2.1} />
+        </Link>
+
+
+
 
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
