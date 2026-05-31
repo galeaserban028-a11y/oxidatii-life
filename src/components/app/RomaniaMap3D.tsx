@@ -320,7 +320,10 @@ export function RomaniaMap3D({
     map.flyTo({ center: [focusCity.lng, focusCity.lat], zoom: focusCity.zoom ?? 12.4, pitch: 45, bearing: 0, duration: 1100, essential: true });
   }, [focusCity]);
 
-  // FRIENDS → diff-only DOM markers (keep refs by user_id, no full rebuild)
+  // FRIENDS → diff-only DOM markers. When a friend's coords change, smoothly
+  // tween the marker between the old and new positions so it looks like they
+  // are walking, not teleporting.
+  const friendAnims = useRef<Map<string, number>>(new Map());
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
     const seen = new Set<string>();
@@ -328,7 +331,26 @@ export function RomaniaMap3D({
       if (!isValidLngLat(f.lng, f.lat)) continue;
       seen.add(f.user_id);
       const existing = friendMarkers.current.get(f.user_id);
-      if (existing) { existing.setLngLat([f.lng, f.lat]); continue; }
+      if (existing) {
+        const cur = existing.getLngLat();
+        if (Math.abs(cur.lng - f.lng) < 1e-7 && Math.abs(cur.lat - f.lat) < 1e-7) continue;
+        const fromLng = cur.lng, fromLat = cur.lat;
+        const toLng = f.lng, toLat = f.lat;
+        const dur = 1200;
+        const start = performance.now();
+        const prev = friendAnims.current.get(f.user_id);
+        if (prev) cancelAnimationFrame(prev);
+        const tick = (t: number) => {
+          const k = Math.min(1, (t - start) / dur);
+          // ease in-out
+          const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+          existing.setLngLat([fromLng + (toLng - fromLng) * e, fromLat + (toLat - fromLat) * e]);
+          if (k < 1) friendAnims.current.set(f.user_id, requestAnimationFrame(tick));
+          else friendAnims.current.delete(f.user_id);
+        };
+        friendAnims.current.set(f.user_id, requestAnimationFrame(tick));
+        continue;
+      }
 
       const wrap = document.createElement("div");
       wrap.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);z-index:10;";
@@ -365,9 +387,14 @@ export function RomaniaMap3D({
       const marker = new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([f.lng, f.lat]).addTo(map);
       friendMarkers.current.set(f.user_id, marker);
     }
-    // remove markers for friends no longer present
+    // remove markers (and cancel anims) for friends no longer present
     for (const [id, marker] of friendMarkers.current) {
-      if (!seen.has(id)) { marker.remove(); friendMarkers.current.delete(id); }
+      if (!seen.has(id)) {
+        const a = friendAnims.current.get(id);
+        if (a) { cancelAnimationFrame(a); friendAnims.current.delete(id); }
+        marker.remove();
+        friendMarkers.current.delete(id);
+      }
     }
   }, [friends, retryKey]);
 
