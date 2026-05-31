@@ -145,8 +145,8 @@ function SquadPage() {
     <div className="pb-4">
       {/* Header — compact */}
       <header className="px-4 pt-5 pb-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-purple">// organizare șpriț</div>
-        <h1 className="font-display font-black text-2xl mt-1 tracking-tight leading-none">organizare șpriț.</h1>
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">organizare</div>
+        <h1 className="font-display font-black text-2xl mt-1 tracking-tight leading-none">cu cine ieșim?</h1>
       </header>
 
       {/* Quick stats strip */}
