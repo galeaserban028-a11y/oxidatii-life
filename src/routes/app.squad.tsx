@@ -179,7 +179,7 @@ function SquadPage() {
           <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">cheamă lumea</div>
         </Link>
         <Link
-          to="/app/inbox"
+          to="/app/friends"
           className="relative overflow-hidden rounded-2xl border border-neon-purple/40 bg-gradient-to-br from-neon-purple/20 to-neon-purple/[0.04] p-3 active:scale-[0.98] transition"
         >
           <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-neon-purple/30 blur-2xl pointer-events-none" />
