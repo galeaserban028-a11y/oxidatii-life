@@ -414,12 +414,8 @@ function MePage() {
 
       </div>
 
-      {/* Tabs bar */}
-      <div className="mt-3 grid grid-cols-3 border-t border-foreground/10 sticky top-12 z-20 bg-background/85 backdrop-blur-xl">
-        <TabBtn active={tab === "all"} onClick={() => setTab("all")} icon={<Grid3x3 size={22} />} />
-        <TabBtn active={tab === "verified"} onClick={() => setTab("verified")} icon={<Bookmark size={22} />} />
-        <TabBtn active={tab === "tagged"} onClick={() => setTab("tagged")} icon={<UserSquare2 size={22} />} />
-      </div>
+      <div className="mt-3 border-t border-foreground/10" />
+
 
       {/* Grid moments */}
       {tabMoments.length === 0 ? (
