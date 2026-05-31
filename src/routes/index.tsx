@@ -201,10 +201,10 @@ function DockItem({ to, icon, label }: { to: string; icon: React.ReactNode; labe
   return (
     <Link
       to={to}
-      className="flex-1 flex flex-col items-center gap-0.5 py-1.5 text-muted-foreground hover:text-foreground transition"
+      className="flex-1 flex flex-col items-center gap-0 py-1 text-muted-foreground hover:text-foreground transition"
     >
       {icon}
-      <span className="font-mono text-[9px] uppercase tracking-[0.2em]">{label}</span>
+      <span className="font-mono text-[8px] uppercase tracking-[0.2em] leading-none mt-0.5">{label}</span>
     </Link>
   );
 }
