@@ -192,8 +192,8 @@ function SquadPage() {
       {/* LIVE ȘPRIȚURI */}
       <section id="live" className="px-4 space-y-2 scroll-mt-4">
         <div className="flex items-center justify-between">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-crimson flex items-center gap-1.5">
-            <Flame size={11} /> șprițuri deschise · {openCount}
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+            <Flame size={11} className="text-neon-crimson" /> deschise acum · {openCount}
           </div>
           {openCount > 0 && (
             <Link to="/app/parties" className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
@@ -203,10 +203,9 @@ function SquadPage() {
         </div>
 
         {visibleParties.length === 0 ? (
-          <Link to="/app/parties" className="block p-5 rounded-2xl border border-dashed border-neon-crimson/25 bg-neon-crimson/[0.03] text-center">
-            <div className="text-2xl mb-1">🍻</div>
-            <div className="font-display font-bold text-sm">Zero șprițuri deschise.</div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">fii primul → deschide unul</div>
+          <Link to="/app/parties" className="block p-5 rounded-2xl border border-dashed border-foreground/15 text-center">
+            <div className="font-display font-bold text-sm">nimic deschis acum</div>
+            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">deschide tu primul →</div>
           </Link>
         ) : (
           <div className="space-y-2">
