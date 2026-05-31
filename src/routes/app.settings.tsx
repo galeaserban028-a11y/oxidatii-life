@@ -1,0 +1,345 @@
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+  ChevronLeft, ChevronRight, Globe2, Lock, MapPin, Bell,
+  ShieldOff, UserPlus, Pencil, LogOut, Trash2, MessageSquare,
+  Building2, Loader2, ExternalLink,
+} from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { NotificationSettings } from "@/components/app/NotificationSettings";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+
+export const Route = createFileRoute("/app/settings")({
+  head: () => ({ meta: [{ title: "Setări · OXIDAȚII" }] }),
+  component: SettingsPage,
+});
+
+function SettingsPage() {
+  const { user, profile, signOut, refreshProfile } = useAuth();
+  const nav = useNavigate();
+  const [savingPrivacy, setSavingPrivacy] = useState(false);
+  const [savingConsent, setSavingConsent] = useState(false);
+  const [savingCity, setSavingCity] = useState(false);
+  const [cityOpen, setCityOpen] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const { data: cities = [] } = useQuery({
+    queryKey: ["cities-settings"],
+    queryFn: async () => {
+      const { data } = await supabase.from("cities").select("id, name, slug").order("name");
+      return data ?? [];
+    },
+  });
+
+  const currentCity = cities.find((c: any) => c.id === profile?.city_id);
+
+  if (!user || !profile) return null;
+
+  async function togglePrivacy() {
+    setSavingPrivacy(true);
+    try {
+      const next = !profile!.is_public;
+      const { error } = await supabase.from("profiles").update({ is_public: next } as any).eq("id", user!.id);
+      if (error) throw error;
+      await refreshProfile();
+      toast.success(next ? "Cont public" : "Cont privat");
+    } catch (e: any) { toast.error(e.message ?? "Eroare"); }
+    finally { setSavingPrivacy(false); }
+  }
+
+  async function toggleConsent() {
+    setSavingConsent(true);
+    try {
+      const next = !profile!.location_consent;
+      const { error } = await supabase.from("profiles").update({ location_consent: next } as any).eq("id", user!.id);
+      if (error) throw error;
+      // If turning off, also clear any broadcast row immediately
+      if (!next) await supabase.from("live_locations").delete().eq("user_id", user!.id);
+      await refreshProfile();
+      toast.success(next ? "Locație live activată" : "Locație live oprită");
+    } catch (e: any) { toast.error(e.message ?? "Eroare"); }
+    finally { setSavingConsent(false); }
+  }
+
+  async function pickCity(cityId: string) {
+    setSavingCity(true);
+    try {
+      const { error } = await supabase.from("profiles").update({ city_id: cityId } as any).eq("id", user!.id);
+      if (error) throw error;
+      await refreshProfile();
+      toast.success("Oraș actualizat");
+      setCityOpen(false);
+    } catch (e: any) { toast.error(e.message ?? "Eroare"); }
+    finally { setSavingCity(false); }
+  }
+
+  async function doLogout() {
+    setConfirmLogout(false);
+    await signOut();
+    nav({ to: "/", replace: true });
+  }
+
+  async function doDeleteAccount() {
+    setDeleting(true);
+    try {
+      // Best-effort cleanup of own rows (RLS allows self delete on these)
+      await Promise.all([
+        supabase.from("live_locations").delete().eq("user_id", user!.id),
+        supabase.from("push_subscriptions").delete().eq("user_id", user!.id),
+        supabase.from("check_ins").delete().eq("user_id", user!.id),
+        supabase.from("profiles").delete().eq("id", user!.id),
+      ]);
+      await supabase.auth.signOut();
+      toast.success("Cont șters");
+      nav({ to: "/", replace: true });
+    } catch (e: any) {
+      toast.error(e.message ?? "Nu s-a putut șterge");
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  }
+
+  return (
+    <div className="pb-10">
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-xl border-b border-foreground/10 px-3 h-12 flex items-center gap-2">
+        <Link to="/app/me" className="p-1.5 -ml-1.5 active:scale-95" aria-label="Înapoi">
+          <ChevronLeft size={22} />
+        </Link>
+        <h1 className="font-display uppercase text-base tracking-tight">Setări</h1>
+      </header>
+
+      <div className="px-4 pt-4 space-y-5">
+        {/* Account identity */}
+        <Section title="Cont" subtitle={`Semnat ca ${user.email ?? "—"}`}>
+          <Row
+            icon={<Pencil size={16} />}
+            label="Editează profilul"
+            hint="nume, handle, bio, poză"
+            to="/app/me"
+          />
+          <RowButton
+            icon={profile.is_public ? <Globe2 size={16} className="text-neon-green" /> : <Lock size={16} className="text-neon-crimson" />}
+            label="Vizibilitate cont"
+            hint={profile.is_public ? "Oricine îți vede profilul" : "Doar urmăritorii aprobați te văd"}
+            onClick={togglePrivacy}
+            disabled={savingPrivacy}
+            trailing={
+              <Toggle on={profile.is_public} busy={savingPrivacy} />
+            }
+          />
+          <RowButton
+            icon={<Building2 size={16} />}
+            label="Oraș principal"
+            hint={currentCity?.name ?? "neales"}
+            onClick={() => setCityOpen(true)}
+            trailing={<ChevronRight size={16} className="text-muted-foreground" />}
+          />
+        </Section>
+
+        {/* Location live */}
+        <Section title="Locație" subtitle="Cum apari pe hartă">
+          <RowButton
+            icon={<MapPin size={16} className={profile.location_consent ? "text-neon-green" : "text-muted-foreground"} />}
+            label="Poziție live pe hartă"
+            hint={profile.location_consent
+              ? "Prietenii tăi te văd mișcându-te în timp real"
+              : "Nu trimiți poziția. Apari doar la check-in."}
+            onClick={toggleConsent}
+            disabled={savingConsent}
+            trailing={<Toggle on={profile.location_consent} busy={savingConsent} />}
+          />
+          <p className="px-4 pb-3 pt-1 text-[10px] text-muted-foreground leading-relaxed">
+            Trimitem coordonatele tale doar cât stai în app și se șterg automat după 15 min. Doar prietenii cu cerere acceptată le pot vedea.
+          </p>
+        </Section>
+
+        {/* Notifications — reuses the existing component */}
+        <NotificationSettings />
+
+        {/* Privacy / safety */}
+        <Section title="Confidențialitate">
+          <Row icon={<UserPlus size={16} />} label="Cereri de urmărire" to="/app/requests" />
+          <Row icon={<ShieldOff size={16} />} label="Utilizatori blocați" to="/app/blocked" />
+          <Row icon={<Bell size={16} />} label="Notificări primite" to="/app/notifications" />
+          <Row icon={<MessageSquare size={16} />} label="Mesaje" to="/app/inbox" />
+        </Section>
+
+        {/* About */}
+        <Section title="Despre">
+          <RowExternal href="https://lovable.app" label="Suport & feedback" />
+          <div className="px-4 py-3 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
+            <span>Versiune</span>
+            <span>oxidatii · v1.0</span>
+          </div>
+        </Section>
+
+        {/* Danger zone */}
+        <Section title="Sesiune" tone="danger">
+          <RowButton
+            icon={<LogOut size={16} className="text-neon-crimson" />}
+            label="Ieși din cont"
+            onClick={() => setConfirmLogout(true)}
+            tone="danger"
+          />
+          <RowButton
+            icon={<Trash2 size={16} className="text-neon-crimson" />}
+            label="Șterge contul"
+            hint="Profil, locație, abonări push — ireversibil"
+            onClick={() => setConfirmDelete(true)}
+            tone="danger"
+          />
+        </Section>
+      </div>
+
+      {/* City picker */}
+      <Dialog open={cityOpen} onOpenChange={setCityOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-display uppercase">Alege oraș</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto -mx-2">
+            {cities.map((c: any) => {
+              const selected = c.id === profile.city_id;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => pickCity(c.id)}
+                  disabled={savingCity}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-left transition ${selected ? "bg-neon-green/10 text-neon-green" : "hover:bg-foreground/5"}`}
+                >
+                  <Building2 size={15} />
+                  <span className="text-sm flex-1">{c.name}</span>
+                  {selected && <span className="text-[10px] font-mono uppercase">activ</span>}
+                </button>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm logout */}
+      <Dialog open={confirmLogout} onOpenChange={setConfirmLogout}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-display uppercase">Ieși din cont?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">Va trebui să te conectezi din nou ca să vezi haita.</p>
+          <DialogFooter>
+            <button onClick={() => setConfirmLogout(false)} className="px-4 py-2 rounded-lg border border-foreground/15 text-sm">Anulează</button>
+            <button onClick={doLogout} className="px-4 py-2 rounded-lg bg-neon-crimson text-white text-sm font-semibold">Ieși</button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm delete */}
+      <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-display uppercase text-neon-crimson">Șterge cont definitiv?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Profilul, poziția live, abonările push și check-in-urile tale dispar. Această acțiune nu poate fi anulată.
+          </p>
+          <DialogFooter>
+            <button onClick={() => setConfirmDelete(false)} className="px-4 py-2 rounded-lg border border-foreground/15 text-sm" disabled={deleting}>Renunță</button>
+            <button
+              onClick={doDeleteAccount}
+              disabled={deleting}
+              className="px-4 py-2 rounded-lg bg-neon-crimson text-white text-sm font-semibold flex items-center gap-1.5"
+            >
+              {deleting && <Loader2 size={14} className="animate-spin" />}
+              Șterge
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+/* ───────── building blocks ───────── */
+
+function Section({
+  title, subtitle, children, tone = "default",
+}: { title: string; subtitle?: string; children: React.ReactNode; tone?: "default" | "danger" }) {
+  return (
+    <section>
+      <div className="px-1 pb-2">
+        <h2 className={`font-display uppercase text-[11px] tracking-[0.25em] ${tone === "danger" ? "text-neon-crimson" : "text-muted-foreground"}`}>{title}</h2>
+        {subtitle && <p className="text-[11px] text-muted-foreground/70 mt-0.5">{subtitle}</p>}
+      </div>
+      <div className={`rounded-2xl border overflow-hidden divide-y divide-foreground/5 ${tone === "danger" ? "border-neon-crimson/30 bg-neon-crimson/[0.03]" : "border-foreground/10 bg-card"}`}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function Row({
+  icon, label, hint, to,
+}: { icon: React.ReactNode; label: string; hint?: string; to: string }) {
+  return (
+    <Link to={to} className="flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition active:bg-foreground/10">
+      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm">{label}</div>
+        {hint && <div className="text-[11px] text-muted-foreground truncate">{hint}</div>}
+      </div>
+      <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+    </Link>
+  );
+}
+
+function RowButton({
+  icon, label, hint, onClick, disabled, trailing, tone = "default",
+}: {
+  icon: React.ReactNode; label: string; hint?: string;
+  onClick: () => void; disabled?: boolean;
+  trailing?: React.ReactNode; tone?: "default" | "danger";
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-full flex items-center gap-3 px-4 py-3 transition text-left ${tone === "danger" ? "hover:bg-neon-crimson/10" : "hover:bg-foreground/5"} active:bg-foreground/10 disabled:opacity-60`}
+    >
+      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className={`text-sm ${tone === "danger" ? "text-neon-crimson" : ""}`}>{label}</div>
+        {hint && <div className="text-[11px] text-muted-foreground">{hint}</div>}
+      </div>
+      {trailing}
+    </button>
+  );
+}
+
+function RowExternal({ href, label }: { href: string; label: string }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition">
+      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0"><ExternalLink size={15} /></div>
+      <div className="flex-1 text-sm">{label}</div>
+      <ChevronRight size={16} className="text-muted-foreground" />
+    </a>
+  );
+}
+
+function Toggle({ on, busy }: { on: boolean; busy?: boolean }) {
+  return (
+    <span
+      role="switch"
+      aria-checked={on}
+      className={`relative inline-flex h-6 w-11 rounded-full transition shrink-0 ${on ? "bg-neon-green" : "bg-foreground/15"}`}
+    >
+      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-background shadow transition-all ${on ? "left-[22px]" : "left-0.5"} ${busy ? "opacity-60" : ""}`} />
+    </span>
+  );
+}
