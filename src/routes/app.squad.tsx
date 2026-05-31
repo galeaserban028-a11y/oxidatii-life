@@ -137,29 +137,75 @@ function SquadPage() {
     nav({ to: "/app/chat/$id", params: { id } });
   }
 
+  const openCount = visibleParties.length;
+  const groupCount = groups.length;
+  const friendCount = friends.length;
+
   return (
-    <div className="px-4 pt-6 pb-4 space-y-4">
-      <header>
+    <div className="pb-4">
+      {/* Header — compact */}
+      <header className="px-4 pt-5 pb-3">
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-purple">// organizare șpriț</div>
-        <h1 className="font-display font-black text-2xl mt-1 tracking-tight">organizare șpriț.</h1>
-        <p className="text-xs text-muted-foreground mt-1">Cheamă haita, fă o gașcă, stabiliți unde turnați diseară.</p>
+        <h1 className="font-display font-black text-2xl mt-1 tracking-tight leading-none">organizare șpriț.</h1>
       </header>
 
-      {/* LIVE ȘPRIȚURI — locuri disponibile acum */}
-      <section className="space-y-2">
+      {/* Quick stats strip */}
+      <div className="px-4 mb-3">
+        <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-foreground/10 bg-foreground/[0.03] p-1.5">
+          <a href="#live" className="flex flex-col items-center py-1.5 rounded-lg active:bg-foreground/5">
+            <div className="font-display font-black text-lg leading-none text-neon-crimson">{openCount}</div>
+            <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground mt-1">deschise</div>
+          </a>
+          <a href="#groups" className="flex flex-col items-center py-1.5 rounded-lg active:bg-foreground/5 border-x border-foreground/10">
+            <div className="font-display font-black text-lg leading-none text-neon-green">{groupCount}</div>
+            <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground mt-1">găști</div>
+          </a>
+          <a href="#friends" className="flex flex-col items-center py-1.5 rounded-lg active:bg-foreground/5">
+            <div className="font-display font-black text-lg leading-none text-neon-purple">{friendCount}</div>
+            <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground mt-1">haita</div>
+          </a>
+        </div>
+      </div>
+
+      {/* Primary actions — side by side */}
+      <div className="px-4 mb-5 grid grid-cols-2 gap-2">
+        <Link
+          to="/app/parties"
+          className="relative overflow-hidden rounded-2xl border border-neon-crimson/40 bg-gradient-to-br from-neon-crimson/20 to-neon-crimson/[0.04] p-3 active:scale-[0.98] transition"
+        >
+          <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-neon-crimson/30 blur-2xl pointer-events-none" />
+          <Flame className="text-neon-crimson mb-2" size={20} />
+          <div className="font-display font-black text-sm leading-tight">Chem haita</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">deschide șpriț</div>
+        </Link>
+        <Link
+          to="/app/inbox"
+          className="relative overflow-hidden rounded-2xl border border-neon-purple/40 bg-gradient-to-br from-neon-purple/20 to-neon-purple/[0.04] p-3 active:scale-[0.98] transition"
+        >
+          <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-neon-purple/30 blur-2xl pointer-events-none" />
+          <Plus className="text-neon-purple mb-2" size={20} strokeWidth={2.6} />
+          <div className="font-display font-black text-sm leading-tight">Fă gașcă</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">invită oxidați</div>
+        </Link>
+      </div>
+
+      {/* LIVE ȘPRIȚURI */}
+      <section id="live" className="px-4 space-y-2 scroll-mt-4">
         <div className="flex items-center justify-between">
           <div className="font-mono text-[10px] uppercase tracking-widest text-neon-crimson flex items-center gap-1.5">
-            <Flame size={11} /> șprițuri deschise · {visibleParties.length}
+            <Flame size={11} /> șprițuri deschise · {openCount}
           </div>
-          <Link to="/app/parties" className="font-mono text-[9px] uppercase tracking-widest text-neon-purple">
-            chem haita →
-          </Link>
+          {openCount > 0 && (
+            <Link to="/app/parties" className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+              vezi tot →
+            </Link>
+          )}
         </div>
 
         {visibleParties.length === 0 ? (
-          <Link to="/app/parties" className="block p-4 rounded-2xl border border-dashed border-neon-crimson/30 bg-neon-crimson/[0.04] text-center">
+          <Link to="/app/parties" className="block p-5 rounded-2xl border border-dashed border-neon-crimson/25 bg-neon-crimson/[0.03] text-center">
             <div className="text-2xl mb-1">🍻</div>
-            <div className="font-display font-bold text-sm">Zero șprițuri deschise acum.</div>
+            <div className="font-display font-bold text-sm">Zero șprițuri deschise.</div>
             <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">fii primul → deschide unul</div>
           </Link>
         ) : (
@@ -240,27 +286,14 @@ function SquadPage() {
         )}
       </section>
 
-
-      {/* New group CTA */}
-      <Link
-        to="/app/inbox"
-        className="flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-neon-purple/20 via-neon-crimson/15 to-neon-green/15 border border-neon-purple/40 active:scale-[0.99] transition"
-      >
-        <div className="h-10 w-10 rounded-xl bg-neon-purple/20 border border-neon-purple/50 flex items-center justify-center">
-          <Plus className="text-neon-purple" size={20} strokeWidth={2.6} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="font-display font-bold text-sm">Fă gașcă nouă</div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">invită oxidați · stabiliți loc</div>
-        </div>
-        <div className="font-display text-neon-purple">→</div>
-      </Link>
+      {/* Divider */}
+      <div className="px-4 my-5"><div className="h-px bg-foreground/10" /></div>
 
       {/* Active groups */}
       {groups.length > 0 && (
-        <section className="space-y-2">
+        <section id="groups" className="px-4 space-y-2 scroll-mt-4 mb-5">
           <div className="font-mono text-[10px] uppercase tracking-widest text-neon-green flex items-center gap-1.5">
-            <Users size={11} /> găști active ({groups.length})
+            <Users size={11} /> găști active · {groups.length}
           </div>
           {groups.map((g: any) => (
             <Link key={g.id} to="/app/chat/$id" params={{ id: g.id }}
@@ -279,34 +312,43 @@ function SquadPage() {
       )}
 
       {/* Friends */}
-      <section className="space-y-2">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-neon-crimson flex items-center gap-1.5">
-          <Users size={11} /> haita ta ({friends.length})
+      <section id="friends" className="px-4 space-y-2 scroll-mt-4">
+        <div className="flex items-center justify-between">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-purple flex items-center gap-1.5">
+            <Users size={11} /> haita ta · {friends.length}
+          </div>
+          {friends.length > 0 && (
+            <Link to="/app/friends" className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+              gestionează →
+            </Link>
+          )}
         </div>
         {isLoading ? (
           <div className="py-8 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground">se încarcă…</div>
         ) : friends.length === 0 ? (
-          <Link to="/app/friends" className="block py-8 rounded-2xl border border-dashed border-foreground/15 text-center">
-            <div className="text-3xl mb-1">🍷</div>
+          <Link to="/app/friends" className="block py-6 rounded-2xl border border-dashed border-foreground/15 text-center">
+            <div className="text-2xl mb-1">🍷</div>
             <div className="font-display font-bold text-sm">Zero oxidați în haită</div>
             <div className="text-xs text-muted-foreground mt-1">Adaugă prieteni →</div>
           </Link>
         ) : (
-          friends.map((p: any) => (
-            <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04] border border-foreground/10">
-              <Link to="/app/user/$id" params={{ id: p.id }} className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display font-black text-white shrink-0">
-                {p.avatar_url ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" /> : (p.handle ?? "?")[0]?.toUpperCase()}
-              </Link>
-              <Link to="/app/user/$id" params={{ id: p.id }} className="flex-1 min-w-0">
-                <div className="font-display font-bold text-sm truncate">@{p.handle ?? p.display_name}</div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground truncate">{p.city?.name ?? "—"}</div>
-              </Link>
-              <button onClick={() => startDM(p.id)}
-                className="px-2.5 py-1.5 rounded-md border border-neon-green/40 text-neon-green font-mono text-[9px] uppercase tracking-widest flex items-center gap-1 active:scale-95">
-                <MessageCircle size={11} /> dm
-              </button>
-            </div>
-          ))
+          <div className="space-y-1.5">
+            {friends.map((p: any) => (
+              <div key={p.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-foreground/[0.04] border border-foreground/10">
+                <Link to="/app/user/$id" params={{ id: p.id }} className="h-9 w-9 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display font-black text-white shrink-0 text-sm">
+                  {p.avatar_url ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" /> : (p.handle ?? "?")[0]?.toUpperCase()}
+                </Link>
+                <Link to="/app/user/$id" params={{ id: p.id }} className="flex-1 min-w-0">
+                  <div className="font-display font-bold text-sm truncate">@{p.handle ?? p.display_name}</div>
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground truncate">{p.city?.name ?? "—"}</div>
+                </Link>
+                <button onClick={() => startDM(p.id)}
+                  className="px-2.5 py-1.5 rounded-md border border-neon-green/40 text-neon-green font-mono text-[9px] uppercase tracking-widest flex items-center gap-1 active:scale-95">
+                  <MessageCircle size={11} /> dm
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </section>
     </div>
