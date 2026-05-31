@@ -274,7 +274,7 @@ function SquadPage() {
                               : "bg-neon-crimson text-white shadow-[0_0_12px_-4px_var(--neon-crimson)]"
                         }`}
                       >
-                        {isHost ? "ești gazdă" : joined ? "✓ vin" : full ? "plin" : "vin și eu"}
+                        {isHost ? "ești gazdă" : joined ? "vii" : full ? "plin" : "vin și eu"}
                       </button>
                     </div>
                   </div>
