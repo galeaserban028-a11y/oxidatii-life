@@ -175,8 +175,8 @@ function SquadPage() {
         >
           <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-neon-crimson/30 blur-2xl pointer-events-none" />
           <Flame className="text-neon-crimson mb-2" size={20} />
-          <div className="font-display font-black text-sm leading-tight">Chem haita</div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">deschide șpriț</div>
+          <div className="font-display font-black text-sm leading-tight">deschide unul</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">cheamă lumea</div>
         </Link>
         <Link
           to="/app/inbox"
@@ -184,8 +184,8 @@ function SquadPage() {
         >
           <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-neon-purple/30 blur-2xl pointer-events-none" />
           <Plus className="text-neon-purple mb-2" size={20} strokeWidth={2.6} />
-          <div className="font-display font-black text-sm leading-tight">Fă gașcă</div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">invită oxidați</div>
+          <div className="font-display font-black text-sm leading-tight">grup nou</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">cu prietenii tăi</div>
         </Link>
       </div>
 
