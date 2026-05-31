@@ -132,25 +132,26 @@ function Index() {
       </section>
 
       {/* spacer for bottom dock */}
-      <div className="h-28" />
+      <div className="h-20" />
 
       {/* bottom app dock (preview/CTA) */}
-      <nav className="fixed bottom-3 left-1/2 -translate-x-1/2 z-20 w-[calc(100%-1.5rem)] max-w-md">
-        <div className="mx-3 rounded-2xl border border-border bg-background/85 backdrop-blur-xl shadow-2xl shadow-black/40 px-2 py-2 flex items-center justify-between">
-          <DockItem to="/app" icon={<MapPin className="h-4 w-4" />} label="Hartă" />
-          <DockItem to="/app/faze" icon={<Flame className="h-4 w-4" />} label="Faze" />
+      <nav className="fixed bottom-2 left-1/2 -translate-x-1/2 z-20 w-[calc(100%-1rem)] max-w-md">
+        <div className="mx-2 rounded-xl border border-border bg-background/85 backdrop-blur-xl shadow-2xl shadow-black/40 px-1.5 py-1.5 flex items-center justify-between">
+          <DockItem to="/app" icon={<MapPin className="h-3.5 w-3.5" />} label="Hartă" />
+          <DockItem to="/app/faze" icon={<Flame className="h-3.5 w-3.5" />} label="Faze" />
           <Link
             to="/signup"
             aria-label="Adaugă spot"
-            className="h-12 w-12 -mt-6 grid place-items-center rounded-full text-primary-foreground shadow-lg shadow-primary/40 active:scale-95 transition"
+            className="h-10 w-10 -mt-4 grid place-items-center rounded-full text-primary-foreground shadow-lg shadow-primary/40 active:scale-95 transition"
             style={{ background: "var(--gradient-sunset)" }}
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-4 w-4" />
           </Link>
-          <DockItem to="/app/top" icon={<Trophy className="h-4 w-4" />} label="Top" />
-          <DockItem to="/login" icon={<Users className="h-4 w-4" />} label="Eu" />
+          <DockItem to="/app/top" icon={<Trophy className="h-3.5 w-3.5" />} label="Top" />
+          <DockItem to="/login" icon={<Users className="h-3.5 w-3.5" />} label="Eu" />
         </div>
       </nav>
+
 
       <AlcoholWarning />
     </main>
@@ -200,10 +201,10 @@ function DockItem({ to, icon, label }: { to: string; icon: React.ReactNode; labe
   return (
     <Link
       to={to}
-      className="flex-1 flex flex-col items-center gap-0.5 py-1.5 text-muted-foreground hover:text-foreground transition"
+      className="flex-1 flex flex-col items-center gap-0 py-1 text-muted-foreground hover:text-foreground transition"
     >
       {icon}
-      <span className="font-mono text-[9px] uppercase tracking-[0.2em]">{label}</span>
+      <span className="font-mono text-[8px] uppercase tracking-[0.2em] leading-none mt-0.5">{label}</span>
     </Link>
   );
 }
