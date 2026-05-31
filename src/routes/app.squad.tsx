@@ -313,8 +313,8 @@ function SquadPage() {
       {/* Friends */}
       <section id="friends" className="px-4 space-y-2 scroll-mt-4">
         <div className="flex items-center justify-between">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-purple flex items-center gap-1.5">
-            <Users size={11} /> haita ta · {friends.length}
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+            <Users size={11} className="text-neon-purple" /> prieteni · {friends.length}
           </div>
           {friends.length > 0 && (
             <Link to="/app/friends" className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
@@ -323,12 +323,11 @@ function SquadPage() {
           )}
         </div>
         {isLoading ? (
-          <div className="py-8 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground">se încarcă…</div>
+          <div className="py-8 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground">o secundă…</div>
         ) : friends.length === 0 ? (
           <Link to="/app/friends" className="block py-6 rounded-2xl border border-dashed border-foreground/15 text-center">
-            <div className="text-2xl mb-1">🍷</div>
-            <div className="font-display font-bold text-sm">Zero oxidați în haită</div>
-            <div className="text-xs text-muted-foreground mt-1">Adaugă prieteni →</div>
+            <div className="font-display font-bold text-sm">nu ai adăugat încă pe nimeni</div>
+            <div className="text-xs text-muted-foreground mt-1">caută prieteni →</div>
           </Link>
         ) : (
           <div className="space-y-1.5">
