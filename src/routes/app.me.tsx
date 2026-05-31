@@ -421,47 +421,6 @@ function MePage() {
           </Link>
         )}
 
-        {/* Highlights row — IG story style */}
-        <div className="mt-4 flex items-start gap-4 overflow-x-auto -mx-4 px-4 pb-1 no-scrollbar">
-          <Link to="/app/scan" className="flex flex-col items-center gap-1 shrink-0 w-[72px]">
-            <div className="h-16 w-16 rounded-full border border-foreground/20 flex items-center justify-center hover:border-foreground/40 transition">
-              <Plus size={22} strokeWidth={2.2} />
-            </div>
-            <span className="text-[11px] truncate w-full text-center">Nou</span>
-          </Link>
-          <Link to="/app/scan" className="flex flex-col items-center gap-1 shrink-0 w-[72px]">
-            <div className="h-16 w-16 rounded-full border border-neon-crimson/50 bg-gradient-to-br from-neon-crimson/20 to-neon-purple/20 flex items-center justify-center">
-              <Flame size={26} className="text-neon-crimson" />
-            </div>
-            <span className="text-[11px] truncate w-full text-center">
-              streak {(profile as any).current_streak ?? 0}
-            </span>
-          </Link>
-          <Link to="/app/top" className="flex flex-col items-center gap-1 shrink-0 w-[72px]">
-            <div className="h-16 w-16 rounded-full border border-foreground/20 flex items-center justify-center text-2xl hover:border-foreground/40 transition">
-              👑
-            </div>
-            <span className="text-[11px] truncate w-full text-center">record {(profile as any).longest_streak ?? 0}</span>
-          </Link>
-          <Link to="/app/faze" className="flex flex-col items-center gap-1 shrink-0 w-[72px]">
-            <div className="h-16 w-16 rounded-full border border-foreground/20 flex items-center justify-center text-2xl hover:border-foreground/40 transition">
-              🍻
-            </div>
-            <span className="text-[11px] truncate w-full text-center">faze</span>
-          </Link>
-          <Link to="/app/squad" className="flex flex-col items-center gap-1 shrink-0 w-[72px]">
-            <div className="h-16 w-16 rounded-full border border-foreground/20 flex items-center justify-center text-2xl hover:border-foreground/40 transition">
-              👥
-            </div>
-            <span className="text-[11px] truncate w-full text-center">haita</span>
-          </Link>
-          <Link to="/app/parties" className="flex flex-col items-center gap-1 shrink-0 w-[72px]">
-            <div className="h-16 w-16 rounded-full border border-foreground/20 flex items-center justify-center text-2xl hover:border-foreground/40 transition">
-              🎉
-            </div>
-            <span className="text-[11px] truncate w-full text-center">parties</span>
-          </Link>
-        </div>
       </div>
 
       {/* Tabs bar */}
