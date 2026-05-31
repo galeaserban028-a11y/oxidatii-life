@@ -20,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppTopRouteImport } from './routes/app.top'
 import { Route as AppSquadRouteImport } from './routes/app.squad'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScanRouteImport } from './routes/app.scan'
 import { Route as AppRequestsRouteImport } from './routes/app.requests'
 import { Route as AppPartiesRouteImport } from './routes/app.parties'
@@ -91,6 +92,11 @@ const AppTopRoute = AppTopRouteImport.update({
 const AppSquadRoute = AppSquadRouteImport.update({
   id: '/squad',
   path: '/squad',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
 const AppScanRoute = AppScanRouteImport.update({
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/app/parties': typeof AppPartiesRoute
   '/app/requests': typeof AppRequestsRoute
   '/app/scan': typeof AppScanRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/app/parties': typeof AppPartiesRoute
   '/app/requests': typeof AppRequestsRoute
   '/app/scan': typeof AppScanRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app': typeof AppIndexRoute
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/app/parties': typeof AppPartiesRoute
   '/app/requests': typeof AppRequestsRoute
   '/app/scan': typeof AppScanRoute
+  '/app/settings': typeof AppSettingsRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/app/parties'
     | '/app/requests'
     | '/app/scan'
+    | '/app/settings'
     | '/app/squad'
     | '/app/top'
     | '/app/'
@@ -321,6 +331,7 @@ export interface FileRouteTypes {
     | '/app/parties'
     | '/app/requests'
     | '/app/scan'
+    | '/app/settings'
     | '/app/squad'
     | '/app/top'
     | '/app'
@@ -351,6 +362,7 @@ export interface FileRouteTypes {
     | '/app/parties'
     | '/app/requests'
     | '/app/scan'
+    | '/app/settings'
     | '/app/squad'
     | '/app/top'
     | '/app/'
@@ -449,6 +461,13 @@ declare module '@tanstack/react-router' {
       path: '/squad'
       fullPath: '/app/squad'
       preLoaderRoute: typeof AppSquadRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/scan': {
@@ -586,6 +605,7 @@ interface AppRouteChildren {
   AppPartiesRoute: typeof AppPartiesRoute
   AppRequestsRoute: typeof AppRequestsRoute
   AppScanRoute: typeof AppScanRoute
+  AppSettingsRoute: typeof AppSettingsRoute
   AppSquadRoute: typeof AppSquadRoute
   AppTopRoute: typeof AppTopRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -609,6 +629,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPartiesRoute: AppPartiesRoute,
   AppRequestsRoute: AppRequestsRoute,
   AppScanRoute: AppScanRoute,
+  AppSettingsRoute: AppSettingsRoute,
   AppSquadRoute: AppSquadRoute,
   AppTopRoute: AppTopRoute,
   AppIndexRoute: AppIndexRoute,
