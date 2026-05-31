@@ -291,8 +291,8 @@ function SquadPage() {
       {/* Active groups */}
       {groups.length > 0 && (
         <section id="groups" className="px-4 space-y-2 scroll-mt-4 mb-5">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-green flex items-center gap-1.5">
-            <Users size={11} /> găști active · {groups.length}
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+            <Users size={11} className="text-neon-green" /> grupuri · {groups.length}
           </div>
           {groups.map((g: any) => (
             <Link key={g.id} to="/app/chat/$id" params={{ id: g.id }}
@@ -301,8 +301,8 @@ function SquadPage() {
                 {(g.title ?? "G")[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-display font-bold text-sm truncate">{g.title ?? "Haită fără nume"}</div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">grup · {new Date(g.last_message_at).toLocaleDateString("ro-RO")}</div>
+                <div className="font-display font-bold text-sm truncate">{g.title ?? "grup fără nume"}</div>
+                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{new Date(g.last_message_at).toLocaleDateString("ro-RO")}</div>
               </div>
               <MessageCircle className="text-neon-green" size={18} />
             </Link>
