@@ -39,6 +39,55 @@ function MePage() {
   const { data: incomingReqs } = useIncomingFollowRequests(user?.id);
   const pendingCount = incomingReqs?.length ?? 0;
 
+  // tab state for the grid
+  const [tab, setTab] = useState<"all" | "verified" | "tagged">("all");
+  // edit profile dialog state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editHandle, setEditHandle] = useState(profile?.handle ?? "");
+  const [editName, setEditName] = useState(profile?.display_name ?? "");
+  const [editBio, setEditBio] = useState((profile as any)?.bio ?? "");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  async function shareProfile() {
+    const url = `${window.location.origin}/u/${profile?.handle ?? user?.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `@${profile?.handle ?? "oxidat"} pe OXIDAȚII`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copiat");
+      }
+    } catch {/* user cancelled */}
+  }
+
+  async function saveProfile() {
+    if (!user) return;
+    const h = editHandle.trim().toLowerCase();
+    if (h && !/^[a-z0-9_.]{3,24}$/.test(h)) {
+      toast.error("Handle: 3-24 caractere a-z, 0-9, _ sau .");
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      const { error } = await supabase.from("profiles").update({
+        handle: h || null,
+        display_name: editName.trim() || null,
+        bio: editBio.trim() || null,
+      } as any).eq("id", user.id);
+      if (error) throw error;
+      await refreshProfile();
+      toast.success("Profil actualizat");
+      setEditOpen(false);
+    } catch (e: any) {
+      toast.error(e.message ?? "Eroare");
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
+
+
   async function uploadAvatar(file: File) {
     if (!user) return;
     setUploading(true);
