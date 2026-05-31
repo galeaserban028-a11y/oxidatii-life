@@ -190,203 +190,220 @@ function MapPage() {
     );
   };
 
+  const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
+  const [tab, setTab] = useState<"locatii" | "live">("locatii");
+
   return (
-    <div className="px-4 pt-6 pb-4 space-y-4">
-      <header>
-        <h1 className="font-display font-black text-2xl tracking-tight">hartă.</h1>
-        <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mt-0.5">
-          {venues.length} cluburi · {friendPins.length} prieteni live
-        </p>
+    <div className="pb-4">
+      {/* Sticky app-style header */}
+      <header className="sticky top-0 z-30 -mx-0 px-4 pt-5 pb-3 bg-background/85 backdrop-blur-xl border-b border-border/60">
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <h1 className="font-display font-black text-2xl tracking-tight lowercase">hartă</h1>
+            <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-foreground/5 border border-border font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                <MapPin size={9} /> {venues.length} locuri
+              </span>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 font-mono text-[9px] uppercase tracking-widest text-neon-green">
+                <span className="h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse" /> {friendPins.length} live
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={requestGeo}
+            aria-label="Locația mea"
+            className={`h-10 w-10 grid place-items-center rounded-full border ${geo ? "border-neon-green/50 text-neon-green bg-neon-green/10" : "border-border text-muted-foreground bg-card/60"} backdrop-blur active:scale-95 transition`}
+          >
+            <Navigation size={16} />
+          </button>
+        </div>
       </header>
 
-      <VenueFilters
-        query={query} setQuery={setQuery}
-        type={type} setType={setType}
-        cityId={cityId} setCityId={setCityId}
-        cities={cities}
-        maxKm={maxKm} setMaxKm={setMaxKm}
-        hasGeo={!!geo} requestGeo={requestGeo}
-        count={filtered.length}
-      />
-      {isLoading ? (
-        <div className="aspect-[5/4] rounded-2xl bg-foreground/5 animate-pulse" />
-      ) : (
-        <RomaniaMap3D
+      <div className="px-4 pt-3 space-y-3">
+        <VenueFilters
+          query={query} setQuery={setQuery}
+          type={type} setType={setType}
+          cityId={cityId} setCityId={setCityId}
           cities={cities}
-          venues={filtered}
-          friends={friendPins}
-          focusCity={focusCity}
-          onCityClick={(c) => {
-            setCityId(c.id);
-            setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
-          }}
+          maxKm={maxKm} setMaxKm={setMaxKm}
+          hasGeo={!!geo} requestGeo={requestGeo}
+          count={filtered.length}
         />
-      )}
 
-      {cityId !== "all" && (() => {
-        const c = cityMap.get(cityId);
-        if (!c) return null;
-        return (
-          <div className="flex items-center gap-2 rounded-xl bg-neon-purple/10 border border-neon-purple/40 px-3 py-2">
-            <MapPin size={14} className="text-neon-purple" />
-            <div className="flex-1 min-w-0">
-              <div className="font-mono text-[9px] uppercase tracking-widest text-neon-purple">filtrat după</div>
-              <div className="font-display font-bold text-sm truncate">{c.name}</div>
-            </div>
-            <Link
-              to="/app/city/$slug"
-              params={{ slug: c.slug }}
-              className="font-mono text-[10px] uppercase tracking-widest text-neon-green border border-neon-green/40 rounded-md px-2 py-1"
-            >
-              străzi →
-            </Link>
-            <button
-              onClick={() => { setCityId("all"); setFocusCity(null); }}
-              className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground border border-foreground/20 rounded-md px-2 py-1"
-            >
-              ✕
-            </button>
-          </div>
-        );
-      })()}
-
-      <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
-
-
-      {/* FRIENDS CTA */}
-      <Link
-        to="/app/friends"
-        className="group block relative overflow-hidden rounded-2xl p-[2px] bg-gradient-to-r from-neon-green via-neon-purple to-neon-crimson active:scale-[0.98] transition"
-      >
-        <div className="relative rounded-[14px] bg-background/95 p-4 overflow-hidden">
-          <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-neon-green/30 blur-3xl animate-pulse" />
-          <div className="pointer-events-none absolute -bottom-12 -left-8 h-36 w-36 rounded-full bg-neon-crimson/25 blur-3xl animate-pulse" />
-          <div className="relative flex items-center gap-3">
-            <div className="relative h-14 w-14 rounded-2xl bg-neon-green/15 border border-neon-green/50 flex items-center justify-center shrink-0 shadow-[0_0_24px_-4px_var(--neon-green)]">
-              <UserPlus className="text-neon-green" size={26} strokeWidth={2.6} />
-              <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                <span className="absolute inset-0 rounded-full bg-neon-green animate-ping opacity-80" />
-                <span className="relative h-3 w-3 rounded-full bg-neon-green" />
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-display font-black uppercase text-lg leading-none tracking-tight">
-                cheamă oxidații la șprițtt
+        {/* Map block */}
+        <div className="relative rounded-2xl overflow-hidden border border-border bg-foreground/5">
+          {isLoading ? (
+            <div className="aspect-[5/4] animate-pulse" />
+          ) : (
+            <RomaniaMap3D
+              cities={cities}
+              venues={filtered}
+              friends={friendPins}
+              focusCity={focusCity}
+              onCityClick={(c) => {
+                setCityId(c.id);
+                setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
+              }}
+            />
+          )}
+          {activeCity && (
+            <div className="absolute top-2 left-2 right-2 z-10 flex items-center gap-2 rounded-xl bg-background/90 backdrop-blur border border-neon-purple/40 px-2.5 py-1.5">
+              <MapPin size={12} className="text-neon-purple shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="font-mono text-[8px] uppercase tracking-widest text-neon-purple">filtru</div>
+                <div className="font-display font-bold text-xs truncate">{activeCity.name}</div>
               </div>
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-neon-green mt-1.5">
-                adaugă prieteni → vezi-i pe hartă live
-              </div>
-            </div>
-            <div className="font-display text-neon-green text-2xl group-active:translate-x-1 transition">→</div>
-          </div>
-          {friendPins.length === 0 && (
-            <div className="relative mt-3 pt-3 border-t border-foreground/10">
-              <p className="text-xs text-foreground/80 leading-snug">
-                <span className="text-neon-crimson font-bold">0 oxidați</span> în haita ta. Nu mai bea singur ca un MDS — adaugă-ți gașca și vezi unde toarnă șpriț chiar acum.
-              </p>
+              <Link
+                to="/app/city/$slug"
+                params={{ slug: activeCity.slug }}
+                className="font-mono text-[9px] uppercase tracking-widest text-neon-green border border-neon-green/40 rounded-md px-1.5 py-0.5"
+              >
+                străzi →
+              </Link>
+              <button
+                onClick={() => { setCityId("all"); setFocusCity(null); }}
+                aria-label="Șterge filtru"
+                className="h-6 w-6 grid place-items-center rounded-md border border-border text-muted-foreground"
+              >
+                <X size={11} />
+              </button>
             </div>
           )}
         </div>
-      </Link>
 
-      {/* Live friends list */}
-      {friendPins.length > 0 && (
-        <section className="space-y-2">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-green flex items-center gap-1.5">
-            <Users size={11} /> live acum
-          </div>
-          {friendPins.map((f) => (
-            <Link
-              key={f.user_id}
-              to="/app/user/$id"
-              params={{ id: f.user_id }}
-              className="flex items-center gap-3 p-3 rounded-lg bg-foreground/[0.04] border border-neon-green/20"
-            >
-              <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-sm">
-                {f.avatar_url ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" /> : (f.handle ?? "?")[0]?.toUpperCase()}
+        <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
+
+        {/* Slim friends CTA — only when 0 friends live */}
+        {friendPins.length === 0 && (
+          <Link
+            to="/app/friends"
+            className="group block rounded-2xl p-[1.5px] bg-gradient-to-r from-neon-green via-neon-purple to-neon-crimson active:scale-[0.99] transition"
+          >
+            <div className="rounded-[14px] bg-background/95 px-3.5 py-3 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-neon-green/15 border border-neon-green/40 grid place-items-center shrink-0">
+                <UserPlus className="text-neon-green" size={18} strokeWidth={2.6} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-display text-sm truncate">@{f.handle ?? f.display_name}</div>
-                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
-                  📍 {f.venue_name ?? "în oraș"}
+                <div className="font-display font-black uppercase text-sm leading-tight">cheamă oxidații</div>
+                <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
+                  adaugă prieteni → vezi-i pe hartă
                 </div>
               </div>
-              <span className="relative inline-flex h-2 w-2">
-                <span className="absolute inset-0 rounded-full bg-neon-green animate-ping opacity-75" />
-                <span className="relative h-2 w-2 rounded-full bg-neon-green" />
-              </span>
-            </Link>
-          ))}
-        </section>
-      )}
-
-      {/* FULL VENUES LIST */}
-      <section className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            // locații ({filtered.length})
-          </div>
-          {geo && (
-            <div className="font-mono text-[10px] uppercase tracking-widest text-neon-green">
-              sortat după distanță
+              <span className="font-display text-neon-green text-xl">→</span>
             </div>
-          )}
+          </Link>
+        )}
+
+        {/* Tabs */}
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-foreground/5 border border-border">
+          <button
+            onClick={() => setTab("locatii")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest transition ${tab === "locatii" ? "bg-background text-foreground shadow" : "text-muted-foreground"}`}
+          >
+            <List size={11} /> locații · {filtered.length}
+          </button>
+          <button
+            onClick={() => setTab("live")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest transition ${tab === "live" ? "bg-background text-neon-green shadow" : "text-muted-foreground"}`}
+          >
+            <Users size={11} /> live · {friendPins.length}
+          </button>
         </div>
 
-        {filtered.length === 0 ? (
-          <div className="py-8 text-center font-mono text-xs uppercase tracking-widest text-muted-foreground">
-            zero locații. dă reset la filtre.
-          </div>
-        ) : (
-          <div className="space-y-1.5">
-            {filtered.slice(0, visible).map(v => {
-              const city = cityMap.get(v.city_id);
-              const dist = geo && v.lat != null && v.lng != null
-                ? distanceKm(geo.lat, geo.lng, v.lat, v.lng) : null;
-              const openState = isOpenNow(v.opening_hours);
-              const nextOpen = openState === false ? nextOpenLabel(v.opening_hours) : null;
-              return (
-                <div key={v.id} className="flex items-center gap-3 p-3 rounded-xl bg-foreground/5 border border-foreground/10">
-                  <div className="h-10 w-10 rounded-lg bg-neon-green/10 border border-neon-green/30 flex items-center justify-center font-mono text-[9px] uppercase shrink-0 text-neon-green">
-                    {v.type.slice(0, 4)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <div className="font-display font-bold text-sm truncate">{v.name}</div>
-                      {openState === true && (
-                        <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-green/15 border border-neon-green/40 font-mono text-[8px] uppercase tracking-wider text-neon-green">
-                          <span className="h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse" /> open
-                        </span>
-                      )}
-                      {openState === false && (
-                        <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-crimson/15 border border-neon-crimson/40 font-mono text-[8px] uppercase tracking-wider text-neon-crimson">
-                          <Clock size={8} /> {nextOpen ? nextOpen : "închis"}
-                        </span>
-                      )}
-                    </div>
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate flex items-center gap-1">
-                      <MapPin size={9} /> {city?.name ?? "?"}{v.address ? ` · ${v.address}` : ""}
-                    </div>
-                  </div>
-                  {dist != null && (
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-neon-purple shrink-0">
-                      {dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-            {visible < filtered.length && (
-              <button
-                onClick={() => setVisible(v => v + 60)}
-                className="w-full mt-2 py-3 rounded-xl border border-neon-green/40 text-neon-green font-mono text-[11px] uppercase tracking-widest active:scale-[0.98]"
+        {tab === "live" && (
+          <section className="space-y-1.5">
+            {friendPins.length === 0 ? (
+              <div className="py-10 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                niciun oxidat live acum.
+              </div>
+            ) : friendPins.map((f) => (
+              <Link
+                key={f.user_id}
+                to="/app/user/$id"
+                params={{ id: f.user_id }}
+                className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04] border border-neon-green/20 active:scale-[0.99] transition"
               >
-                + arată încă {Math.min(60, filtered.length - visible)} (din {filtered.length - visible})
-              </button>
-            )}
-          </div>
+                <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-sm shrink-0">
+                  {f.avatar_url ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" /> : (f.handle ?? "?")[0]?.toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-display text-sm truncate">@{f.handle ?? f.display_name}</div>
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
+                    📍 {f.venue_name ?? "în oraș"}
+                  </div>
+                </div>
+                <span className="relative inline-flex h-2 w-2">
+                  <span className="absolute inset-0 rounded-full bg-neon-green animate-ping opacity-75" />
+                  <span className="relative h-2 w-2 rounded-full bg-neon-green" />
+                </span>
+              </Link>
+            ))}
+          </section>
         )}
-      </section>
+
+        {tab === "locatii" && (
+          <section className="space-y-1.5">
+            {geo && (
+              <div className="font-mono text-[9px] uppercase tracking-widest text-neon-green flex items-center gap-1">
+                <Navigation size={10} /> sortat după distanță
+              </div>
+            )}
+            {filtered.length === 0 ? (
+              <div className="py-10 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                zero locații. dă reset la filtre.
+              </div>
+            ) : (
+              <>
+                {filtered.slice(0, visible).map(v => {
+                  const city = cityMap.get(v.city_id);
+                  const dist = geo && v.lat != null && v.lng != null
+                    ? distanceKm(geo.lat, geo.lng, v.lat, v.lng) : null;
+                  const openState = isOpenNow(v.opening_hours);
+                  const nextOpen = openState === false ? nextOpenLabel(v.opening_hours) : null;
+                  return (
+                    <div key={v.id} className="flex items-center gap-3 p-3 rounded-xl bg-foreground/5 border border-foreground/10">
+                      <div className="h-10 w-10 rounded-lg bg-neon-green/10 border border-neon-green/30 flex items-center justify-center shrink-0 text-neon-green">
+                        <Beer size={16} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <div className="font-display font-bold text-sm truncate">{v.name}</div>
+                          {openState === true && (
+                            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-green/15 border border-neon-green/40 font-mono text-[8px] uppercase tracking-wider text-neon-green">
+                              <span className="h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse" /> open
+                            </span>
+                          )}
+                          {openState === false && (
+                            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-crimson/15 border border-neon-crimson/40 font-mono text-[8px] uppercase tracking-wider text-neon-crimson">
+                              <Clock size={8} /> {nextOpen ? nextOpen : "închis"}
+                            </span>
+                          )}
+                        </div>
+                        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate flex items-center gap-1">
+                          <MapPin size={9} /> {city?.name ?? "?"}{v.address ? ` · ${v.address}` : ""}
+                        </div>
+                      </div>
+                      {dist != null && (
+                        <div className="font-mono text-[10px] uppercase tracking-widest text-neon-purple shrink-0">
+                          {dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {visible < filtered.length && (
+                  <button
+                    onClick={() => setVisible(v => v + 60)}
+                    className="w-full mt-2 py-3 rounded-xl border border-neon-green/40 text-neon-green font-mono text-[11px] uppercase tracking-widest active:scale-[0.98]"
+                  >
+                    + arată încă {Math.min(60, filtered.length - visible)} (din {filtered.length - visible})
+                  </button>
+                )}
+              </>
+            )}
+          </section>
+        )}
+      </div>
     </div>
   );
 }
