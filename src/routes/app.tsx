@@ -1,10 +1,21 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useAuth } from "@/lib/auth";
 import { BottomTabBar } from "@/components/app/BottomTabBar";
 import { AppHeader } from "@/components/app/AppHeader";
 import { InstallBanner } from "@/components/app/InstallBanner";
+import { PageTransition } from "@/components/app/PageTransition";
 import logoSticker from "@/assets/logo-oxidatii.png";
+
+const LOADING_LINES = [
+  "se toarnă șprițul...",
+  "așteaptă o secundă, frate...",
+  "chemăm haita...",
+  "se răcește gheața...",
+  "ne aprindem...",
+  "mai un pic, e aproape...",
+];
+
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
