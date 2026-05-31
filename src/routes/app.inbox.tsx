@@ -1,25 +1,24 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { openOrCreateDM } from "@/lib/chat";
-import { ArrowLeft, Plus, Users, Loader2 } from "lucide-react";
+import { openOrCreateDM, createGroupChat } from "@/lib/chat";
+import { ArrowLeft, PenSquare, Users, Loader2, Search, X, Check } from "lucide-react";
 
 export const Route = createFileRoute("/app/inbox")({
   head: () => ({ meta: [{ title: "Mesaje · OXIDAȚII" }] }),
   component: InboxPage,
 });
 
-type ConvRow = {
-  id: string; kind: string; title: string | null; last_message_at: string;
-};
+type Tab = "toate" | "dm" | "grup";
 
 function InboxPage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const qc = useQueryClient();
   const [showNew, setShowNew] = useState(false);
+  const [tab, setTab] = useState<Tab>("toate");
 
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["inbox", user?.id],
@@ -35,13 +34,11 @@ function InboxPage() {
         .filter(Boolean)
         .sort((a: any, b: any) => b.last_message_at.localeCompare(a.last_message_at));
 
-      // attach last message + other members
       const ids = convs.map((c: any) => c.id);
       if (!ids.length) return [];
-      const [{ data: lastMsgs }, { data: allMems }, { data: profiles }] = await Promise.all([
+      const [{ data: lastMsgs }, { data: allMems }] = await Promise.all([
         supabase.from("messages").select("conversation_id,body,sender_id,created_at").in("conversation_id", ids).order("created_at", { ascending: false }),
         supabase.from("conversation_members").select("conversation_id,user_id").in("conversation_id", ids),
-        Promise.resolve({ data: [] as any[] }),
       ]);
       const lastByConv = new Map<string, any>();
       for (const m of lastMsgs ?? []) if (!lastByConv.has(m.conversation_id)) lastByConv.set(m.conversation_id, m);
@@ -76,52 +73,87 @@ function InboxPage() {
     return () => { supabase.removeChannel(ch); };
   }, [user, qc]);
 
+  const dms = useMemo(() => conversations.filter((c: any) => c.kind === "dm"), [conversations]);
+  const groups = useMemo(() => conversations.filter((c: any) => c.kind !== "dm"), [conversations]);
+  const unreadCount = conversations.filter((c: any) => c.unread).length;
+
+  const filtered = tab === "dm" ? dms : tab === "grup" ? groups : conversations;
+
   return (
-    <div className="px-4 pt-6 pb-4 space-y-4">
+    <div className="px-4 pt-5 pb-4 space-y-4">
       <div className="flex items-center justify-between">
         <Link to="/app" className="inline-flex items-center gap-1 text-xs font-mono uppercase tracking-widest text-muted-foreground">
           <ArrowLeft size={14} /> înapoi
         </Link>
-        <button onClick={() => setShowNew(true)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neon-green/15 border border-neon-green/40 text-neon-green font-mono text-[10px] uppercase tracking-widest">
-          <Plus size={12} /> grup
+        <button
+          onClick={() => setShowNew(true)}
+          aria-label="mesaj nou"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-foreground/5 border border-foreground/15 font-mono text-[10px] uppercase tracking-widest"
+        >
+          <PenSquare size={12} /> scrie
         </button>
       </div>
-      <header>
-        <h1 className="font-display font-black text-3xl tracking-tight">mesaje.</h1>
-        <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest mt-0.5">vorbește cu haita</p>
+
+      <header className="space-y-1">
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">mesaje</div>
+        <h1 className="font-display font-black text-2xl tracking-tight leading-none">
+          {unreadCount > 0 ? `${unreadCount} necitite` : "totul citit"}
+        </h1>
       </header>
 
+      {/* segmented */}
+      <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-foreground/5 border border-foreground/10 text-[10px] font-mono uppercase tracking-widest">
+        {([
+          ["toate", conversations.length],
+          ["dm", dms.length],
+          ["grup", groups.length],
+        ] as const).map(([k, n]) => (
+          <button
+            key={k}
+            onClick={() => setTab(k as Tab)}
+            className={`py-1.5 rounded-lg transition ${tab === k ? "bg-foreground text-background" : "text-muted-foreground"}`}
+          >
+            {k} · {n}
+          </button>
+        ))}
+      </div>
+
       {isLoading ? (
-        <div className="py-8 text-center font-mono text-xs text-muted-foreground">se încarcă...</div>
-      ) : conversations.length === 0 ? (
-        <div className="py-12 text-center space-y-2">
-          <div className="font-display text-2xl">📭</div>
-          <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground">zero conversații</div>
-          <div className="text-xs text-foreground/70">deschide profilul unui prieten și apasă „mesaj"</div>
+        <div className="py-8 text-center font-mono text-xs text-muted-foreground">o secundă…</div>
+      ) : filtered.length === 0 ? (
+        <div className="py-14 text-center space-y-2">
+          <div className="font-display font-bold text-sm">
+            {tab === "dm" ? "nu ai conversații personale" : tab === "grup" ? "nu ai niciun grup" : "nu ai conversații"}
+          </div>
+          <div className="text-xs text-muted-foreground">apasă „scrie" ca să începi una</div>
+          <button onClick={() => setShowNew(true)} className="mt-2 inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-foreground text-background font-mono text-[10px] uppercase tracking-widest">
+            <PenSquare size={12} /> mesaj nou
+          </button>
         </div>
       ) : (
-        <div className="space-y-1.5">
-          {conversations.map((c: any) => {
-            const title = c.kind === "dm"
-              ? (c.others[0]?.handle ? `@${c.others[0].handle}` : c.others[0]?.display_name ?? "Necunoscut")
-              : c.title ?? `Grup (${c.others.length + 1})`;
-            const subtitle = c.last ? c.last.body : (c.kind === "dm" ? "trimite primul mesaj" : "grup nou");
+        <div className="space-y-1">
+          {filtered.map((c: any) => {
+            const isDM = c.kind === "dm";
+            const title = isDM
+              ? (c.others[0]?.handle ? `@${c.others[0].handle}` : c.others[0]?.display_name ?? "necunoscut")
+              : c.title ?? `grup · ${c.others.length + 1}`;
+            const subtitle = c.last ? c.last.body : (isDM ? "scrie primul mesaj" : "grup nou");
             return (
               <Link key={c.id} to="/app/chat/$id" params={{ id: c.id }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-foreground/5 border border-foreground/10 active:scale-[0.99] transition">
-                <div className="relative h-12 w-12 shrink-0">
-                  {c.kind === "dm" && c.others[0]?.avatar_url ? (
+                className="flex items-center gap-3 p-2.5 rounded-xl bg-foreground/[0.03] border border-foreground/10 active:scale-[0.99] transition">
+                <div className="relative h-11 w-11 shrink-0">
+                  {isDM && c.others[0]?.avatar_url ? (
                     <img src={c.others[0].avatar_url} alt="" className="h-full w-full rounded-full object-cover" />
                   ) : (
                     <div className="h-full w-full rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display font-black text-white">
-                      {c.kind === "dm" ? (title[1] ?? "?").toUpperCase() : <Users size={20} />}
+                      {isDM ? (title[1] ?? "?").toUpperCase() : <Users size={18} />}
                     </div>
                   )}
-                  {c.unread && <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-neon-green border-2 border-background" />}
+                  {c.unread && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-neon-green border-2 border-background" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <div className={`font-display truncate ${c.unread ? "font-black" : "font-bold"}`}>{title}</div>
+                    <div className={`font-display truncate text-sm ${c.unread ? "font-black" : "font-bold"}`}>{title}</div>
                     <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground shrink-0">
                       {timeAgo(c.last?.created_at ?? c.last_message_at)}
                     </div>
@@ -134,7 +166,12 @@ function InboxPage() {
         </div>
       )}
 
-      {showNew && <NewGroupSheet onClose={() => setShowNew(false)} onCreated={(id) => { setShowNew(false); nav({ to: "/app/chat/$id", params: { id } }); }} />}
+      {showNew && (
+        <NewMessageSheet
+          onClose={() => setShowNew(false)}
+          onOpen={(id) => { setShowNew(false); nav({ to: "/app/chat/$id", params: { id } }); }}
+        />
+      )}
     </div>
   );
 }
@@ -146,14 +183,15 @@ function timeAgo(iso?: string) {
   if (s < 86400) return `${Math.floor(s / 3600)}h`; return `${Math.floor(s / 86400)}z`;
 }
 
-function NewGroupSheet({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
+function NewMessageSheet({ onClose, onOpen }: { onClose: () => void; onOpen: (id: string) => void }) {
   const { user } = useAuth();
-  const [title, setTitle] = useState("");
+  const [q, setQ] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
 
   const { data: friends = [] } = useQuery({
-    queryKey: ["friends-for-group", user?.id],
+    queryKey: ["friends-for-message", user?.id],
     enabled: !!user,
     queryFn: async () => {
       const { data: rows } = await supabase
@@ -168,61 +206,113 @@ function NewGroupSheet({ onClose, onCreated }: { onClose: () => void; onCreated:
     },
   });
 
-  const toggle = (id: string) => setSelected(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return friends;
+    return friends.filter((f: any) =>
+      (f.handle ?? "").toLowerCase().includes(needle) ||
+      (f.display_name ?? "").toLowerCase().includes(needle)
+    );
+  }, [friends, q]);
 
-  const create = async () => {
+  const toggle = (id: string) => setSelected(s => {
+    const n = new Set(s);
+    n.has(id) ? n.delete(id) : n.add(id);
+    return n;
+  });
+
+  const go = async () => {
     if (!user || selected.size < 1) return;
     setSaving(true);
-    const { createGroupChat } = await import("@/lib/chat");
-    const finalTitle = title.trim() || `Haita · ${new Date().toLocaleDateString("ro-RO")}`;
     try {
-      const id = await createGroupChat(user.id, finalTitle, Array.from(selected));
-      onCreated(id);
+      const ids = Array.from(selected);
+      if (ids.length === 1) {
+        const id = await openOrCreateDM(user.id, ids[0]);
+        onOpen(id);
+      } else {
+        const finalTitle = title.trim() || `grup · ${new Date().toLocaleDateString("ro-RO")}`;
+        const id = await createGroupChat(user.id, finalTitle, ids);
+        onOpen(id);
+      }
     } catch (e: any) {
-      alert(e.message ?? "Eroare"); setSaving(false);
+      alert(e.message ?? "ceva nu a mers"); setSaving(false);
     }
   };
+
+  const mode = selected.size <= 1 ? "dm" : "grup";
 
   return (
     <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex flex-col">
       <div className="flex items-center justify-between p-4 border-b border-foreground/10">
         <div>
-          <div className="font-display font-black text-xl">grup nou</div>
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">cheamă haita în chat</div>
+          <div className="font-display font-black text-xl">mesaj nou</div>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            {selected.size === 0 ? "alege o persoană" : selected.size === 1 ? "conversație 1 la 1" : `grup · ${selected.size} persoane`}
+          </div>
         </div>
-        <button onClick={onClose} className="h-10 w-10 rounded-full bg-foreground/10 flex items-center justify-center">✕</button>
+        <button onClick={onClose} aria-label="închide" className="h-10 w-10 rounded-full bg-foreground/10 flex items-center justify-center">
+          <X size={16} />
+        </button>
       </div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="nume grup (opțional)"
-          className="w-full px-3 py-3 rounded-xl bg-foreground/5 border border-foreground/15 font-display" />
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">// alege oxidați ({selected.size})</div>
+
+      <div className="p-4 space-y-3 border-b border-foreground/5">
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={q}
+            onChange={e => setQ(e.target.value)}
+            placeholder="caută prieten…"
+            className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-foreground/5 border border-foreground/15 text-sm"
+          />
+        </div>
+        {mode === "grup" && (
+          <input
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            placeholder="nume grup (opțional)"
+            className="w-full px-3 py-2.5 rounded-xl bg-foreground/5 border border-foreground/15 font-display text-sm"
+          />
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
         {friends.length === 0 ? (
-          <div className="text-xs text-muted-foreground">zero prieteni. adaugă haita mai întâi.</div>
-        ) : friends.map((f: any) => (
-          <button key={f.id} onClick={() => toggle(f.id)}
-            className={`w-full flex items-center gap-3 p-3 rounded-xl border transition ${
-              selected.has(f.id) ? "bg-neon-green/10 border-neon-green/50" : "bg-foreground/5 border-foreground/10"
-            }`}>
-            <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-sm text-white shrink-0">
-              {f.avatar_url ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" /> : (f.handle ?? "?")[0]?.toUpperCase()}
-            </div>
-            <div className="flex-1 text-left">
-              <div className="font-display font-bold text-sm">@{f.handle ?? f.display_name}</div>
-            </div>
-            <div className={`h-5 w-5 rounded-full border-2 ${selected.has(f.id) ? "bg-neon-green border-neon-green" : "border-foreground/30"}`} />
-          </button>
-        ))}
+          <div className="text-center py-10 text-xs text-muted-foreground">nu ai încă prieteni adăugați</div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-10 text-xs text-muted-foreground">nimeni nu se potrivește</div>
+        ) : filtered.map((f: any) => {
+          const isSel = selected.has(f.id);
+          return (
+            <button key={f.id} onClick={() => toggle(f.id)}
+              className={`w-full flex items-center gap-3 p-2.5 rounded-xl border transition ${
+                isSel ? "bg-foreground/10 border-foreground/40" : "bg-foreground/[0.03] border-foreground/10"
+              }`}>
+              <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-sm text-white shrink-0">
+                {f.avatar_url ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" /> : (f.handle ?? "?")[0]?.toUpperCase()}
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <div className="font-display font-bold text-sm truncate">@{f.handle ?? f.display_name}</div>
+                {f.display_name && f.handle && (
+                  <div className="text-[11px] text-muted-foreground truncate">{f.display_name}</div>
+                )}
+              </div>
+              <div className={`h-5 w-5 rounded-full border flex items-center justify-center ${isSel ? "bg-foreground border-foreground" : "border-foreground/25"}`}>
+                {isSel && <Check size={12} className="text-background" />}
+              </div>
+            </button>
+          );
+        })}
       </div>
+
       <div className="p-4 border-t border-foreground/10">
-        <button onClick={create} disabled={saving || selected.size < 1}
-          className="w-full py-3 rounded-xl bg-neon-green text-background font-display font-black uppercase disabled:opacity-40 flex items-center justify-center gap-2">
+        <button onClick={go} disabled={saving || selected.size < 1}
+          className="w-full py-3 rounded-xl bg-foreground text-background font-display font-black text-sm uppercase tracking-wide disabled:opacity-40 flex items-center justify-center gap-2">
           {saving && <Loader2 className="animate-spin" size={16} />}
-          creează grup
+          {selected.size === 0 ? "alege pe cineva" : mode === "dm" ? "deschide conversația" : `creează grup de ${selected.size + 1}`}
         </button>
       </div>
     </div>
   );
 }
 
-// Re-export DM helper
 export { openOrCreateDM };
