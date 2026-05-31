@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { MapPin, Camera, User, MessageCircle, Newspaper, Trophy, Flame } from "lucide-react";
+import { MapPin, Camera, User, MessageCircle, Newspaper, Trophy, Flame, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
