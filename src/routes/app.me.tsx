@@ -185,17 +185,8 @@ function MePage() {
           <Plus size={24} strokeWidth={2.2} />
         </Link>
 
-        <button
-          onClick={shareProfile}
-          className="flex items-center gap-1 font-display uppercase text-base tracking-wide max-w-[55%] truncate active:scale-95 transition"
-          aria-label="Distribuie profilul"
-        >
-          <span className="truncate">@{profile.handle ?? "—"}</span>
-          <ChevronDown size={16} className="shrink-0 opacity-70" />
-          {pendingCount > 0 && (
-            <span className="ml-1 h-1.5 w-1.5 rounded-full bg-neon-crimson shadow-[0_0_8px_var(--neon-crimson)]" />
-          )}
-        </button>
+        <div className="flex-1" />
+
 
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
