@@ -141,8 +141,7 @@ function deferredStart() {
   const run = () => window.requestAnimationFrame(() => window.requestAnimationFrame(start));
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", run, { once: true });
-  }
-  else run();
+  } else run();
 }
 
 export function DomTranslator() {
