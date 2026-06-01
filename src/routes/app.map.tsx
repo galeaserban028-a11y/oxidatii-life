@@ -181,10 +181,32 @@ function MapPage() {
 
   const cityMap = useMemo(() => new Map(cities.map(c => [c.id, c])), [cities]);
 
+  // Country chip list (sorted by venue count desc)
+  const countries = useMemo(() => {
+    const NAMES: Record<string, string> = {
+      RO: "🇷🇴 RO", GB: "🇬🇧 UK", FR: "🇫🇷 FR", DE: "🇩🇪 DE", ES: "🇪🇸 ES",
+      IT: "🇮🇹 IT", NL: "🇳🇱 NL", BE: "🇧🇪 BE", AT: "🇦🇹 AT", CZ: "🇨🇿 CZ",
+      PL: "🇵🇱 PL", HU: "🇭🇺 HU", GR: "🇬🇷 GR", PT: "🇵🇹 PT", IE: "🇮🇪 IE",
+      DK: "🇩🇰 DK", SE: "🇸🇪 SE", NO: "🇳🇴 NO", CH: "🇨🇭 CH", BG: "🇧🇬 BG",
+      HR: "🇭🇷 HR", RS: "🇷🇸 RS", TR: "🇹🇷 TR",
+    };
+    const cityCountryMap = new Map(cities.map(c => [c.id, c.country as string]));
+    const counts = new Map<string, number>();
+    for (const v of venues) {
+      const cc = cityCountryMap.get(v.city_id);
+      if (!cc) continue;
+      counts.set(cc, (counts.get(cc) ?? 0) + 1);
+    }
+    return Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([code, count]) => ({ code, count, label: NAMES[code] ?? code }));
+  }, [cities, venues]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     let list = venues.filter(v => {
       if (type !== "all" && v.type !== type) return false;
+      if (country !== "all" && cityMap.get(v.city_id)?.country !== country) return false;
       if (cityId !== "all" && v.city_id !== cityId) return false;
       if (q) {
         const city = cityMap.get(v.city_id)?.name?.toLowerCase() ?? "";
@@ -203,9 +225,39 @@ function MapPage() {
       });
     }
     return list;
-  }, [venues, query, type, cityId, maxKm, geo, cityMap]);
+  }, [venues, query, type, country, cityId, maxKm, geo, cityMap]);
 
-  useEffect(() => { setVisible(40); }, [query, type, cityId, maxKm]);
+  // Cities scoped to selected country (for map markers + fit bounds)
+  const citiesScoped = useMemo(
+    () => country === "all" ? cities : cities.filter(c => c.country === country),
+    [cities, country],
+  );
+
+  // Fit bounds when country changes (or reset to Europe when "all")
+  useEffect(() => {
+    if (country === "all") {
+      // Whole Europe-ish bounds
+      setFitBounds([[-12, 35], [42, 60]]);
+      setFocusCity(null);
+      return;
+    }
+    const pts = cities.filter(c => c.country === country);
+    if (pts.length === 0) return;
+    let minLng = 180, minLat = 90, maxLng = -180, maxLat = -90;
+    for (const p of pts) {
+      if (p.lng < minLng) minLng = p.lng;
+      if (p.lng > maxLng) maxLng = p.lng;
+      if (p.lat < minLat) minLat = p.lat;
+      if (p.lat > maxLat) maxLat = p.lat;
+    }
+    // pad a bit if single city
+    const padLng = Math.max(0.5, (maxLng - minLng) * 0.2);
+    const padLat = Math.max(0.5, (maxLat - minLat) * 0.2);
+    setFitBounds([[minLng - padLng, minLat - padLat], [maxLng + padLng, maxLat + padLat]]);
+    setFocusCity(null);
+  }, [country, cities]);
+
+  useEffect(() => { setVisible(40); }, [query, type, country, cityId, maxKm]);
 
   const requestGeo = () => {
     if (!navigator.geolocation) return;
