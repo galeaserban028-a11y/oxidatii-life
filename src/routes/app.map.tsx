@@ -19,6 +19,7 @@ type Venue = {
   lat: number | null; lng: number | null;
   city_id: string; address: string | null;
   opening_hours: OpeningHours | null;
+  cover_url: string | null;
 };
 
 async function loadFriendPins(userId: string): Promise<FriendPin[]> {
@@ -142,7 +143,7 @@ function MapPage() {
       while (true) {
         const { data, error } = await supabase
           .from("venues")
-          .select("id, name, type, lat, lng, city_id, address, opening_hours")
+          .select("id, name, type, lat, lng, city_id, address, opening_hours, cover_url")
           .not("lat", "is", null).not("lng", "is", null)
           .order("name")
           .range(from, from + step - 1);
