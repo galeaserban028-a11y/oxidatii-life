@@ -1,10 +1,12 @@
 import { useLocation } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import logoBanner from "@/assets/logo-oxidatii.png";
 import { NotificationsBell } from "./NotificationsBell";
 
 export function AppHeader() {
   const location = useLocation();
+  const { t } = useTranslation();
 
   const isHome = location.pathname === "/app" || location.pathname === "/app/";
   const showBack = !isHome;
