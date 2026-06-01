@@ -90,7 +90,7 @@ export function BottomTabBar() {
           <div className="border-t border-neon-crimson/20 px-2 py-1.5 flex items-center justify-center gap-1.5">
             <AlertTriangle size={10} className="shrink-0 text-neon-crimson" />
             <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-              Alcoolul dăunează grav sănătății.
+              {tc("alcoholWarning")}
             </span>
           </div>
         </div>
