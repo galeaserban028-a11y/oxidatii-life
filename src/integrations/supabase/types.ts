@@ -109,6 +109,7 @@ export type Database = {
       cities: {
         Row: {
           chaos_level: number
+          country: string
           created_at: string
           id: string
           lat: number
@@ -119,6 +120,7 @@ export type Database = {
         }
         Insert: {
           chaos_level?: number
+          country?: string
           created_at?: string
           id?: string
           lat: number
@@ -129,6 +131,7 @@ export type Database = {
         }
         Update: {
           chaos_level?: number
+          country?: string
           created_at?: string
           id?: string
           lat?: number
