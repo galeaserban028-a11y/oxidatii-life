@@ -82,7 +82,7 @@ export function BottomTabBar() {
                   </div>
                   <span className={`text-[9px] font-mono uppercase tracking-wider truncate w-full text-center leading-none ${
                     active && !t.primary ? "text-neon-crimson" : t.primary ? "text-foreground font-bold" : "text-muted-foreground"
-                  }`}>{t.label}</span>
+                  }`}>{tt(t.labelKey)}</span>
                 </Link>
               );
             })}
