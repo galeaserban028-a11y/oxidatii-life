@@ -1,10 +1,12 @@
 import { useLocation } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import logoBanner from "@/assets/logo-oxidatii.png";
 import { NotificationsBell } from "./NotificationsBell";
 
 export function AppHeader() {
   const location = useLocation();
+  const { t } = useTranslation();
 
   const isHome = location.pathname === "/app" || location.pathname === "/app/";
   const showBack = !isHome;
@@ -16,7 +18,7 @@ export function AppHeader() {
           <button
             onClick={() => window.history.back()}
             className="h-9 w-9 -ml-1 flex items-center justify-center rounded-full hover:bg-foreground/5 active:scale-95 transition shrink-0"
-            aria-label="Înapoi"
+            aria-label={t("back")}
           >
             <ChevronLeft size={22} className="text-foreground" />
           </button>
@@ -30,7 +32,7 @@ export function AppHeader() {
       <div className="flex items-center gap-1">
         <NotificationsBell />
         <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground flicker">
-          ● live
+          ● {t("live")}
         </span>
       </div>
     </header>

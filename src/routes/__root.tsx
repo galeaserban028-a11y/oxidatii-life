@@ -21,23 +21,26 @@ import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { CookieConsent } from "@/components/CookieConsent";
 import { AgeGate } from "@/components/AgeGate";
+import "@/lib/i18n";
+import { useTranslation } from "react-i18next";
 
 
 function NotFoundComponent() {
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Pagina nu există</h2>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">{t("pageNotFound")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Te-ai rătăcit în haos. Hai înapoi.
+          {t("lostInChaos")}
         </p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Acasă
+            {t("home")}
           </Link>
         </div>
       </div>
@@ -48,11 +51,12 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight">A picat aplicația</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Încearcă din nou.</p>
+        <h1 className="text-xl font-semibold tracking-tight">{t("appCrashed")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t("tryAgain")}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -61,13 +65,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
-            Reîncearcă
+            {t("retry")}
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent"
           >
-            Acasă
+            {t("home")}
           </a>
         </div>
       </div>

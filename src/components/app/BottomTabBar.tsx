@@ -1,18 +1,19 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MapPin, Camera, User, MessageCircle, Newspaper, Trophy, Flame, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-type Tab = { to: string; icon: typeof MapPin; label: string; primary?: boolean; exact?: boolean; badgeKey?: "inbox" };
+type Tab = { to: string; icon: typeof MapPin; labelKey: string; primary?: boolean; exact?: boolean; badgeKey?: "inbox" };
 const tabs: Tab[] = [
-  { to: "/app", icon: Newspaper, label: "Live", exact: true },
-  { to: "/app/map", icon: MapPin, label: "Hartă" },
-  { to: "/app/top", icon: Trophy, label: "Top" },
-  { to: "/app/scan", icon: Camera, label: "Postează", primary: true },
-  { to: "/app/squad", icon: Flame, label: "Șprițuri" },
-  { to: "/app/inbox", icon: MessageCircle, label: "Mesaje", badgeKey: "inbox" },
-  { to: "/app/me", icon: User, label: "Eu" },
+  { to: "/app", icon: Newspaper, labelKey: "live", exact: true },
+  { to: "/app/map", icon: MapPin, labelKey: "map" },
+  { to: "/app/top", icon: Trophy, labelKey: "top" },
+  { to: "/app/scan", icon: Camera, labelKey: "post", primary: true },
+  { to: "/app/squad", icon: Flame, labelKey: "sprits" },
+  { to: "/app/inbox", icon: MessageCircle, labelKey: "messages", badgeKey: "inbox" },
+  { to: "/app/me", icon: User, labelKey: "me" },
 ];
 
 function useUnreadCount() {
@@ -53,6 +54,8 @@ function useUnreadCount() {
 export function BottomTabBar() {
   const loc = useLocation();
   const unread = useUnreadCount();
+  const { t: tt } = useTranslation("tabs");
+  const { t: tc } = useTranslation("common");
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto max-w-md px-2 pb-2">
@@ -79,7 +82,7 @@ export function BottomTabBar() {
                   </div>
                   <span className={`text-[9px] font-mono uppercase tracking-wider truncate w-full text-center leading-none ${
                     active && !t.primary ? "text-neon-crimson" : t.primary ? "text-foreground font-bold" : "text-muted-foreground"
-                  }`}>{t.label}</span>
+                  }`}>{tt(t.labelKey)}</span>
                 </Link>
               );
             })}
@@ -87,7 +90,7 @@ export function BottomTabBar() {
           <div className="border-t border-neon-crimson/20 px-2 py-1.5 flex items-center justify-center gap-1.5">
             <AlertTriangle size={10} className="shrink-0 text-neon-crimson" />
             <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-              Alcoolul dăunează grav sănătății.
+              {tc("alcoholWarning")}
             </span>
           </div>
         </div>

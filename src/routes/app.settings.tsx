@@ -10,6 +10,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
+import { LanguageSwitcher } from "@/components/app/LanguageSwitcher";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -161,6 +162,9 @@ function SettingsPage() {
             Trimitem coordonatele tale doar cât stai în app și se șterg automat după 15 min. Doar prietenii cu cerere acceptată le pot vedea.
           </p>
         </Section>
+
+        {/* Language switcher */}
+        <div className="px-4 pt-2"><LanguageSwitcher /></div>
 
         {/* Notifications — reuses the existing component */}
         <NotificationSettings />
