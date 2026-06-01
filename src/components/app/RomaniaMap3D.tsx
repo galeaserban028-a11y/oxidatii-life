@@ -147,6 +147,7 @@ export function RomaniaMap3D({
 
     map.on("load", () => {
       loadedRef.current = true;
+      setMapFailed(false);
       // GPU-rendered venue layer + clustering — handles thousands of points at 60fps
       map.addSource(VENUES_SRC, {
         type: "geojson",
@@ -258,11 +259,8 @@ export function RomaniaMap3D({
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
       event.preventDefault();
-      // Let the browser try to restore the GL context instead of failing immediately.
-      // Only show the fallback if restoration doesn't happen quickly.
-      const t = window.setTimeout(() => setMapFailed(true), 4000);
       canvas.addEventListener("webglcontextrestored", () => {
-        clearTimeout(t);
+        setMapFailed(false);
         try { map.triggerRepaint(); } catch {}
       }, { once: true });
     };
