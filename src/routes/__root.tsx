@@ -21,6 +21,8 @@ import { AuthProvider } from "@/lib/auth";
 import { Toaster } from "@/components/ui/sonner";
 import { CookieConsent } from "@/components/CookieConsent";
 import { AgeGate } from "@/components/AgeGate";
+import "@/lib/i18n";
+import { useTranslation } from "react-i18next";
 
 
 function NotFoundComponent() {
