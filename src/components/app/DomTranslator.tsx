@@ -118,8 +118,12 @@ function stop() {
 export function DomTranslator() {
   useEffect(() => {
     const apply = (lng: string) => {
-      if (lng === "en") start();
-      else if (active) stop();
+      if (lng === "en") {
+        // Defer past hydration commit so React's diff doesn't see mutated DOM
+        requestAnimationFrame(() => requestAnimationFrame(() => start()));
+      } else if (active) {
+        stop();
+      }
     };
     apply(i18n.language);
     i18n.on("languageChanged", apply);
