@@ -10,6 +10,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
+import { LanguageSwitcher } from "@/components/app/LanguageSwitcher";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
