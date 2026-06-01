@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -36,18 +36,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const qc = useQueryClient();
+  const mountedRef = useRef(true);
 
-  async function loadProfile(uid: string) {
-    const { data, error } = await supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
+  const loadProfile = useCallback(async (uid: string) => {
+    const profileRequest = supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
+    const timeout = new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 5000));
+    const result = await Promise.race([profileRequest, timeout]);
+
+    if (!mountedRef.current) return;
+    if (result === null) {
+      console.warn("Profile load timed out");
+      setProfile(null);
+      return;
+    }
+
+    const { data, error } = result;
     if (error) {
       console.error("Could not load profile", error);
       setProfile(null);
       return;
     }
     setProfile(data as Profile | null);
-  }
+  }, []);
 
   useEffect(() => {
+    mountedRef.current = true;
+    const finishLoading = () => {
+      if (mountedRef.current) setLoading(false);
+    };
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, sess) => {
       setSession(sess);
       setUser(sess?.user ?? null);
@@ -60,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       qc.invalidateQueries();
     });
     let cancelled = false;
+    const fallbackTimer = window.setTimeout(finishLoading, 3500);
     supabase.auth
       .getSession()
       .then(async ({ data }) => {
@@ -75,10 +92,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        window.clearTimeout(fallbackTimer);
+        if (!cancelled) finishLoading();
       });
     return () => {
       cancelled = true;
+      mountedRef.current = false;
+      window.clearTimeout(fallbackTimer);
       sub.subscription.unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
