@@ -54,6 +54,8 @@ function useUnreadCount() {
 export function BottomTabBar() {
   const loc = useLocation();
   const unread = useUnreadCount();
+  const { t: tt } = useTranslation("tabs");
+  const { t: tc } = useTranslation("common");
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto max-w-md px-2 pb-2">
