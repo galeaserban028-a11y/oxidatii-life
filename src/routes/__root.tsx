@@ -23,6 +23,7 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { AgeGate } from "@/components/AgeGate";
 import "@/lib/i18n";
 import { useTranslation } from "react-i18next";
+import { DomTranslator } from "@/components/app/DomTranslator";
 
 
 function NotFoundComponent() {
@@ -130,6 +131,7 @@ function RootComponent() {
         <Toaster />
         <CookieConsent />
         <AgeGate />
+        <DomTranslator />
       </AuthProvider>
     </QueryClientProvider>
 
