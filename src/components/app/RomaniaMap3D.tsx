@@ -70,12 +70,14 @@ export function RomaniaMap3D({
   friends = [],
   onCityClick,
   focusCity,
+  fitBounds,
 }: {
   cities: City[];
   venues?: Venue[];
   friends?: FriendPin[];
   onCityClick?: (city: City) => void;
   focusCity?: { lat: number; lng: number; zoom?: number } | null;
+  fitBounds?: [[number, number], [number, number]] | null;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
@@ -290,6 +292,7 @@ export function RomaniaMap3D({
       wrap.appendChild(dot);
       const label = document.createElement("div");
       label.textContent = c.name.toUpperCase();
+      label.className = "oxi-city-label";
       label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:${big ? 11 : 9}px;letter-spacing:0.08em;color:#fff;text-shadow:0 0 6px #000,0 1px 3px #000;white-space:nowrap;`;
       wrap.appendChild(label);
       let pressTimer: number | null = null;
@@ -319,6 +322,17 @@ export function RomaniaMap3D({
     const map = mapRef.current; if (!map || !focusCity) return;
     map.flyTo({ center: [focusCity.lng, focusCity.lat], zoom: focusCity.zoom ?? 12.4, pitch: 45, bearing: 0, duration: 1100, essential: true });
   }, [focusCity]);
+
+  // FIT BOUNDS — used for country/region zoom
+  useEffect(() => {
+    const map = mapRef.current; if (!map || !fitBounds) return;
+    const fit = () => {
+      try {
+        map.fitBounds(fitBounds, { padding: 60, duration: 900, pitch: 0, bearing: 0, maxZoom: 9 });
+      } catch {}
+    };
+    if (loadedRef.current) fit(); else map.once("load", fit);
+  }, [fitBounds]);
 
   // FRIENDS → diff-only DOM markers. When a friend's coords change, smoothly
   // tween the marker between the old and new positions so it looks like they

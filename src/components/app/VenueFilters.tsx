@@ -28,7 +28,10 @@ interface Props {
   setType: (v: VenueTypeFilter) => void;
   cityId: string | "all";
   setCityId: (v: string | "all") => void;
-  cities: { id: string; name: string }[];
+  cities: { id: string; name: string; country?: string }[];
+  country: string | "all";
+  setCountry: (v: string | "all") => void;
+  countries: { code: string; label: string; count: number }[];
   maxKm: number;
   setMaxKm: (v: number) => void;
   hasGeo: boolean;
@@ -39,17 +42,20 @@ interface Props {
 export function VenueFilters(p: Props) {
   const [open, setOpen] = useState(false);
   const reset = () => {
-    p.setQuery(""); p.setType("all"); p.setCityId("all"); p.setMaxKm(0);
+    p.setQuery(""); p.setType("all"); p.setCityId("all"); p.setMaxKm(0); p.setCountry("all");
   };
   const activeCount =
     (p.type !== "all" ? 1 : 0) +
     (p.cityId !== "all" ? 1 : 0) +
+    (p.country !== "all" ? 1 : 0) +
     (p.maxKm > 0 ? 1 : 0);
   const isFiltered = !!p.query || activeCount > 0;
 
   const typeLabel = TYPES.find(t => t.id === p.type)?.label ?? "toate";
+  const citiesScoped = p.country === "all" ? p.cities : p.cities.filter(c => c.country === p.country);
   const cityLabel = p.cityId === "all" ? "toate orașele" : (p.cities.find(c => c.id === p.cityId)?.name ?? "");
   const distLabel = DISTANCES.find(d => d.id === p.maxKm)?.label ?? "oriunde";
+  const countryLabel = p.country === "all" ? "toate țările" : (p.countries.find(c => c.code === p.country)?.label ?? p.country);
 
   return (
     <div className="flex items-center gap-2">
@@ -147,6 +153,32 @@ export function VenueFilters(p: Props) {
               </div>
             </section>
 
+            {/* Country */}
+            <section>
+              <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Țară</h3>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  onClick={() => { p.setCountry("all"); p.setCityId("all"); }}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-mono uppercase tracking-widest border transition ${
+                    p.country === "all"
+                      ? "bg-neon-crimson text-background border-neon-crimson"
+                      : "bg-foreground/5 border-foreground/10 text-muted-foreground"
+                  }`}
+                >🌍 toate</button>
+                {p.countries.map(c => (
+                  <button
+                    key={c.code}
+                    onClick={() => { p.setCountry(c.code); p.setCityId("all"); }}
+                    className={`px-3 py-1.5 rounded-full text-[11px] font-mono uppercase tracking-widest border transition ${
+                      p.country === c.code
+                        ? "bg-neon-crimson text-background border-neon-crimson"
+                        : "bg-foreground/5 border-foreground/10 text-muted-foreground"
+                    }`}
+                  >{c.label} <span className="opacity-60">· {c.count}</span></button>
+                ))}
+              </div>
+            </section>
+
             {/* City */}
             <section>
               <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Oraș</h3>
@@ -155,13 +187,14 @@ export function VenueFilters(p: Props) {
                 onChange={(e) => p.setCityId(e.target.value as any)}
                 className="w-full py-2.5 px-3 rounded-xl bg-foreground/5 border border-foreground/10 text-xs font-mono uppercase tracking-widest focus:outline-none focus:border-neon-green/60"
               >
-                <option value="all">// toate orașele</option>
-                {p.cities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                <option value="all">// toate orașele{p.country !== "all" ? ` (${countryLabel})` : ""}</option>
+                {citiesScoped.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </section>
 
             {/* Summary + actions */}
             <div className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 space-y-1">
+              <Row k="țară" v={countryLabel} />
               <Row k="tip" v={typeLabel} />
               <Row k="distanță" v={distLabel} />
               <Row k="oraș" v={cityLabel} />
