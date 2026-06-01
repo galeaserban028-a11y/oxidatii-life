@@ -18,7 +18,6 @@ type Profile = {
   is_public: boolean;
 };
 
-
 type Ctx = {
   user: User | null;
   session: Session | null;
@@ -61,7 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       qc.invalidateQueries();
     });
     let cancelled = false;
-    supabase.auth.getSession()
+    supabase.auth
+      .getSession()
       .then(async ({ data }) => {
         if (cancelled) return;
         setSession(data.session);
