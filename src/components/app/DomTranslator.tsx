@@ -115,15 +115,18 @@ function stop() {
   if (typeof window !== "undefined") window.location.reload();
 }
 
+function deferredStart() {
+  if (typeof window === "undefined") return;
+  const run = () => setTimeout(() => start(), 250);
+  if (document.readyState === "complete") run();
+  else window.addEventListener("load", run, { once: true });
+}
+
 export function DomTranslator() {
   useEffect(() => {
     const apply = (lng: string) => {
-      if (lng === "en") {
-        // Defer past hydration commit so React's diff doesn't see mutated DOM
-        requestAnimationFrame(() => requestAnimationFrame(() => start()));
-      } else if (active) {
-        stop();
-      }
+      if (lng === "en") deferredStart();
+      else if (active) stop();
     };
     apply(i18n.language);
     i18n.on("languageChanged", apply);
