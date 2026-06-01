@@ -32,7 +32,7 @@ export function AppHeader() {
       <div className="flex items-center gap-1">
         <NotificationsBell />
         <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground flicker">
-          ● live
+          ● {t("live")}
         </span>
       </div>
     </header>
