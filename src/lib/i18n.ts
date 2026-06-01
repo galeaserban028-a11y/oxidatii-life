@@ -95,30 +95,21 @@ const en = {
   },
 };
 
-const isBrowser = typeof window !== "undefined";
-
-let initialLng = "ro";
-if (isBrowser) {
-  try {
-    const stored = window.localStorage.getItem("oxi-lang");
-    if (stored === "en" || stored === "ro") initialLng = stored;
-    else if (window.navigator?.language?.toLowerCase().startsWith("en")) initialLng = "en";
-  } catch {}
-}
+const initialLng = "ro";
+// Keep the first client render identical to SSR. Stored/browser language is
+// applied after hydration by DomTranslator to avoid hydration crashes.
 
 if (!i18n.isInitialized) {
-  i18n
-    .use(initReactI18next)
-    .init({
-      resources: { ro: ro, en: en },
-      lng: initialLng,
-      fallbackLng: "ro",
-      supportedLngs: ["ro", "en"],
-      defaultNS: "common",
-      ns: ["common", "tabs", "settings"],
-      interpolation: { escapeValue: false },
-      react: { useSuspense: false },
-    });
+  i18n.use(initReactI18next).init({
+    resources: { ro: ro, en: en },
+    lng: initialLng,
+    fallbackLng: "ro",
+    supportedLngs: ["ro", "en"],
+    defaultNS: "common",
+    ns: ["common", "tabs", "settings"],
+    interpolation: { escapeValue: false },
+    react: { useSuspense: false },
+  });
 }
 
 export default i18n;

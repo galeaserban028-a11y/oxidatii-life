@@ -18,7 +18,6 @@ type Profile = {
   is_public: boolean;
 };
 
-
 type Ctx = {
   user: User | null;
   session: Session | null;
@@ -39,7 +38,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
 
   async function loadProfile(uid: string) {
-    const { data } = await supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
+    if (error) {
+      console.error("Could not load profile", error);
+      setProfile(null);
+      return;
+    }
     setProfile(data as Profile | null);
   }
 
@@ -55,13 +59,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       router.invalidate();
       qc.invalidateQueries();
     });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      if (data.session?.user) loadProfile(data.session.user.id);
-      setLoading(false);
-    });
-    return () => sub.subscription.unsubscribe();
+    let cancelled = false;
+    supabase.auth
+      .getSession()
+      .then(async ({ data }) => {
+        if (cancelled) return;
+        setSession(data.session);
+        setUser(data.session?.user ?? null);
+        if (data.session?.user) await loadProfile(data.session.user.id);
+      })
+      .catch((error) => {
+        console.error("Could not restore session", error);
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

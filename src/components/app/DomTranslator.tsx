@@ -25,6 +25,12 @@ function translateString(input: string): string {
 }
 
 const ATTRS = ["placeholder", "aria-label", "title", "alt"] as const;
+type TranslatableAttr = (typeof ATTRS)[number];
+const ROOT_ATTR = "data-dom-translating";
+
+function isTranslatableAttr(attr: string | null): attr is TranslatableAttr {
+  return attr !== null && (ATTRS as readonly string[]).includes(attr);
+}
 
 function processNode(node: Node) {
   if (node.nodeType === Node.TEXT_NODE) {
@@ -51,6 +57,19 @@ function processNode(node: Node) {
   for (let i = 0; i < el.childNodes.length; i++) processNode(el.childNodes[i]);
 }
 
+function applyStoredLanguage() {
+  if (typeof window === "undefined") return;
+  try {
+    const stored = window.localStorage.getItem("oxi-lang");
+    if ((stored === "en" || stored === "ro") && i18n.language !== stored) {
+      void i18n.changeLanguage(stored);
+    }
+    document.documentElement.lang = stored === "en" ? "en" : "ro";
+  } catch {
+    document.documentElement.lang = "ro";
+  }
+}
+
 function translateAll() {
   if (typeof document === "undefined") return;
   processNode(document.body);
@@ -68,6 +87,7 @@ let active = false;
 function start() {
   if (typeof document === "undefined" || active) return;
   active = true;
+  document.documentElement.setAttribute(ROOT_ATTR, "1");
   translateAll();
   observer = new MutationObserver((mutations) => {
     for (const m of mutations) {
@@ -77,8 +97,8 @@ function start() {
         m.addedNodes.forEach(processNode);
       } else if (m.type === "attributes" && m.target && (m.target as Element).getAttribute) {
         const el = m.target as Element;
-        const a = m.attributeName as string;
-        if (ATTRS.includes(a as any)) {
+        const a = m.attributeName;
+        if (isTranslatableAttr(a)) {
           const v = el.getAttribute(a);
           if (v) {
             const next = translateString(v);
@@ -111,19 +131,22 @@ function stop() {
   active = false;
   observer?.disconnect();
   observer = null;
-  // Hard refresh of strings: reload to restore Romanian originals.
-  if (typeof window !== "undefined") window.location.reload();
+  if (typeof document !== "undefined") document.documentElement.removeAttribute(ROOT_ATTR);
+  // Reload only when returning from translated DOM back to original Romanian strings.
+  if (typeof window !== "undefined") window.location.replace(window.location.href);
 }
 
 function deferredStart() {
   if (typeof window === "undefined") return;
-  const run = () => setTimeout(() => start(), 250);
-  if (document.readyState === "complete") run();
-  else window.addEventListener("load", run, { once: true });
+  const run = () => window.requestAnimationFrame(() => window.requestAnimationFrame(start));
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", run, { once: true });
+  } else run();
 }
 
 export function DomTranslator() {
   useEffect(() => {
+    applyStoredLanguage();
     const apply = (lng: string) => {
       if (lng === "en") deferredStart();
       else if (active) stop();
