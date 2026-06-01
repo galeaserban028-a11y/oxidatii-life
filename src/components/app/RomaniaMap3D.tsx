@@ -70,12 +70,14 @@ export function RomaniaMap3D({
   friends = [],
   onCityClick,
   focusCity,
+  fitBounds,
 }: {
   cities: City[];
   venues?: Venue[];
   friends?: FriendPin[];
   onCityClick?: (city: City) => void;
   focusCity?: { lat: number; lng: number; zoom?: number } | null;
+  fitBounds?: [[number, number], [number, number]] | null;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
