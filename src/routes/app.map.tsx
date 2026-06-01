@@ -303,10 +303,29 @@ function MapPage() {
           type={type} setType={setType}
           cityId={cityId} setCityId={setCityId}
           cities={cities}
+          country={country} setCountry={setCountry}
+          countries={countries}
           maxKm={maxKm} setMaxKm={setMaxKm}
           hasGeo={!!geo} requestGeo={requestGeo}
           count={filtered.length}
         />
+
+        {/* Quick country chips strip */}
+        <div className="-mx-4 px-4 overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-1.5 pb-1">
+            <button
+              onClick={() => { setCountry("all"); setCityId("all"); }}
+              className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border transition ${country === "all" ? "bg-neon-crimson text-background border-neon-crimson" : "bg-foreground/5 border-foreground/10 text-muted-foreground"}`}
+            >🌍 toate</button>
+            {countries.map(c => (
+              <button
+                key={c.code}
+                onClick={() => { setCountry(c.code); setCityId("all"); }}
+                className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border transition ${country === c.code ? "bg-neon-crimson text-background border-neon-crimson" : "bg-foreground/5 border-foreground/10 text-muted-foreground"}`}
+              >{c.label}<span className="opacity-60 ml-1">{c.count}</span></button>
+            ))}
+          </div>
+        </div>
 
         {/* Map block */}
         <div className="relative rounded-2xl overflow-hidden border border-border bg-foreground/5">
@@ -314,10 +333,11 @@ function MapPage() {
             <div className="aspect-[5/4] animate-pulse" />
           ) : (
             <RomaniaMap3D
-              cities={cities}
+              cities={citiesScoped}
               venues={filtered}
               friends={friendPins}
               focusCity={focusCity}
+              fitBounds={fitBounds}
               onCityClick={(c) => {
                 setCityId(c.id);
                 setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
