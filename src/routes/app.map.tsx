@@ -113,21 +113,23 @@ function MapPage() {
   // filter state
   const [query, setQuery] = useState("");
   const [type, setType] = useState<VenueTypeFilter>("all");
+  const [country, setCountry] = useState<string | "all">("all");
   const [cityId, setCityId] = useState<string | "all">("all");
   const [maxKm, setMaxKm] = useState(0);
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
   const [visible, setVisible] = useState(40);
   const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
+  const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
 
   const { data: cities = [], isLoading } = useQuery({
     queryKey: ["cities"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cities")
-        .select("id,slug,name,lat,lng,chaos_level")
+        .select("id,slug,name,lat,lng,chaos_level,country")
         .order("chaos_level", { ascending: false });
       if (error) throw error;
-      return data.map(c => ({ ...c, lat: Number(c.lat), lng: Number(c.lng), chaos_level: Number(c.chaos_level) }));
+      return data.map(c => ({ ...c, lat: Number(c.lat), lng: Number(c.lng), chaos_level: Number(c.chaos_level), country: (c as any).country ?? "RO" }));
     },
   });
 
