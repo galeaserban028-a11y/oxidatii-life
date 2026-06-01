@@ -25,7 +25,12 @@ function translateString(input: string): string {
 }
 
 const ATTRS = ["placeholder", "aria-label", "title", "alt"] as const;
+type TranslatableAttr = (typeof ATTRS)[number];
 const ROOT_ATTR = "data-dom-translating";
+
+function isTranslatableAttr(attr: string | null): attr is TranslatableAttr {
+  return attr !== null && (ATTRS as readonly string[]).includes(attr);
+}
 
 function processNode(node: Node) {
   if (node.nodeType === Node.TEXT_NODE) {
@@ -92,8 +97,8 @@ function start() {
         m.addedNodes.forEach(processNode);
       } else if (m.type === "attributes" && m.target && (m.target as Element).getAttribute) {
         const el = m.target as Element;
-        const a = m.attributeName as string;
-        if (ATTRS.includes(a as any)) {
+        const a = m.attributeName;
+        if (isTranslatableAttr(a)) {
           const v = el.getAttribute(a);
           if (v) {
             const next = translateString(v);
@@ -134,7 +139,9 @@ function stop() {
 function deferredStart() {
   if (typeof window === "undefined") return;
   const run = () => window.requestAnimationFrame(() => window.requestAnimationFrame(start));
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run, { once: true });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", run, { once: true });
+  }
   else run();
 }
 
