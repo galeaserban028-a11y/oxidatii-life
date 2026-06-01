@@ -163,6 +163,9 @@ function SettingsPage() {
           </p>
         </Section>
 
+        {/* Language switcher */}
+        <div className="px-4 pt-2"><LanguageSwitcher /></div>
+
         {/* Notifications — reuses the existing component */}
         <NotificationSettings />
 
