@@ -292,6 +292,7 @@ export function RomaniaMap3D({
       wrap.appendChild(dot);
       const label = document.createElement("div");
       label.textContent = c.name.toUpperCase();
+      label.className = "oxi-city-label";
       label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:${big ? 11 : 9}px;letter-spacing:0.08em;color:#fff;text-shadow:0 0 6px #000,0 1px 3px #000;white-space:nowrap;`;
       wrap.appendChild(label);
       let pressTimer: number | null = null;
