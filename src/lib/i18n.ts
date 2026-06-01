@@ -95,22 +95,28 @@ const en = {
   },
 };
 
+const isBrowser = typeof window !== "undefined";
+
+let initialLng = "ro";
+if (isBrowser) {
+  try {
+    const stored = window.localStorage.getItem("oxi-lang");
+    if (stored === "en" || stored === "ro") initialLng = stored;
+    else if (window.navigator?.language?.toLowerCase().startsWith("en")) initialLng = "en";
+  } catch {}
+}
+
 if (!i18n.isInitialized) {
   i18n
-    .use(LanguageDetector)
     .use(initReactI18next)
     .init({
       resources: { ro: ro, en: en },
+      lng: initialLng,
       fallbackLng: "ro",
       supportedLngs: ["ro", "en"],
       defaultNS: "common",
       ns: ["common", "tabs", "settings"],
       interpolation: { escapeValue: false },
-      detection: {
-        order: ["localStorage", "navigator"],
-        lookupLocalStorage: "oxi-lang",
-        caches: ["localStorage"],
-      },
       react: { useSuspense: false },
     });
 }
