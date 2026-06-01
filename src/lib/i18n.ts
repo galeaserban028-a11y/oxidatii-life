@@ -95,16 +95,9 @@ const en = {
   },
 };
 
-const isBrowser = typeof window !== "undefined";
-
 let initialLng = "ro";
-if (isBrowser) {
-  try {
-    const stored = window.localStorage.getItem("oxi-lang");
-    if (stored === "en" || stored === "ro") initialLng = stored;
-    else if (window.navigator?.language?.toLowerCase().startsWith("en")) initialLng = "en";
-  } catch {}
-}
+// Keep the first client render identical to SSR. Stored/browser language is
+// applied after hydration by DomTranslator to avoid hydration crashes.
 
 if (!i18n.isInitialized) {
   i18n
