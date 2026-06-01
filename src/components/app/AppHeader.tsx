@@ -18,7 +18,7 @@ export function AppHeader() {
           <button
             onClick={() => window.history.back()}
             className="h-9 w-9 -ml-1 flex items-center justify-center rounded-full hover:bg-foreground/5 active:scale-95 transition shrink-0"
-            aria-label="Înapoi"
+            aria-label={t("back")}
           >
             <ChevronLeft size={22} className="text-foreground" />
           </button>
