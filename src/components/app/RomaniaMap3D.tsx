@@ -7,6 +7,7 @@ type City = { id: string; slug: string; name: string; lat: number; lng: number; 
 type Venue = {
   id: string; name: string; type?: string;
   lat: number | null; lng: number | null;
+  address?: string | null; cover_url?: string | null;
 };
 export type FriendPin = {
   user_id: string;
@@ -221,8 +222,29 @@ export function RomaniaMap3D({
       });
       map.on("click", "venues-points", (e) => {
         const f = e.features?.[0]; if (!f) return;
-        const id = (f.properties as any).id;
-        navRef.current({ to: "/app/venue/$id", params: { id } });
+        const p = f.properties as any;
+        const coords = (f.geometry as any).coordinates.slice();
+        const cover = p.cover_url ? `<img src="${p.cover_url}" alt="" style="width:100%;height:120px;object-fit:cover;display:block;" loading="lazy"/>` : "";
+        const addr = p.address ? `<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;color:#aaa;margin-top:2px;">${p.address}</div>` : "";
+        const typeColor = TYPE_COLOR[p.type] ?? "#ffb000";
+        const html = `<div style="width:220px;background:#06070a;color:#fff;border-radius:12px;overflow:hidden;border:1px solid ${typeColor}55;">
+          ${cover}
+          <div style="padding:10px 12px;">
+            <div style="display:inline-block;padding:1px 6px;border-radius:9999px;background:${typeColor}22;color:${typeColor};border:1px solid ${typeColor}55;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">${p.type ?? "loc"}</div>
+            <div style="font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:14px;line-height:1.15;">${p.name}</div>
+            ${addr}
+            <a href="/app/venue/${p.id}" data-oxi-venue="${p.id}" style="margin-top:8px;display:block;text-align:center;padding:6px 10px;border-radius:8px;background:${typeColor};color:#06070a;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;text-decoration:none;">detalii →</a>
+          </div>
+        </div>`;
+        const popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, offset: 14, maxWidth: "240px", className: "oxi-popup" })
+          .setLngLat(coords).setHTML(html).addTo(map);
+        const root = popup.getElement();
+        const link = root?.querySelector<HTMLAnchorElement>("a[data-oxi-venue]");
+        if (link) link.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          popup.remove();
+          navRef.current({ to: "/app/venue/$id", params: { id: p.id } });
+        });
       });
       for (const layer of ["venues-clusters", "venues-points"]) {
         map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
@@ -268,7 +290,7 @@ export function RomaniaMap3D({
           .map(v => ({
             type: "Feature",
             geometry: { type: "Point", coordinates: [Number(v.lng), Number(v.lat)] },
-            properties: { id: v.id, name: v.name, type: v.type ?? "club" },
+            properties: { id: v.id, name: v.name, type: v.type ?? "club", address: v.address ?? "", cover_url: v.cover_url ?? "" },
           })),
       });
     };
