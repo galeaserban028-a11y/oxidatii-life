@@ -28,7 +28,10 @@ interface Props {
   setType: (v: VenueTypeFilter) => void;
   cityId: string | "all";
   setCityId: (v: string | "all") => void;
-  cities: { id: string; name: string }[];
+  cities: { id: string; name: string; country?: string }[];
+  country: string | "all";
+  setCountry: (v: string | "all") => void;
+  countries: { code: string; label: string; count: number }[];
   maxKm: number;
   setMaxKm: (v: number) => void;
   hasGeo: boolean;
@@ -39,17 +42,20 @@ interface Props {
 export function VenueFilters(p: Props) {
   const [open, setOpen] = useState(false);
   const reset = () => {
-    p.setQuery(""); p.setType("all"); p.setCityId("all"); p.setMaxKm(0);
+    p.setQuery(""); p.setType("all"); p.setCityId("all"); p.setMaxKm(0); p.setCountry("all");
   };
   const activeCount =
     (p.type !== "all" ? 1 : 0) +
     (p.cityId !== "all" ? 1 : 0) +
+    (p.country !== "all" ? 1 : 0) +
     (p.maxKm > 0 ? 1 : 0);
   const isFiltered = !!p.query || activeCount > 0;
 
   const typeLabel = TYPES.find(t => t.id === p.type)?.label ?? "toate";
+  const citiesScoped = p.country === "all" ? p.cities : p.cities.filter(c => c.country === p.country);
   const cityLabel = p.cityId === "all" ? "toate orașele" : (p.cities.find(c => c.id === p.cityId)?.name ?? "");
   const distLabel = DISTANCES.find(d => d.id === p.maxKm)?.label ?? "oriunde";
+  const countryLabel = p.country === "all" ? "toate țările" : (p.countries.find(c => c.code === p.country)?.label ?? p.country);
 
   return (
     <div className="flex items-center gap-2">
