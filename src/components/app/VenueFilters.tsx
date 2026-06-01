@@ -153,6 +153,32 @@ export function VenueFilters(p: Props) {
               </div>
             </section>
 
+            {/* Country */}
+            <section>
+              <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Țară</h3>
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  onClick={() => { p.setCountry("all"); p.setCityId("all"); }}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-mono uppercase tracking-widest border transition ${
+                    p.country === "all"
+                      ? "bg-neon-crimson text-background border-neon-crimson"
+                      : "bg-foreground/5 border-foreground/10 text-muted-foreground"
+                  }`}
+                >🌍 toate</button>
+                {p.countries.map(c => (
+                  <button
+                    key={c.code}
+                    onClick={() => { p.setCountry(c.code); p.setCityId("all"); }}
+                    className={`px-3 py-1.5 rounded-full text-[11px] font-mono uppercase tracking-widest border transition ${
+                      p.country === c.code
+                        ? "bg-neon-crimson text-background border-neon-crimson"
+                        : "bg-foreground/5 border-foreground/10 text-muted-foreground"
+                    }`}
+                  >{c.label} <span className="opacity-60">· {c.count}</span></button>
+                ))}
+              </div>
+            </section>
+
             {/* City */}
             <section>
               <h3 className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Oraș</h3>
@@ -161,13 +187,14 @@ export function VenueFilters(p: Props) {
                 onChange={(e) => p.setCityId(e.target.value as any)}
                 className="w-full py-2.5 px-3 rounded-xl bg-foreground/5 border border-foreground/10 text-xs font-mono uppercase tracking-widest focus:outline-none focus:border-neon-green/60"
               >
-                <option value="all">// toate orașele</option>
-                {p.cities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                <option value="all">// toate orașele{p.country !== "all" ? ` (${countryLabel})` : ""}</option>
+                {citiesScoped.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </section>
 
             {/* Summary + actions */}
             <div className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 space-y-1">
+              <Row k="țară" v={countryLabel} />
               <Row k="tip" v={typeLabel} />
               <Row k="distanță" v={distLabel} />
               <Row k="oraș" v={cityLabel} />
