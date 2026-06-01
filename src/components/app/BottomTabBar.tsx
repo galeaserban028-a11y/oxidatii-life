@@ -1,18 +1,19 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { MapPin, Camera, User, MessageCircle, Newspaper, Trophy, Flame, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-type Tab = { to: string; icon: typeof MapPin; label: string; primary?: boolean; exact?: boolean; badgeKey?: "inbox" };
+type Tab = { to: string; icon: typeof MapPin; labelKey: string; primary?: boolean; exact?: boolean; badgeKey?: "inbox" };
 const tabs: Tab[] = [
-  { to: "/app", icon: Newspaper, label: "Live", exact: true },
-  { to: "/app/map", icon: MapPin, label: "Hartă" },
-  { to: "/app/top", icon: Trophy, label: "Top" },
-  { to: "/app/scan", icon: Camera, label: "Postează", primary: true },
-  { to: "/app/squad", icon: Flame, label: "Șprițuri" },
-  { to: "/app/inbox", icon: MessageCircle, label: "Mesaje", badgeKey: "inbox" },
-  { to: "/app/me", icon: User, label: "Eu" },
+  { to: "/app", icon: Newspaper, labelKey: "live", exact: true },
+  { to: "/app/map", icon: MapPin, labelKey: "map" },
+  { to: "/app/top", icon: Trophy, labelKey: "top" },
+  { to: "/app/scan", icon: Camera, labelKey: "post", primary: true },
+  { to: "/app/squad", icon: Flame, labelKey: "sprits" },
+  { to: "/app/inbox", icon: MessageCircle, labelKey: "messages", badgeKey: "inbox" },
+  { to: "/app/me", icon: User, labelKey: "me" },
 ];
 
 function useUnreadCount() {
