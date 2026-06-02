@@ -72,8 +72,11 @@ export function FinderRadar() {
   return (
     <div className="mt-4 px-4">
       <div className="rounded-2xl border border-foreground/10 bg-foreground/[0.02] overflow-hidden">
-        {/* Header with radar animation */}
-        <div className="relative p-4 overflow-hidden">
+        {/* Header with radar animation — clickable, opens map */}
+        <Link
+          to="/app/map"
+          className="relative p-4 overflow-hidden block hover:bg-foreground/[0.04] transition"
+        >
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
             <div className="relative w-40 h-40">
               <div className="absolute inset-0 rounded-full border border-sunset-amber/30" />
@@ -88,18 +91,18 @@ export function FinderRadar() {
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-sunset-orange/20 to-sunset-magenta/20 border border-sunset-orange/30 flex items-center justify-center shrink-0">
               <Radar size={18} className="text-sunset-orange" />
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               <div className="font-display uppercase text-sm leading-tight">Radar OXIDAȚII</div>
               <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">
                 {activeFriends.length > 0
-                  ? `${activeFriends.length} activ acum`
+                  ? `${activeFriends.length} activ acum · deschide harta →`
                   : nearby.length > 0
-                  ? `${nearby.length} în zonă`
-                  : "caută oameni în teren"}
+                  ? `${nearby.length} în zonă · deschide harta →`
+                  : "caută oameni în teren · deschide harta →"}
               </div>
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Active friends row */}
         {activeFriends.length > 0 && (
