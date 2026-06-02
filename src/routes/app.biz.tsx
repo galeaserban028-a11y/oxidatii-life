@@ -893,6 +893,168 @@ function BrandProfileEditor({ business, cities, onClose, onSaved }: {
   );
 }
 
+
+/* ============================ Campaign Editor ============================ */
+
+function CampaignEditor({ business, campaign, onClose, onSaved }: {
+  business: any; campaign: any; onClose: () => void; onSaved: () => void;
+}) {
+  const [title, setTitle] = useState(campaign.title ?? "");
+  const [subtitle, setSubtitle] = useState(campaign.subtitle ?? "");
+  const [ctaText, setCtaText] = useState(campaign.cta_text ?? "Vezi detalii");
+  const [ctaUrl, setCtaUrl] = useState(campaign.cta_url ?? "");
+  const [images, setImages] = useState<string[]>(campaign.image_urls ?? []);
+  const [themeColor, setThemeColor] = useState(campaign.theme_color ?? "#FF2D55");
+  const [status, setStatus] = useState<string>(campaign.status ?? "paused");
+  const [budget, setBudget] = useState(Math.round((campaign.budget_cents ?? 0) / 100));
+  const [dailyCap, setDailyCap] = useState(Math.round((campaign.daily_cap_cents ?? 0) / 100));
+  const [busy, setBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const uploadImages = async (files: FileList | null) => {
+    if (!files) return;
+    const uploaded: string[] = [];
+    for (const file of Array.from(files).slice(0, 4)) {
+      const path = `biz/${business.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+      const { error } = await supabase.storage.from("venue-photos").upload(path, file, { upsert: false });
+      if (error) { alert(error.message); continue; }
+      const { data } = supabase.storage.from("venue-photos").getPublicUrl(path);
+      uploaded.push(data.publicUrl);
+    }
+    setImages((prev) => [...prev, ...uploaded].slice(0, 4));
+  };
+
+  const save = async () => {
+    setBusy(true);
+    const { error } = await supabase.from("campaigns").update({
+      title: title.trim() || campaign.title,
+      subtitle: subtitle || null,
+      cta_text: ctaText || "Vezi detalii",
+      cta_url: ctaUrl || null,
+      image_urls: images,
+      theme_color: themeColor,
+      status,
+      budget_cents: Math.max(0, Math.round(budget * 100)),
+      daily_cap_cents: Math.max(0, Math.round(dailyCap * 100)),
+    }).eq("id", campaign.id);
+    setBusy(false);
+    if (error) return alert(error.message);
+    onSaved();
+  };
+
+  const placement = PLACEMENTS.find((p) => p.value === campaign.kind);
+
+  return (
+    <Sheet onClose={onClose} title="Editează campania" wide>
+      <div className="rounded-xl bg-foreground/[0.03] border border-foreground/10 p-3 flex items-center gap-2">
+        <div className="w-8 h-8 rounded-md flex items-center justify-center"
+          style={{ background: `${placement?.color ?? "#FF2D55"}22`, color: placement?.color ?? "#FF2D55" }}>
+          <Megaphone size={14} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs">{placement?.label ?? campaign.kind}</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+            {campaign.impressions ?? 0} views · {campaign.clicks ?? 0} clicks · {ron(campaign.spent_cents ?? 0)} RON cheltuit
+          </div>
+        </div>
+      </div>
+
+      {/* Preview */}
+      <div className="rounded-2xl overflow-hidden border border-foreground/15 shadow-lg">
+        <div className="aspect-[16/9] relative overflow-hidden"
+          style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}66)` }}>
+          {images[0] && <img src={images[0]} alt="" className="absolute inset-0 w-full h-full object-cover opacity-95" />}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm flex items-center gap-1">
+            <Sparkles size={9} className="text-white" />
+            <span className="font-mono text-[9px] uppercase tracking-widest text-white">Promovat</span>
+          </div>
+          <div className="absolute bottom-0 inset-x-0 p-3 text-white">
+            <div className="font-display uppercase text-xl leading-tight line-clamp-1">{title || "Titlu"}</div>
+            <div className="text-xs opacity-90 line-clamp-1">{subtitle}</div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between p-2.5 bg-foreground/[0.04]">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">{business.brand_name}</span>
+          <span className="text-[10px] font-display uppercase px-2.5 py-1 rounded-md text-white" style={{ background: themeColor }}>
+            {ctaText} →
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Titlu</Label>
+        <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={50} className={inputStyle} />
+        <Label>Subtitlu / detaliu</Label>
+        <input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} maxLength={80} className={inputStyle} />
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <input value={ctaText} onChange={(e) => setCtaText(e.target.value)} maxLength={15} placeholder="Buton" className={inputStyle} />
+          <input type="color" value={themeColor} onChange={(e) => setThemeColor(e.target.value)}
+            className="w-12 h-10 rounded-md border border-foreground/15 bg-transparent cursor-pointer" />
+        </div>
+        <Label>Link (opțional — unde duce click-ul)</Label>
+        <input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://..." className={inputStyle} />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Poze (max 4)</Label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {images.map((u, i) => (
+            <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-foreground/5">
+              <img src={u} alt="" className="w-full h-full object-cover" />
+              <button onClick={() => setImages(images.filter((_, j) => j !== i))}
+                className="absolute top-0.5 right-0.5 p-0.5 rounded-md bg-black/60"><X size={10} className="text-white" /></button>
+            </div>
+          ))}
+          {images.length < 4 && (
+            <button onClick={() => fileRef.current?.click()}
+              className="aspect-square rounded-lg border-2 border-dashed border-foreground/20 hover:border-foreground/40 flex flex-col items-center justify-center text-muted-foreground gap-1">
+              <Upload size={14} />
+              <span className="text-[9px] font-mono uppercase">Adaugă</span>
+            </button>
+          )}
+        </div>
+        <input ref={fileRef} type="file" accept="image/*" multiple className="hidden"
+          onChange={(e) => uploadImages(e.target.files)} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Label>Buget total (RON)</Label>
+          <input type="number" min={0} value={budget} onChange={(e) => setBudget(+e.target.value)} className={inputStyle} />
+        </div>
+        <div>
+          <Label>Limită zilnică (RON)</Label>
+          <input type="number" min={0} value={dailyCap} onChange={(e) => setDailyCap(+e.target.value)} className={inputStyle} />
+        </div>
+      </div>
+
+      <div>
+        <Label>Status</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {(["active", "paused"] as const).map((s) => (
+            <button key={s} onClick={() => setStatus(s)}
+              className={`px-3 py-2.5 rounded-md text-xs font-mono uppercase tracking-widest border ${
+                status === s
+                  ? s === "active" ? "bg-neon-green/15 border-neon-green text-neon-green" : "bg-foreground/10 border-foreground text-foreground"
+                  : "border-foreground/15 text-muted-foreground"
+              }`}>
+              {s === "active" ? "● Activă" : "❚❚ Pe pauză"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex gap-2 sticky bottom-0 bg-background pt-3 -mx-5 px-5 pb-1 border-t border-foreground/10">
+        <button onClick={onClose} className="px-4 py-3 rounded-xl border border-foreground/15 text-xs font-mono uppercase tracking-widest">Renunță</button>
+        <button disabled={busy} onClick={save}
+          className="flex-1 px-4 py-3 rounded-xl text-white text-sm font-display uppercase tracking-widest disabled:opacity-50"
+          style={{ background: "var(--gradient-chaos)" }}>{busy ? "..." : "Salvează"}</button>
+      </div>
+    </Sheet>
+  );
+}
+
 /* ============================ Primitives ============================ */
 
 const inputStyle = "w-full bg-foreground/5 rounded-md px-3 py-2.5 text-sm border border-foreground/10 focus:border-neon-crimson outline-none";
