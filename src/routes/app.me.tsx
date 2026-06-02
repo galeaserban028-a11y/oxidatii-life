@@ -312,8 +312,8 @@ function MePage() {
 
         <ReputationCard
           sprits={profile.lifetime_sprits ?? 0}
-          streak={profile.current_streak ?? 0}
-          longestStreak={profile.longest_streak ?? 0}
+          streak={(profile as any).current_streak ?? 0}
+          longestStreak={(profile as any).longest_streak ?? 0}
           followers={followStats?.followers ?? 0}
           following={followStats?.following ?? 0}
           aura={profile.aura ?? 0}
