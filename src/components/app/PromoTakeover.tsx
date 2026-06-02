@@ -195,9 +195,12 @@ export function PromoTakeover() {
       style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
     >
       <style>{`@keyframes promo-shimmer { 0%,100% { box-shadow: 0 0 0 0 ${color}55, 0 6px 20px -6px ${color}66; } 50% { box-shadow: 0 0 0 4px ${color}11, 0 6px 20px -6px ${color}aa; } }`}</style>
-      <button
+      <div
         onClick={handleClick}
-        className="w-full flex items-center gap-3 p-2 pr-2 rounded-full bg-background/95 backdrop-blur-md border active:scale-[0.98] transition text-left"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleClick(); }}
+        className="w-full flex items-center gap-3 p-2 pr-2 rounded-full bg-background/95 backdrop-blur-md border active:scale-[0.98] transition text-left cursor-pointer"
         style={{
           borderColor: `${color}55`,
           animation: "promo-shimmer 2.6s ease-in-out infinite",
@@ -232,7 +235,7 @@ export function PromoTakeover() {
         >
           <X size={13} />
         </button>
-      </button>
+      </div>
     </div>
   );
 }
