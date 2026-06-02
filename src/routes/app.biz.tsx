@@ -828,6 +828,7 @@ function StickyFooter({ children }: { children: React.ReactNode }) {
 function BrandProfileEditor({ business, cities, onClose, onSaved }: {
   business: any; cities: any[]; onClose: () => void; onSaved: () => void;
 }) {
+  const { user } = useAuth();
   const [coverUrl, setCoverUrl] = useState(business.cover_url ?? "");
   const [logoUrl, setLogoUrl] = useState(business.logo_url ?? "");
   const [description, setDescription] = useState(business.description ?? "");
@@ -841,7 +842,8 @@ function BrandProfileEditor({ business, cities, onClose, onSaved }: {
   const [busy, setBusy] = useState(false);
 
   const upload = async (file: File, set: (u: string) => void, prefix: string) => {
-    const path = `biz/${business.id}/${prefix}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+    if (!user) { alert("Trebuie să fii autentificat"); return; }
+    const path = `${user.id}/biz/${business.id}/${prefix}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
     const { error } = await supabase.storage.from("venue-photos").upload(path, file, { upsert: true });
     if (error) return alert(error.message);
     const { data } = supabase.storage.from("venue-photos").getPublicUrl(path);
