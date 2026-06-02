@@ -50,7 +50,7 @@ import { Route as AppAdminDebugRouteImport } from './routes/app.admin.debug'
 import { Route as AppAdminContentRouteImport } from './routes/app.admin.content'
 import { Route as AppAdminCampaignsRouteImport } from './routes/app.admin.campaigns'
 import { Route as AppAdminBusinessesRouteImport } from './routes/app.admin.businesses'
-import { Route as ApiPublicStripeWebhookRouteImport } from './routes/api/public/stripe-webhook'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -257,11 +257,12 @@ const AppAdminBusinessesRoute = AppAdminBusinessesRouteImport.update({
   path: '/businesses',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const ApiPublicStripeWebhookRoute = ApiPublicStripeWebhookRouteImport.update({
-  id: '/api/public/stripe-webhook',
-  path: '/api/public/stripe-webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -291,7 +292,6 @@ export interface FileRoutesByFullPath {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
@@ -306,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin/': typeof AppAdminIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -333,7 +334,6 @@ export interface FileRoutesByTo {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app': typeof AppIndexRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
@@ -348,6 +348,7 @@ export interface FileRoutesByTo {
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin': typeof AppAdminIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -378,7 +379,6 @@ export interface FileRoutesById {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
-  '/api/public/stripe-webhook': typeof ApiPublicStripeWebhookRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
@@ -393,6 +393,7 @@ export interface FileRoutesById {
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin/': typeof AppAdminIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -424,7 +425,6 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/'
-    | '/api/public/stripe-webhook'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
     | '/app/admin/content'
@@ -439,6 +439,7 @@ export interface FileRouteTypes {
     | '/app/user/$id'
     | '/app/venue/$id'
     | '/app/admin/'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -466,7 +467,6 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app'
-    | '/api/public/stripe-webhook'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
     | '/app/admin/content'
@@ -481,6 +481,7 @@ export interface FileRouteTypes {
     | '/app/user/$id'
     | '/app/venue/$id'
     | '/app/admin'
+    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
@@ -510,7 +511,6 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/'
-    | '/api/public/stripe-webhook'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
     | '/app/admin/content'
@@ -525,6 +525,7 @@ export interface FileRouteTypes {
     | '/app/user/$id'
     | '/app/venue/$id'
     | '/app/admin/'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -536,7 +537,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
-  ApiPublicStripeWebhookRoute: typeof ApiPublicStripeWebhookRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -828,11 +829,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminBusinessesRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/api/public/stripe-webhook': {
-      id: '/api/public/stripe-webhook'
-      path: '/api/public/stripe-webhook'
-      fullPath: '/api/public/stripe-webhook'
-      preLoaderRoute: typeof ApiPublicStripeWebhookRouteImport
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -931,7 +932,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
-  ApiPublicStripeWebhookRoute: ApiPublicStripeWebhookRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
