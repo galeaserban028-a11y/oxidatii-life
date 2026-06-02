@@ -125,7 +125,7 @@ export function PromoTakeover() {
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
         </div>
         <button
-          onClick={() => setPhase("mini")}
+          onClick={() => setPhase("gone")}
           className="absolute top-4 right-4 p-2 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 z-10"
           aria-label="Închide"
         >
