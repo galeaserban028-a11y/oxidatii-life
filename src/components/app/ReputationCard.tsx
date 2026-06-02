@@ -113,7 +113,7 @@ function useMyRatingsFor(raterId?: string | null, ratedId?: string | null) {
         .eq("rater_id", raterId!)
         .eq("rated_id", ratedId!);
       const out: Partial<Record<CatKey, number>> = {};
-      for (const r of (data ?? []) as Array<{ category: CatKey; value: number }>) {
+      for (const r of ((data ?? []) as unknown) as Array<{ category: CatKey; value: number }>) {
         out[r.category] = r.value;
       }
       return out;
