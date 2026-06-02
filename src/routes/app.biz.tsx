@@ -258,6 +258,17 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
                 +{amt} RON
               </button>
             ))}
+            <button
+              onClick={() => {
+                const v = prompt("Câți RON adaugi în wallet?", "50");
+                if (v == null) return;
+                const n = parseFloat(v);
+                if (isNaN(n) || n <= 0) return alert("Sumă invalidă");
+                onTopup(n);
+              }}
+              className="font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-md border border-dashed border-foreground/25 hover:border-neon-crimson">
+              + sumă
+            </button>
           </div>
         </div>
 
