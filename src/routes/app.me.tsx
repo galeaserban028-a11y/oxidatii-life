@@ -15,7 +15,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
-import { FinderRadar } from "@/components/app/FinderRadar";
+
 
 export const Route = createFileRoute("/app/me")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -511,7 +511,7 @@ function MePage() {
         </div>
       )}
 
-      <FinderRadar />
+      
 
       <p className="text-[10px] font-mono text-center text-muted-foreground/50 pt-3">
         OXIDAȚII · construit pe oameni reali · made in Balcani
