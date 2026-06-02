@@ -833,7 +833,6 @@ export const RO_EN: Record<string, string> = {
   "Hai la Șpriț": "Let's Go for a Spritz",
   "Hai la șpriț": "Let's go for a spritz",
   "ȘPRIȚARUL": "THE SPRITZER",
-  "BOIERUL NOPȚII": "LORD OF THE NIGHT",
   "REGELE CENTRULUI": "KING OF DOWNTOWN",
   "CRAI DE CARTIER": "NEIGHBORHOOD CRAI",
   "CĂMĂTARU": "THE LOAN SHARK",
