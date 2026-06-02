@@ -217,6 +217,22 @@ function UserPage() {
             )}
           </div>
 
+          {/* Reputație + rating */}
+          <ReputationCard
+            userId={profile.id}
+            sprits={profile.lifetime_sprits ?? 0}
+            streak={profile.current_streak ?? 0}
+            longestStreak={profile.longest_streak ?? 0}
+            followers={stats?.followers ?? 0}
+            following={stats?.following ?? 0}
+            aura={profile.aura ?? 0}
+            hasAvatar={!!profile.avatar_url}
+            hasBio={!!profile.bio}
+            createdAt={profile.created_at}
+            allowRating={!isMe && !isBlocking && !isBlockedBy}
+          />
+
+
           {/* Private / blocked gate */}
           {!canViewContent ? (
             <div className="rounded-3xl border border-dashed border-foreground/20 bg-card p-10 text-center space-y-3">
