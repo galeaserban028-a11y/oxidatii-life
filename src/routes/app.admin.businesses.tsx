@@ -47,7 +47,7 @@ function AdminBusinesses() {
     if (e1) return toast.error(e1.message);
     await supabase.from("wallet_ledger").insert({
       business_id: id,
-      kind: delta > 0 ? "credit" : "debit",
+      kind: "adjustment",
       amount_cents: delta,
       note: "Ajustare admin",
     });
