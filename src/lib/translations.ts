@@ -1007,10 +1007,7 @@ export const RO_EN: Record<string, string> = {
   "Ai blocat permisiunea în browser. Activează-o din setările site-ului și revino aici.": "You've blocked the permission in the browser. Enable it from the site settings and come back here.",
   "CONFIDENȚIALITATE": "PRIVACY",
   "LEGAL": "LEGAL",
-  "Ce date colectăm, drepturile tale (GDPR)": "What data we collect, your rights (GDPR)",
-  "Trimite-ne un email și răspundem în 30 de zile": "Email us and we'll reply within 30 days",
   "DESPRE": "ABOUT",
-  "Trimite un bug sau o sugestie către echipă": "Send a bug or suggestion to the team",
   "SESIUNE": "SESSION",
 
   // ===== Feed page =====
