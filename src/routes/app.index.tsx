@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Flame, MapPin, Users, Plus } from "lucide-react";
 import logoLight from "@/assets/logo-oxidatii-light.png";
+import { PromoTakeover } from "@/components/app/PromoTakeover";
 
 type FeedItem = {
   id: string;
