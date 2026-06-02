@@ -9,6 +9,8 @@ import {
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { useFollowStats, useIncomingFollowRequests } from "@/lib/follows";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { ShieldAlert } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { ReputationCard } from "@/components/app/ReputationCard";
@@ -34,6 +36,7 @@ const RANK_LABELS: Record<string, string> = {
 function MePage() {
   const nav = useNavigate();
   const { user, profile, signOut, refreshProfile } = useAuth();
+  const { isStaff, isAdmin } = useIsAdmin();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [savingPrivacy, setSavingPrivacy] = useState(false);
@@ -213,6 +216,9 @@ function MePage() {
               <MenuItem to="/app/settings" icon={<Settings size={16} className="text-neon-green" />} onSelect={() => setMenuOpen(false)} label="Setări" />
               <MenuItem to="/app/premium" icon={<Gem size={16} className="text-fuchsia-400" />} onSelect={() => setMenuOpen(false)} label="Șpriț Premium ✨" />
               <MenuItem to="/app/biz" icon={<Rocket size={16} className="text-neon-purple" />} onSelect={() => setMenuOpen(false)} label="Business · Promovare" />
+              {isStaff && (
+                <MenuItem to="/app/admin" icon={<ShieldAlert size={16} className="text-neon-crimson" />} onSelect={() => setMenuOpen(false)} label={isAdmin ? "Panou Admin" : "Panou Moderator"} />
+              )}
               <div className="my-1 border-t border-foreground/10" />
               <MenuItem to="/app/notifications" icon={<Bell size={16} />} onSelect={() => setMenuOpen(false)} label="Notificări" />
               <MenuItem to="/app/requests" icon={<UserPlus size={16} />} onSelect={() => setMenuOpen(false)}

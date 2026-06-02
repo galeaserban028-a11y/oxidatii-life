@@ -35,12 +35,20 @@ import { Route as AppFeedRouteImport } from './routes/app.feed'
 import { Route as AppFazeRouteImport } from './routes/app.faze'
 import { Route as AppBlockedRouteImport } from './routes/app.blocked'
 import { Route as AppBizRouteImport } from './routes/app.biz'
+import { Route as AppAdminRouteImport } from './routes/app.admin'
+import { Route as AppAdminIndexRouteImport } from './routes/app.admin.index'
 import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
 import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
 import { Route as AppPromoIdRouteImport } from './routes/app.promo.$id'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
+import { Route as AppAdminUsersRouteImport } from './routes/app.admin.users'
+import { Route as AppAdminReportsRouteImport } from './routes/app.admin.reports'
+import { Route as AppAdminPlacesRouteImport } from './routes/app.admin.places'
+import { Route as AppAdminContentRouteImport } from './routes/app.admin.content'
+import { Route as AppAdminCampaignsRouteImport } from './routes/app.admin.campaigns'
+import { Route as AppAdminBusinessesRouteImport } from './routes/app.admin.businesses'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -172,6 +180,16 @@ const AppBizRoute = AppBizRouteImport.update({
   path: '/biz',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppVenueIdRoute = AppVenueIdRouteImport.update({
   id: '/venue/$id',
   path: '/venue/$id',
@@ -202,6 +220,36 @@ const AppChatIdRoute = AppChatIdRouteImport.update({
   path: '/chat/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminReportsRoute = AppAdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminPlacesRoute = AppAdminPlacesRouteImport.update({
+  id: '/places',
+  path: '/places',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminContentRoute = AppAdminContentRouteImport.update({
+  id: '/content',
+  path: '/content',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminCampaignsRoute = AppAdminCampaignsRouteImport.update({
+  id: '/campaigns',
+  path: '/campaigns',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminBusinessesRoute = AppAdminBusinessesRouteImport.update({
+  id: '/businesses',
+  path: '/businesses',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -212,6 +260,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/app/admin': typeof AppAdminRouteWithChildren
   '/app/biz': typeof AppBizRoute
   '/app/blocked': typeof AppBlockedRoute
   '/app/faze': typeof AppFazeRoute
@@ -230,12 +279,19 @@ export interface FileRoutesByFullPath {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
+  '/app/admin/businesses': typeof AppAdminBusinessesRoute
+  '/app/admin/campaigns': typeof AppAdminCampaignsRoute
+  '/app/admin/content': typeof AppAdminContentRoute
+  '/app/admin/places': typeof AppAdminPlacesRoute
+  '/app/admin/reports': typeof AppAdminReportsRoute
+  '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
+  '/app/admin/': typeof AppAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -263,12 +319,19 @@ export interface FileRoutesByTo {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app': typeof AppIndexRoute
+  '/app/admin/businesses': typeof AppAdminBusinessesRoute
+  '/app/admin/campaigns': typeof AppAdminCampaignsRoute
+  '/app/admin/content': typeof AppAdminContentRoute
+  '/app/admin/places': typeof AppAdminPlacesRoute
+  '/app/admin/reports': typeof AppAdminReportsRoute
+  '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
+  '/app/admin': typeof AppAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -280,6 +343,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/app/admin': typeof AppAdminRouteWithChildren
   '/app/biz': typeof AppBizRoute
   '/app/blocked': typeof AppBlockedRoute
   '/app/faze': typeof AppFazeRoute
@@ -298,12 +362,19 @@ export interface FileRoutesById {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
+  '/app/admin/businesses': typeof AppAdminBusinessesRoute
+  '/app/admin/campaigns': typeof AppAdminCampaignsRoute
+  '/app/admin/content': typeof AppAdminContentRoute
+  '/app/admin/places': typeof AppAdminPlacesRoute
+  '/app/admin/reports': typeof AppAdminReportsRoute
+  '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
+  '/app/admin/': typeof AppAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -316,6 +387,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/terms'
+    | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
     | '/app/faze'
@@ -334,12 +406,19 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/'
+    | '/app/admin/businesses'
+    | '/app/admin/campaigns'
+    | '/app/admin/content'
+    | '/app/admin/places'
+    | '/app/admin/reports'
+    | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
     | '/app/venue/$id'
+    | '/app/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -367,12 +446,19 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app'
+    | '/app/admin/businesses'
+    | '/app/admin/campaigns'
+    | '/app/admin/content'
+    | '/app/admin/places'
+    | '/app/admin/reports'
+    | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
     | '/app/venue/$id'
+    | '/app/admin'
   id:
     | '__root__'
     | '/'
@@ -383,6 +469,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/terms'
+    | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
     | '/app/faze'
@@ -401,12 +488,19 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/'
+    | '/app/admin/businesses'
+    | '/app/admin/campaigns'
+    | '/app/admin/content'
+    | '/app/admin/places'
+    | '/app/admin/reports'
+    | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
     | '/app/venue/$id'
+    | '/app/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -604,6 +698,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBizRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/admin/': {
+      id: '/app/admin/'
+      path: '/'
+      fullPath: '/app/admin/'
+      preLoaderRoute: typeof AppAdminIndexRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/app/venue/$id': {
       id: '/app/venue/$id'
       path: '/venue/$id'
@@ -646,10 +754,77 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/admin/users': {
+      id: '/app/admin/users'
+      path: '/users'
+      fullPath: '/app/admin/users'
+      preLoaderRoute: typeof AppAdminUsersRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/app/admin/reports': {
+      id: '/app/admin/reports'
+      path: '/reports'
+      fullPath: '/app/admin/reports'
+      preLoaderRoute: typeof AppAdminReportsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/app/admin/places': {
+      id: '/app/admin/places'
+      path: '/places'
+      fullPath: '/app/admin/places'
+      preLoaderRoute: typeof AppAdminPlacesRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/app/admin/content': {
+      id: '/app/admin/content'
+      path: '/content'
+      fullPath: '/app/admin/content'
+      preLoaderRoute: typeof AppAdminContentRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/app/admin/campaigns': {
+      id: '/app/admin/campaigns'
+      path: '/campaigns'
+      fullPath: '/app/admin/campaigns'
+      preLoaderRoute: typeof AppAdminCampaignsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/app/admin/businesses': {
+      id: '/app/admin/businesses'
+      path: '/businesses'
+      fullPath: '/app/admin/businesses'
+      preLoaderRoute: typeof AppAdminBusinessesRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
   }
 }
 
+interface AppAdminRouteChildren {
+  AppAdminBusinessesRoute: typeof AppAdminBusinessesRoute
+  AppAdminCampaignsRoute: typeof AppAdminCampaignsRoute
+  AppAdminContentRoute: typeof AppAdminContentRoute
+  AppAdminPlacesRoute: typeof AppAdminPlacesRoute
+  AppAdminReportsRoute: typeof AppAdminReportsRoute
+  AppAdminUsersRoute: typeof AppAdminUsersRoute
+  AppAdminIndexRoute: typeof AppAdminIndexRoute
+}
+
+const AppAdminRouteChildren: AppAdminRouteChildren = {
+  AppAdminBusinessesRoute: AppAdminBusinessesRoute,
+  AppAdminCampaignsRoute: AppAdminCampaignsRoute,
+  AppAdminContentRoute: AppAdminContentRoute,
+  AppAdminPlacesRoute: AppAdminPlacesRoute,
+  AppAdminReportsRoute: AppAdminReportsRoute,
+  AppAdminUsersRoute: AppAdminUsersRoute,
+  AppAdminIndexRoute: AppAdminIndexRoute,
+}
+
+const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
+  AppAdminRouteChildren,
+)
+
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRouteWithChildren
   AppBizRoute: typeof AppBizRoute
   AppBlockedRoute: typeof AppBlockedRoute
   AppFazeRoute: typeof AppFazeRoute
@@ -677,6 +852,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRouteWithChildren,
   AppBizRoute: AppBizRoute,
   AppBlockedRoute: AppBlockedRoute,
   AppFazeRoute: AppFazeRoute,

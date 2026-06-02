@@ -766,6 +766,48 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
       sprit_proofs: {
         Row: {
           ai_confidence: number | null
@@ -872,6 +914,27 @@ export type Database = {
           rater_id?: string
           updated_at?: string
           value?: number
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -1036,6 +1099,13 @@ export type Database = {
         Args: { _target: string; _viewer: string }
         Returns: boolean
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_blocked: { Args: { _a: string; _b: string }; Returns: boolean }
       is_conversation_member: {
         Args: { _conv: string; _user: string }
@@ -1044,6 +1114,7 @@ export type Database = {
       iso_week_start: { Args: { _ts: string }; Returns: string }
     }
     Enums: {
+      app_role: "admin" | "moderator"
       balkan_rank:
         | "MDS"
         | "CRAI_DE_CARTIER"
@@ -1191,6 +1262,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator"],
       balkan_rank: [
         "MDS",
         "CRAI_DE_CARTIER",
