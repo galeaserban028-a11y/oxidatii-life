@@ -179,6 +179,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
   const qc = useQueryClient();
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [editCampaign, setEditCampaign] = useState<any | null>(null);
 
   const totalSpent = campaigns.reduce((s, c) => s + (c.spent_cents || 0), 0);
   const totalImpressions = campaigns.reduce((s, c) => s + (c.impressions || 0), 0);
@@ -188,6 +189,12 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
   const toggleCampaign = async (c: any) => {
     const next = c.status === "active" ? "paused" : "active";
     await supabase.from("campaigns").update({ status: next }).eq("id", c.id);
+    qc.invalidateQueries({ queryKey: ["biz"] });
+  };
+
+  const deleteCampaign = async (c: any) => {
+    if (!confirm(`Ștergi campania „${c.title}"?`)) return;
+    await supabase.from("campaigns").delete().eq("id", c.id);
     qc.invalidateQueries({ queryKey: ["biz"] });
   };
 
