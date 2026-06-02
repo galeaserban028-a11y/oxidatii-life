@@ -106,11 +106,26 @@ export function PromoTakeover() {
 
   // Auto-collapse to mini after 5s (full reclamă), then mini stays sticky until user dismisses
   useEffect(() => {
-    if (phase === "full") {
-      const t = setTimeout(() => setPhase("mini"), 5000);
+    if (phase === "full" && payload) {
+      const t = setTimeout(() => {
+        markSeenFull(payload.campaign.id);
+        setPhase("mini");
+      }, 5000);
       return () => clearTimeout(t);
     }
-  }, [phase]);
+  }, [phase, payload]);
+
+  const rotateNext = () => {
+    if (!payload) return;
+    const currentId = payload.campaign.id;
+    addDismissed(currentId);
+    loadActive([currentId]).then((res) => {
+      if (!res) { setPhase("gone"); setPayload(null); return; }
+      trackedRef.current = false;
+      setPayload(res);
+      setPhase(hasSeenFull(res.campaign.id) ? "mini" : "full");
+    });
+  };
 
 
   const handleClick = () => {
