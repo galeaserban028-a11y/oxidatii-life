@@ -244,6 +244,13 @@ export type Database = {
             referencedRelation: "business_accounts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       challenges: {
@@ -1087,11 +1094,80 @@ export type Database = {
             referencedRelation: "business_accounts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "wallet_ledger_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      business_accounts_public: {
+        Row: {
+          address: string | null
+          brand_name: string | null
+          city_id: string | null
+          cover_url: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          instagram_handle: string | null
+          lat: number | null
+          lng: number | null
+          logo_url: string | null
+          slug: string | null
+          tier: Database["public"]["Enums"]["business_tier"] | null
+          tiktok_handle: string | null
+          type: Database["public"]["Enums"]["business_type"] | null
+          venue_id: string | null
+          verified: boolean | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          brand_name?: string | null
+          city_id?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          instagram_handle?: string | null
+          lat?: number | null
+          lng?: number | null
+          logo_url?: string | null
+          slug?: string | null
+          tier?: Database["public"]["Enums"]["business_tier"] | null
+          tiktok_handle?: string | null
+          type?: Database["public"]["Enums"]["business_type"] | null
+          venue_id?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          brand_name?: string | null
+          city_id?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          instagram_handle?: string | null
+          lat?: number | null
+          lng?: number | null
+          logo_url?: string | null
+          slug?: string | null
+          tier?: Database["public"]["Enums"]["business_tier"] | null
+          tiktok_handle?: string | null
+          type?: Database["public"]["Enums"]["business_type"] | null
+          venue_id?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
