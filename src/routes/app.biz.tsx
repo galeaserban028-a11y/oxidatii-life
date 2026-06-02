@@ -876,8 +876,8 @@ const selectStyle = "w-full bg-foreground/5 rounded-md px-3 py-2.5 text-sm borde
 
 function Sheet({ children, onClose, title, wide }: { children: React.ReactNode; onClose: () => void; title: string; wide?: boolean }) {
   return (
-    <div className="fixed inset-0 z-50 bg-background/90 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
-      <div className={`w-full ${wide ? "max-w-lg" : "max-w-md"} max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-background border border-foreground/15 p-5 space-y-4`}>
+    <div className="fixed inset-0 z-50 bg-background/90 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4 pb-[calc(96px+env(safe-area-inset-bottom))] sm:pb-4">
+      <div className={`w-full ${wide ? "max-w-lg" : "max-w-md"} max-h-[80vh] sm:max-h-[92vh] overflow-y-auto rounded-2xl bg-background border border-foreground/15 p-5 space-y-4`}>
         <div className="flex items-center justify-between sticky top-0 -mt-5 -mx-5 px-5 py-3 bg-background border-b border-foreground/10 z-10">
           <div className="font-display uppercase text-base">{title}</div>
           <button onClick={onClose} className="p-1.5 rounded-md hover:bg-foreground/5"><X size={14} /></button>
