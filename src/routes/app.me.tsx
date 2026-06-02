@@ -36,6 +36,7 @@ const RANK_LABELS: Record<string, string> = {
 function MePage() {
   const nav = useNavigate();
   const { user, profile, signOut, refreshProfile } = useAuth();
+  const { isStaff, isAdmin } = useIsAdmin();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [savingPrivacy, setSavingPrivacy] = useState(false);
