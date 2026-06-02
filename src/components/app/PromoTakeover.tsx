@@ -154,41 +154,52 @@ export function PromoTakeover() {
     );
   }
 
-  // mini pill bottom-right above bottom tab bar
+  // top sticky banner on home page
   return (
-    <button
-      onClick={handleClick}
-      className="fixed right-3 z-[110] flex items-center gap-2 p-2 pr-3 rounded-full bg-background/95 backdrop-blur-md border shadow-xl animate-fade-in active:scale-95 transition"
-      style={{
-        bottom: "calc(96px + env(safe-area-inset-bottom))",
-        borderColor: `${color}55`,
-        boxShadow: `0 0 0 0 ${color}aa, 0 8px 24px -6px ${color}66`,
-        animation: "promo-pulse 2.4s ease-out infinite",
-      }}
+    <div
+      className="sticky top-0 z-[110] px-3 pt-2 animate-fade-in"
+      style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
     >
-      <style>{`@keyframes promo-pulse { 0% { box-shadow: 0 0 0 0 ${color}80, 0 8px 24px -6px ${color}66; } 70% { box-shadow: 0 0 0 14px ${color}00, 0 8px 24px -6px ${color}66; } 100% { box-shadow: 0 0 0 0 ${color}00, 0 8px 24px -6px ${color}66; } }`}</style>
-      <div
-        className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
-        style={{ background: color }}
-      >
-        {img ? (
-          <img src={img} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <Sparkles size={14} className="text-white" />
-        )}
-      </div>
-      <div className="text-left">
-        <div className="font-mono text-[8px] uppercase tracking-widest opacity-60 leading-none">Promovat · {biz?.brand_name ?? ""}</div>
-        <div className="font-display text-xs leading-tight max-w-[160px] truncate">{campaign.title}</div>
-      </div>
-
+      <style>{`@keyframes promo-shimmer { 0%,100% { box-shadow: 0 0 0 0 ${color}55, 0 6px 20px -6px ${color}66; } 50% { box-shadow: 0 0 0 4px ${color}11, 0 6px 20px -6px ${color}aa; } }`}</style>
       <button
-        onClick={(e) => { e.stopPropagation(); setPhase("gone"); }}
-        className="ml-1 p-1 rounded-full hover:bg-foreground/10"
-        aria-label="Închide"
+        onClick={handleClick}
+        className="w-full flex items-center gap-3 p-2 pr-2 rounded-full bg-background/95 backdrop-blur-md border active:scale-[0.98] transition text-left"
+        style={{
+          borderColor: `${color}55`,
+          animation: "promo-shimmer 2.6s ease-in-out infinite",
+        }}
       >
-        <X size={12} />
+        <div
+          className="h-9 w-9 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
+          style={{ background: color }}
+        >
+          {img ? (
+            <img src={img} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <Sparkles size={14} className="text-white" />
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="font-mono text-[8px] uppercase tracking-widest opacity-60 leading-none mb-0.5">
+            Promovat · {biz?.brand_name ?? ""}
+          </div>
+          <div className="font-display text-sm leading-tight truncate">{campaign.title}</div>
+        </div>
+        <span
+          className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest px-2.5 py-1 rounded-full text-white flex-shrink-0"
+          style={{ background: color }}
+        >
+          {campaign.cta_text || "Vezi"} <ChevronRight size={11} />
+        </span>
+        <button
+          onClick={(e) => { e.stopPropagation(); setPhase("gone"); }}
+          className="p-1.5 rounded-full hover:bg-foreground/10 flex-shrink-0"
+          aria-label="Închide"
+        >
+          <X size={13} />
+        </button>
       </button>
-    </button>
+    </div>
   );
 }
+
