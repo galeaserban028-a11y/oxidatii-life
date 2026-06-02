@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { ReputationCard } from "@/components/app/ReputationCard";
 
 export const Route = createFileRoute("/app/user/$id")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -215,6 +216,22 @@ function UserPage() {
               </div>
             )}
           </div>
+
+          {/* Reputație + rating */}
+          <ReputationCard
+            userId={profile.id}
+            sprits={profile.lifetime_sprits ?? 0}
+            streak={profile.current_streak ?? 0}
+            longestStreak={profile.longest_streak ?? 0}
+            followers={stats?.followers ?? 0}
+            following={stats?.following ?? 0}
+            aura={profile.aura ?? 0}
+            hasAvatar={!!profile.avatar_url}
+            hasBio={!!profile.bio}
+            createdAt={profile.created_at}
+            allowRating={!isMe && !isBlocking && !isBlockedBy}
+          />
+
 
           {/* Private / blocked gate */}
           {!canViewContent ? (
