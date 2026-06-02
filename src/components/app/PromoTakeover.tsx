@@ -88,17 +88,14 @@ export function PromoTakeover() {
     }
   }, [phase, payload, user]);
 
-  // Auto-collapse to mini after 3s, then auto-hide after 5s more
+  // Auto-collapse to mini after 5s (full reclamă), then mini stays sticky until user dismisses
   useEffect(() => {
     if (phase === "full") {
-      const t = setTimeout(() => setPhase("mini"), 3000);
-      return () => clearTimeout(t);
-    }
-    if (phase === "mini") {
-      const t = setTimeout(() => setPhase("gone"), 5000);
+      const t = setTimeout(() => setPhase("mini"), 5000);
       return () => clearTimeout(t);
     }
   }, [phase]);
+
 
   const handleClick = () => {
     if (!payload) return;
@@ -110,16 +107,10 @@ export function PromoTakeover() {
         cost_cents: 5,
       }).then(() => {});
     }
-    const c = payload.campaign;
-    if (c.cta_url) {
-      window.open(c.cta_url, "_blank", "noopener,noreferrer");
-    } else if (c.venue_id) {
-      window.location.href = `/app/venue/${c.venue_id}`;
-    } else if (c.party_id) {
-      window.location.href = `/app/parties`;
-    }
+    window.location.href = `/app/promo/${payload.campaign.id}`;
     setPhase("gone");
   };
+
 
   if (!payload || phase === "hidden" || phase === "gone") return null;
   const { campaign, biz } = payload;
@@ -167,12 +158,15 @@ export function PromoTakeover() {
   return (
     <button
       onClick={handleClick}
-      className="fixed right-3 z-[110] flex items-center gap-2 p-2 pr-3 rounded-full bg-background/95 backdrop-blur-md border border-foreground/15 shadow-xl animate-fade-in active:scale-95 transition"
+      className="fixed right-3 z-[110] flex items-center gap-2 p-2 pr-3 rounded-full bg-background/95 backdrop-blur-md border shadow-xl animate-fade-in active:scale-95 transition"
       style={{
         bottom: "calc(96px + env(safe-area-inset-bottom))",
-        boxShadow: `0 8px 24px -6px ${color}66`,
+        borderColor: `${color}55`,
+        boxShadow: `0 0 0 0 ${color}aa, 0 8px 24px -6px ${color}66`,
+        animation: "promo-pulse 2.4s ease-out infinite",
       }}
     >
+      <style>{`@keyframes promo-pulse { 0% { box-shadow: 0 0 0 0 ${color}80, 0 8px 24px -6px ${color}66; } 70% { box-shadow: 0 0 0 14px ${color}00, 0 8px 24px -6px ${color}66; } 100% { box-shadow: 0 0 0 0 ${color}00, 0 8px 24px -6px ${color}66; } }`}</style>
       <div
         className="h-8 w-8 rounded-full overflow-hidden flex-shrink-0 flex items-center justify-center"
         style={{ background: color }}
@@ -184,9 +178,10 @@ export function PromoTakeover() {
         )}
       </div>
       <div className="text-left">
-        <div className="font-mono text-[8px] uppercase tracking-widest opacity-60 leading-none">Promovat</div>
-        <div className="font-display text-xs leading-tight max-w-[140px] truncate">Află mai multe</div>
+        <div className="font-mono text-[8px] uppercase tracking-widest opacity-60 leading-none">Promovat · {biz?.brand_name ?? ""}</div>
+        <div className="font-display text-xs leading-tight max-w-[160px] truncate">{campaign.title}</div>
       </div>
+
       <button
         onClick={(e) => { e.stopPropagation(); setPhase("gone"); }}
         className="ml-1 p-1 rounded-full hover:bg-foreground/10"

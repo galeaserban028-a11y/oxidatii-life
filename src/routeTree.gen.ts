@@ -38,6 +38,7 @@ import { Route as AppBizRouteImport } from './routes/app.biz'
 import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
 import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
+import { Route as AppPromoIdRouteImport } from './routes/app.promo.$id'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 
@@ -186,6 +187,11 @@ const AppStreetIdRoute = AppStreetIdRouteImport.update({
   path: '/street/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPromoIdRoute = AppPromoIdRouteImport.update({
+  id: '/promo/$id',
+  path: '/promo/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCitySlugRoute = AppCitySlugRouteImport.update({
   id: '/city/$slug',
   path: '/city/$slug',
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
+  '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
@@ -258,6 +265,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
+  '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
+  '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/chat/$id'
     | '/app/city/$slug'
+    | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
     | '/app/venue/$id'
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/chat/$id'
     | '/app/city/$slug'
+    | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
     | '/app/venue/$id'
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/chat/$id'
     | '/app/city/$slug'
+    | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
     | '/app/venue/$id'
@@ -613,6 +625,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStreetIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/promo/$id': {
+      id: '/app/promo/$id'
+      path: '/promo/$id'
+      fullPath: '/app/promo/$id'
+      preLoaderRoute: typeof AppPromoIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/city/$slug': {
       id: '/app/city/$slug'
       path: '/city/$slug'
@@ -651,6 +670,7 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppChatIdRoute: typeof AppChatIdRoute
   AppCitySlugRoute: typeof AppCitySlugRoute
+  AppPromoIdRoute: typeof AppPromoIdRoute
   AppStreetIdRoute: typeof AppStreetIdRoute
   AppUserIdRoute: typeof AppUserIdRoute
   AppVenueIdRoute: typeof AppVenueIdRoute
@@ -677,6 +697,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppChatIdRoute: AppChatIdRoute,
   AppCitySlugRoute: AppCitySlugRoute,
+  AppPromoIdRoute: AppPromoIdRoute,
   AppStreetIdRoute: AppStreetIdRoute,
   AppUserIdRoute: AppUserIdRoute,
   AppVenueIdRoute: AppVenueIdRoute,
