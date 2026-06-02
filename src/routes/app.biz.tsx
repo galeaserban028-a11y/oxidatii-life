@@ -933,7 +933,7 @@ function CampaignEditor({ business, campaign, onClose, onSaved }: {
       cta_url: ctaUrl || null,
       image_urls: images,
       theme_color: themeColor,
-      status,
+      status: status as any,
       budget_cents: Math.max(0, Math.round(budget * 100)),
       daily_cap_cents: Math.max(0, Math.round(dailyCap * 100)),
     }).eq("id", campaign.id);
