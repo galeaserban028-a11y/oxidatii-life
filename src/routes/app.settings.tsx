@@ -443,6 +443,27 @@ function RowExternal({ href, label }: { href: string; label: string }) {
   );
 }
 
+function RowExternalLink({
+  icon, href, label, hint,
+}: { icon: React.ReactNode; href: string; label: string; hint?: string }) {
+  const isMail = href.startsWith("mailto:");
+  return (
+    <a
+      href={href}
+      target={isMail ? undefined : "_blank"}
+      rel={isMail ? undefined : "noreferrer"}
+      className="flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition active:bg-foreground/10"
+    >
+      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm">{label}</div>
+        {hint && <div className="text-[11px] text-muted-foreground truncate">{hint}</div>}
+      </div>
+      <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+    </a>
+  );
+}
+
 function Toggle({ on, busy }: { on: boolean; busy?: boolean }) {
   return (
     <span
