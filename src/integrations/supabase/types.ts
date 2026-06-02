@@ -37,55 +37,82 @@ export type Database = {
       }
       business_accounts: {
         Row: {
+          address: string | null
           brand_name: string
           city_id: string | null
           contact_email: string | null
           contact_phone: string | null
+          cover_url: string | null
           created_at: string
+          description: string | null
           id: string
+          instagram_handle: string | null
+          lat: number | null
+          lng: number | null
+          logo_url: string | null
           monthly_credits_cents: number
           owner_user_id: string
           slug: string | null
           tier: Database["public"]["Enums"]["business_tier"]
+          tiktok_handle: string | null
           type: Database["public"]["Enums"]["business_type"]
           updated_at: string
           venue_id: string | null
           verified: boolean
           wallet_balance_cents: number
+          website: string | null
         }
         Insert: {
+          address?: string | null
           brand_name: string
           city_id?: string | null
           contact_email?: string | null
           contact_phone?: string | null
+          cover_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          instagram_handle?: string | null
+          lat?: number | null
+          lng?: number | null
+          logo_url?: string | null
           monthly_credits_cents?: number
           owner_user_id: string
           slug?: string | null
           tier?: Database["public"]["Enums"]["business_tier"]
+          tiktok_handle?: string | null
           type?: Database["public"]["Enums"]["business_type"]
           updated_at?: string
           venue_id?: string | null
           verified?: boolean
           wallet_balance_cents?: number
+          website?: string | null
         }
         Update: {
+          address?: string | null
           brand_name?: string
           city_id?: string | null
           contact_email?: string | null
           contact_phone?: string | null
+          cover_url?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          instagram_handle?: string | null
+          lat?: number | null
+          lng?: number | null
+          logo_url?: string | null
           monthly_credits_cents?: number
           owner_user_id?: string
           slug?: string | null
           tier?: Database["public"]["Enums"]["business_tier"]
+          tiktok_handle?: string | null
           type?: Database["public"]["Enums"]["business_type"]
           updated_at?: string
           venue_id?: string | null
           verified?: boolean
           wallet_balance_cents?: number
+          website?: string | null
         }
         Relationships: []
       }
@@ -132,14 +159,23 @@ export type Database = {
           city_id: string | null
           clicks: number
           created_at: string
+          cta_text: string | null
+          cta_url: string | null
+          daily_cap_cents: number
           ends_at: string | null
           id: string
+          image_urls: string[] | null
           impressions: number
           kind: Database["public"]["Enums"]["campaign_kind"]
           party_id: string | null
+          pricing_model: string
+          schedule: Json
           spent_cents: number
           starts_at: string
           status: Database["public"]["Enums"]["campaign_status"]
+          subtitle: string | null
+          targeting: Json
+          theme_color: string | null
           title: string
           updated_at: string
           venue_id: string | null
@@ -151,14 +187,23 @@ export type Database = {
           city_id?: string | null
           clicks?: number
           created_at?: string
+          cta_text?: string | null
+          cta_url?: string | null
+          daily_cap_cents?: number
           ends_at?: string | null
           id?: string
+          image_urls?: string[] | null
           impressions?: number
           kind?: Database["public"]["Enums"]["campaign_kind"]
           party_id?: string | null
+          pricing_model?: string
+          schedule?: Json
           spent_cents?: number
           starts_at?: string
           status?: Database["public"]["Enums"]["campaign_status"]
+          subtitle?: string | null
+          targeting?: Json
+          theme_color?: string | null
           title: string
           updated_at?: string
           venue_id?: string | null
@@ -170,14 +215,23 @@ export type Database = {
           city_id?: string | null
           clicks?: number
           created_at?: string
+          cta_text?: string | null
+          cta_url?: string | null
+          daily_cap_cents?: number
           ends_at?: string | null
           id?: string
+          image_urls?: string[] | null
           impressions?: number
           kind?: Database["public"]["Enums"]["campaign_kind"]
           party_id?: string | null
+          pricing_model?: string
+          schedule?: Json
           spent_cents?: number
           starts_at?: string
           status?: Database["public"]["Enums"]["campaign_status"]
+          subtitle?: string | null
+          targeting?: Json
+          theme_color?: string | null
           title?: string
           updated_at?: string
           venue_id?: string | null
@@ -1000,7 +1054,13 @@ export type Database = {
         | "ZEU_BALCANIC"
       business_tier: "starter" | "growth" | "pro" | "elite"
       business_type: "club" | "bar" | "festival" | "promoter" | "host" | "beach"
-      campaign_kind: "boost_feed"
+      campaign_kind:
+        | "boost_feed"
+        | "boost_map"
+        | "boost_discover"
+        | "boost_story"
+        | "boost_push"
+        | "boost_brand"
       campaign_status: "draft" | "active" | "paused" | "exhausted" | "ended"
       ledger_kind: "topup" | "spend" | "refund" | "bonus" | "adjustment"
       venue_type: "club" | "bar" | "terasa" | "after" | "pub"
@@ -1142,7 +1202,14 @@ export const Constants = {
       ],
       business_tier: ["starter", "growth", "pro", "elite"],
       business_type: ["club", "bar", "festival", "promoter", "host", "beach"],
-      campaign_kind: ["boost_feed"],
+      campaign_kind: [
+        "boost_feed",
+        "boost_map",
+        "boost_discover",
+        "boost_story",
+        "boost_push",
+        "boost_brand",
+      ],
       campaign_status: ["draft", "active", "paused", "exhausted", "ended"],
       ledger_kind: ["topup", "spend", "refund", "bonus", "adjustment"],
       venue_type: ["club", "bar", "terasa", "after", "pub"],
