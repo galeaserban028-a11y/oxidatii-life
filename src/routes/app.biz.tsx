@@ -323,6 +323,11 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
         <BrandProfileEditor business={business} cities={cities}
           onClose={() => setEditOpen(false)} onSaved={() => { setEditOpen(false); qc.invalidateQueries({ queryKey: ["biz"] }); }} />
       )}
+      {editCampaign && (
+        <CampaignEditor business={business} campaign={editCampaign}
+          onClose={() => setEditCampaign(null)}
+          onSaved={() => { setEditCampaign(null); qc.invalidateQueries({ queryKey: ["biz"] }); }} />
+      )}
     </div>
   );
 }
