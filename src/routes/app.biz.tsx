@@ -379,7 +379,7 @@ const BUDGET_TIERS = [
 
 function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated }: {
   business: any; parties: any[]; cities: any[]; venues: any[];
-  onClose: () => void; onCreated: () => void;
+  onClose: () => void; onCreated: (campaign?: any) => void;
 }) {
   const { user } = useAuth();
   const [step, setStep] = useState<1 | 2 | 3>(1);
