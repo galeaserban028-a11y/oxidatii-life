@@ -198,6 +198,15 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
     qc.invalidateQueries({ queryKey: ["biz"] });
   };
 
+  const deleteBusiness = async () => {
+    if (!confirm(`Ștergi definitiv business-ul „${business.brand_name}"? Toate campaniile asociate vor fi șterse.`)) return;
+    await supabase.from("campaigns").delete().eq("business_id", business.id);
+    const { error } = await supabase.from("business_accounts").delete().eq("id", business.id);
+    if (error) { alert(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["biz"] });
+  };
+
+
   return (
     <div className="rounded-2xl bg-foreground/[0.03] border border-foreground/10 overflow-hidden">
       {/* Cover */}
@@ -208,6 +217,12 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
           className="absolute top-2 right-2 p-1.5 rounded-md bg-background/70 backdrop-blur-sm border border-foreground/15">
           <Pencil size={12} />
         </button>
+        <button onClick={deleteBusiness}
+          className="absolute top-2 right-11 p-1.5 rounded-md bg-background/70 backdrop-blur-sm border border-foreground/15 hover:border-neon-crimson hover:text-neon-crimson"
+          aria-label="Șterge business">
+          <Trash2 size={12} />
+        </button>
+
       </div>
 
       <div className="p-4 -mt-10 relative space-y-3">
