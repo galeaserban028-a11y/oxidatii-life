@@ -20,7 +20,7 @@ type Campaign = {
 type Biz = { id: string; brand_name: string; logo_url: string | null };
 
 const STORAGE_KEY = "oxd:promo:lastSeen";
-const COOLDOWN_MS = 1000 * 60 * 30; // 30 min
+const COOLDOWN_MS = 1000 * 60 * 5; // 5 min
 
 async function loadActive(): Promise<{ campaign: Campaign; biz: Biz | null } | null> {
   const nowIso = new Date().toISOString();
