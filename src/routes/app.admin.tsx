@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { LayoutDashboard, Users, Flame, Building2, Megaphone, MapPin, Flag, ShieldAlert } from "lucide-react";
+import { LayoutDashboard, Users, Flame, Building2, Megaphone, MapPin, Flag, ShieldAlert, Bug } from "lucide-react";
 
 export const Route = createFileRoute("/app/admin")({
   component: AdminLayout,
@@ -15,6 +15,7 @@ const nav = [
   { to: "/app/admin/campaigns", label: "Campanii", icon: Megaphone },
   { to: "/app/admin/places", label: "Locații", icon: MapPin },
   { to: "/app/admin/reports", label: "Rapoarte", icon: Flag },
+  { to: "/app/admin/debug", label: "Debug", icon: Bug },
 ];
 
 function AdminLayout() {

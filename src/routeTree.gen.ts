@@ -46,6 +46,7 @@ import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminUsersRouteImport } from './routes/app.admin.users'
 import { Route as AppAdminReportsRouteImport } from './routes/app.admin.reports'
 import { Route as AppAdminPlacesRouteImport } from './routes/app.admin.places'
+import { Route as AppAdminDebugRouteImport } from './routes/app.admin.debug'
 import { Route as AppAdminContentRouteImport } from './routes/app.admin.content'
 import { Route as AppAdminCampaignsRouteImport } from './routes/app.admin.campaigns'
 import { Route as AppAdminBusinessesRouteImport } from './routes/app.admin.businesses'
@@ -235,6 +236,11 @@ const AppAdminPlacesRoute = AppAdminPlacesRouteImport.update({
   path: '/places',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminDebugRoute = AppAdminDebugRouteImport.update({
+  id: '/debug',
+  path: '/debug',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminContentRoute = AppAdminContentRouteImport.update({
   id: '/content',
   path: '/content',
@@ -282,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
+  '/app/admin/debug': typeof AppAdminDebugRoute
   '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
@@ -322,6 +329,7 @@ export interface FileRoutesByTo {
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
+  '/app/admin/debug': typeof AppAdminDebugRoute
   '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
@@ -365,6 +373,7 @@ export interface FileRoutesById {
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
+  '/app/admin/debug': typeof AppAdminDebugRoute
   '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
@@ -409,6 +418,7 @@ export interface FileRouteTypes {
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
     | '/app/admin/content'
+    | '/app/admin/debug'
     | '/app/admin/places'
     | '/app/admin/reports'
     | '/app/admin/users'
@@ -449,6 +459,7 @@ export interface FileRouteTypes {
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
     | '/app/admin/content'
+    | '/app/admin/debug'
     | '/app/admin/places'
     | '/app/admin/reports'
     | '/app/admin/users'
@@ -491,6 +502,7 @@ export interface FileRouteTypes {
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
     | '/app/admin/content'
+    | '/app/admin/debug'
     | '/app/admin/places'
     | '/app/admin/reports'
     | '/app/admin/users'
@@ -775,6 +787,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminPlacesRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/app/admin/debug': {
+      id: '/app/admin/debug'
+      path: '/debug'
+      fullPath: '/app/admin/debug'
+      preLoaderRoute: typeof AppAdminDebugRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/app/admin/content': {
       id: '/app/admin/content'
       path: '/content'
@@ -803,6 +822,7 @@ interface AppAdminRouteChildren {
   AppAdminBusinessesRoute: typeof AppAdminBusinessesRoute
   AppAdminCampaignsRoute: typeof AppAdminCampaignsRoute
   AppAdminContentRoute: typeof AppAdminContentRoute
+  AppAdminDebugRoute: typeof AppAdminDebugRoute
   AppAdminPlacesRoute: typeof AppAdminPlacesRoute
   AppAdminReportsRoute: typeof AppAdminReportsRoute
   AppAdminUsersRoute: typeof AppAdminUsersRoute
@@ -813,6 +833,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminBusinessesRoute: AppAdminBusinessesRoute,
   AppAdminCampaignsRoute: AppAdminCampaignsRoute,
   AppAdminContentRoute: AppAdminContentRoute,
+  AppAdminDebugRoute: AppAdminDebugRoute,
   AppAdminPlacesRoute: AppAdminPlacesRoute,
   AppAdminReportsRoute: AppAdminReportsRoute,
   AppAdminUsersRoute: AppAdminUsersRoute,
