@@ -61,7 +61,7 @@ export function InstallBanner() {
 
   return (
     <>
-      <div className="sticky top-0 z-50 w-full bg-gradient-to-r from-[hsl(var(--neon-crimson)/0.95)] to-[hsl(var(--neon-amber)/0.9)] text-black shadow-[0_2px_18px_rgba(0,0,0,0.4)]">
+      <div className="relative z-20 w-full bg-gradient-to-r from-[hsl(var(--neon-crimson)/0.95)] to-[hsl(var(--neon-amber)/0.9)] text-black shadow-[0_2px_18px_rgba(0,0,0,0.4)]">
         <div className="mx-auto flex max-w-screen-sm items-center gap-2 px-3 py-2">
           <Smartphone className="h-4 w-4 shrink-0" />
           <button
