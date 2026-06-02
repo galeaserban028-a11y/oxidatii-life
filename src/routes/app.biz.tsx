@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { WalletTopupDialog } from "@/components/WalletTopupDialog";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import {
   Building2, Wallet, Rocket, Plus, TrendingUp, Eye, MousePointerClick,
   Image as ImageIcon, MapPin, Megaphone, Sparkles, Bell, Compass, Star,
@@ -74,6 +76,22 @@ function BizPage() {
   const [brand, setBrand] = useState("");
   const [type, setType] = useState<(typeof BUSINESS_TYPES)[number]["value"]>("promoter");
   const [busy, setBusy] = useState(false);
+  const [topupBizId, setTopupBizId] = useState<string | null>(null);
+
+  // După întoarcerea din checkout, refresh wallet (webhook actualizează balance)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("topup") === "success") {
+      // Poll de câteva ori ca să prindem webhook-ul
+      let n = 0;
+      const t = setInterval(() => {
+        qc.invalidateQueries({ queryKey: ["biz"] });
+        if (++n >= 5) clearInterval(t);
+      }, 1500);
+      window.history.replaceState({}, "", window.location.pathname);
+      return () => clearInterval(t);
+    }
+  }, [qc]);
 
   if (!user) return <div className="px-4 pt-6 text-sm text-muted-foreground">Conectează-te.</div>;
 
@@ -90,18 +108,14 @@ function BizPage() {
     qc.invalidateQueries({ queryKey: ["biz"] });
   };
 
-  const topup = async (bizId: string, currentBalance: number, amountRon: number) => {
-    const cents = Math.round(amountRon * 100);
-    await supabase.from("wallet_ledger").insert({
-      business_id: bizId, kind: "topup", amount_cents: cents, note: `Top-up demo +${amountRon} RON`,
-    });
-    await supabase.from("business_accounts")
-      .update({ wallet_balance_cents: currentBalance + cents }).eq("id", bizId);
-    qc.invalidateQueries({ queryKey: ["biz"] });
-  };
-
   return (
     <div className="px-4 pt-5 pb-24 space-y-5">
+      <PaymentTestModeBanner />
+      <WalletTopupDialog
+        businessId={topupBizId ?? ""}
+        open={!!topupBizId}
+        onClose={() => setTopupBizId(null)}
+      />
       <header className="space-y-1">
         <div className="flex items-center gap-2">
           <Building2 size={11} className="text-neon-purple" />
@@ -136,7 +150,7 @@ function BizPage() {
             <BusinessCard key={b.id} business={b}
               campaigns={data!.campaigns.filter((c) => c.business_id === b.id)}
               parties={data!.parties} cities={data!.cities} venues={data!.venues}
-              onTopup={(amt) => topup(b.id, b.wallet_balance_cents, amt)} />
+              onTopup={() => setTopupBizId(b.id)} />
           ))}
           <button onClick={() => setCreateOpen(true)}
             className="w-full font-mono text-[10px] uppercase tracking-widest px-4 py-3 rounded-md border border-dashed border-foreground/20 hover:border-neon-crimson flex items-center justify-center gap-1.5">
@@ -174,7 +188,7 @@ function BizPage() {
 
 function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }: {
   business: any; campaigns: any[]; parties: any[]; cities: any[]; venues: any[];
-  onTopup: (amount: number) => void;
+  onTopup: () => void;
 }) {
   const qc = useQueryClient();
   const [builderOpen, setBuilderOpen] = useState(false);
@@ -250,26 +264,15 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
             <div className="font-display text-2xl leading-none mt-0.5">
               {ron(business.wallet_balance_cents)} <span className="text-xs text-muted-foreground">RON</span>
             </div>
+            <div className="text-[9px] text-muted-foreground mt-1">Card · Revolut · Apple/Google Pay · SEPA</div>
           </div>
-          <div className="flex flex-col gap-1.5">
-            {[20, 100, 500].map((amt) => (
-              <button key={amt} onClick={() => onTopup(amt)}
-                className="font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-md border border-foreground/15 hover:border-neon-crimson">
-                +{amt} RON
-              </button>
-            ))}
-            <button
-              onClick={() => {
-                const v = prompt("Câți RON adaugi în wallet?", "50");
-                if (v == null) return;
-                const n = parseFloat(v);
-                if (isNaN(n) || n <= 0) return alert("Sumă invalidă");
-                onTopup(n);
-              }}
-              className="font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-md border border-dashed border-foreground/25 hover:border-neon-crimson">
-              + sumă
-            </button>
-          </div>
+          <button
+            onClick={onTopup}
+            className="font-display uppercase text-[11px] tracking-widest px-4 py-2.5 rounded-md text-white flex items-center gap-1.5"
+            style={{ background: "var(--gradient-chaos)" }}
+          >
+            <Plus size={12} /> Top-up
+          </button>
         </div>
 
         <div className="grid grid-cols-3 gap-2">
