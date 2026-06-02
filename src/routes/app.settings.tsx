@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   ChevronLeft, ChevronRight, Globe2, Lock, MapPin, Bell,
   ShieldOff, UserPlus, Pencil, LogOut, Trash2, MessageSquare,
-  Building2, Loader2, ExternalLink,
+  Building2, Loader2, ExternalLink, Bug,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
