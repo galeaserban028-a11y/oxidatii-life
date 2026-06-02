@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LogOut, Camera, Lock, Globe2, UserPlus, ShieldOff, ChevronDown, Menu, Plus,
-  Grid3x3, Bookmark, UserSquare2, Flame, Share2, Bell, Pencil, Check, Settings, Rocket,
+  Grid3x3, Bookmark, UserSquare2, Flame, Share2, Bell, Pencil, Check, Settings, Rocket, Gem,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ import { useFollowStats, useIncomingFollowRequests } from "@/lib/follows";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { ReputationCard } from "@/components/app/ReputationCard";
+import { PremiumBadge } from "@/components/app/PremiumBadge";
 
 export const Route = createFileRoute("/app/me")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -210,6 +211,7 @@ function MePage() {
             </SheetHeader>
             <nav className="py-2">
               <MenuItem to="/app/settings" icon={<Settings size={16} className="text-neon-green" />} onSelect={() => setMenuOpen(false)} label="Setări" />
+              <MenuItem to="/app/premium" icon={<Gem size={16} className="text-fuchsia-400" />} onSelect={() => setMenuOpen(false)} label="Șpriț Premium ✨" />
               <MenuItem to="/app/biz" icon={<Rocket size={16} className="text-neon-purple" />} onSelect={() => setMenuOpen(false)} label="Business · Promovare" />
               <div className="my-1 border-t border-foreground/10" />
               <MenuItem to="/app/notifications" icon={<Bell size={16} />} onSelect={() => setMenuOpen(false)} label="Notificări" />
@@ -296,8 +298,9 @@ function MePage() {
 
         {/* Bio block */}
         <div className="mt-3">
-          <div className="font-display uppercase text-[15px] leading-tight">
-            {profile.display_name || `@${profile.handle ?? "—"}`}
+          <div className="font-display uppercase text-[15px] leading-tight flex items-center gap-2 flex-wrap">
+            <span>{profile.display_name || `@${profile.handle ?? "—"}`}</span>
+            <PremiumBadge tier={(profile as any).premium_tier} size="sm" />
           </div>
           <div className="text-[10px] font-mono uppercase tracking-widest text-neon-crimson mt-0.5">
             {RANK_LABELS[profile.rank] ?? profile.rank}
@@ -310,6 +313,23 @@ function MePage() {
             {moments?.city && <> · din <span className="text-foreground">{moments.city.name}</span></>}
           </div>
         </div>
+
+        {/* Premium CTA — only when not subscribed */}
+        {!(profile as any).premium_tier && (
+          <Link
+            to="/app/premium"
+            className="mt-3 flex items-center gap-3 rounded-2xl border border-fuchsia-400/30 bg-gradient-to-r from-amber-300/10 via-fuchsia-500/15 to-violet-600/15 p-3 active:scale-[0.99] transition"
+          >
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-cyan-300 via-fuchsia-400 to-amber-300 text-black flex items-center justify-center shadow-[0_0_18px_rgba(244,114,182,0.5)]">
+              <span className="text-base">💎</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-display uppercase text-[13px]">Devino VIP, PRO sau ELITE</div>
+              <div className="text-[11px] text-muted-foreground">Badge, frame, teme, coins · de la 2.99 lei</div>
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-fuchsia-300">Vezi</span>
+          </Link>
+        )}
 
         <div className="mt-3">
           <ReputationCard

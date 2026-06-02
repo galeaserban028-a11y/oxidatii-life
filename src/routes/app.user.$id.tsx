@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { ReputationCard } from "@/components/app/ReputationCard";
+import { PremiumBadge } from "@/components/app/PremiumBadge";
 
 export const Route = createFileRoute("/app/user/$id")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -122,9 +123,10 @@ function UserPage() {
                   : handle[0]?.toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="font-display font-bold text-2xl truncate flex items-center gap-1.5">
+                <div className="font-display font-bold text-2xl truncate flex items-center gap-1.5 flex-wrap">
                   @{handle}
                   {!isPublic && <Lock size={14} className="text-neon-crimson shrink-0" />}
+                  <PremiumBadge tier={profile.premium_tier} size="sm" asLink={false} />
                 </div>
                 {profile.city?.name && (
                   <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
