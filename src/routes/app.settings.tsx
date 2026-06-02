@@ -213,6 +213,12 @@ function SettingsPage() {
 
         {/* About */}
         <Section title="Despre">
+          <RowButton
+            icon={<Bug size={16} className="text-neon-crimson" />}
+            label="Raportează o problemă"
+            hint="Trimite un bug sau o sugestie către echipă"
+            onClick={() => setBugOpen(true)}
+          />
           <RowExternal href="https://lovable.app" label="Suport & feedback" />
           <div className="px-4 py-3 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
             <span>Versiune</span>
