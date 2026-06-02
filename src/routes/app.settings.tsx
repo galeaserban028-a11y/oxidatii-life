@@ -211,6 +211,34 @@ function SettingsPage() {
           <Row icon={<MessageSquare size={16} />} label="Mesaje" to="/app/inbox" />
         </Section>
 
+        {/* Legal */}
+        <Section title="Legal" subtitle="Documente și GDPR">
+          <RowExternalLink
+            icon={<ShieldCheck size={16} />}
+            href="/privacy"
+            label="Politica de confidențialitate"
+            hint="Ce date colectăm, drepturile tale (GDPR)"
+          />
+          <RowExternalLink
+            icon={<ScrollText size={16} />}
+            href="/terms"
+            label="Termeni și condiții"
+            hint="Reguli de folosire a aplicației"
+          />
+          <RowExternalLink
+            icon={<Cookie size={16} />}
+            href="/cookies"
+            label="Politica de cookies"
+            hint="Cookie-uri și cum le gestionezi"
+          />
+          <RowExternalLink
+            icon={<FileText size={16} />}
+            href="mailto:privacy@oxidatii.app"
+            label="Cere ștergerea datelor"
+            hint="Trimite-ne un email și răspundem în 30 de zile"
+          />
+        </Section>
+
         {/* About */}
         <Section title="Despre">
           <RowButton
@@ -225,6 +253,7 @@ function SettingsPage() {
             <span>oxidatii · v1.0</span>
           </div>
         </Section>
+
 
         {/* Danger zone */}
         <Section title="Sesiune" tone="danger">
