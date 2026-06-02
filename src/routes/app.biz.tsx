@@ -188,7 +188,7 @@ function BizPage() {
 
 function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }: {
   business: any; campaigns: any[]; parties: any[]; cities: any[]; venues: any[];
-  onTopup: (amount: number) => void;
+  onTopup: () => void;
 }) {
   const qc = useQueryClient();
   const [builderOpen, setBuilderOpen] = useState(false);
@@ -264,26 +264,15 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
             <div className="font-display text-2xl leading-none mt-0.5">
               {ron(business.wallet_balance_cents)} <span className="text-xs text-muted-foreground">RON</span>
             </div>
+            <div className="text-[9px] text-muted-foreground mt-1">Card · Revolut · Apple/Google Pay · SEPA</div>
           </div>
-          <div className="flex flex-col gap-1.5">
-            {[20, 100, 500].map((amt) => (
-              <button key={amt} onClick={() => onTopup(amt)}
-                className="font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-md border border-foreground/15 hover:border-neon-crimson">
-                +{amt} RON
-              </button>
-            ))}
-            <button
-              onClick={() => {
-                const v = prompt("Câți RON adaugi în wallet?", "50");
-                if (v == null) return;
-                const n = parseFloat(v);
-                if (isNaN(n) || n <= 0) return alert("Sumă invalidă");
-                onTopup(n);
-              }}
-              className="font-mono text-[10px] uppercase tracking-widest px-3 py-1 rounded-md border border-dashed border-foreground/25 hover:border-neon-crimson">
-              + sumă
-            </button>
-          </div>
+          <button
+            onClick={onTopup}
+            className="font-display uppercase text-[11px] tracking-widest px-4 py-2.5 rounded-md text-white flex items-center gap-1.5"
+            style={{ background: "var(--gradient-chaos)" }}
+          >
+            <Plus size={12} /> Top-up
+          </button>
         </div>
 
         <div className="grid grid-cols-3 gap-2">
