@@ -317,7 +317,12 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 
       {builderOpen && (
         <CampaignBuilder business={business} parties={parties} cities={cities} venues={venues}
-          onClose={() => setBuilderOpen(false)} onCreated={() => { setBuilderOpen(false); qc.invalidateQueries({ queryKey: ["biz"] }); }} />
+          onClose={() => setBuilderOpen(false)}
+          onCreated={(c) => {
+            setBuilderOpen(false);
+            qc.invalidateQueries({ queryKey: ["biz"] });
+            if (c) setEditCampaign(c);
+          }} />
       )}
       {editOpen && (
         <BrandProfileEditor business={business} cities={cities}
