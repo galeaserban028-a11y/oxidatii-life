@@ -24,7 +24,10 @@ export function CookieConsent() {
     try {
       localStorage.setItem(KEY, v);
       localStorage.setItem(`${KEY}-at`, new Date().toISOString());
-    } catch {}
+    } catch {
+      setOpen(false);
+      return;
+    }
     setOpen(false);
   };
 
@@ -43,9 +46,8 @@ export function CookieConsent() {
             🍪 cookies pe oxidații
           </div>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Folosim cookie-uri esențiale pentru autentificare și funcționarea aplicației.
-            Cu acordul tău, le folosim și pe cele opționale pentru analiză și
-            îmbunătățirea experienței. Vezi{" "}
+            Folosim cookie-uri esențiale pentru autentificare și funcționarea aplicației. Cu acordul
+            tău, le folosim și pe cele opționale pentru analiză și îmbunătățirea experienței. Vezi{" "}
             <Link to="/cookies" className="underline hover:text-foreground">
               politica de cookies
             </Link>
