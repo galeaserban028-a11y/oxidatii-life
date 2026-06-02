@@ -360,6 +360,42 @@ export type Database = {
         }
         Relationships: []
       }
+      coin_purchases: {
+        Row: {
+          amount_cents: number
+          coins: number
+          created_at: string
+          currency: string
+          environment: string
+          id: string
+          pack_id: string
+          stripe_session_id: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          coins: number
+          created_at?: string
+          currency: string
+          environment?: string
+          id?: string
+          pack_id: string
+          stripe_session_id: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          coins?: number
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          pack_id?: string
+          stripe_session_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversation_members: {
         Row: {
           conversation_id: string
@@ -681,6 +717,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           city_id: string | null
+          coin_balance: number
           created_at: string
           current_streak: number
           display_name: string | null
@@ -692,6 +729,8 @@ export type Database = {
           location_consent: boolean
           longest_streak: number
           onboarded: boolean
+          premium_tier: Database["public"]["Enums"]["premium_tier"] | null
+          premium_until: string | null
           rank: Database["public"]["Enums"]["balkan_rank"]
           updated_at: string
         }
@@ -700,6 +739,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           city_id?: string | null
+          coin_balance?: number
           created_at?: string
           current_streak?: number
           display_name?: string | null
@@ -711,6 +751,8 @@ export type Database = {
           location_consent?: boolean
           longest_streak?: number
           onboarded?: boolean
+          premium_tier?: Database["public"]["Enums"]["premium_tier"] | null
+          premium_until?: string | null
           rank?: Database["public"]["Enums"]["balkan_rank"]
           updated_at?: string
         }
@@ -719,6 +761,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           city_id?: string | null
+          coin_balance?: number
           created_at?: string
           current_streak?: number
           display_name?: string | null
@@ -730,6 +773,8 @@ export type Database = {
           location_consent?: boolean
           longest_streak?: number
           onboarded?: boolean
+          premium_tier?: Database["public"]["Enums"]["premium_tier"] | null
+          premium_until?: string | null
           rank?: Database["public"]["Enums"]["balkan_rank"]
           updated_at?: string
         }
@@ -893,6 +938,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          price_id: string
+          product_id: string | null
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id: string
+          product_id?: string | null
+          status?: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id?: string
+          product_id?: string | null
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_ratings: {
         Row: {
@@ -1210,6 +1303,7 @@ export type Database = {
         | "boost_brand"
       campaign_status: "draft" | "active" | "paused" | "exhausted" | "ended"
       ledger_kind: "topup" | "spend" | "refund" | "bonus" | "adjustment"
+      premium_tier: "vip" | "vip_plus" | "pro" | "elite"
       venue_type: "club" | "bar" | "terasa" | "after" | "pub"
     }
     CompositeTypes: {
@@ -1360,6 +1454,7 @@ export const Constants = {
       ],
       campaign_status: ["draft", "active", "paused", "exhausted", "ended"],
       ledger_kind: ["topup", "spend", "refund", "bonus", "adjustment"],
+      premium_tier: ["vip", "vip_plus", "pro", "elite"],
       venue_type: ["club", "bar", "terasa", "after", "pub"],
     },
   },
