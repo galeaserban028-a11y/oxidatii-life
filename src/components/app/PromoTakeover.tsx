@@ -226,9 +226,9 @@ export function PromoTakeover() {
           {campaign.cta_text || "Vezi"} <ChevronRight size={11} />
         </span>
         <button
-          onClick={(e) => { e.stopPropagation(); setPhase("gone"); }}
+          onClick={(e) => { e.stopPropagation(); rotateNext(); }}
           className="p-1.5 rounded-full hover:bg-foreground/10 flex-shrink-0"
-          aria-label="Închide"
+          aria-label="Următoarea reclamă"
         >
           <X size={13} />
         </button>
