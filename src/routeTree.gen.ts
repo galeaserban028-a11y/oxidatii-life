@@ -44,6 +44,7 @@ import { Route as AppPromoIdRouteImport } from './routes/app.promo.$id'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminUsersRouteImport } from './routes/app.admin.users'
+import { Route as AppAdminPlacesRouteImport } from './routes/app.admin.places'
 import { Route as AppAdminContentRouteImport } from './routes/app.admin.content'
 import { Route as AppAdminCampaignsRouteImport } from './routes/app.admin.campaigns'
 import { Route as AppAdminBusinessesRouteImport } from './routes/app.admin.businesses'
@@ -223,6 +224,11 @@ const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminPlacesRoute = AppAdminPlacesRouteImport.update({
+  id: '/places',
+  path: '/places',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminContentRoute = AppAdminContentRouteImport.update({
   id: '/content',
   path: '/content',
@@ -270,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
+  '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -308,6 +315,7 @@ export interface FileRoutesByTo {
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
+  '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -349,6 +357,7 @@ export interface FileRoutesById {
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
+  '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -391,6 +400,7 @@ export interface FileRouteTypes {
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
     | '/app/admin/content'
+    | '/app/admin/places'
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
     | '/app/admin/content'
+    | '/app/admin/places'
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -469,6 +480,7 @@ export interface FileRouteTypes {
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
     | '/app/admin/content'
+    | '/app/admin/places'
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -737,6 +749,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminUsersRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/app/admin/places': {
+      id: '/app/admin/places'
+      path: '/places'
+      fullPath: '/app/admin/places'
+      preLoaderRoute: typeof AppAdminPlacesRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/app/admin/content': {
       id: '/app/admin/content'
       path: '/content'
@@ -765,6 +784,7 @@ interface AppAdminRouteChildren {
   AppAdminBusinessesRoute: typeof AppAdminBusinessesRoute
   AppAdminCampaignsRoute: typeof AppAdminCampaignsRoute
   AppAdminContentRoute: typeof AppAdminContentRoute
+  AppAdminPlacesRoute: typeof AppAdminPlacesRoute
   AppAdminUsersRoute: typeof AppAdminUsersRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
 }
@@ -773,6 +793,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminBusinessesRoute: AppAdminBusinessesRoute,
   AppAdminCampaignsRoute: AppAdminCampaignsRoute,
   AppAdminContentRoute: AppAdminContentRoute,
+  AppAdminPlacesRoute: AppAdminPlacesRoute,
   AppAdminUsersRoute: AppAdminUsersRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
 }
