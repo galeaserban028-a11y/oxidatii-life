@@ -131,6 +131,7 @@ function RootComponent() {
         <Toaster />
         <CookieConsent />
         <AgeGate />
+        <DomTranslator />
       </AuthProvider>
     </QueryClientProvider>
 
