@@ -110,6 +110,12 @@ function BizPage() {
 
   return (
     <div className="px-4 pt-5 pb-24 space-y-5">
+      <PaymentTestModeBanner />
+      <WalletTopupDialog
+        businessId={topupBizId ?? ""}
+        open={!!topupBizId}
+        onClose={() => setTopupBizId(null)}
+      />
       <header className="space-y-1">
         <div className="flex items-center gap-2">
           <Building2 size={11} className="text-neon-purple" />
@@ -144,7 +150,7 @@ function BizPage() {
             <BusinessCard key={b.id} business={b}
               campaigns={data!.campaigns.filter((c) => c.business_id === b.id)}
               parties={data!.parties} cities={data!.cities} venues={data!.venues}
-              onTopup={(amt) => topup(b.id, b.wallet_balance_cents, amt)} />
+              onTopup={() => setTopupBizId(b.id)} />
           ))}
           <button onClick={() => setCreateOpen(true)}
             className="w-full font-mono text-[10px] uppercase tracking-widest px-4 py-3 rounded-md border border-dashed border-foreground/20 hover:border-neon-crimson flex items-center justify-center gap-1.5">
