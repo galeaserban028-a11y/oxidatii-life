@@ -40,7 +40,7 @@ function Index() {
       {/* app header */}
       <header className="relative z-10 flex items-center justify-between px-5 pt-2 pb-3">
         <div className="flex items-center gap-2">
-          <img src={logoLight} alt="OXIDAȚII" className="h-9 w-9 rounded-xl object-cover" />
+          <img src={logoLight} alt="Logo OXIDAȚII — aplicația de șpriț" className="h-9 w-9 rounded-xl object-cover" />
           <div className="leading-tight">
             <div className="font-display uppercase text-base tracking-[0.06em]">Oxidații</div>
             <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground">1.2k online</div>
