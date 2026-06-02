@@ -30,6 +30,40 @@ function SettingsPage() {
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [bugOpen, setBugOpen] = useState(false);
+  const [bugReason, setBugReason] = useState("");
+  const [bugDetails, setBugDetails] = useState("");
+  const [bugSending, setBugSending] = useState(false);
+
+  async function sendBugReport() {
+    if (!bugReason.trim()) return toast.error("Spune pe scurt ce nu merge");
+    setBugSending(true);
+    try {
+      const { error } = await supabase.from("reports").insert({
+        reporter_id: user!.id,
+        target_type: "bug_report",
+        target_id: user!.id,
+        reason: bugReason.trim().slice(0, 200),
+        details: [
+          bugDetails.trim().slice(0, 2000),
+          `--- context ---`,
+          `url: ${window.location.href}`,
+          `ua: ${navigator.userAgent}`,
+          `screen: ${window.innerWidth}x${window.innerHeight}`,
+          `user: ${user!.email ?? user!.id}`,
+        ].filter(Boolean).join("\n"),
+      });
+      if (error) throw error;
+      toast.success("Mulțumim! Raportul a ajuns la echipă.");
+      setBugOpen(false);
+      setBugReason("");
+      setBugDetails("");
+    } catch (e: any) {
+      toast.error(e.message ?? "Nu s-a putut trimite");
+    } finally {
+      setBugSending(false);
+    }
+  }
 
   const { data: cities = [] } = useQuery({
     queryKey: ["cities-settings"],
