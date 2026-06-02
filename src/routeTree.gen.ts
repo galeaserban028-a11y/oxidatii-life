@@ -44,6 +44,8 @@ import { Route as AppPromoIdRouteImport } from './routes/app.promo.$id'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminUsersRouteImport } from './routes/app.admin.users'
+import { Route as AppAdminContentRouteImport } from './routes/app.admin.content'
+import { Route as AppAdminBusinessesRouteImport } from './routes/app.admin.businesses'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -220,6 +222,16 @@ const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminContentRoute = AppAdminContentRouteImport.update({
+  id: '/content',
+  path: '/content',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminBusinessesRoute = AppAdminBusinessesRouteImport.update({
+  id: '/businesses',
+  path: '/businesses',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -249,6 +261,8 @@ export interface FileRoutesByFullPath {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
+  '/app/admin/businesses': typeof AppAdminBusinessesRoute
+  '/app/admin/content': typeof AppAdminContentRoute
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -284,6 +298,8 @@ export interface FileRoutesByTo {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app': typeof AppIndexRoute
+  '/app/admin/businesses': typeof AppAdminBusinessesRoute
+  '/app/admin/content': typeof AppAdminContentRoute
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -322,6 +338,8 @@ export interface FileRoutesById {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
+  '/app/admin/businesses': typeof AppAdminBusinessesRoute
+  '/app/admin/content': typeof AppAdminContentRoute
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -361,6 +379,8 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/'
+    | '/app/admin/businesses'
+    | '/app/admin/content'
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -396,6 +416,8 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app'
+    | '/app/admin/businesses'
+    | '/app/admin/content'
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -433,6 +455,8 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/'
+    | '/app/admin/businesses'
+    | '/app/admin/content'
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -701,15 +725,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminUsersRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/app/admin/content': {
+      id: '/app/admin/content'
+      path: '/content'
+      fullPath: '/app/admin/content'
+      preLoaderRoute: typeof AppAdminContentRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/app/admin/businesses': {
+      id: '/app/admin/businesses'
+      path: '/businesses'
+      fullPath: '/app/admin/businesses'
+      preLoaderRoute: typeof AppAdminBusinessesRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
   }
 }
 
 interface AppAdminRouteChildren {
+  AppAdminBusinessesRoute: typeof AppAdminBusinessesRoute
+  AppAdminContentRoute: typeof AppAdminContentRoute
   AppAdminUsersRoute: typeof AppAdminUsersRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
+  AppAdminBusinessesRoute: AppAdminBusinessesRoute,
+  AppAdminContentRoute: AppAdminContentRoute,
   AppAdminUsersRoute: AppAdminUsersRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
 }
@@ -789,3 +831,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
