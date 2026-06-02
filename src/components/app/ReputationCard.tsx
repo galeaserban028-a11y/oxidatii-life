@@ -92,7 +92,7 @@ function usePeerAgg(userId?: string | null) {
         .select("category, value")
         .eq("rated_id", userId!);
       const out: PeerAgg = {};
-      for (const r of (data ?? []) as Array<{ category: CatKey; value: number }>) {
+      for (const r of ((data ?? []) as unknown) as Array<{ category: CatKey; value: number }>) {
         const cur = out[r.category] ?? { avg: 0, n: 0 };
         const n = cur.n + 1;
         out[r.category] = { avg: (cur.avg * cur.n + r.value) / n, n };
