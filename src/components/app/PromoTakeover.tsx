@@ -110,16 +110,10 @@ export function PromoTakeover() {
         cost_cents: 5,
       }).then(() => {});
     }
-    const c = payload.campaign;
-    if (c.cta_url) {
-      window.open(c.cta_url, "_blank", "noopener,noreferrer");
-    } else if (c.venue_id) {
-      window.location.href = `/app/venue/${c.venue_id}`;
-    } else if (c.party_id) {
-      window.location.href = `/app/parties`;
-    }
+    window.location.href = `/app/promo/${payload.campaign.id}`;
     setPhase("gone");
   };
+
 
   if (!payload || phase === "hidden" || phase === "gone") return null;
   const { campaign, biz } = payload;
