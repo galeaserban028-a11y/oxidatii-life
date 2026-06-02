@@ -217,6 +217,12 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
           className="absolute top-2 right-2 p-1.5 rounded-md bg-background/70 backdrop-blur-sm border border-foreground/15">
           <Pencil size={12} />
         </button>
+        <button onClick={deleteBusiness}
+          className="absolute top-2 right-11 p-1.5 rounded-md bg-background/70 backdrop-blur-sm border border-foreground/15 hover:border-neon-crimson hover:text-neon-crimson"
+          aria-label="Șterge business">
+          <Trash2 size={12} />
+        </button>
+
       </div>
 
       <div className="p-4 -mt-10 relative space-y-3">
