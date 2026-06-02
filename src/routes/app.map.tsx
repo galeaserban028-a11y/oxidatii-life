@@ -22,6 +22,9 @@ type Venue = {
   cover_url: string | null;
 };
 
+type City = { id: string; slug: string; name: string; lat: number; lng: number; chaos_level: number; country: string };
+const EMPTY_CITIES: City[] = [];
+
 async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   const { data: rows } = await supabase
     .from("friendships")
