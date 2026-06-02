@@ -152,7 +152,7 @@ function PromoPage() {
         {party && (
           <Section title="În seara asta">
             <Link to="/app/parties" className="block rounded-xl bg-foreground/[0.04] border border-foreground/10 overflow-hidden">
-              {party.cover_url && <img src={party.cover_url} alt="" className="w-full h-32 object-cover" />}
+              {/* party has no cover image in schema */}
               <div className="p-3 space-y-1">
                 <div className="font-display uppercase text-sm">{party.title}</div>
                 <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
