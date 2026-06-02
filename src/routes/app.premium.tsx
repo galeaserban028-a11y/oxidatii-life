@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Check, Crown, Sparkles, Gem, Star, Coins, Zap, Eye, Palette, Heart, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Check, Crown, Sparkles, Gem, Star, Coins, Zap, Eye, Palette, Heart, ShieldCheck, Settings } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { PremiumBadge, type PremiumTier } from "@/components/app/PremiumBadge";
+import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
+import { createPremiumPortalSession } from "@/lib/premium.functions";
+import { getStripeEnvironment } from "@/lib/stripe";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/premium")({
@@ -55,27 +58,48 @@ const TIERS: Tier[] = [
 ];
 
 const COIN_PACKS = [
-  { id: "mic", coins: 50, price: 4.99, label: "Mic" },
-  { id: "mediu", coins: 200, price: 14.99, label: "Mediu", bonus: "+10%" },
-  { id: "mare", coins: 600, price: 39.99, label: "Mare", bonus: "+20%", popular: true },
-  { id: "boss", coins: 1500, price: 89.99, label: "Boss", bonus: "+35%" },
-  { id: "legenda", coins: 5000, price: 249, label: "Legenda", bonus: "+50%" },
+  { id: "coins_mic", coins: 50, price: 4.99, label: "Mic" },
+  { id: "coins_mediu", coins: 200, price: 14.99, label: "Mediu", bonus: "+10%" },
+  { id: "coins_mare", coins: 600, price: 39.99, label: "Mare", bonus: "+20%", popular: true },
+  { id: "coins_boss", coins: 1500, price: 89.99, label: "Boss", bonus: "+35%" },
+  { id: "coins_legenda", coins: 5000, price: 249, label: "Legenda", bonus: "+50%" },
 ];
 
 function PremiumPage() {
   const { profile } = useAuth();
   const [annual, setAnnual] = useState(false);
+  const [checkout, setCheckout] = useState<{ priceId: string; title: string } | null>(null);
+  const [openingPortal, setOpeningPortal] = useState(false);
   const currentTier = (profile as any)?.premium_tier as PremiumTier;
 
   const handleBuy = (tier: Tier) => {
-    toast.info(`Plățile se activează curând — ${tier.name} ${annual ? "anual" : "lunar"}`, {
-      description: "Lucrăm la integrarea sistemului de plată. Vei fi notificat când e gata.",
-    });
+    const priceId = `${tier.id}_${annual ? "yearly" : "monthly"}`;
+    setCheckout({ priceId, title: `${tier.name} ${annual ? "anual" : "lunar"}` });
   };
 
   const handleCoins = (pack: typeof COIN_PACKS[0]) => {
-    toast.info(`Pachet ${pack.label} — ${pack.coins} coins`, { description: "Plățile se activează curând." });
+    setCheckout({ priceId: pack.id, title: `${pack.coins} coins · ${pack.label}` });
   };
+
+  const handleManage = async () => {
+    setOpeningPortal(true);
+    try {
+      const result = await createPremiumPortalSession({
+        data: {
+          returnUrl: `${window.location.origin}/app/premium`,
+          environment: getStripeEnvironment(),
+        },
+      });
+      if ("error" in result) throw new Error(result.error);
+      window.open(result.url, "_blank");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Nu pot deschide portalul");
+    } finally {
+      setOpeningPortal(false);
+    }
+  };
+
+
 
   return (
     <div className="pb-24">
@@ -234,9 +258,29 @@ function PremiumPage() {
         </div>
       </section>
 
+      {currentTier && (
+        <div className="px-4 mt-4">
+          <button
+            onClick={handleManage}
+            disabled={openingPortal}
+            className="w-full flex items-center justify-center gap-2 h-10 rounded-xl border border-foreground/15 bg-card/50 font-mono uppercase text-[12px] tracking-wider disabled:opacity-50"
+          >
+            <Settings size={14} />
+            {openingPortal ? "Se deschide…" : "Gestionează abonament"}
+          </button>
+        </div>
+      )}
+
       <p className="text-center text-[10px] font-mono text-muted-foreground/60 mt-6 px-6">
-        Anulezi oricând · Fără reînnoiri ascunse · Plată securizată
+        Anulezi oricând · Acces până la finalul perioadei plătite · Plată securizată
       </p>
+
+      <PremiumCheckoutDialog
+        priceId={checkout?.priceId ?? null}
+        title={checkout?.title ?? ""}
+        open={!!checkout}
+        onClose={() => setCheckout(null)}
+      />
     </div>
   );
 }
