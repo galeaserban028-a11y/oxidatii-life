@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import { ReputationCard } from "@/components/app/ReputationCard";
 
 export const Route = createFileRoute("/app/user/$id")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
