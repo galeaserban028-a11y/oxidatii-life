@@ -10,6 +10,23 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă. Doar pentru +18." },
       { property: "og:title", content: "OXIDAȚII — Hai la șpriț în Dumnezeul oxidaților." },
       { property: "og:description", content: "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă." },
+      { property: "og:url", content: "https://oxidatii.lovable.app/" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://oxidatii.lovable.app/" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "OXIDAȚII",
+          url: "https://oxidatii.lovable.app/",
+          inLanguage: "ro-RO",
+          description: "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă.",
+        }),
+      },
     ],
   }),
   component: Index,
