@@ -7,6 +7,7 @@ import {
   Building2, Wallet, Rocket, Plus, TrendingUp, Eye, MousePointerClick,
   Image as ImageIcon, MapPin, Megaphone, Sparkles, Bell, Compass, Star,
   Settings2, X, Calendar, Target, Palette, Upload, ChevronRight, Pencil,
+  Users, Heart, Flame, ChevronDown, Check, Zap,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/biz")({
@@ -308,46 +309,103 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 }
 
 /* ============================ Campaign Builder ============================ */
+/* Psychologically-tuned 3-step flow: GOAL → STORY → BOOST.
+   Outcome-framed goals, tier-anchored budgets with social proof,
+   live preview that updates as you type, advanced controls collapsed by default. */
+
+const GOALS = [
+  {
+    id: "fill",
+    icon: Users,
+    title: "Vreau localul plin",
+    promise: "Apar la oameni care ies în seara asta în orașul tău.",
+    placement: "boost_feed" as const,
+    color: "#FF2D55",
+    suggestedBudget: 50,
+    cta: "Vin",
+  },
+  {
+    id: "city",
+    icon: Flame,
+    title: "Vreau să vadă tot orașul",
+    promise: "Banner premium + pin animat pe hartă. Maximă expunere.",
+    placement: "boost_story" as const,
+    color: "#00D4FF",
+    suggestedBudget: 150,
+    cta: "Vezi locul",
+  },
+  {
+    id: "fans",
+    icon: Heart,
+    title: "Vreau followers & status",
+    promise: "Brandul tău în secțiunea VIP. Construiești comunitate.",
+    placement: "boost_brand" as const,
+    color: "#9D4EDD",
+    suggestedBudget: 100,
+    cta: "Urmărește",
+  },
+] as const;
+
+const BUDGET_TIERS = [
+  { ron: 20,  label: "Test",  hint: "vezi cum merge",     badge: null },
+  { ron: 50,  label: "Smart", hint: "echilibrul perfect", badge: "ALES DE 73%" },
+  { ron: 150, label: "Boost", hint: "umpli localul",      badge: "POPULAR" },
+  { ron: 500, label: "Viral", hint: "tot orașul te vede", badge: "🔥" },
+] as const;
 
 function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated }: {
   business: any; parties: any[]; cities: any[]; venues: any[];
   onClose: () => void; onCreated: () => void;
 }) {
   const { user } = useAuth();
-  const [placement, setPlacement] = useState<(typeof PLACEMENTS)[number]["value"]>("boost_feed");
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [goalId, setGoalId] = useState<(typeof GOALS)[number]["id"]>("fill");
+  const goal = useMemo(() => GOALS.find((g) => g.id === goalId)!, [goalId]);
+
   const [targetType, setTargetType] = useState<"party" | "venue" | "brand">("party");
   const [partyId, setPartyId] = useState("");
   const [venueId, setVenueId] = useState("");
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [ctaText, setCtaText] = useState("Vezi detalii");
+  const [ctaText, setCtaText] = useState<string>(goal.cta);
   const [ctaUrl, setCtaUrl] = useState("");
   const [images, setImages] = useState<string[]>([]);
-  const [themeColor, setThemeColor] = useState("#FF2D55");
-  const [cityId, setCityId] = useState<string>("");
+  const [themeColor, setThemeColor] = useState<string>(goal.color);
+  const [cityId, setCityId] = useState<string>(business.city_id ?? "");
   const [vibes, setVibes] = useState<string[]>([]);
   const [ageMin, setAgeMin] = useState(18);
   const [ageMax, setAgeMax] = useState(35);
   const [days, setDays] = useState<number[]>([5, 6, 0]);
   const [hourFrom, setHourFrom] = useState(20);
   const [hourTo, setHourTo] = useState(4);
-  const [pricingModel, setPricingModel] = useState<"cpm" | "cpc">("cpm");
   const [bidBani, setBidBani] = useState(150);
   const [budget, setBudget] = useState(50);
   const [dailyCap, setDailyCap] = useState(20);
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const placementMeta = useMemo(() => PLACEMENTS.find((p) => p.value === placement)!, [placement]);
+  const pickGoal = (id: typeof goalId) => {
+    const g = GOALS.find((x) => x.id === id)!;
+    setGoalId(id);
+    setThemeColor(g.color);
+    setCtaText(g.cta);
+    setBudget(g.suggestedBudget);
+    const pm = PLACEMENTS.find((p) => p.value === g.placement)!;
+    setBidBani(pm.min);
+    setTargetType(g.id === "fans" ? "brand" : g.id === "city" ? "venue" : "party");
+  };
 
-  // Auto-fill from selected party
   const selectedParty = parties.find((p) => p.id === partyId);
   const autoTitle = title || selectedParty?.title || business.brand_name;
-  const autoSubtitle = subtitle || selectedParty?.location_text || "Nu rata";
+  const autoSubtitle =
+    subtitle ||
+    selectedParty?.location_text ||
+    (goal.id === "fans" ? "Intră în comunitate" : "Nu rata seara asta");
 
-  const estimated = useMemo(() => Math.floor((budget * 100) / Math.max(bidBani, 1)), [budget, bidBani]);
+  const estimated = useMemo(() => Math.floor((budget * 100) / Math.max(bidBani, 1)) * 1000, [budget, bidBani]);
 
   const uploadImages = async (files: FileList | null) => {
     if (!files || !user) return;
@@ -369,14 +427,14 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
     }
     setBusy(true);
     const insertData: any = {
-      business_id: business.id, kind: placement,
+      business_id: business.id, kind: goal.placement,
       title: autoTitle, subtitle: autoSubtitle,
-      cta_text: ctaText || "Vezi detalii", cta_url: ctaUrl || null,
+      cta_text: ctaText || goal.cta, cta_url: ctaUrl || null,
       image_urls: images, theme_color: themeColor,
       status: "active",
       bid_cents: bidBani, budget_cents: Math.round(budget * 100),
       daily_cap_cents: Math.round(dailyCap * 100),
-      pricing_model: pricingModel,
+      pricing_model: "cpm",
       city_id: cityId || null,
       party_id: targetType === "party" ? partyId || null : null,
       venue_id: targetType === "venue" ? venueId || null : null,
@@ -391,249 +449,350 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
     onCreated();
   };
 
-  return (
-    <Sheet onClose={onClose} title="Promovare nouă" wide>
-      {/* LIVE PREVIEW */}
-      <div className="rounded-xl overflow-hidden border border-foreground/15 relative">
-        <div className="aspect-[16/9] relative overflow-hidden"
-          style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}88)` }}>
-          {images[0] && <img src={images[0]} alt="" className="absolute inset-0 w-full h-full object-cover opacity-90" />}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-white">Promovat · {placementMeta.label}</span>
-          </div>
-          <div className="absolute bottom-0 inset-x-0 p-3 text-white">
-            <div className="font-display uppercase text-lg leading-tight line-clamp-1">{autoTitle || "Titlu campanie"}</div>
-            <div className="text-xs opacity-80 line-clamp-1">{autoSubtitle}</div>
-          </div>
+  const Preview = (
+    <div className="rounded-2xl overflow-hidden border border-foreground/15 relative shadow-lg">
+      <div className="aspect-[16/9] relative overflow-hidden"
+        style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}66)` }}>
+        {images[0] && <img src={images[0]} alt="" className="absolute inset-0 w-full h-full object-cover opacity-95" />}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+        <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm flex items-center gap-1">
+          <Sparkles size={9} className="text-white" />
+          <span className="font-mono text-[9px] uppercase tracking-widest text-white">Promovat</span>
         </div>
-        <div className="flex items-center justify-between p-2 bg-foreground/[0.04]">
-          <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{business.brand_name}</span>
-          <span className="text-[10px] font-display uppercase px-2 py-1 rounded-md text-white" style={{ background: themeColor }}>
-            {ctaText || "CTA"} →
-          </span>
+        <div className="absolute bottom-0 inset-x-0 p-3 text-white">
+          <div className="font-display uppercase text-xl leading-tight line-clamp-1">{autoTitle || "Titlu campanie"}</div>
+          <div className="text-xs opacity-90 line-clamp-1">{autoSubtitle}</div>
         </div>
       </div>
+      <div className="flex items-center justify-between p-2.5 bg-foreground/[0.04]">
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">{business.brand_name}</span>
+        <span className="text-[10px] font-display uppercase px-2.5 py-1 rounded-md text-white" style={{ background: themeColor }}>
+          {ctaText || goal.cta} →
+        </span>
+      </div>
+    </div>
+  );
 
-      {/* PLACEMENT */}
-      <Section icon={<Megaphone size={11} />} title="Tip promovare">
-        <div className="grid grid-cols-2 gap-2">
-          {PLACEMENTS.map((p) => {
-            const Icon = p.icon;
-            const selected = placement === p.value;
-            return (
-              <button key={p.value} onClick={() => { setPlacement(p.value); setThemeColor(p.color); setBidBani(p.min); }}
-                className={`text-left p-2.5 rounded-lg border transition ${
-                  selected ? "border-neon-crimson bg-neon-crimson/5" : "border-foreground/10 bg-foreground/[0.02]"}`}>
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Icon size={12} style={{ color: p.color }} />
-                  <span className="font-display uppercase text-[11px]">{p.label}</span>
-                </div>
-                <div className="text-[10px] text-muted-foreground line-clamp-2">{p.desc}</div>
-                <div className="font-mono text-[9px] uppercase tracking-widest mt-1 text-muted-foreground">de la {(p.min / 100).toFixed(2)} RON</div>
-              </button>
-            );
-          })}
-        </div>
-      </Section>
+  const StepDots = (
+    <div className="flex items-center gap-1.5 justify-center">
+      {[1, 2, 3].map((n) => (
+        <div key={n}
+          className={`h-1 rounded-full transition-all ${step === n ? "w-8 bg-foreground" : step > n ? "w-4 bg-foreground/50" : "w-4 bg-foreground/15"}`} />
+      ))}
+    </div>
+  );
 
-      {/* TARGET LINK */}
-      <Section icon={<Target size={11} />} title="Ce promovezi">
-        <div className="flex gap-2">
-          {(["party", "venue", "brand"] as const).map((t) => (
-            <button key={t} onClick={() => setTargetType(t)}
-              className={`flex-1 px-2 py-2 rounded-md text-[10px] font-mono uppercase tracking-widest border ${
-                targetType === t ? "bg-neon-crimson/15 border-neon-crimson text-neon-crimson" : "border-foreground/10 text-muted-foreground"}`}>
-              {t === "party" ? "Petrecere" : t === "venue" ? "Locație" : "Brand"}
-            </button>
-          ))}
-        </div>
-        {targetType === "party" && (
-          parties.length === 0 ? (
-            <div className="text-[10px] text-muted-foreground">
-              Nu ai petreceri active. <Link to="/app/parties" className="underline">Creează una</Link>.
+  return (
+    <Sheet onClose={onClose} title={step === 1 ? "Ce vrei?" : step === 2 ? "Cum arată?" : "Cât bagi?"} wide>
+      {StepDots}
+      {Preview}
+
+      {step === 1 && (
+        <>
+          <div className="text-center space-y-1 pt-1">
+            <div className="font-display uppercase text-lg">Alege un obiectiv</div>
+            <p className="text-xs text-muted-foreground">Restul îl punem noi pe pilot automat.</p>
+          </div>
+
+          <div className="space-y-2">
+            {GOALS.map((g) => {
+              const Icon = g.icon;
+              const selected = goalId === g.id;
+              return (
+                <button key={g.id} onClick={() => pickGoal(g.id)}
+                  className={`w-full text-left p-4 rounded-2xl border-2 transition-all relative overflow-hidden ${
+                    selected ? "border-foreground bg-foreground/[0.04] scale-[1.01]" : "border-foreground/10 hover:border-foreground/25"
+                  }`}
+                  style={selected ? { boxShadow: `0 0 0 4px ${g.color}22` } : {}}>
+                  {selected && (
+                    <div className="absolute top-2 right-2 h-5 w-5 rounded-full flex items-center justify-center" style={{ background: g.color }}>
+                      <Check size={12} className="text-white" />
+                    </div>
+                  )}
+                  <div className="flex items-start gap-3">
+                    <div className="h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: `${g.color}22`, color: g.color }}>
+                      <Icon size={20} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-display uppercase text-base leading-tight">{g.title}</div>
+                      <p className="text-xs text-muted-foreground mt-1">{g.promise}</p>
+                      <div className="font-mono text-[10px] uppercase tracking-widest mt-2" style={{ color: g.color }}>
+                        de la {g.suggestedBudget} RON
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="rounded-xl bg-neon-green/10 border border-neon-green/30 p-3 flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-full bg-neon-green/20 flex items-center justify-center flex-shrink-0">
+              <Zap size={14} className="text-neon-green" />
             </div>
-          ) : (
-            <select value={partyId} onChange={(e) => setPartyId(e.target.value)} className={selectStyle}>
-              <option value="">— alege petrecere —</option>
-              {parties.map((p) => <option key={p.id} value={p.id}>{p.title} · {p.location_text}</option>)}
-            </select>
-          )
-        )}
-        {targetType === "venue" && (
-          <select value={venueId} onChange={(e) => setVenueId(e.target.value)} className={selectStyle}>
-            <option value="">— alege locație —</option>
-            {venues.map((v) => <option key={v.id} value={v.id}>{v.name} · {v.address}</option>)}
-          </select>
-        )}
-        {targetType === "brand" && (
-          <div className="text-[10px] text-muted-foreground">Reclama trimite la pagina ta de brand.</div>
-        )}
-      </Section>
+            <div className="text-[11px] text-muted-foreground leading-snug">
+              <strong className="text-foreground">Plătești doar ce consumi.</strong> Poți opri oricând. Fără abonament.
+            </div>
+          </div>
 
-      {/* CREATIVE */}
-      <Section icon={<Palette size={11} />} title="Conținut">
-        <input value={title} onChange={(e) => setTitle(e.target.value)}
-          placeholder={selectedParty?.title || "Titlu (ex: Vineri techno la Form)"} className={inputStyle} />
-        <input value={subtitle} onChange={(e) => setSubtitle(e.target.value)}
-          placeholder="Subtitlu (ex: 2 boxe, 6 DJ, intrare 30 lei)" className={inputStyle} />
-        <div className="grid grid-cols-2 gap-2">
-          <input value={ctaText} onChange={(e) => setCtaText(e.target.value)} placeholder="CTA (ex: Vin)" className={inputStyle} />
-          <input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="Link extern (opțional)" className={inputStyle} />
-        </div>
+          <StickyFooter>
+            <button onClick={onClose} className="px-4 py-3 rounded-xl border border-foreground/15 text-xs font-mono uppercase tracking-widest">Renunță</button>
+            <button onClick={() => setStep(2)}
+              className="flex-1 px-4 py-3 rounded-xl text-white text-sm font-display uppercase tracking-widest flex items-center justify-center gap-1.5"
+              style={{ background: goal.color }}>
+              Continuă <ChevronRight size={14} />
+            </button>
+          </StickyFooter>
+        </>
+      )}
 
-        {/* Images */}
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Poze (max 4)</div>
-          <div className="grid grid-cols-4 gap-1.5">
-            {images.map((u, i) => (
-              <div key={i} className="relative aspect-square rounded-md overflow-hidden bg-foreground/5">
-                <img src={u} alt="" className="w-full h-full object-cover" />
-                <button onClick={() => setImages(images.filter((_, j) => j !== i))}
-                  className="absolute top-0.5 right-0.5 p-0.5 rounded-md bg-black/60"><X size={10} className="text-white" /></button>
-              </div>
-            ))}
-            {images.length < 4 && (
-              <button onClick={() => fileRef.current?.click()}
-                className="aspect-square rounded-md border border-dashed border-foreground/20 flex items-center justify-center text-muted-foreground">
-                <Upload size={14} />
-              </button>
+      {step === 2 && (
+        <>
+          <div className="space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">link către</div>
+            <div className="grid grid-cols-3 gap-1.5">
+              {([
+                { v: "party", l: "Petrecere" },
+                { v: "venue", l: "Locație" },
+                { v: "brand", l: "Brand" },
+              ] as const).map((t) => (
+                <button key={t.v} onClick={() => setTargetType(t.v)}
+                  className={`px-2 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest border transition ${
+                    targetType === t.v ? "bg-foreground text-background border-foreground" : "border-foreground/10 text-muted-foreground"}`}>
+                  {t.l}
+                </button>
+              ))}
+            </div>
+            {targetType === "party" && (
+              parties.length === 0 ? (
+                <div className="text-[11px] text-muted-foreground p-2 rounded-md bg-foreground/[0.03]">
+                  Nu ai petreceri active. <Link to="/app/parties" className="underline">Creează una</Link>.
+                </div>
+              ) : (
+                <select value={partyId} onChange={(e) => setPartyId(e.target.value)} className={selectStyle}>
+                  <option value="">— alege petrecere —</option>
+                  {parties.map((p) => <option key={p.id} value={p.id}>{p.title} · {p.location_text}</option>)}
+                </select>
+              )
+            )}
+            {targetType === "venue" && (
+              <select value={venueId} onChange={(e) => setVenueId(e.target.value)} className={selectStyle}>
+                <option value="">— alege locație —</option>
+                {venues.map((v) => <option key={v.id} value={v.id}>{v.name}{v.address ? " · " + v.address : ""}</option>)}
+              </select>
             )}
           </div>
-          <input ref={fileRef} type="file" accept="image/*" multiple className="hidden"
-            onChange={(e) => uploadImages(e.target.files)} />
-        </div>
 
-        {/* Color */}
-        <div className="flex items-center gap-2">
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground flex-1">Culoare accent</div>
-          <input type="color" value={themeColor} onChange={(e) => setThemeColor(e.target.value)}
-            className="w-10 h-8 rounded-md border border-foreground/15 bg-transparent" />
-        </div>
-      </Section>
+          <div className="space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">povestea ta</div>
+            <input value={title} onChange={(e) => setTitle(e.target.value)}
+              placeholder={selectedParty?.title || "Titlu mare (3-5 cuvinte care lovesc)"}
+              maxLength={50} className={inputStyle} />
+            <input value={subtitle} onChange={(e) => setSubtitle(e.target.value)}
+              placeholder="Detaliu scurt (ex: 2 boxe, intrare 30 lei)"
+              maxLength={80} className={inputStyle} />
+            <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
+              <input value={ctaText} onChange={(e) => setCtaText(e.target.value)} maxLength={15}
+                placeholder="Buton" className={inputStyle} />
+              <input type="color" value={themeColor} onChange={(e) => setThemeColor(e.target.value)}
+                className="w-12 h-10 rounded-md border border-foreground/15 bg-transparent cursor-pointer" />
+            </div>
+          </div>
 
-      {/* TARGETING */}
-      <Section icon={<Target size={11} />} title="Targeting">
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Oraș</div>
-          <select value={cityId} onChange={(e) => setCityId(e.target.value)} className={selectStyle}>
-            <option value="">Toate orașele</option>
-            {cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-        </div>
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Vibes</div>
-          <div className="flex flex-wrap gap-1.5">
-            {VIBES.map((v) => (
-              <button key={v} onClick={() => setVibes((s) => s.includes(v) ? s.filter((x) => x !== v) : [...s, v])}
-                className={`text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded-md border ${
-                  vibes.includes(v) ? "bg-neon-purple/15 border-neon-purple text-neon-purple" : "border-foreground/10 text-muted-foreground"}`}>
-                {v}
-              </button>
-            ))}
+          <div className="space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground flex items-center justify-between">
+              <span>poze (max 4)</span>
+              <span className="text-foreground/50 normal-case tracking-normal text-[10px]">poza face diferența</span>
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {images.map((u, i) => (
+                <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-foreground/5">
+                  <img src={u} alt="" className="w-full h-full object-cover" />
+                  <button onClick={() => setImages(images.filter((_, j) => j !== i))}
+                    className="absolute top-0.5 right-0.5 p-0.5 rounded-md bg-black/60"><X size={10} className="text-white" /></button>
+                </div>
+              ))}
+              {images.length < 4 && (
+                <button onClick={() => fileRef.current?.click()}
+                  className="aspect-square rounded-lg border-2 border-dashed border-foreground/20 hover:border-foreground/40 flex flex-col items-center justify-center text-muted-foreground gap-1">
+                  <Upload size={14} />
+                  <span className="text-[9px] font-mono uppercase">Adaugă</span>
+                </button>
+              )}
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" multiple className="hidden"
+              onChange={(e) => uploadImages(e.target.files)} />
           </div>
-        </div>
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Vârstă: {ageMin}–{ageMax}</div>
-          <div className="flex gap-2">
-            <input type="number" min={16} max={99} value={ageMin} onChange={(e) => setAgeMin(+e.target.value)} className={inputStyle} />
-            <input type="number" min={16} max={99} value={ageMax} onChange={(e) => setAgeMax(+e.target.value)} className={inputStyle} />
-          </div>
-        </div>
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Zile</div>
-          <div className="flex gap-1">
-            {DAYS.map((d) => (
-              <button key={d.v} onClick={() => setDays((s) => s.includes(d.v) ? s.filter((x) => x !== d.v) : [...s, d.v])}
-                className={`flex-1 py-2 rounded-md text-[10px] font-mono uppercase border ${
-                  days.includes(d.v) ? "bg-neon-crimson/15 border-neon-crimson text-neon-crimson" : "border-foreground/10 text-muted-foreground"}`}>
-                {d.l}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Interval orar: {hourFrom}:00 → {hourTo}:00</div>
-          <div className="flex gap-2">
-            <input type="number" min={0} max={23} value={hourFrom} onChange={(e) => setHourFrom(+e.target.value)} className={inputStyle} />
-            <input type="number" min={0} max={23} value={hourTo} onChange={(e) => setHourTo(+e.target.value)} className={inputStyle} />
-          </div>
-        </div>
-      </Section>
 
-      {/* BUDGET & SCHEDULE */}
-      <Section icon={<Wallet size={11} />} title="Buget & schedule">
-        <div className="flex gap-2">
-          {(["cpm", "cpc"] as const).map((m) => (
-            <button key={m} onClick={() => setPricingModel(m)}
-              className={`flex-1 px-2 py-2 rounded-md text-[10px] font-mono uppercase tracking-widest border ${
-                pricingModel === m ? "bg-neon-crimson/15 border-neon-crimson text-neon-crimson" : "border-foreground/10 text-muted-foreground"}`}>
-              {m === "cpm" ? "per impresie" : "per click"}
+          <button onClick={() => setAdvancedOpen((s) => !s)}
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-foreground/10 hover:border-foreground/25 text-xs">
+            <span className="font-mono uppercase tracking-widest text-muted-foreground">Targeting avansat</span>
+            <ChevronDown size={14} className={`transition-transform ${advancedOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {advancedOpen && (
+            <div className="space-y-3 p-3 rounded-xl bg-foreground/[0.02] border border-foreground/10">
+              <div>
+                <Label>Oraș</Label>
+                <select value={cityId} onChange={(e) => setCityId(e.target.value)} className={selectStyle}>
+                  <option value="">Toate orașele</option>
+                  {cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <Label>Vibes (gol = toate)</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  {VIBES.map((v) => (
+                    <button key={v} onClick={() => setVibes((s) => s.includes(v) ? s.filter((x) => x !== v) : [...s, v])}
+                      className={`text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded-md border ${
+                        vibes.includes(v) ? "bg-foreground text-background border-foreground" : "border-foreground/15 text-muted-foreground"}`}>
+                      {v}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label>Vârstă: {ageMin}–{ageMax} ani</Label>
+                <div className="flex gap-2">
+                  <input type="number" min={16} max={99} value={ageMin} onChange={(e) => setAgeMin(+e.target.value)} className={inputStyle} />
+                  <input type="number" min={16} max={99} value={ageMax} onChange={(e) => setAgeMax(+e.target.value)} className={inputStyle} />
+                </div>
+              </div>
+              <div>
+                <Label>Zile</Label>
+                <div className="flex gap-1">
+                  {DAYS.map((d) => (
+                    <button key={d.v} onClick={() => setDays((s) => s.includes(d.v) ? s.filter((x) => x !== d.v) : [...s, d.v])}
+                      className={`flex-1 py-2 rounded-md text-[10px] font-mono uppercase border ${
+                        days.includes(d.v) ? "bg-foreground text-background border-foreground" : "border-foreground/15 text-muted-foreground"}`}>
+                      {d.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label>Interval orar: {hourFrom}:00 → {hourTo}:00</Label>
+                <div className="flex gap-2">
+                  <input type="number" min={0} max={23} value={hourFrom} onChange={(e) => setHourFrom(+e.target.value)} className={inputStyle} />
+                  <input type="number" min={0} max={23} value={hourTo} onChange={(e) => setHourTo(+e.target.value)} className={inputStyle} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label>Start</Label>
+                  <input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={inputStyle} />
+                </div>
+                <div>
+                  <Label>Stop</Label>
+                  <input type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className={inputStyle} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <StickyFooter>
+            <button onClick={() => setStep(1)} className="px-4 py-3 rounded-xl border border-foreground/15 text-xs font-mono uppercase tracking-widest">Înapoi</button>
+            <button onClick={() => setStep(3)}
+              className="flex-1 px-4 py-3 rounded-xl text-white text-sm font-display uppercase tracking-widest flex items-center justify-center gap-1.5"
+              style={{ background: goal.color }}>
+              Buget <ChevronRight size={14} />
             </button>
-          ))}
-        </div>
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">
-            Bid: {(bidBani / 100).toFixed(2)} RON
-          </div>
-          <input type="range" min={placementMeta.min} max={placementMeta.min * 5} step={10}
-            value={bidBani} onChange={(e) => setBidBani(+e.target.value)} className="w-full accent-neon-crimson" />
-        </div>
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Buget total: {budget} RON</div>
-          <div className="flex gap-2">
-            {[20, 50, 100, 250, 500].map((b) => (
-              <button key={b} onClick={() => setBudget(b)}
-                className={`flex-1 px-2 py-2 rounded-md text-xs font-mono uppercase border ${
-                  budget === b ? "bg-neon-crimson/15 border-neon-crimson text-neon-crimson" : "border-foreground/10"}`}>
-                {b}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">Limită zilnică: {dailyCap} RON</div>
-          <input type="range" min={5} max={budget} step={5} value={Math.min(dailyCap, budget)}
-            onChange={(e) => setDailyCap(+e.target.value)} className="w-full accent-neon-purple" />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1">
-              <Calendar size={10} /> Start
-            </div>
-            <input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={inputStyle} />
-          </div>
-          <div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5 flex items-center gap-1">
-              <Calendar size={10} /> Stop
-            </div>
-            <input type="datetime-local" value={endsAt} onChange={(e) => setEndsAt(e.target.value)} className={inputStyle} />
-          </div>
-        </div>
+          </StickyFooter>
+        </>
+      )}
 
-        <div className="rounded-md bg-neon-green/10 border border-neon-green/30 p-2.5">
-          <div className="font-mono text-[9px] uppercase tracking-widest text-neon-green">estimare</div>
-          <div className="text-xs mt-0.5">
-            ≈ <strong>{estimated.toLocaleString()}</strong> {pricingModel === "cpm" ? "afișări" : "click-uri"} ·
-            ~{Math.ceil(budget / Math.max(dailyCap, 1))} zile de difuzare
+      {step === 3 && (
+        <>
+          <div className="text-center space-y-1 pt-1">
+            <div className="font-display uppercase text-lg">Cât pompăm?</div>
+            <p className="text-xs text-muted-foreground">Alege un pachet sau setează tu.</p>
           </div>
-        </div>
-      </Section>
 
-      <div className="flex gap-2 sticky bottom-0 bg-background pt-2 -mx-5 px-5 pb-1 border-t border-foreground/10">
-        <button onClick={onClose}
-          className="flex-1 px-3 py-2.5 rounded-md border border-foreground/15 text-xs font-mono uppercase tracking-widest">
-          Renunță
-        </button>
-        <button disabled={busy} onClick={submit}
-          className="flex-[2] px-3 py-2.5 rounded-md text-white text-xs font-display uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-1.5"
-          style={{ background: "var(--gradient-chaos)" }}>
-          <Rocket size={12} /> {busy ? "..." : `Lansează ${budget} RON`}
-        </button>
-      </div>
+          <div className="grid grid-cols-2 gap-2">
+            {BUDGET_TIERS.map((t) => {
+              const selected = budget === t.ron;
+              return (
+                <button key={t.ron} onClick={() => { setBudget(t.ron); setDailyCap(Math.max(5, Math.round(t.ron / 3))); }}
+                  className={`relative p-3 rounded-2xl border-2 text-left transition-all ${
+                    selected ? "border-foreground bg-foreground/[0.04] scale-[1.02]" : "border-foreground/10 hover:border-foreground/25"
+                  }`}
+                  style={selected ? { boxShadow: `0 0 0 4px ${goal.color}22` } : {}}>
+                  {t.badge && (
+                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[8px] font-mono uppercase tracking-widest text-white whitespace-nowrap"
+                      style={{ background: goal.color }}>
+                      {t.badge}
+                    </div>
+                  )}
+                  <div className="font-display text-2xl leading-none">{t.ron}<span className="text-xs text-muted-foreground"> RON</span></div>
+                  <div className="font-mono text-[10px] uppercase tracking-widest mt-1">{t.label}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">{t.hint}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="space-y-1.5 px-1">
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Sau setează</span>
+              <span className="font-display text-base">{budget} RON</span>
+            </div>
+            <input type="range" min={10} max={1000} step={10} value={budget}
+              onChange={(e) => { setBudget(+e.target.value); setDailyCap(Math.min(dailyCap, +e.target.value)); }}
+              className="w-full" style={{ accentColor: goal.color }} />
+          </div>
+
+          <div className="rounded-2xl p-4 text-center relative overflow-hidden"
+            style={{ background: `linear-gradient(135deg, ${goal.color}22, ${goal.color}08)`, border: `1px solid ${goal.color}44` }}>
+            <div className="font-mono text-[10px] uppercase tracking-[0.3em]" style={{ color: goal.color }}>vei ajunge la</div>
+            <div className="font-display text-4xl mt-1" style={{ color: goal.color }}>
+              ~{(estimated / 1000).toFixed(estimated >= 10000 ? 0 : 1)}k
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">oameni din publicul tău</div>
+            <div className="mt-3 pt-3 border-t border-foreground/10 grid grid-cols-2 gap-2 text-left">
+              <div>
+                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">durată</div>
+                <div className="text-xs mt-0.5">~{Math.ceil(budget / Math.max(dailyCap, 1))} zile</div>
+              </div>
+              <div>
+                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">limită/zi</div>
+                <div className="text-xs mt-0.5">{dailyCap} RON</div>
+              </div>
+            </div>
+          </div>
+
+          {budget * 100 > business.wallet_balance_cents && (
+            <div className="rounded-xl bg-neon-crimson/10 border border-neon-crimson/30 p-3 text-xs">
+              <strong className="text-neon-crimson">Wallet insuficient.</strong> Ai {ron(business.wallet_balance_cents)} RON. Adaugă încă {(budget - business.wallet_balance_cents / 100).toFixed(2)} RON.
+            </div>
+          )}
+
+          <StickyFooter>
+            <button onClick={() => setStep(2)} className="px-4 py-3 rounded-xl border border-foreground/15 text-xs font-mono uppercase tracking-widest">Înapoi</button>
+            <button disabled={busy || budget * 100 > business.wallet_balance_cents} onClick={submit}
+              className="flex-1 px-4 py-3 rounded-xl text-white text-sm font-display uppercase tracking-widest disabled:opacity-50 flex items-center justify-center gap-1.5"
+              style={{ background: goal.color, boxShadow: `0 8px 24px -8px ${goal.color}` }}>
+              <Rocket size={14} /> {busy ? "..." : `Lansează · ${budget} RON`}
+            </button>
+          </StickyFooter>
+        </>
+      )}
     </Sheet>
   );
 }
+
+function Label({ children }: { children: React.ReactNode }) {
+  return <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">{children}</div>;
+}
+
+function StickyFooter({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex gap-2 sticky bottom-0 bg-background pt-3 -mx-5 px-5 pb-1 border-t border-foreground/10">
+      {children}
+    </div>
+  );
+}
+
 
 /* ============================ Brand profile editor ============================ */
 
