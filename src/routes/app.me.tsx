@@ -511,6 +511,8 @@ function MePage() {
         </div>
       )}
 
+      <FinderRadar />
+
       <p className="text-[10px] font-mono text-center text-muted-foreground/50 pt-3">
         OXIDAȚII · construit pe oameni reali · made in Balcani
       </p>
