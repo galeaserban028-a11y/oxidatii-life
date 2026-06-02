@@ -1134,8 +1134,6 @@ export const RO_EN: Record<string, string> = {
   " — gata, ai aplicația pe ecran.": " — done, you've got the app on your screen.",
   ". Opțional.": ". Optional.",
   "AI credits epuizate. Adaugă credite din Settings → Workspace → Usage.": "AI credits exhausted. Add credits from Settings → Workspace → Usage.",
-  "Apasă butonul „Instalează\" de sus.": "Tap the \"Install\" button at the top.",
-  "Apasă „Add\" — gata, ai aplicația pe ecran.": "Tap \"Add\" — done, you've got the app on your screen.",
   "Browserul nu suportă push notifications.": "Browser doesn't support push notifications.",
   "Ieșire din cont": "Sign out",
   "Pe iOS trebuie să adaugi întâi aplicația pe Home Screen.": "On iOS you must first add the app to your Home Screen.",
