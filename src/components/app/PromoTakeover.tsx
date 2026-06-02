@@ -78,14 +78,12 @@ export function PromoTakeover() {
   const trackedRef = useRef(false);
 
   useEffect(() => {
-    const last = Number(localStorage.getItem(STORAGE_KEY) ?? 0);
-    if (Date.now() - last < COOLDOWN_MS) return;
     let alive = true;
     loadActive().then((res) => {
       if (!alive || !res) return;
       setPayload(res);
-      setPhase("full");
-      localStorage.setItem(STORAGE_KEY, String(Date.now()));
+      // If user already saw the full takeover this session, go straight to mini
+      setPhase(hasSeenFull(res.campaign.id) ? "mini" : "full");
     });
     return () => { alive = false; };
   }, []);
