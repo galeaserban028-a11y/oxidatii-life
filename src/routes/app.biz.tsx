@@ -287,11 +287,23 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
                         </div>
                       </div>
                     </div>
-                    <button onClick={() => toggleCampaign(c)}
-                      className={`text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded-md border ${
-                        c.status === "active" ? "border-neon-crimson text-neon-crimson" : "border-neon-green text-neon-green"}`}>
-                      {c.status === "active" ? "Pause" : "Start"}
-                    </button>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button onClick={() => setEditCampaign(c)}
+                        className="p-1.5 rounded-md border border-foreground/10 hover:border-foreground/30 text-muted-foreground"
+                        aria-label="Editează">
+                        <Pencil size={11} />
+                      </button>
+                      <button onClick={() => toggleCampaign(c)}
+                        className={`text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded-md border ${
+                          c.status === "active" ? "border-neon-crimson text-neon-crimson" : "border-neon-green text-neon-green"}`}>
+                        {c.status === "active" ? "Pause" : "Start"}
+                      </button>
+                      <button onClick={() => deleteCampaign(c)}
+                        className="p-1.5 rounded-md border border-foreground/10 hover:border-neon-crimson hover:text-neon-crimson text-muted-foreground"
+                        aria-label="Șterge">
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
                   </div>
                   <div className="h-1 bg-foreground/5">
                     <div className="h-full" style={{ width: `${pct}%`, background: placement?.color ?? "#FF2D55" }} />
