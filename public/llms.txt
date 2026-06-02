@@ -1,0 +1,29 @@
+# OXIDAȚII
+
+> Aplicație balcanică de nightlife — cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România. Doar pentru +18.
+
+OXIDAȚII este o aplicație mobilă pentru viața de noapte din România: găsești cluburi și terase live, vezi cine bea ce și unde, faci check-in, urmărești prieteni pe hartă, dai rating la spoturi, intri în squad-uri și concurezi pentru titlul de ZEU al zilei. Cluburile pot promova evenimente, iar utilizatorii pot deveni VIP cu badge, frame animat și coins.
+
+## Pages
+
+- [Home](/): Landing page și descriere a aplicației.
+- [Login](/login): Autentificare cu email sau Google.
+- [Signup](/signup): Înregistrare cont nou (+18).
+- [Privacy Policy](/privacy): Politica de confidențialitate.
+- [Terms](/terms): Termeni și condiții.
+- [Cookies](/cookies): Politica de cookies.
+
+## App
+
+- [Feed live](/app/feed): Stream de check-in-uri, șprițuri și momente din cluburi.
+- [Hartă](/app/map): Hartă live cu cluburi, prieteni și activitate.
+- [Petreceri](/app/parties): Evenimente și petreceri active.
+- [Top](/app/top): Clasament ZEII zilei și utilizatori activi.
+- [Premium](/app/premium): Abonamente VIP și pachete de coins.
+- [Business](/app/biz): Panou pentru cluburi — promovări, analytics.
+
+## Optional
+
+- [Faze](/app/faze): Galerie de momente.
+- [Squad](/app/squad): Echipe și competiții.
+- [Scan QR](/app/scan): Scanner QR pentru check-in rapid.
