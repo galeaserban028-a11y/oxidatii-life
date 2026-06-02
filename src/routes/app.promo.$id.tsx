@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useEffect, useRef } from "react";
-import { ArrowLeft, Sparkles, MapPin, Calendar, ExternalLink, ChevronRight, Eye, MousePointerClick } from "lucide-react";
+import { ArrowLeft, Sparkles, MapPin, Calendar, ExternalLink, ChevronRight, Eye, MousePointerClick, Globe, Phone, Mail, Instagram, Music2, Clock, Users } from "lucide-react";
 
 export const Route = createFileRoute("/app/promo/$id")({
   component: PromoPage,
@@ -25,13 +25,13 @@ function PromoPage() {
       if (error) throw error;
       const [biz, venue, party] = await Promise.all([
         supabase.from("business_accounts")
-          .select("id,brand_name,type,description,logo_url,cover_url,verified,instagram_handle")
+          .select("id,brand_name,type,description,logo_url,cover_url,verified,instagram_handle,tiktok_handle,website,contact_phone,contact_email,address")
           .eq("id", campaign.business_id).maybeSingle(),
         campaign.venue_id
-          ? supabase.from("venues").select("id,name,type,address,cover_url,street:streets(name,city:cities(name,slug))").eq("id", campaign.venue_id).maybeSingle()
+          ? supabase.from("venues").select("id,name,type,address,cover_url,phone,ig_handle,opening_hours,description,street:streets(name,city:cities(name,slug))").eq("id", campaign.venue_id).maybeSingle()
           : Promise.resolve({ data: null }),
         campaign.party_id
-          ? supabase.from("parties").select("id,title,starts_at,description,location_text").eq("id", campaign.party_id).maybeSingle()
+          ? supabase.from("parties").select("id,title,starts_at,description,location_text,vibe,spots_total").eq("id", campaign.party_id).maybeSingle()
           : Promise.resolve({ data: null }),
       ]);
 
@@ -134,17 +134,32 @@ function PromoPage() {
           </div>
         </div>
 
-        {/* About */}
-        {biz?.description && (
-          <Section title="Despre">
-            <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">{biz.description}</p>
-            {biz.instagram_handle && (
-              <a href={`https://instagram.com/${biz.instagram_handle.replace(/^@/, "")}`} target="_blank" rel="noreferrer"
-                 className="inline-flex items-center gap-1 mt-2 font-mono text-[10px] uppercase tracking-widest text-neon-crimson">
-                @{biz.instagram_handle.replace(/^@/, "")} <ExternalLink size={10} />
-              </a>
+        {/* About brand */}
+        {(biz?.description || biz?.website || biz?.contact_phone || biz?.contact_email || biz?.instagram_handle || biz?.tiktok_handle || biz?.address) && (
+          <Section title={`Despre ${biz?.brand_name ?? "brand"}`}>
+            {biz?.description && (
+              <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">{biz.description}</p>
             )}
-
+            <div className="flex flex-col gap-1.5 pt-1">
+              {biz?.address && (
+                <InfoRow icon={<MapPin size={12} />}>{biz.address}</InfoRow>
+              )}
+              {biz?.website && (
+                <InfoLink icon={<Globe size={12} />} href={biz.website}>{biz.website.replace(/^https?:\/\//, "")}</InfoLink>
+              )}
+              {biz?.contact_phone && (
+                <InfoLink icon={<Phone size={12} />} href={`tel:${biz.contact_phone}`}>{biz.contact_phone}</InfoLink>
+              )}
+              {biz?.contact_email && (
+                <InfoLink icon={<Mail size={12} />} href={`mailto:${biz.contact_email}`}>{biz.contact_email}</InfoLink>
+              )}
+              {biz?.instagram_handle && (
+                <InfoLink icon={<Instagram size={12} />} href={`https://instagram.com/${biz.instagram_handle.replace(/^@/, "")}`}>@{biz.instagram_handle.replace(/^@/, "")}</InfoLink>
+              )}
+              {biz?.tiktok_handle && (
+                <InfoLink icon={<Music2 size={12} />} href={`https://tiktok.com/@${biz.tiktok_handle.replace(/^@/, "")}`}>@{biz.tiktok_handle.replace(/^@/, "")}</InfoLink>
+              )}
+            </div>
           </Section>
         )}
 
@@ -152,13 +167,21 @@ function PromoPage() {
         {party && (
           <Section title="În seara asta">
             <Link to="/app/parties" className="block rounded-xl bg-foreground/[0.04] border border-foreground/10 overflow-hidden">
-              {/* party has no cover image in schema */}
-              <div className="p-3 space-y-1">
+              <div className="p-3 space-y-1.5">
                 <div className="font-display uppercase text-sm">{party.title}</div>
                 <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
                   <Calendar size={11} /> {new Date(party.starts_at).toLocaleString("ro-RO", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                 </div>
-                {party.description && <p className="text-xs text-muted-foreground line-clamp-2">{party.description}</p>}
+                {party.location_text && (
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+                    <MapPin size={11} /> {party.location_text}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 pt-0.5">
+                  {party.vibe && <span className="px-2 py-0.5 rounded-full bg-foreground/10 font-mono text-[9px] uppercase tracking-widest">{party.vibe}</span>}
+                  {party.spots_total != null && <span className="px-2 py-0.5 rounded-full bg-foreground/10 font-mono text-[9px] uppercase tracking-widest flex items-center gap-1"><Users size={9} /> {party.spots_total} locuri</span>}
+                </div>
+                {party.description && <p className="text-xs text-muted-foreground line-clamp-3 pt-1">{party.description}</p>}
               </div>
             </Link>
           </Section>
@@ -168,14 +191,44 @@ function PromoPage() {
         {venue && (
           <Section title="Locație">
             <Link to="/app/venue/$id" params={{ id: venue.id }} className="block rounded-xl bg-foreground/[0.04] border border-foreground/10 overflow-hidden">
-              {venue.cover_url && <img src={venue.cover_url} alt="" className="w-full h-32 object-cover" />}
-              <div className="p-3 space-y-1">
-                <div className="font-display uppercase text-sm">{venue.name}</div>
-                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-                  <MapPin size={11} /> {venue.address || `${venue.street?.name ?? ""}${venue.street?.city?.name ? ", " + venue.street.city.name : ""}`}
+              {venue.cover_url && <img src={venue.cover_url} alt="" className="w-full h-40 object-cover" />}
+              <div className="p-3 space-y-2">
+                <div>
+                  <div className="font-display uppercase text-base">{venue.name}</div>
+                  <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{venue.type}</div>
+                </div>
+                {venue.description && <p className="text-xs text-foreground/80 line-clamp-3">{venue.description}</p>}
+                <div className="flex flex-col gap-1 pt-1">
+                  {(venue.address || venue.street?.name) && (
+                    <InfoRow icon={<MapPin size={12} />}>
+                      {venue.address || ""}
+                      {venue.street?.name ? (venue.address ? " · " : "") + `Str. ${venue.street.name}` : ""}
+                      {venue.street?.city?.name ? `, ${venue.street.city.name}` : ""}
+                    </InfoRow>
+                  )}
+                  {venue.phone && <InfoRow icon={<Phone size={12} />}>{venue.phone}</InfoRow>}
+                  {venue.ig_handle && (
+                    <InfoRow icon={<Instagram size={12} />}>@{venue.ig_handle.replace(/^@/, "")}</InfoRow>
+                  )}
+                  {venue.opening_hours && (
+                    <InfoRow icon={<Clock size={12} />}>
+                      {typeof venue.opening_hours === "string" ? venue.opening_hours : "Program disponibil"}
+                    </InfoRow>
+                  )}
                 </div>
               </div>
             </Link>
+          </Section>
+        )}
+
+        {/* External link CTA */}
+        {campaign.cta_url && (
+          <Section title="Link extern">
+            <a href={campaign.cta_url} target="_blank" rel="noreferrer"
+               className="flex items-center justify-between rounded-xl bg-foreground/[0.04] border border-foreground/10 p-3">
+              <span className="font-mono text-[11px] truncate pr-2">{campaign.cta_url.replace(/^https?:\/\//, "")}</span>
+              <ExternalLink size={14} className="text-muted-foreground flex-shrink-0" />
+            </a>
           </Section>
         )}
 
@@ -195,6 +248,26 @@ function PromoPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function InfoRow({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-2 text-xs text-foreground/85">
+      <span className="text-muted-foreground mt-0.5">{icon}</span>
+      <span className="min-w-0 break-words">{children}</span>
+    </div>
+  );
+}
+
+function InfoLink({ icon, href, children }: { icon: React.ReactNode; href: string; children: React.ReactNode }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer"
+       className="flex items-start gap-2 text-xs text-foreground/90 hover:text-neon-crimson transition">
+      <span className="text-muted-foreground mt-0.5">{icon}</span>
+      <span className="min-w-0 break-words underline-offset-2 hover:underline">{children}</span>
+      <ExternalLink size={10} className="text-muted-foreground mt-1 flex-shrink-0" />
+    </a>
   );
 }
 
