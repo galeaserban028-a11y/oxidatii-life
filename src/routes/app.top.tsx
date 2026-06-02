@@ -31,7 +31,7 @@ const METRIC_META: Record<Metric, { label: string; unit: string; icon: any }> = 
 
 function TopPage() {
   const { user, profile } = useAuth();
-  const [metric, setMetric] = useState<Metric>("sprits");
+  const metric = "sprits" as Metric;
   const [scope, setScope] = useState<Scope>("country");
   const [country, setCountry] = useState<string>("RO");
   const [countryOpen, setCountryOpen] = useState(false);
@@ -142,24 +142,6 @@ function TopPage() {
         </p>
       </header>
 
-      {/* Metric tabs */}
-      <div className="grid grid-cols-4 gap-1 p-1 rounded-2xl bg-secondary border border-border">
-        {(Object.keys(METRIC_META) as Metric[]).map((m) => {
-          const MIcon = METRIC_META[m].icon;
-          return (
-            <button
-              key={m}
-              onClick={() => setMetric(m)}
-              className={`py-2 rounded-xl text-[11px] font-semibold transition flex flex-col items-center gap-0.5 ${
-                metric === m ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
-              }`}
-            >
-              <MIcon size={14} />
-              {METRIC_META[m].label}
-            </button>
-          );
-        })}
-      </div>
 
       {/* Scope selector */}
       <div className="space-y-2">
