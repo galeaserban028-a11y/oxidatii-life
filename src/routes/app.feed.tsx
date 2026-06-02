@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Lock, Sparkles, MapPin, Flame } from "lucide-react";
+import { Lock, Sparkles, MapPin, Flame, Rocket } from "lucide-react";
 
 export const Route = createFileRoute("/app/feed")({
   head: () => ({ meta: [{ title: "Feed privat · OXIDAȚII" }] }),
