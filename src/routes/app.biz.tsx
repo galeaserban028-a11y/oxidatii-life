@@ -7,6 +7,7 @@ import {
   Building2, Wallet, Rocket, Plus, TrendingUp, Eye, MousePointerClick,
   Image as ImageIcon, MapPin, Megaphone, Sparkles, Bell, Compass, Star,
   Settings2, X, Calendar, Target, Palette, Upload, ChevronRight, Pencil,
+  Users, Heart, Flame, ChevronDown, Check, Zap,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/biz")({
