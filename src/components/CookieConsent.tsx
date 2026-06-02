@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 
 const KEY = "oxi-cookie-consent-v1";
 
@@ -13,6 +13,8 @@ export function getConsent(): ConsentValue {
 
 export function CookieConsent() {
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const isAppRoute = location.pathname.startsWith("/app");
 
   useEffect(() => {
     if (!getConsent()) setOpen(true);
@@ -33,7 +35,9 @@ export function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label="Setări cookie-uri"
-      className="fixed inset-x-2 bottom-2 z-[100] mx-auto max-w-2xl rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-2xl backdrop-blur md:inset-x-auto md:left-4 md:right-4"
+      className={`fixed inset-x-2 z-[100] mx-auto max-w-2xl rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-2xl backdrop-blur md:inset-x-auto md:left-4 md:right-4 ${
+        isAppRoute ? "top-20 bottom-auto" : "bottom-2"
+      }`}
     >
       <div className="flex flex-col gap-3">
         <div>
