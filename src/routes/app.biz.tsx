@@ -906,6 +906,7 @@ function BrandProfileEditor({ business, cities, onClose, onSaved }: {
 function CampaignEditor({ business, campaign, onClose, onSaved }: {
   business: any; campaign: any; onClose: () => void; onSaved: () => void;
 }) {
+  const { user } = useAuth();
   const [title, setTitle] = useState(campaign.title ?? "");
   const [subtitle, setSubtitle] = useState(campaign.subtitle ?? "");
   const [ctaText, setCtaText] = useState(campaign.cta_text ?? "Vezi detalii");
@@ -919,10 +920,10 @@ function CampaignEditor({ business, campaign, onClose, onSaved }: {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const uploadImages = async (files: FileList | null) => {
-    if (!files) return;
+    if (!files || !user) return;
     const uploaded: string[] = [];
     for (const file of Array.from(files).slice(0, 4)) {
-      const path = `biz/${business.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+      const path = `${user.id}/biz/${business.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
       const { error } = await supabase.storage.from("venue-photos").upload(path, file, { upsert: false });
       if (error) { alert(error.message); continue; }
       const { data } = supabase.storage.from("venue-photos").getPublicUrl(path);
