@@ -35,16 +35,18 @@ export function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label="Setări cookie-uri"
-      className={`fixed inset-x-2 z-[100] mx-auto max-w-2xl rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-2xl backdrop-blur md:inset-x-auto md:left-4 md:right-4 ${
-        isAppRoute ? "top-20 bottom-auto" : "bottom-2"
+      className={`fixed inset-x-2 z-[100] mx-auto rounded-2xl border border-foreground/15 bg-background/95 shadow-2xl backdrop-blur ${
+        isAppRoute
+          ? "top-2 max-w-xl p-3 md:left-1/2 md:right-auto md:-translate-x-1/2"
+          : "bottom-2 max-w-2xl p-4 md:inset-x-auto md:left-4 md:right-4"
       }`}
     >
-      <div className="flex flex-col gap-3">
+      <div className={isAppRoute ? "flex items-center gap-3" : "flex flex-col gap-3"}>
         <div>
           <div className="font-display text-base uppercase leading-tight">
             🍪 cookies pe oxidații
           </div>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          <p className={`${isAppRoute ? "hidden sm:block" : ""} mt-1 text-xs leading-relaxed text-muted-foreground`}>
             Folosim cookie-uri esențiale pentru autentificare și funcționarea aplicației.
             Cu acordul tău, le folosim și pe cele opționale pentru analiză și
             îmbunătățirea experienței. Vezi{" "}
@@ -62,7 +64,7 @@ export function CookieConsent() {
             .
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
           <button
             onClick={() => decide("essential")}
             className="rounded-md border border-foreground/20 px-3 py-2 font-mono text-[10px] uppercase tracking-widest hover:bg-foreground/5"
