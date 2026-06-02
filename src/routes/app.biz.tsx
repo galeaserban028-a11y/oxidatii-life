@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { WalletTopupDialog } from "@/components/WalletTopupDialog";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import {
   Building2, Wallet, Rocket, Plus, TrendingUp, Eye, MousePointerClick,
   Image as ImageIcon, MapPin, Megaphone, Sparkles, Bell, Compass, Star,
