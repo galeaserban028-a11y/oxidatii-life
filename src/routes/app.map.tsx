@@ -122,7 +122,7 @@ function MapPage() {
   const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
 
-  const { data: cities = [], isLoading } = useQuery({
+  const { data: citiesData, isLoading } = useQuery({
     queryKey: ["cities"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -133,6 +133,7 @@ function MapPage() {
       return data.map(c => ({ ...c, lat: Number(c.lat), lng: Number(c.lng), chaos_level: Number(c.chaos_level), country: (c as any).country ?? "RO" }));
     },
   });
+  const cities = citiesData ?? EMPTY_CITIES;
 
   const { data: venues = [] } = useQuery({
     queryKey: ["map-venues-all"],
