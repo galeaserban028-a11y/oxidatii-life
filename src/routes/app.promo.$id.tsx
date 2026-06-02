@@ -25,13 +25,13 @@ function PromoPage() {
       if (error) throw error;
       const [biz, venue, party] = await Promise.all([
         supabase.from("business_accounts")
-          .select("id,brand_name,type,description,logo_url,cover_url,verified,instagram_handle")
+          .select("id,brand_name,type,description,logo_url,cover_url,verified,instagram_handle,tiktok_handle,website,contact_phone,contact_email,address")
           .eq("id", campaign.business_id).maybeSingle(),
         campaign.venue_id
-          ? supabase.from("venues").select("id,name,type,address,cover_url,street:streets(name,city:cities(name,slug))").eq("id", campaign.venue_id).maybeSingle()
+          ? supabase.from("venues").select("id,name,type,address,cover_url,phone,ig_handle,opening_hours,description,street:streets(name,city:cities(name,slug))").eq("id", campaign.venue_id).maybeSingle()
           : Promise.resolve({ data: null }),
         campaign.party_id
-          ? supabase.from("parties").select("id,title,starts_at,description,location_text").eq("id", campaign.party_id).maybeSingle()
+          ? supabase.from("parties").select("id,title,starts_at,description,location_text,vibe,spots_total").eq("id", campaign.party_id).maybeSingle()
           : Promise.resolve({ data: null }),
       ]);
 
