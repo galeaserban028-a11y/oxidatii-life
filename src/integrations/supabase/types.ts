@@ -35,6 +35,163 @@ export type Database = {
         }
         Relationships: []
       }
+      business_accounts: {
+        Row: {
+          brand_name: string
+          city_id: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          monthly_credits_cents: number
+          owner_user_id: string
+          slug: string | null
+          tier: Database["public"]["Enums"]["business_tier"]
+          type: Database["public"]["Enums"]["business_type"]
+          updated_at: string
+          venue_id: string | null
+          verified: boolean
+          wallet_balance_cents: number
+        }
+        Insert: {
+          brand_name: string
+          city_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          monthly_credits_cents?: number
+          owner_user_id: string
+          slug?: string | null
+          tier?: Database["public"]["Enums"]["business_tier"]
+          type?: Database["public"]["Enums"]["business_type"]
+          updated_at?: string
+          venue_id?: string | null
+          verified?: boolean
+          wallet_balance_cents?: number
+        }
+        Update: {
+          brand_name?: string
+          city_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          monthly_credits_cents?: number
+          owner_user_id?: string
+          slug?: string | null
+          tier?: Database["public"]["Enums"]["business_tier"]
+          type?: Database["public"]["Enums"]["business_type"]
+          updated_at?: string
+          venue_id?: string | null
+          verified?: boolean
+          wallet_balance_cents?: number
+        }
+        Relationships: []
+      }
+      campaign_events: {
+        Row: {
+          campaign_id: string
+          cost_cents: number
+          created_at: string
+          event_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          campaign_id: string
+          cost_cents?: number
+          created_at?: string
+          event_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          cost_cents?: number
+          created_at?: string
+          event_type?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          bid_cents: number
+          budget_cents: number
+          business_id: string
+          city_id: string | null
+          clicks: number
+          created_at: string
+          ends_at: string | null
+          id: string
+          impressions: number
+          kind: Database["public"]["Enums"]["campaign_kind"]
+          party_id: string | null
+          spent_cents: number
+          starts_at: string
+          status: Database["public"]["Enums"]["campaign_status"]
+          title: string
+          updated_at: string
+          venue_id: string | null
+        }
+        Insert: {
+          bid_cents?: number
+          budget_cents?: number
+          business_id: string
+          city_id?: string | null
+          clicks?: number
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          impressions?: number
+          kind?: Database["public"]["Enums"]["campaign_kind"]
+          party_id?: string | null
+          spent_cents?: number
+          starts_at?: string
+          status?: Database["public"]["Enums"]["campaign_status"]
+          title: string
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Update: {
+          bid_cents?: number
+          budget_cents?: number
+          business_id?: string
+          city_id?: string | null
+          clicks?: number
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          impressions?: number
+          kind?: Database["public"]["Enums"]["campaign_kind"]
+          party_id?: string | null
+          spent_cents?: number
+          starts_at?: string
+          status?: Database["public"]["Enums"]["campaign_status"]
+          title?: string
+          updated_at?: string
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenges: {
         Row: {
           challenged_id: string
@@ -777,6 +934,44 @@ export type Database = {
           },
         ]
       }
+      wallet_ledger: {
+        Row: {
+          amount_cents: number
+          business_id: string
+          campaign_id: string | null
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["ledger_kind"]
+          note: string | null
+        }
+        Insert: {
+          amount_cents: number
+          business_id: string
+          campaign_id?: string | null
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["ledger_kind"]
+          note?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          business_id?: string
+          campaign_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["ledger_kind"]
+          note?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_ledger_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -803,6 +998,11 @@ export type Database = {
         | "BOIERUL_NOPTII"
         | "REGELE_CENTRULUI"
         | "ZEU_BALCANIC"
+      business_tier: "starter" | "growth" | "pro" | "elite"
+      business_type: "club" | "bar" | "festival" | "promoter" | "host" | "beach"
+      campaign_kind: "boost_feed"
+      campaign_status: "draft" | "active" | "paused" | "exhausted" | "ended"
+      ledger_kind: "topup" | "spend" | "refund" | "bonus" | "adjustment"
       venue_type: "club" | "bar" | "terasa" | "after" | "pub"
     }
     CompositeTypes: {
@@ -940,6 +1140,11 @@ export const Constants = {
         "REGELE_CENTRULUI",
         "ZEU_BALCANIC",
       ],
+      business_tier: ["starter", "growth", "pro", "elite"],
+      business_type: ["club", "bar", "festival", "promoter", "host", "beach"],
+      campaign_kind: ["boost_feed"],
+      campaign_status: ["draft", "active", "paused", "exhausted", "ended"],
+      ledger_kind: ["topup", "spend", "refund", "bonus", "adjustment"],
       venue_type: ["club", "bar", "terasa", "after", "pub"],
     },
   },

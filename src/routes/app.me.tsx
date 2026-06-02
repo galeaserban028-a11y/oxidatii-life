@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LogOut, Camera, Lock, Globe2, UserPlus, ShieldOff, ChevronDown, Menu, Plus,
-  Grid3x3, Bookmark, UserSquare2, Flame, Share2, Bell, Pencil, Check, Settings,
+  Grid3x3, Bookmark, UserSquare2, Flame, Share2, Bell, Pencil, Check, Settings, Rocket,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -210,6 +210,7 @@ function MePage() {
             </SheetHeader>
             <nav className="py-2">
               <MenuItem to="/app/settings" icon={<Settings size={16} className="text-neon-green" />} onSelect={() => setMenuOpen(false)} label="Setări" />
+              <MenuItem to="/app/biz" icon={<Rocket size={16} className="text-neon-purple" />} onSelect={() => setMenuOpen(false)} label="Business · Promovare" />
               <div className="my-1 border-t border-foreground/10" />
               <MenuItem to="/app/notifications" icon={<Bell size={16} />} onSelect={() => setMenuOpen(false)} label="Notificări" />
               <MenuItem to="/app/requests" icon={<UserPlus size={16} />} onSelect={() => setMenuOpen(false)}

@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Lock, Sparkles, MapPin, Flame } from "lucide-react";
+import { Lock, Sparkles, MapPin, Flame, Rocket } from "lucide-react";
 
 export const Route = createFileRoute("/app/feed")({
   head: () => ({ meta: [{ title: "Feed privat · OXIDAȚII" }] }),
@@ -98,7 +99,38 @@ async function loadFeed(userId: string) {
   ]);
   const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
   const venueMap = new Map((venues ?? []).map((v: any) => [v.id, v]));
-  return { items, profMap, venueMap, followingCount: (following ?? []).length };
+
+  // Boosted slot: one active campaign with budget remaining, randomized
+  const { data: campaigns } = await supabase
+    .from("campaigns")
+    .select("id, party_id, title, bid_cents, budget_cents, spent_cents, business_id")
+    .eq("status", "active")
+    .eq("kind", "boost_feed")
+    .limit(20);
+
+  let boosted: any = null;
+  const eligible = (campaigns ?? []).filter(
+    (c) => (c.spent_cents ?? 0) + (c.bid_cents ?? 0) <= (c.budget_cents ?? 0) && c.party_id,
+  );
+  if (eligible.length) {
+    const pick = eligible[Math.floor(Math.random() * eligible.length)];
+    const [{ data: party }, { data: biz }] = await Promise.all([
+      supabase
+        .from("parties")
+        .select("id, title, location_text, vibe, host_id, starts_at, expires_at")
+        .eq("id", pick.party_id!)
+        .gt("expires_at", new Date().toISOString())
+        .maybeSingle(),
+      supabase
+        .from("business_accounts")
+        .select("id, brand_name, verified")
+        .eq("id", pick.business_id)
+        .maybeSingle(),
+    ]);
+    if (party) boosted = { campaign: pick, party, business: biz };
+  }
+
+  return { items, profMap, venueMap, followingCount: (following ?? []).length, boosted };
 }
 
 function timeAgo(iso: string) {
@@ -168,6 +200,7 @@ function FeedPage() {
         </div>
       ) : (
         <div className="space-y-3">
+          {data.boosted && <BoostedCard boosted={data.boosted} userId={user.id} />}
           {data.items.map((it) => {
             const p = data.profMap.get(it.user_id);
             const v = it.venue_id ? data.venueMap.get(it.venue_id) : null;
@@ -270,5 +303,78 @@ function FeedPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function BoostedCard({ boosted, userId }: { boosted: any; userId: string }) {
+  const logged = useRef(false);
+  const campaign = boosted.campaign;
+  const party = boosted.party;
+  const biz = boosted.business;
+
+  useEffect(() => {
+    if (logged.current) return;
+    logged.current = true;
+    // Fire-and-forget impression: insert event + bump campaign counters
+    (async () => {
+      await supabase.from("campaign_events").insert({
+        campaign_id: campaign.id,
+        user_id: userId,
+        event_type: "impression",
+        cost_cents: campaign.bid_cents,
+      });
+      await supabase
+        .from("campaigns")
+        .update({
+          impressions: (campaign.impressions ?? 0) + 1,
+          spent_cents: (campaign.spent_cents ?? 0) + (campaign.bid_cents ?? 0),
+        })
+        .eq("id", campaign.id);
+    })().catch(() => {});
+  }, [campaign.id, campaign.bid_cents, campaign.impressions, campaign.spent_cents, userId]);
+
+  const onClick = async () => {
+    await supabase.from("campaign_events").insert({
+      campaign_id: campaign.id,
+      user_id: userId,
+      event_type: "click",
+      cost_cents: 0,
+    });
+    await supabase
+      .from("campaigns")
+      .update({ clicks: (campaign.clicks ?? 0) + 1 })
+      .eq("id", campaign.id);
+  };
+
+  return (
+    <article className="rounded-2xl overflow-hidden border border-neon-purple/40 bg-gradient-to-br from-neon-purple/10 via-background to-neon-crimson/10 relative">
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 text-[9px] font-mono uppercase tracking-widest px-2 py-1 rounded-md bg-background/70 backdrop-blur border border-neon-purple/40 text-neon-purple">
+        <Rocket size={9} /> boosted
+      </div>
+      <Link to="/app/squad" onClick={onClick} className="block">
+        <div className="p-5 space-y-2">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-purple">
+            {biz?.brand_name ?? "Partener"} {biz?.verified && "· ✓"}
+          </div>
+          <div className="font-display uppercase text-xl leading-tight">{party.title}</div>
+          {party.vibe && (
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              vibe: {party.vibe}
+            </div>
+          )}
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+            <MapPin size={10} /> {party.location_text}
+          </div>
+          <div className="pt-2">
+            <span
+              className="inline-block font-display uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-md text-white"
+              style={{ background: "var(--gradient-chaos)" }}
+            >
+              intră în șpriț →
+            </span>
+          </div>
+        </div>
+      </Link>
+    </article>
   );
 }
