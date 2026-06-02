@@ -198,6 +198,15 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
     qc.invalidateQueries({ queryKey: ["biz"] });
   };
 
+  const deleteBusiness = async () => {
+    if (!confirm(`Ștergi definitiv business-ul „${business.brand_name}"? Toate campaniile asociate vor fi șterse.`)) return;
+    await supabase.from("campaigns").delete().eq("business_id", business.id);
+    const { error } = await supabase.from("business_accounts").delete().eq("id", business.id);
+    if (error) { alert(error.message); return; }
+    qc.invalidateQueries({ queryKey: ["biz"] });
+  };
+
+
   return (
     <div className="rounded-2xl bg-foreground/[0.03] border border-foreground/10 overflow-hidden">
       {/* Cover */}
