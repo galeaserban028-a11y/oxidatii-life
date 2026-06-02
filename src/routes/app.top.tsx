@@ -31,7 +31,7 @@ const METRIC_META: Record<Metric, { label: string; unit: string; icon: any }> = 
 
 function TopPage() {
   const { user, profile } = useAuth();
-  const metric: Metric = "sprits";
+  const metric = "sprits" as Metric;
   const [scope, setScope] = useState<Scope>("country");
   const [country, setCountry] = useState<string>("RO");
   const [countryOpen, setCountryOpen] = useState(false);
