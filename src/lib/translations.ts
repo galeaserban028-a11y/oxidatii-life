@@ -790,7 +790,7 @@ export const RO_EN: Record<string, string> = {
   "Ștergi definitiv business-ul": "Permanently delete the business",
   "● Activă": "● Active",
   "❚❚ Pe pauză": "❚❚ Paused",
-  "Editează brand": "Edit brand",
+  "Editează campanie": "Edit campaign",
   "// BUSINESS · PROMOVARE": "// BUSINESS · PROMOTION",
   "// PASUL 1": "// STEP 1",
   "// organizare șpriț": "// spritz organizing",
