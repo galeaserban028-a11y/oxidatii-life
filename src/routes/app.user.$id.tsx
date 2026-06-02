@@ -28,7 +28,39 @@ import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 
 export const Route = createFileRoute("/app/user/$id")({
-  head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
+  loader: async ({ params }) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("id,username,display_name,bio,avatar_url")
+      .eq("id", params.id)
+      .maybeSingle();
+    return { profile: data };
+  },
+  head: ({ params, loaderData }) => {
+    const p: any = loaderData?.profile;
+    const handle = p?.username ? `@${p.username}` : p?.display_name ?? "Profil";
+    const display = p?.display_name ?? p?.username ?? "Profil";
+    const title = `${display} (${handle}) — OXIDAȚII`;
+    const desc = p?.bio
+      ? String(p.bio).slice(0, 155)
+      : `Profilul ${handle} pe OXIDAȚII — check-in-uri, rating-uri și momente din nightlife.`;
+    const url = `https://oxidatii.lovable.app/app/user/${params.id}`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "profile" },
+        ...(p?.avatar_url ? [
+          { property: "og:image", content: p.avatar_url },
+          { name: "twitter:image", content: p.avatar_url },
+        ] : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
   component: UserPage,
 });
 
