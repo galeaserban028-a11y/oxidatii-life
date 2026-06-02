@@ -467,10 +467,10 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
       targeting: { vibes, age_min: ageMin, age_max: ageMax, days, hour_from: hourFrom, hour_to: hourTo },
       schedule: { days, hour_from: hourFrom, hour_to: hourTo },
     };
-    const { error } = await supabase.from("campaigns").insert(insertData);
+    const { data: inserted, error } = await supabase.from("campaigns").insert(insertData).select().single();
     setBusy(false);
     if (error) return alert(error.message);
-    onCreated();
+    onCreated(inserted);
   };
 
   const Preview = (
