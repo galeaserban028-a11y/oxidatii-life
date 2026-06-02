@@ -367,10 +367,10 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
   const [venueId, setVenueId] = useState("");
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [ctaText, setCtaText] = useState(goal.cta);
+  const [ctaText, setCtaText] = useState<string>(goal.cta);
   const [ctaUrl, setCtaUrl] = useState("");
   const [images, setImages] = useState<string[]>([]);
-  const [themeColor, setThemeColor] = useState(goal.color);
+  const [themeColor, setThemeColor] = useState<string>(goal.color);
   const [cityId, setCityId] = useState<string>(business.city_id ?? "");
   const [vibes, setVibes] = useState<string[]>([]);
   const [ageMin, setAgeMin] = useState(18);
