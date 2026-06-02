@@ -35,6 +35,7 @@ import { Route as AppFeedRouteImport } from './routes/app.feed'
 import { Route as AppFazeRouteImport } from './routes/app.faze'
 import { Route as AppBlockedRouteImport } from './routes/app.blocked'
 import { Route as AppBizRouteImport } from './routes/app.biz'
+import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
 import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
@@ -172,6 +173,11 @@ const AppBizRoute = AppBizRouteImport.update({
   path: '/biz',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppVenueIdRoute = AppVenueIdRouteImport.update({
   id: '/venue/$id',
   path: '/venue/$id',
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/biz': typeof AppBizRoute
   '/app/blocked': typeof AppBlockedRoute
   '/app/faze': typeof AppFazeRoute
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/biz': typeof AppBizRoute
   '/app/blocked': typeof AppBlockedRoute
   '/app/faze': typeof AppFazeRoute
@@ -280,6 +288,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/biz': typeof AppBizRoute
   '/app/blocked': typeof AppBlockedRoute
   '/app/faze': typeof AppFazeRoute
@@ -316,6 +325,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/terms'
+    | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
     | '/app/faze'
@@ -349,6 +359,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/terms'
+    | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
     | '/app/faze'
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/terms'
+    | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
     | '/app/faze'
@@ -604,6 +616,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBizRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/venue/$id': {
       id: '/app/venue/$id'
       path: '/venue/$id'
@@ -650,6 +669,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
   AppBizRoute: typeof AppBizRoute
   AppBlockedRoute: typeof AppBlockedRoute
   AppFazeRoute: typeof AppFazeRoute
@@ -677,6 +697,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
   AppBizRoute: AppBizRoute,
   AppBlockedRoute: AppBlockedRoute,
   AppFazeRoute: AppFazeRoute,
@@ -718,3 +739,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
