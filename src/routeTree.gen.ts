@@ -43,6 +43,7 @@ import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
 import { Route as AppPromoIdRouteImport } from './routes/app.promo.$id'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
+import { Route as AppAdminUsersRouteImport } from './routes/app.admin.users'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -214,6 +215,11 @@ const AppChatIdRoute = AppChatIdRouteImport.update({
   path: '/chat/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -243,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
+  '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/promo/$id': typeof AppPromoIdRoute
@@ -277,6 +284,7 @@ export interface FileRoutesByTo {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app': typeof AppIndexRoute
+  '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/promo/$id': typeof AppPromoIdRoute
@@ -314,6 +322,7 @@ export interface FileRoutesById {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
+  '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/promo/$id': typeof AppPromoIdRoute
@@ -352,6 +361,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/'
+    | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/promo/$id'
@@ -386,6 +396,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app'
+    | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/promo/$id'
@@ -422,6 +433,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/'
+    | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/promo/$id'
@@ -682,14 +694,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/admin/users': {
+      id: '/app/admin/users'
+      path: '/users'
+      fullPath: '/app/admin/users'
+      preLoaderRoute: typeof AppAdminUsersRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
   }
 }
 
 interface AppAdminRouteChildren {
+  AppAdminUsersRoute: typeof AppAdminUsersRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
+  AppAdminUsersRoute: AppAdminUsersRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
 }
 
@@ -768,3 +789,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
