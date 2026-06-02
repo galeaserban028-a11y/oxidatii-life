@@ -440,7 +440,7 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
     if (!files || !user) return;
     const uploaded: string[] = [];
     for (const file of Array.from(files).slice(0, 4)) {
-      const path = `biz/${business.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+      const path = `${user.id}/biz/${business.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
       const { error } = await supabase.storage.from("venue-photos").upload(path, file, { upsert: false });
       if (error) { alert(error.message); continue; }
       const { data } = supabase.storage.from("venue-photos").getPublicUrl(path);
