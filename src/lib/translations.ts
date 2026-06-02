@@ -1126,6 +1126,32 @@ export const RO_EN: Record<string, string> = {
   "🇫🇮 Finlanda": "🇫🇮 Finland",
   "🇳🇴 Norvegia": "🇳🇴 Norway",
   "🇷🇸 Serbia": "🇷🇸 Serbia",
+
+  // ===== Missing translations (appended) =====
+  " ca să începi una": " to start one",
+  " din aplicație.": " from the app.",
+  " prezența ta": " your presence",
+  " — gata, ai aplicația pe ecran.": " — done, you've got the app on your screen.",
+  ". Opțional.": ". Optional.",
+  "AI credits epuizate. Adaugă credite din Settings → Workspace → Usage.": "AI credits exhausted. Add credits from Settings → Workspace → Usage.",
+  "Browserul nu suportă push notifications.": "Browser doesn't support push notifications.",
+  "Ieșire din cont": "Sign out",
+  "Pe iOS trebuie să adaugi întâi aplicația pe Home Screen.": "On iOS you must first add the app to your Home Screen.",
+  "Permisiunea a fost refuzată.": "Permission was denied.",
+  "Provocarea ta a fost acceptată": "Your challenge was accepted",
+  "Provocarea ta a fost refuzată": "Your challenge was declined",
+  "Push merge doar pe site-ul publicat, nu în preview.": "Push only works on the published site, not in preview.",
+  "Rate limit. Încearcă din nou în câteva secunde.": "Rate limit. Try again in a few seconds.",
+  "Română": "Romanian",
+  "Trebuie să fii autentificat.": "You must be signed in.",
+  "Închis": "Closed",
+  "e.g. my building, Cluj — Mărăști, Mihaela's place": "e.g. my building, Cluj — Mărăști, Mihaela's place",
+  "poză": "photo",
+  "📷 poză": "📷 photo",
+  "⚔️ Provocare nouă": "⚔️ New challenge",
+  "✅ Provocare acceptată": "✅ Challenge accepted",
+  "❌ Provocare refuzată": "❌ Challenge declined",
+  "🎉 Petrecere nouă în oraș": "🎉 New party in town",
 };
 
 
