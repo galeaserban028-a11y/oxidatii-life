@@ -19,12 +19,30 @@ type Campaign = {
 
 type Biz = { id: string; brand_name: string; logo_url: string | null };
 
-const STORAGE_KEY = "oxd:promo:lastSeen";
-const COOLDOWN_MS = 1000 * 60 * 5; // 5 min
+const DISMISSED_KEY = "oxd:promo:dismissed";
+const SEEN_FULL_KEY = "oxd:promo:seenFull";
 
-async function loadActive(): Promise<{ campaign: Campaign; biz: Biz | null } | null> {
+function getDismissed(): string[] {
+  try { return JSON.parse(sessionStorage.getItem(DISMISSED_KEY) || "[]"); } catch { return []; }
+}
+function addDismissed(id: string) {
+  const list = getDismissed();
+  if (!list.includes(id)) list.push(id);
+  sessionStorage.setItem(DISMISSED_KEY, JSON.stringify(list));
+}
+function hasSeenFull(id: string): boolean {
+  try { return (JSON.parse(sessionStorage.getItem(SEEN_FULL_KEY) || "[]") as string[]).includes(id); } catch { return false; }
+}
+function markSeenFull(id: string) {
+  try {
+    const list = JSON.parse(sessionStorage.getItem(SEEN_FULL_KEY) || "[]") as string[];
+    if (!list.includes(id)) list.push(id);
+    sessionStorage.setItem(SEEN_FULL_KEY, JSON.stringify(list));
+  } catch {}
+}
+
+async function loadActive(excludeIds: string[] = []): Promise<{ campaign: Campaign; biz: Biz | null } | null> {
   const nowIso = new Date().toISOString();
-  // story banners are the headline takeover; fall back to feed boost
   const { data } = await supabase
     .from("campaigns")
     .select("id, business_id, kind, title, subtitle, cta_text, cta_url, image_urls, theme_color, venue_id, party_id")
@@ -33,11 +51,11 @@ async function loadActive(): Promise<{ campaign: Campaign; biz: Biz | null } | n
     .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
     .in("kind", ["boost_story", "boost_feed", "boost_discover"])
     .order("bid_cents", { ascending: false })
-    .limit(10);
+    .limit(20);
 
-  const list = (data ?? []) as Campaign[];
+  const dismissed = new Set([...getDismissed(), ...excludeIds]);
+  const list = ((data ?? []) as Campaign[]).filter((c) => !dismissed.has(c.id));
   if (!list.length) return null;
-  // Weighted random pick favoring boost_story
   const weighted = list.flatMap((c) => {
     const w = c.kind === "boost_story" ? 5 : c.kind === "boost_feed" ? 2 : 1;
     return Array.from({ length: w }, () => c);
@@ -60,14 +78,12 @@ export function PromoTakeover() {
   const trackedRef = useRef(false);
 
   useEffect(() => {
-    const last = Number(localStorage.getItem(STORAGE_KEY) ?? 0);
-    if (Date.now() - last < COOLDOWN_MS) return;
     let alive = true;
     loadActive().then((res) => {
       if (!alive || !res) return;
       setPayload(res);
-      setPhase("full");
-      localStorage.setItem(STORAGE_KEY, String(Date.now()));
+      // If user already saw the full takeover this session, go straight to mini
+      setPhase(hasSeenFull(res.campaign.id) ? "mini" : "full");
     });
     return () => { alive = false; };
   }, []);
@@ -90,11 +106,26 @@ export function PromoTakeover() {
 
   // Auto-collapse to mini after 5s (full reclamă), then mini stays sticky until user dismisses
   useEffect(() => {
-    if (phase === "full") {
-      const t = setTimeout(() => setPhase("mini"), 5000);
+    if (phase === "full" && payload) {
+      const t = setTimeout(() => {
+        markSeenFull(payload.campaign.id);
+        setPhase("mini");
+      }, 5000);
       return () => clearTimeout(t);
     }
-  }, [phase]);
+  }, [phase, payload]);
+
+  const rotateNext = () => {
+    if (!payload) return;
+    const currentId = payload.campaign.id;
+    addDismissed(currentId);
+    loadActive([currentId]).then((res) => {
+      if (!res) { setPhase("gone"); setPayload(null); return; }
+      trackedRef.current = false;
+      setPayload(res);
+      setPhase(hasSeenFull(res.campaign.id) ? "mini" : "full");
+    });
+  };
 
 
   const handleClick = () => {
@@ -125,7 +156,10 @@ export function PromoTakeover() {
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
         </div>
         <button
-          onClick={() => setPhase("gone")}
+          onClick={() => {
+            if (payload) markSeenFull(payload.campaign.id);
+            setPhase("mini");
+          }}
           className="absolute top-4 right-4 p-2 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 z-10"
           aria-label="Închide"
         >
@@ -192,9 +226,9 @@ export function PromoTakeover() {
           {campaign.cta_text || "Vezi"} <ChevronRight size={11} />
         </span>
         <button
-          onClick={(e) => { e.stopPropagation(); setPhase("gone"); }}
+          onClick={(e) => { e.stopPropagation(); rotateNext(); }}
           className="p-1.5 rounded-full hover:bg-foreground/10 flex-shrink-0"
-          aria-label="Închide"
+          aria-label="Următoarea reclamă"
         >
           <X size={13} />
         </button>
