@@ -58,17 +58,46 @@ const TIERS: Tier[] = [
 ];
 
 const COIN_PACKS = [
-  { id: "mic", coins: 50, price: 4.99, label: "Mic" },
-  { id: "mediu", coins: 200, price: 14.99, label: "Mediu", bonus: "+10%" },
-  { id: "mare", coins: 600, price: 39.99, label: "Mare", bonus: "+20%", popular: true },
-  { id: "boss", coins: 1500, price: 89.99, label: "Boss", bonus: "+35%" },
-  { id: "legenda", coins: 5000, price: 249, label: "Legenda", bonus: "+50%" },
+  { id: "coins_mic", coins: 50, price: 4.99, label: "Mic" },
+  { id: "coins_mediu", coins: 200, price: 14.99, label: "Mediu", bonus: "+10%" },
+  { id: "coins_mare", coins: 600, price: 39.99, label: "Mare", bonus: "+20%", popular: true },
+  { id: "coins_boss", coins: 1500, price: 89.99, label: "Boss", bonus: "+35%" },
+  { id: "coins_legenda", coins: 5000, price: 249, label: "Legenda", bonus: "+50%" },
 ];
 
 function PremiumPage() {
   const { profile } = useAuth();
   const [annual, setAnnual] = useState(false);
+  const [checkout, setCheckout] = useState<{ priceId: string; title: string } | null>(null);
+  const [openingPortal, setOpeningPortal] = useState(false);
   const currentTier = (profile as any)?.premium_tier as PremiumTier;
+
+  const handleBuy = (tier: Tier) => {
+    const priceId = `${tier.id}_${annual ? "yearly" : "monthly"}`;
+    setCheckout({ priceId, title: `${tier.name} ${annual ? "anual" : "lunar"}` });
+  };
+
+  const handleCoins = (pack: typeof COIN_PACKS[0]) => {
+    setCheckout({ priceId: pack.id, title: `${pack.coins} coins · ${pack.label}` });
+  };
+
+  const handleManage = async () => {
+    setOpeningPortal(true);
+    try {
+      const result = await createPremiumPortalSession({
+        data: {
+          returnUrl: `${window.location.origin}/app/premium`,
+          environment: getStripeEnvironment(),
+        },
+      });
+      if ("error" in result) throw new Error(result.error);
+      window.open(result.url, "_blank");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Nu pot deschide portalul");
+    } finally {
+      setOpeningPortal(false);
+    }
+  };
 
   const handleBuy = (tier: Tier) => {
     toast.info(`Plățile se activează curând — ${tier.name} ${annual ? "anual" : "lunar"}`, {
