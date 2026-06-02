@@ -99,15 +99,7 @@ function PremiumPage() {
     }
   };
 
-  const handleBuy = (tier: Tier) => {
-    toast.info(`Plățile se activează curând — ${tier.name} ${annual ? "anual" : "lunar"}`, {
-      description: "Lucrăm la integrarea sistemului de plată. Vei fi notificat când e gata.",
-    });
-  };
 
-  const handleCoins = (pack: typeof COIN_PACKS[0]) => {
-    toast.info(`Pachet ${pack.label} — ${pack.coins} coins`, { description: "Plățile se activează curând." });
-  };
 
   return (
     <div className="pb-24">
