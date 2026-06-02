@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Radar, MapPin, Users, Navigation } from "lucide-react";
+import { Radar, MapPin, Users, Navigation, Flame } from "lucide-react";
 
 export function FinderRadar() {
   const { user, profile } = useAuth();
