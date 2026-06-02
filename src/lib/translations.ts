@@ -773,7 +773,7 @@ export const RO_EN: Record<string, string> = {
   "Vezi": "View",
   "Vezi detalii": "View details",
   "Vezi locul": "View the venue",
-  "Vezi": "View",
+  "Vezi cum merge": "See how it goes",
   "Detalii": "Details",
   "Vizual": "Visual",
   "Buton": "Button",
