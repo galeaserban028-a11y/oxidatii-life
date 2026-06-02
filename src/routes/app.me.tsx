@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useFollowStats, useIncomingFollowRequests } from "@/lib/follows";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { ReputationCard } from "@/components/app/ReputationCard";
 
 export const Route = createFileRoute("/app/me")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -308,6 +309,18 @@ function MePage() {
             {moments?.city && <> · din <span className="text-foreground">{moments.city.name}</span></>}
           </div>
         </div>
+
+        <ReputationCard
+          sprits={profile.lifetime_sprits ?? 0}
+          streak={(profile as any).current_streak ?? 0}
+          longestStreak={(profile as any).longest_streak ?? 0}
+          followers={followStats?.followers ?? 0}
+          following={followStats?.following ?? 0}
+          aura={profile.aura ?? 0}
+          hasAvatar={!!profile.avatar_url}
+          hasBio={!!(profile as any).bio}
+          createdAt={(profile as any).created_at}
+        />
 
         {/* Action buttons */}
         <div className="mt-3 grid grid-cols-[1fr_1fr_auto] gap-1.5">
