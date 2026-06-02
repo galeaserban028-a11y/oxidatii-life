@@ -285,7 +285,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
           disabled={business.wallet_balance_cents < 100}
           className="w-full font-display uppercase text-[12px] tracking-widest px-4 py-3 rounded-md text-white flex items-center justify-center gap-1.5 disabled:opacity-50"
           style={{ background: "var(--gradient-chaos)" }}>
-          <Megaphone size={13} /> Promovare nouă
+          <Megaphone size={13} /> Pornește campania
         </button>
         {business.wallet_balance_cents < 100 && (
           <div className="text-[10px] text-muted-foreground text-center">
