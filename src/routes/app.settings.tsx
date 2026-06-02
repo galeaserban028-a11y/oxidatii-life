@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   ChevronLeft, ChevronRight, Globe2, Lock, MapPin, Bell,
   ShieldOff, UserPlus, Pencil, LogOut, Trash2, MessageSquare,
-  Building2, Loader2, ExternalLink, Bug,
+  Building2, Loader2, ExternalLink, Bug, FileText, ScrollText, Cookie, ShieldCheck,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -211,6 +211,34 @@ function SettingsPage() {
           <Row icon={<MessageSquare size={16} />} label="Mesaje" to="/app/inbox" />
         </Section>
 
+        {/* Legal */}
+        <Section title="Legal" subtitle="Documente și GDPR">
+          <RowExternalLink
+            icon={<ShieldCheck size={16} />}
+            href="/privacy"
+            label="Politica de confidențialitate"
+            hint="Ce date colectăm, drepturile tale (GDPR)"
+          />
+          <RowExternalLink
+            icon={<ScrollText size={16} />}
+            href="/terms"
+            label="Termeni și condiții"
+            hint="Reguli de folosire a aplicației"
+          />
+          <RowExternalLink
+            icon={<Cookie size={16} />}
+            href="/cookies"
+            label="Politica de cookies"
+            hint="Cookie-uri și cum le gestionezi"
+          />
+          <RowExternalLink
+            icon={<FileText size={16} />}
+            href="mailto:privacy@oxidatii.app"
+            label="Cere ștergerea datelor"
+            hint="Trimite-ne un email și răspundem în 30 de zile"
+          />
+        </Section>
+
         {/* About */}
         <Section title="Despre">
           <RowButton
@@ -225,6 +253,7 @@ function SettingsPage() {
             <span>oxidatii · v1.0</span>
           </div>
         </Section>
+
 
         {/* Danger zone */}
         <Section title="Sesiune" tone="danger">
@@ -410,6 +439,27 @@ function RowExternal({ href, label }: { href: string; label: string }) {
       <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0"><ExternalLink size={15} /></div>
       <div className="flex-1 text-sm">{label}</div>
       <ChevronRight size={16} className="text-muted-foreground" />
+    </a>
+  );
+}
+
+function RowExternalLink({
+  icon, href, label, hint,
+}: { icon: React.ReactNode; href: string; label: string; hint?: string }) {
+  const isMail = href.startsWith("mailto:");
+  return (
+    <a
+      href={href}
+      target={isMail ? undefined : "_blank"}
+      rel={isMail ? undefined : "noreferrer"}
+      className="flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition active:bg-foreground/10"
+    >
+      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm">{label}</div>
+        {hint && <div className="text-[11px] text-muted-foreground truncate">{hint}</div>}
+      </div>
+      <ChevronRight size={16} className="text-muted-foreground shrink-0" />
     </a>
   );
 }
