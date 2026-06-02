@@ -76,6 +76,22 @@ function BizPage() {
   const [brand, setBrand] = useState("");
   const [type, setType] = useState<(typeof BUSINESS_TYPES)[number]["value"]>("promoter");
   const [busy, setBusy] = useState(false);
+  const [topupBizId, setTopupBizId] = useState<string | null>(null);
+
+  // După întoarcerea din checkout, refresh wallet (webhook actualizează balance)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("topup") === "success") {
+      // Poll de câteva ori ca să prindem webhook-ul
+      let n = 0;
+      const t = setInterval(() => {
+        qc.invalidateQueries({ queryKey: ["biz"] });
+        if (++n >= 5) clearInterval(t);
+      }, 1500);
+      window.history.replaceState({}, "", window.location.pathname);
+      return () => clearInterval(t);
+    }
+  }, [qc]);
 
   if (!user) return <div className="px-4 pt-6 text-sm text-muted-foreground">Conectează-te.</div>;
 
@@ -89,16 +105,6 @@ function BizPage() {
     setBusy(false);
     if (error) return alert(error.message);
     setBrand(""); setCreateOpen(false);
-    qc.invalidateQueries({ queryKey: ["biz"] });
-  };
-
-  const topup = async (bizId: string, currentBalance: number, amountRon: number) => {
-    const cents = Math.round(amountRon * 100);
-    await supabase.from("wallet_ledger").insert({
-      business_id: bizId, kind: "topup", amount_cents: cents, note: `Top-up demo +${amountRon} RON`,
-    });
-    await supabase.from("business_accounts")
-      .update({ wallet_balance_cents: currentBalance + cents }).eq("id", bizId);
     qc.invalidateQueries({ queryKey: ["biz"] });
   };
 
