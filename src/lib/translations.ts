@@ -454,7 +454,6 @@ export const RO_EN: Record<string, string> = {
   "Ajustare wallet în RON (poate fi negativ):": "Wallet adjustment in EUR (can be negative):",
   "Câți RON adaugi în wallet?": "How much do you add to the wallet?",
   "Pauză": "Pause",
-  "Activează": "Activate",
   "Activă": "Active",
   "Pe pauză": "Paused",
   "Ștearsă": "Deleted",
