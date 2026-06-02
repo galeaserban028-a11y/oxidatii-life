@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   ChevronLeft, ChevronRight, Globe2, Lock, MapPin, Bell,
   ShieldOff, UserPlus, Pencil, LogOut, Trash2, MessageSquare,
-  Building2, Loader2, ExternalLink,
+  Building2, Loader2, ExternalLink, Bug,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,40 @@ function SettingsPage() {
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [bugOpen, setBugOpen] = useState(false);
+  const [bugReason, setBugReason] = useState("");
+  const [bugDetails, setBugDetails] = useState("");
+  const [bugSending, setBugSending] = useState(false);
+
+  async function sendBugReport() {
+    if (!bugReason.trim()) return toast.error("Spune pe scurt ce nu merge");
+    setBugSending(true);
+    try {
+      const { error } = await supabase.from("reports").insert({
+        reporter_id: user!.id,
+        target_type: "bug_report",
+        target_id: user!.id,
+        reason: bugReason.trim().slice(0, 200),
+        details: [
+          bugDetails.trim().slice(0, 2000),
+          `--- context ---`,
+          `url: ${window.location.href}`,
+          `ua: ${navigator.userAgent}`,
+          `screen: ${window.innerWidth}x${window.innerHeight}`,
+          `user: ${user!.email ?? user!.id}`,
+        ].filter(Boolean).join("\n"),
+      });
+      if (error) throw error;
+      toast.success("Mulțumim! Raportul a ajuns la echipă.");
+      setBugOpen(false);
+      setBugReason("");
+      setBugDetails("");
+    } catch (e: any) {
+      toast.error(e.message ?? "Nu s-a putut trimite");
+    } finally {
+      setBugSending(false);
+    }
+  }
 
   const { data: cities = [] } = useQuery({
     queryKey: ["cities-settings"],
@@ -179,6 +213,12 @@ function SettingsPage() {
 
         {/* About */}
         <Section title="Despre">
+          <RowButton
+            icon={<Bug size={16} className="text-neon-crimson" />}
+            label="Raportează o problemă"
+            hint="Trimite un bug sau o sugestie către echipă"
+            onClick={() => setBugOpen(true)}
+          />
           <RowExternal href="https://lovable.app" label="Suport & feedback" />
           <div className="px-4 py-3 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
             <span>Versiune</span>
@@ -227,6 +267,44 @@ function SettingsPage() {
               );
             })}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bug report */}
+      <Dialog open={bugOpen} onOpenChange={setBugOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-display uppercase flex items-center gap-2">
+              <Bug size={16} className="text-neon-crimson" /> Raportează o problemă
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <input
+              autoFocus
+              value={bugReason}
+              onChange={(e) => setBugReason(e.target.value)}
+              placeholder="Ce nu merge? (scurt)"
+              maxLength={200}
+              className="w-full bg-foreground/5 rounded-md px-3 py-2.5 text-sm border border-foreground/10 focus:border-neon-crimson outline-none"
+            />
+            <textarea
+              value={bugDetails}
+              onChange={(e) => setBugDetails(e.target.value)}
+              placeholder="Detalii: ce făceai, ce te aștepți să se întâmple…"
+              maxLength={2000}
+              rows={5}
+              className="w-full bg-foreground/5 rounded-md px-3 py-2.5 text-sm border border-foreground/10 focus:border-neon-crimson outline-none resize-none"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Trimitem și ruta curentă, dispozitivul și emailul tău, ca să te poată ajuta echipa.
+            </p>
+          </div>
+          <DialogFooter>
+            <button onClick={() => setBugOpen(false)} disabled={bugSending} className="px-4 py-2 rounded-lg border border-foreground/15 text-sm">Renunță</button>
+            <button onClick={sendBugReport} disabled={bugSending} className="px-4 py-2 rounded-lg bg-neon-crimson text-white text-sm font-semibold flex items-center gap-1.5">
+              {bugSending && <Loader2 size={14} className="animate-spin" />} Trimite
+            </button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
