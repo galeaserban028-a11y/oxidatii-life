@@ -8,6 +8,48 @@ import { toast } from "sonner";
 import { evalOpenNow, normalizeHours, formatSlot, DAY_KEYS, DAY_LABELS } from "@/lib/openingHours";
 
 export const Route = createFileRoute("/app/venue/$id")({
+  loader: async ({ params }) => {
+    const { data } = await supabase
+      .from("venues")
+      .select("id,name,type,description,address,cover_url,opening_hours")
+      .eq("id", params.id)
+      .maybeSingle();
+    return { venue: data };
+  },
+  head: ({ params, loaderData }) => {
+    const v: any = loaderData?.venue;
+    const name = v?.name ?? "Venue";
+    const title = `${name} — OXIDAȚII`;
+    const desc = v?.description
+      ? String(v.description).slice(0, 155)
+      : `${name}${v?.address ? ` · ${v.address}` : ""} — vezi cine e live, șprițuri și momente din ${name} pe OXIDAȚII.`;
+    const url = `https://oxidatii.lovable.app/app/venue/${params.id}`;
+    const ld: any = {
+      "@context": "https://schema.org",
+      "@type": v?.type === "club" ? "NightClub" : "BarOrPub",
+      name,
+      url,
+      ...(v?.description && { description: v.description }),
+      ...(v?.address && { address: { "@type": "PostalAddress", streetAddress: v.address, addressCountry: "RO" } }),
+      ...(v?.cover_url && { image: v.cover_url }),
+    };
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "place" },
+        ...(v?.cover_url ? [
+          { property: "og:image", content: v.cover_url },
+          { name: "twitter:image", content: v.cover_url },
+        ] : []),
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: [{ type: "application/ld+json", children: JSON.stringify(ld) }],
+    };
+  },
   component: VenuePage,
 });
 

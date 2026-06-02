@@ -109,6 +109,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "dns-prefetch", href: "https://qzxvnjpumtujfylfofmg.supabase.co" },
       { rel: "preconnect", href: "https://qzxvnjpumtujfylfofmg.supabase.co", crossOrigin: "anonymous" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "OXIDAȚII",
+          url: "https://oxidatii.lovable.app",
+          logo: "https://oxidatii.lovable.app/icon-512.png",
+          description: "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România.",
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

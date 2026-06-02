@@ -30,7 +30,7 @@ export function AgeGate() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
       <div className="w-full max-w-sm rounded-2xl border border-neon-crimson/30 bg-background p-6 text-center shadow-2xl">
         <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center">
-          <img src={logoSticker} alt="Oxidații" className="h-20 w-20 object-contain drop-shadow-[0_4px_18px_rgba(255,49,88,0.45)]" />
+          <img src={logoSticker} alt="Logo OXIDAȚII — verificare vârstă" className="h-20 w-20 object-contain drop-shadow-[0_4px_18px_rgba(255,49,88,0.45)]" />
         </div>
 
 

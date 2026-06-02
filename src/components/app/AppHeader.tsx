@@ -25,7 +25,7 @@ export function AppHeader() {
         )}
         <img
           src={logoBanner}
-          alt="Oxidații"
+          alt="Logo OXIDAȚII — nightlife România"
           className="h-10 w-auto object-contain drop-shadow-[0_2px_8px_rgba(255,49,88,0.4)]"
         />
       </div>

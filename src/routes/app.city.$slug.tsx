@@ -4,6 +4,32 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/app/city/$slug")({
+  loader: async ({ params }) => {
+    const { data } = await supabase
+      .from("cities")
+      .select("id,name,slug,region")
+      .eq("slug", params.slug)
+      .maybeSingle();
+    return { city: data };
+  },
+  head: ({ params, loaderData }) => {
+    const c: any = loaderData?.city;
+    const name = c?.name ?? "Oraș";
+    const title = `${name} — Nightlife live · OXIDAȚII`;
+    const desc = `Vezi cluburile, străzile și șprițurile live din ${name}${c?.region ? `, ${c.region}` : ""} pe OXIDAȚII. Cine, unde și când — în timp real.`;
+    const url = `https://oxidatii.lovable.app/app/city/${params.slug}`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc.slice(0, 158) },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc.slice(0, 158) },
+        { property: "og:url", content: url },
+        { property: "og:type", content: "place" },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
   component: CityPage,
 });
 

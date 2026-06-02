@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /app/admin
+Disallow: /app/inbox
+Disallow: /app/chat
+Disallow: /app/notifications
+Disallow: /app/settings
+Disallow: /app/me
+Disallow: /app/blocked
+Disallow: /app/requests
+Disallow: /onboarding
+Disallow: /lovable
+
+Sitemap: https://oxidatii.lovable.app/sitemap.xml
