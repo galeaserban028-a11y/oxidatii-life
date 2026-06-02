@@ -138,12 +138,13 @@ function PromoPage() {
         {biz?.description && (
           <Section title="Despre">
             <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">{biz.description}</p>
-            {biz.ig_handle && (
-              <a href={`https://instagram.com/${biz.ig_handle.replace(/^@/, "")}`} target="_blank" rel="noreferrer"
+            {biz.instagram_handle && (
+              <a href={`https://instagram.com/${biz.instagram_handle.replace(/^@/, "")}`} target="_blank" rel="noreferrer"
                  className="inline-flex items-center gap-1 mt-2 font-mono text-[10px] uppercase tracking-widest text-neon-crimson">
-                @{biz.ig_handle.replace(/^@/, "")} <ExternalLink size={10} />
+                @{biz.instagram_handle.replace(/^@/, "")} <ExternalLink size={10} />
               </a>
             )}
+
           </Section>
         )}
 
