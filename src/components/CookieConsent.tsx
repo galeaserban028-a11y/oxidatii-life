@@ -28,25 +28,21 @@ export function CookieConsent() {
     setOpen(false);
   };
 
-  if (!open) return null;
+  if (!open || isAppRoute) return null;
 
   return (
     <div
       role="dialog"
       aria-live="polite"
       aria-label="Setări cookie-uri"
-      className={`${
-        isAppRoute
-          ? "relative z-20 mx-2 my-2 rounded-2xl border border-foreground/15 bg-background/95 p-3 shadow-xl backdrop-blur"
-          : "fixed inset-x-2 bottom-2 z-[100] mx-auto max-w-2xl rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-2xl backdrop-blur md:inset-x-auto md:left-4 md:right-4"
-      }`}
+      className="fixed inset-x-2 bottom-2 z-[100] mx-auto max-w-2xl rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-2xl backdrop-blur md:inset-x-auto md:left-4 md:right-4"
     >
-      <div className={isAppRoute ? "flex items-center gap-3" : "flex flex-col gap-3"}>
+      <div className="flex flex-col gap-3">
         <div>
           <div className="font-display text-base uppercase leading-tight">
             🍪 cookies pe oxidații
           </div>
-          <p className={`${isAppRoute ? "hidden sm:block" : ""} mt-1 text-xs leading-relaxed text-muted-foreground`}>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             Folosim cookie-uri esențiale pentru autentificare și funcționarea aplicației.
             Cu acordul tău, le folosim și pe cele opționale pentru analiză și
             îmbunătățirea experienței. Vezi{" "}
