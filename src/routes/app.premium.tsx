@@ -258,9 +258,29 @@ function PremiumPage() {
         </div>
       </section>
 
+      {currentTier && (
+        <div className="px-4 mt-4">
+          <button
+            onClick={handleManage}
+            disabled={openingPortal}
+            className="w-full flex items-center justify-center gap-2 h-10 rounded-xl border border-foreground/15 bg-card/50 font-mono uppercase text-[12px] tracking-wider disabled:opacity-50"
+          >
+            <Settings size={14} />
+            {openingPortal ? "Se deschide…" : "Gestionează abonament"}
+          </button>
+        </div>
+      )}
+
       <p className="text-center text-[10px] font-mono text-muted-foreground/60 mt-6 px-6">
-        Anulezi oricând · Fără reînnoiri ascunse · Plată securizată
+        Anulezi oricând · Acces până la finalul perioadei plătite · Plată securizată
       </p>
+
+      <PremiumCheckoutDialog
+        priceId={checkout?.priceId ?? null}
+        title={checkout?.title ?? ""}
+        open={!!checkout}
+        onClose={() => setCheckout(null)}
+      />
     </div>
   );
 }
