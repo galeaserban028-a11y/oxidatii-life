@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 
 const KEY = "oxi-cookie-consent-v1";
 
@@ -13,6 +13,8 @@ export function getConsent(): ConsentValue {
 
 export function CookieConsent() {
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const isAppRoute = location.pathname.startsWith("/app");
 
   useEffect(() => {
     if (!getConsent()) setOpen(true);
@@ -22,11 +24,14 @@ export function CookieConsent() {
     try {
       localStorage.setItem(KEY, v);
       localStorage.setItem(`${KEY}-at`, new Date().toISOString());
-    } catch {}
+    } catch {
+      setOpen(false);
+      return;
+    }
     setOpen(false);
   };
 
-  if (!open) return null;
+  if (!open || isAppRoute) return null;
 
   return (
     <div
@@ -41,9 +46,8 @@ export function CookieConsent() {
             🍪 cookies pe oxidații
           </div>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Folosim cookie-uri esențiale pentru autentificare și funcționarea aplicației.
-            Cu acordul tău, le folosim și pe cele opționale pentru analiză și
-            îmbunătățirea experienței. Vezi{" "}
+            Folosim cookie-uri esențiale pentru autentificare și funcționarea aplicației. Cu acordul
+            tău, le folosim și pe cele opționale pentru analiză și îmbunătățirea experienței. Vezi{" "}
             <Link to="/cookies" className="underline hover:text-foreground">
               politica de cookies
             </Link>
@@ -58,7 +62,7 @@ export function CookieConsent() {
             .
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
           <button
             onClick={() => decide("essential")}
             className="rounded-md border border-foreground/20 px-3 py-2 font-mono text-[10px] uppercase tracking-widest hover:bg-foreground/5"
