@@ -19,12 +19,30 @@ type Campaign = {
 
 type Biz = { id: string; brand_name: string; logo_url: string | null };
 
-const STORAGE_KEY = "oxd:promo:lastSeen";
-const COOLDOWN_MS = 1000 * 60 * 5; // 5 min
+const DISMISSED_KEY = "oxd:promo:dismissed";
+const SEEN_FULL_KEY = "oxd:promo:seenFull";
 
-async function loadActive(): Promise<{ campaign: Campaign; biz: Biz | null } | null> {
+function getDismissed(): string[] {
+  try { return JSON.parse(sessionStorage.getItem(DISMISSED_KEY) || "[]"); } catch { return []; }
+}
+function addDismissed(id: string) {
+  const list = getDismissed();
+  if (!list.includes(id)) list.push(id);
+  sessionStorage.setItem(DISMISSED_KEY, JSON.stringify(list));
+}
+function hasSeenFull(id: string): boolean {
+  try { return (JSON.parse(sessionStorage.getItem(SEEN_FULL_KEY) || "[]") as string[]).includes(id); } catch { return false; }
+}
+function markSeenFull(id: string) {
+  try {
+    const list = JSON.parse(sessionStorage.getItem(SEEN_FULL_KEY) || "[]") as string[];
+    if (!list.includes(id)) list.push(id);
+    sessionStorage.setItem(SEEN_FULL_KEY, JSON.stringify(list));
+  } catch {}
+}
+
+async function loadActive(excludeIds: string[] = []): Promise<{ campaign: Campaign; biz: Biz | null } | null> {
   const nowIso = new Date().toISOString();
-  // story banners are the headline takeover; fall back to feed boost
   const { data } = await supabase
     .from("campaigns")
     .select("id, business_id, kind, title, subtitle, cta_text, cta_url, image_urls, theme_color, venue_id, party_id")
@@ -33,11 +51,11 @@ async function loadActive(): Promise<{ campaign: Campaign; biz: Biz | null } | n
     .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
     .in("kind", ["boost_story", "boost_feed", "boost_discover"])
     .order("bid_cents", { ascending: false })
-    .limit(10);
+    .limit(20);
 
-  const list = (data ?? []) as Campaign[];
+  const dismissed = new Set([...getDismissed(), ...excludeIds]);
+  const list = ((data ?? []) as Campaign[]).filter((c) => !dismissed.has(c.id));
   if (!list.length) return null;
-  // Weighted random pick favoring boost_story
   const weighted = list.flatMap((c) => {
     const w = c.kind === "boost_story" ? 5 : c.kind === "boost_feed" ? 2 : 1;
     return Array.from({ length: w }, () => c);
