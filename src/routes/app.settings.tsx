@@ -270,6 +270,44 @@ function SettingsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Bug report */}
+      <Dialog open={bugOpen} onOpenChange={setBugOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-display uppercase flex items-center gap-2">
+              <Bug size={16} className="text-neon-crimson" /> Raportează o problemă
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <input
+              autoFocus
+              value={bugReason}
+              onChange={(e) => setBugReason(e.target.value)}
+              placeholder="Ce nu merge? (scurt)"
+              maxLength={200}
+              className="w-full bg-foreground/5 rounded-md px-3 py-2.5 text-sm border border-foreground/10 focus:border-neon-crimson outline-none"
+            />
+            <textarea
+              value={bugDetails}
+              onChange={(e) => setBugDetails(e.target.value)}
+              placeholder="Detalii: ce făceai, ce te aștepți să se întâmple…"
+              maxLength={2000}
+              rows={5}
+              className="w-full bg-foreground/5 rounded-md px-3 py-2.5 text-sm border border-foreground/10 focus:border-neon-crimson outline-none resize-none"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Trimitem și ruta curentă, dispozitivul și emailul tău, ca să te poată ajuta echipa.
+            </p>
+          </div>
+          <DialogFooter>
+            <button onClick={() => setBugOpen(false)} disabled={bugSending} className="px-4 py-2 rounded-lg border border-foreground/15 text-sm">Renunță</button>
+            <button onClick={sendBugReport} disabled={bugSending} className="px-4 py-2 rounded-lg bg-neon-crimson text-white text-sm font-semibold flex items-center gap-1.5">
+              {bugSending && <Loader2 size={14} className="animate-spin" />} Trimite
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Confirm logout */}
       <Dialog open={confirmLogout} onOpenChange={setConfirmLogout}>
         <DialogContent className="max-w-sm">
