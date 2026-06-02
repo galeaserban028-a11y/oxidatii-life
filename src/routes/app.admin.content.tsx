@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Trash2, PartyPopper, MapPin, Flame, Image as ImageIcon } from "lucide-react";
 
 export const Route = createFileRoute("/app/admin/content")({
-  component: AdminContent;
+  component: AdminContent,
 });
 
 type Tab = "parties" | "checkins" | "proofs" | "photos";
