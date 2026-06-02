@@ -99,7 +99,38 @@ async function loadFeed(userId: string) {
   ]);
   const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
   const venueMap = new Map((venues ?? []).map((v: any) => [v.id, v]));
-  return { items, profMap, venueMap, followingCount: (following ?? []).length };
+
+  // Boosted slot: one active campaign with budget remaining, randomized
+  const { data: campaigns } = await supabase
+    .from("campaigns")
+    .select("id, party_id, title, bid_cents, budget_cents, spent_cents, business_id")
+    .eq("status", "active")
+    .eq("kind", "boost_feed")
+    .limit(20);
+
+  let boosted: any = null;
+  const eligible = (campaigns ?? []).filter(
+    (c) => (c.spent_cents ?? 0) + (c.bid_cents ?? 0) <= (c.budget_cents ?? 0) && c.party_id,
+  );
+  if (eligible.length) {
+    const pick = eligible[Math.floor(Math.random() * eligible.length)];
+    const [{ data: party }, { data: biz }] = await Promise.all([
+      supabase
+        .from("parties")
+        .select("id, title, location_text, vibe, host_id, starts_at, expires_at")
+        .eq("id", pick.party_id!)
+        .gt("expires_at", new Date().toISOString())
+        .maybeSingle(),
+      supabase
+        .from("business_accounts")
+        .select("id, brand_name, verified")
+        .eq("id", pick.business_id)
+        .maybeSingle(),
+    ]);
+    if (party) boosted = { campaign: pick, party, business: biz };
+  }
+
+  return { items, profMap, venueMap, followingCount: (following ?? []).length, boosted };
 }
 
 function timeAgo(iso: string) {
