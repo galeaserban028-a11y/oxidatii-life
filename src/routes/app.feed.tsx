@@ -305,3 +305,76 @@ function FeedPage() {
     </div>
   );
 }
+
+function BoostedCard({ boosted, userId }: { boosted: any; userId: string }) {
+  const logged = useRef(false);
+  const campaign = boosted.campaign;
+  const party = boosted.party;
+  const biz = boosted.business;
+
+  useEffect(() => {
+    if (logged.current) return;
+    logged.current = true;
+    // Fire-and-forget impression: insert event + bump campaign counters
+    (async () => {
+      await supabase.from("campaign_events").insert({
+        campaign_id: campaign.id,
+        user_id: userId,
+        event_type: "impression",
+        cost_cents: campaign.bid_cents,
+      });
+      await supabase
+        .from("campaigns")
+        .update({
+          impressions: (campaign.impressions ?? 0) + 1,
+          spent_cents: (campaign.spent_cents ?? 0) + (campaign.bid_cents ?? 0),
+        })
+        .eq("id", campaign.id);
+    })().catch(() => {});
+  }, [campaign.id, campaign.bid_cents, campaign.impressions, campaign.spent_cents, userId]);
+
+  const onClick = async () => {
+    await supabase.from("campaign_events").insert({
+      campaign_id: campaign.id,
+      user_id: userId,
+      event_type: "click",
+      cost_cents: 0,
+    });
+    await supabase
+      .from("campaigns")
+      .update({ clicks: (campaign.clicks ?? 0) + 1 })
+      .eq("id", campaign.id);
+  };
+
+  return (
+    <article className="rounded-2xl overflow-hidden border border-neon-purple/40 bg-gradient-to-br from-neon-purple/10 via-background to-neon-crimson/10 relative">
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 text-[9px] font-mono uppercase tracking-widest px-2 py-1 rounded-md bg-background/70 backdrop-blur border border-neon-purple/40 text-neon-purple">
+        <Rocket size={9} /> boosted
+      </div>
+      <Link to="/app/squad" onClick={onClick} className="block">
+        <div className="p-5 space-y-2">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-neon-purple">
+            {biz?.brand_name ?? "Partener"} {biz?.verified && "· ✓"}
+          </div>
+          <div className="font-display uppercase text-xl leading-tight">{party.title}</div>
+          {party.vibe && (
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              vibe: {party.vibe}
+            </div>
+          )}
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
+            <MapPin size={10} /> {party.location_text}
+          </div>
+          <div className="pt-2">
+            <span
+              className="inline-block font-display uppercase text-[10px] tracking-widest px-3 py-1.5 rounded-md text-white"
+              style={{ background: "var(--gradient-chaos)" }}
+            >
+              intră în șpriț →
+            </span>
+          </div>
+        </div>
+      </Link>
+    </article>
+  );
+}
