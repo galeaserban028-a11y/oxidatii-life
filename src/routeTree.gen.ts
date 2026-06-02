@@ -44,6 +44,7 @@ import { Route as AppPromoIdRouteImport } from './routes/app.promo.$id'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminUsersRouteImport } from './routes/app.admin.users'
+import { Route as AppAdminReportsRouteImport } from './routes/app.admin.reports'
 import { Route as AppAdminPlacesRouteImport } from './routes/app.admin.places'
 import { Route as AppAdminContentRouteImport } from './routes/app.admin.content'
 import { Route as AppAdminCampaignsRouteImport } from './routes/app.admin.campaigns'
@@ -224,6 +225,11 @@ const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminReportsRoute = AppAdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminPlacesRoute = AppAdminPlacesRouteImport.update({
   id: '/places',
   path: '/places',
@@ -277,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
   '/app/admin/places': typeof AppAdminPlacesRoute
+  '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -316,6 +323,7 @@ export interface FileRoutesByTo {
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
   '/app/admin/places': typeof AppAdminPlacesRoute
+  '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -358,6 +366,7 @@ export interface FileRoutesById {
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
   '/app/admin/content': typeof AppAdminContentRoute
   '/app/admin/places': typeof AppAdminPlacesRoute
+  '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -401,6 +410,7 @@ export interface FileRouteTypes {
     | '/app/admin/campaigns'
     | '/app/admin/content'
     | '/app/admin/places'
+    | '/app/admin/reports'
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -440,6 +450,7 @@ export interface FileRouteTypes {
     | '/app/admin/campaigns'
     | '/app/admin/content'
     | '/app/admin/places'
+    | '/app/admin/reports'
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -481,6 +492,7 @@ export interface FileRouteTypes {
     | '/app/admin/campaigns'
     | '/app/admin/content'
     | '/app/admin/places'
+    | '/app/admin/reports'
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -749,6 +761,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminUsersRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/app/admin/reports': {
+      id: '/app/admin/reports'
+      path: '/reports'
+      fullPath: '/app/admin/reports'
+      preLoaderRoute: typeof AppAdminReportsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/app/admin/places': {
       id: '/app/admin/places'
       path: '/places'
@@ -785,6 +804,7 @@ interface AppAdminRouteChildren {
   AppAdminCampaignsRoute: typeof AppAdminCampaignsRoute
   AppAdminContentRoute: typeof AppAdminContentRoute
   AppAdminPlacesRoute: typeof AppAdminPlacesRoute
+  AppAdminReportsRoute: typeof AppAdminReportsRoute
   AppAdminUsersRoute: typeof AppAdminUsersRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
 }
@@ -794,6 +814,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminCampaignsRoute: AppAdminCampaignsRoute,
   AppAdminContentRoute: AppAdminContentRoute,
   AppAdminPlacesRoute: AppAdminPlacesRoute,
+  AppAdminReportsRoute: AppAdminReportsRoute,
   AppAdminUsersRoute: AppAdminUsersRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
 }
