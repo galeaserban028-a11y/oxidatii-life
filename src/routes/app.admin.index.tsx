@@ -1,18 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Flame, PartyPopper, Building2, Megaphone, MapPin, Wallet, Eye } from "lucide-react";
+import { Users, Flame, PartyPopper, Building2, Megaphone, MapPin, Wallet, Eye, Flag } from "lucide-react";
 
 export const Route = createFileRoute("/app/admin/")({
   component: AdminDashboard,
 });
-
-async function count(table: string, filter?: (q: any) => any) {
-  let q = supabase.from(table).select("*", { count: "exact", head: true });
-  if (filter) q = filter(q);
-  const { count } = await q;
-  return count ?? 0;
-}
 
 function AdminDashboard() {
   const { data, isLoading } = useQuery({
@@ -21,36 +14,51 @@ function AdminDashboard() {
       const nowIso = new Date().toISOString();
       const dayAgo = new Date(Date.now() - 86400000).toISOString();
       const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+      const head = { count: "exact" as const, head: true };
 
-      const [users, newUsers7d, parties, activeParties, proofs, proofs24h,
+      const [
+        users, newUsers7d, parties, activeParties, proofs, proofs24h,
         businesses, verifiedBiz, campaigns, activeCamps, venues, cities,
-        walletSum, reports, openReports] = await Promise.all([
-        count("profiles"),
-        count("profiles", (q) => q.gte("created_at", weekAgo)),
-        count("parties"),
-        count("parties", (q) => q.gt("expires_at", nowIso)),
-        count("sprit_proofs"),
-        count("sprit_proofs", (q) => q.gte("created_at", dayAgo)),
-        count("business_accounts"),
-        count("business_accounts", (q) => q.eq("verified", true)),
-        count("campaigns"),
-        count("campaigns", (q) => q.eq("status", "active")),
-        count("venues"),
-        count("cities"),
+        walletSum, reports, openReports,
+      ] = await Promise.all([
+        supabase.from("profiles").select("*", head),
+        supabase.from("profiles").select("*", head).gte("created_at", weekAgo),
+        supabase.from("parties").select("*", head),
+        supabase.from("parties").select("*", head).gt("expires_at", nowIso),
+        supabase.from("sprit_proofs").select("*", head),
+        supabase.from("sprit_proofs").select("*", head).gte("created_at", dayAgo),
+        supabase.from("business_accounts").select("*", head),
+        supabase.from("business_accounts").select("*", head).eq("verified", true),
+        supabase.from("campaigns").select("*", head),
+        supabase.from("campaigns").select("*", head).eq("status", "active"),
+        supabase.from("venues").select("*", head),
+        supabase.from("cities").select("*", head),
         supabase.from("business_accounts").select("wallet_balance_cents"),
-        count("reports"),
-        count("reports", (q) => q.eq("status", "pending")),
+        supabase.from("reports").select("*", head),
+        supabase.from("reports").select("*", head).eq("status", "pending"),
       ]);
 
       const totalWallet = (walletSum.data ?? []).reduce(
-        (a: number, b: any) => a + (b.wallet_balance_cents ?? 0),
+        (a: number, b: { wallet_balance_cents: number | null }) => a + (b.wallet_balance_cents ?? 0),
         0
       );
 
       return {
-        users, newUsers7d, parties, activeParties, proofs, proofs24h,
-        businesses, verifiedBiz, campaigns, activeCamps, venues, cities,
-        totalWallet, reports, openReports,
+        users: users.count ?? 0,
+        newUsers7d: newUsers7d.count ?? 0,
+        parties: parties.count ?? 0,
+        activeParties: activeParties.count ?? 0,
+        proofs: proofs.count ?? 0,
+        proofs24h: proofs24h.count ?? 0,
+        businesses: businesses.count ?? 0,
+        verifiedBiz: verifiedBiz.count ?? 0,
+        campaigns: campaigns.count ?? 0,
+        activeCamps: activeCamps.count ?? 0,
+        venues: venues.count ?? 0,
+        cities: cities.count ?? 0,
+        totalWallet,
+        reports: reports.count ?? 0,
+        openReports: openReports.count ?? 0,
       };
     },
   });
@@ -93,6 +101,3 @@ function Stat({ icon, label, value, sub, accent }: { icon: React.ReactNode; labe
     </div>
   );
 }
-
-// re-export Flag icon (since used in stats)
-import { Flag } from "lucide-react";
