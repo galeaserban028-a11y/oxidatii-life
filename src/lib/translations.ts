@@ -964,7 +964,7 @@ export const RO_EN: Record<string, string> = {
   "Poți modifica oricând. 0 stele = șters.": "You can change anytime. 0 stars = removed.",
   "Poți opri oricând. Fără abonament.": "You can stop anytime. No subscription.",
   "Profilul, poziția live, abonările push și check-in-urile tale dispar. Această acțiune nu poate fi anulată.": "Your profile, live location, push subscriptions and check-ins disappear. This action cannot be undone.",
-  "Promovare nouă": "New promotion",
+  "Pornește campania": "Start campaign",
   "Promovează": "Promote",
   "Pune-ți locul tău →": "Add your place →",
   "reîncarcă": "reload",
