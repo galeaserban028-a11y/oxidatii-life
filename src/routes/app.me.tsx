@@ -310,6 +310,18 @@ function MePage() {
           </div>
         </div>
 
+        <ReputationCard
+          sprits={profile.lifetime_sprits ?? 0}
+          streak={profile.current_streak ?? 0}
+          longestStreak={profile.longest_streak ?? 0}
+          followers={followStats?.followers ?? 0}
+          following={followStats?.following ?? 0}
+          aura={profile.aura ?? 0}
+          hasAvatar={!!profile.avatar_url}
+          hasBio={!!(profile as any).bio}
+          createdAt={(profile as any).created_at}
+        />
+
         {/* Action buttons */}
         <div className="mt-3 grid grid-cols-[1fr_1fr_auto] gap-1.5">
           <Dialog open={editOpen} onOpenChange={(o) => {
