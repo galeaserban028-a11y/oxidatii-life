@@ -634,6 +634,36 @@ export type Database = {
           },
         ]
       }
+      user_ratings: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          rated_id: string
+          rater_id: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          rated_id: string
+          rater_id: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          rated_id?: string
+          rater_id?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
+      }
       venue_photos: {
         Row: {
           caption: string | null
