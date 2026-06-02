@@ -200,6 +200,7 @@ function FeedPage() {
         </div>
       ) : (
         <div className="space-y-3">
+          {data.boosted && <BoostedCard boosted={data.boosted} userId={user.id} />}
           {data.items.map((it) => {
             const p = data.profMap.get(it.user_id);
             const v = it.venue_id ? data.venueMap.get(it.venue_id) : null;
