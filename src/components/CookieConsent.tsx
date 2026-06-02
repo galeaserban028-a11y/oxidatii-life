@@ -35,10 +35,10 @@ export function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label="Setări cookie-uri"
-      className={`fixed inset-x-2 z-[100] mx-auto rounded-2xl border border-foreground/15 bg-background/95 shadow-2xl backdrop-blur ${
+      className={`${
         isAppRoute
-          ? "bottom-[calc(104px+env(safe-area-inset-bottom))] max-w-xl p-3 md:left-1/2 md:right-auto md:-translate-x-1/2"
-          : "bottom-2 max-w-2xl p-4 md:inset-x-auto md:left-4 md:right-4"
+          ? "relative z-20 mx-2 my-2 rounded-2xl border border-foreground/15 bg-background/95 p-3 shadow-xl backdrop-blur"
+          : "fixed inset-x-2 bottom-2 z-[100] mx-auto max-w-2xl rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-2xl backdrop-blur md:inset-x-auto md:left-4 md:right-4"
       }`}
     >
       <div className={isAppRoute ? "flex items-center gap-3" : "flex flex-col gap-3"}>
