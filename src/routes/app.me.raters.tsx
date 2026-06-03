@@ -20,13 +20,18 @@ function RatersPage() {
     queryKey: ["my-raters", user?.id],
     enabled: !!user && allowed,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: rows } = await supabase
         .from("user_ratings")
-        .select("id, value, category, created_at, rater:profiles!user_ratings_rater_id_fkey(id, handle, display_name, avatar_url)")
+        .select("id, value, category, created_at, rater_id")
         .eq("rated_id", user!.id)
         .order("created_at", { ascending: false })
         .limit(200);
-      return data ?? [];
+      const ids = Array.from(new Set((rows ?? []).map((r: any) => r.rater_id)));
+      if (!ids.length) return [];
+      const { data: profs } = await supabase
+        .from("profiles").select("id, handle, display_name, avatar_url").in("id", ids);
+      const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
+      return (rows ?? []).map((r: any) => ({ ...r, rater: map.get(r.rater_id) }));
     },
   });
 
