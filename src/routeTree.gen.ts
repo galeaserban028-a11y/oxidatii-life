@@ -34,6 +34,7 @@ import { Route as AppFriendsRouteImport } from './routes/app.friends'
 import { Route as AppFollowersRouteImport } from './routes/app.followers'
 import { Route as AppFeedRouteImport } from './routes/app.feed'
 import { Route as AppFazeRouteImport } from './routes/app.faze'
+import { Route as AppDiscoverRouteImport } from './routes/app.discover'
 import { Route as AppBlockedRouteImport } from './routes/app.blocked'
 import { Route as AppBizRouteImport } from './routes/app.biz'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
@@ -178,6 +179,11 @@ const AppFazeRoute = AppFazeRouteImport.update({
   path: '/faze',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDiscoverRoute = AppDiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBlockedRoute = AppBlockedRouteImport.update({
   id: '/blocked',
   path: '/blocked',
@@ -283,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/app/admin': typeof AppAdminRouteWithChildren
   '/app/biz': typeof AppBizRoute
   '/app/blocked': typeof AppBlockedRoute
+  '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
   '/app/followers': typeof AppFollowersRoute
@@ -326,6 +333,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/app/biz': typeof AppBizRoute
   '/app/blocked': typeof AppBlockedRoute
+  '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
   '/app/followers': typeof AppFollowersRoute
@@ -372,6 +380,7 @@ export interface FileRoutesById {
   '/app/admin': typeof AppAdminRouteWithChildren
   '/app/biz': typeof AppBizRoute
   '/app/blocked': typeof AppBlockedRoute
+  '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
   '/app/followers': typeof AppFollowersRoute
@@ -419,6 +428,7 @@ export interface FileRouteTypes {
     | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
+    | '/app/discover'
     | '/app/faze'
     | '/app/feed'
     | '/app/followers'
@@ -462,6 +472,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/app/biz'
     | '/app/blocked'
+    | '/app/discover'
     | '/app/faze'
     | '/app/feed'
     | '/app/followers'
@@ -507,6 +518,7 @@ export interface FileRouteTypes {
     | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
+    | '/app/discover'
     | '/app/faze'
     | '/app/feed'
     | '/app/followers'
@@ -730,6 +742,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFazeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/discover': {
+      id: '/app/discover'
+      path: '/discover'
+      fullPath: '/app/discover'
+      preLoaderRoute: typeof AppDiscoverRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/blocked': {
       id: '/app/blocked'
       path: '/blocked'
@@ -889,6 +908,7 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppBizRoute: typeof AppBizRoute
   AppBlockedRoute: typeof AppBlockedRoute
+  AppDiscoverRoute: typeof AppDiscoverRoute
   AppFazeRoute: typeof AppFazeRoute
   AppFeedRoute: typeof AppFeedRoute
   AppFollowersRoute: typeof AppFollowersRoute
@@ -917,6 +937,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
   AppBizRoute: AppBizRoute,
   AppBlockedRoute: AppBlockedRoute,
+  AppDiscoverRoute: AppDiscoverRoute,
   AppFazeRoute: AppFazeRoute,
   AppFeedRoute: AppFeedRoute,
   AppFollowersRoute: AppFollowersRoute,
