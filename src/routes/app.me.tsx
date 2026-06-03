@@ -309,6 +309,9 @@ function MePage() {
             <span>{profile.display_name || `@${profile.handle ?? "—"}`}</span>
             <PremiumBadge tier={(profile as any).premium_tier} size="sm" />
           </div>
+          {profile.display_name && profile.handle && (
+            <div className="text-[12px] font-mono text-muted-foreground mt-0.5">@{profile.handle}</div>
+          )}
           <div className="text-[10px] font-mono uppercase tracking-widest text-neon-crimson mt-0.5">
             {RANK_LABELS[profile.rank] ?? profile.rank}
           </div>
