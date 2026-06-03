@@ -75,7 +75,7 @@ function InboxPage() {
 
   const dms = useMemo(() => conversations.filter((c: any) => c.kind === "dm"), [conversations]);
   const groups = useMemo(() => conversations.filter((c: any) => c.kind !== "dm"), [conversations]);
-  const unreadCount = conversations.filter((c: any) => c.unread).length;
+  
 
   const filtered = tab === "dm" ? dms : tab === "grup" ? groups : conversations;
 
