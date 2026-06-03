@@ -67,7 +67,7 @@ function PremiumPage() {
   const [annual, setAnnual] = useState(false);
   const [checkout, setCheckout] = useState<{ priceId: string; title: string } | null>(null);
   const [openingPortal, setOpeningPortal] = useState(false);
-  const [openTier, setOpenTier] = useState<string | null>("vip_plus");
+  
   const currentTier = (profile as any)?.premium_tier as PremiumTier;
 
   const handleBuy = (tier: Tier) => {
