@@ -37,36 +37,36 @@ const HUE = {
 const TIERS: Tier[] = [
   {
     id: "vip", index: "I.", name: "VIP", italic: "discret",
-    price: 2.99, coins: 50, hue: HUE.amber.fg, surface: HUE.amber.bg,
+    price: 2.99, coins: 5, hue: HUE.amber.fg, surface: HUE.amber.bg,
     blurb: "Pentru cei care vor doar să arate că au gust. Fără paradă.",
-    perks: ["Insignă VIP auriu", "50 șprițuri pe lună", "Reacții doar pentru club", "Fără reclame, nicăieri"],
+    perks: ["Insignă VIP auriu", "5 șprițuri pe lună", "Reacții doar pentru club", "Fără reclame, nicăieri"],
   },
   {
     id: "vip_plus", index: "II.", name: "VIP+", italic: "curat",
-    price: 4.99, coins: 150, hue: HUE.blush.fg, surface: HUE.blush.bg, badge: "cel mai luat",
+    price: 4.99, coins: 15, hue: HUE.blush.fg, surface: HUE.blush.bg, badge: "cel mai luat",
     blurb: "Profilul tău începe să fie observat. Frame animat, teme, vederi.",
-    perks: ["Tot din VIP", "Frame animat pe avatar", "5 teme exclusive de profil", "150 șprițuri pe lună", "Vezi cine ți-a dat rating"],
+    perks: ["Tot din VIP", "Frame animat pe avatar", "5 teme exclusive de profil", "15 șprițuri pe lună", "Vezi cine ți-a dat rating"],
   },
   {
     id: "pro", index: "III.", name: "Pro", italic: "serios",
-    price: 9.99, coins: 500, hue: HUE.violet.fg, surface: HUE.violet.bg,
+    price: 9.99, coins: 40, hue: HUE.violet.fg, surface: HUE.violet.bg,
     blurb: "Pentru regulari. Boost săptămânal, analytics, un music clip pe profil.",
-    perks: ["Tot din VIP+", "1× Profile Boost / săptămână", "Reputation analytics complet", "Music clip 15s pe profil", "500 șprițuri pe lună", "Animated background"],
+    perks: ["Tot din VIP+", "1× Profile Boost / săptămână", "Reputation analytics complet", "Music clip 15s pe profil", "40 șprițuri pe lună", "Animated background"],
   },
   {
     id: "elite", index: "IV.", name: "Elite", italic: "rar",
-    price: 14.99, coins: 1500, hue: HUE.glacier.fg, surface: HUE.glacier.bg, badge: "100 locuri",
+    price: 14.99, coins: 120, hue: HUE.glacier.fg, surface: HUE.glacier.bg, badge: "100 locuri",
     blurb: "O sută de oameni pe an. Numele tău rămâne pe perete.",
-    perks: ["Tot din Pro", "Diamond badge holografic", "Featured pe Discover", "Founder recognition pe vecie", "Cadou aniversar fizic", "1500 șprițuri pe lună", "Acces beta features"],
+    perks: ["Tot din Pro", "Diamond badge holografic", "Featured pe Discover", "Founder recognition pe vecie", "Cadou aniversar fizic", "120 șprițuri pe lună", "Acces beta features"],
   },
 ];
 
 const COIN_PACKS = [
-  { id: "coins_mic", coins: 50, price: 4.99, label: "Mic" },
-  { id: "coins_mediu", coins: 200, price: 14.99, label: "Mediu", bonus: "+10%" },
-  { id: "coins_mare", coins: 600, price: 39.99, label: "Mare", bonus: "+20%", popular: true },
-  { id: "coins_boss", coins: 1500, price: 89.99, label: "Boss", bonus: "+35%" },
-  { id: "coins_legenda", coins: 5000, price: 249, label: "Legendă", bonus: "+50%" },
+  { id: "coins_mic", coins: 5, price: 4.99, label: "Un rând" },
+  { id: "coins_mediu", coins: 15, price: 12.99, label: "Pentru gașcă", bonus: "+10%" },
+  { id: "coins_mare", coins: 40, price: 29.99, label: "Petrecere", bonus: "+20%", popular: true },
+  { id: "coins_boss", coins: 100, price: 69.99, label: "Toată haita", bonus: "+35%" },
+  { id: "coins_legenda", coins: 300, price: 179, label: "Legendă", bonus: "+50%" },
 ];
 
 const FAQ = [
