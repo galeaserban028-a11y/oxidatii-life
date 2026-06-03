@@ -311,6 +311,111 @@ function PartiesPage() {
   );
 }
 
+type JoinRow = { id: string; party_id: string; user_id: string; status: string; created_at: string };
+
+function HostJoinsPanel({
+  pending, accepted, profileMap, onAccept, onReject, busy,
+}: {
+  pending: JoinRow[];
+  accepted: JoinRow[];
+  profileMap: Map<string, Host>;
+  onAccept: (joinId: string) => void;
+  onReject: (joinId: string) => void;
+  busy: boolean;
+}) {
+  const [open, setOpen] = useState(pending.length > 0);
+  const total = pending.length + accepted.length;
+  return (
+    <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-3 py-2 font-mono text-[10px] uppercase tracking-widest"
+      >
+        <span className="flex items-center gap-2">
+          <span className="text-muted-foreground">// cereri</span>
+          {pending.length > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full bg-neon-crimson text-white text-[9px]">{pending.length} noi</span>
+          )}
+          <span className="text-muted-foreground">{total} total</span>
+        </span>
+        {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+      </button>
+      {open && (
+        <div className="px-3 pb-3 space-y-2.5">
+          {pending.length === 0 && accepted.length === 0 && (
+            <div className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">nicio cerere încă</div>
+          )}
+          {pending.map(j => {
+            const u = profileMap.get(j.user_id);
+            return (
+              <div key={j.id} className="flex items-center gap-2.5">
+                <Link
+                  to="/app/user/$id" params={{ id: j.user_id }}
+                  className="flex items-center gap-2 flex-1 min-w-0 group"
+                >
+                  <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-neon-purple to-neon-crimson flex items-center justify-center font-display text-[10px] shrink-0">
+                    {u?.avatar_url ? <img src={u.avatar_url} alt="" className="h-full w-full object-cover" /> : (u?.handle ?? "?")[0]?.toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-display text-xs truncate group-hover:underline">@{u?.handle ?? u?.display_name ?? "anonim"}</div>
+                    <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">vezi profil →</div>
+                  </div>
+                </Link>
+                <button
+                  onClick={() => onAccept(j.id)} disabled={busy}
+                  aria-label="accept"
+                  className="h-8 w-8 rounded-full flex items-center justify-center bg-neon-green/15 text-neon-green border border-neon-green/40 hover:bg-neon-green/25 active:scale-95 disabled:opacity-40"
+                >
+                  <Check size={14} strokeWidth={3} />
+                </button>
+                <button
+                  onClick={() => onReject(j.id)} disabled={busy}
+                  aria-label="respinge"
+                  className="h-8 w-8 rounded-full flex items-center justify-center bg-neon-crimson/10 text-neon-crimson border border-neon-crimson/40 hover:bg-neon-crimson/20 active:scale-95 disabled:opacity-40"
+                >
+                  <X size={14} strokeWidth={3} />
+                </button>
+              </div>
+            );
+          })}
+          {accepted.length > 0 && (
+            <>
+              {pending.length > 0 && <div className="h-px bg-foreground/10 my-2" />}
+              <div className="font-mono text-[9px] uppercase tracking-widest text-neon-green">// vin</div>
+              {accepted.map(j => {
+                const u = profileMap.get(j.user_id);
+                return (
+                  <div key={j.id} className="flex items-center gap-2.5">
+                    <Link
+                      to="/app/user/$id" params={{ id: j.user_id }}
+                      className="flex items-center gap-2 flex-1 min-w-0 group"
+                    >
+                      <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-neon-green to-neon-purple flex items-center justify-center font-display text-[10px] shrink-0">
+                        {u?.avatar_url ? <img src={u.avatar_url} alt="" className="h-full w-full object-cover" /> : (u?.handle ?? "?")[0]?.toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-display text-xs truncate group-hover:underline">@{u?.handle ?? u?.display_name ?? "anonim"}</div>
+                      </div>
+                    </Link>
+                    <button
+                      onClick={() => onReject(j.id)} disabled={busy}
+                      aria-label="elimină"
+                      className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground border border-foreground/15 hover:text-neon-crimson hover:border-neon-crimson/40 active:scale-95 disabled:opacity-40"
+                    >
+                      <UserX size={14} />
+                    </button>
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 function CreatePartySheet({ onClose }: { onClose: () => void }) {
   const { user } = useAuth();
   const qc = useQueryClient();
