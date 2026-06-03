@@ -148,7 +148,27 @@ function UserPage() {
       ) : (
         <>
           {/* Header */}
-          <div className="rounded-3xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
+          {(() => {
+            const theme = getTheme(profile.profile_theme_id);
+            const isPremium = !!profile.premium_tier && profile.premium_until && new Date(profile.premium_until) > new Date();
+            const bgUrl: string | null = isPremium ? profile.profile_bg_url ?? null : null;
+            const isVideo = bgUrl ? /\.(mp4|webm|mov)$/i.test(bgUrl) : false;
+            return (
+          <div
+            className="relative rounded-3xl border p-5 shadow-[var(--shadow-card)] overflow-hidden"
+            style={theme ? { background: theme.cardBg, borderColor: theme.cardBorder } : undefined}
+          >
+            {bgUrl && (
+              <div className="absolute inset-0 -z-0 opacity-50 pointer-events-none">
+                {isVideo ? (
+                  <video src={bgUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                ) : (
+                  <img src={bgUrl} alt="" className="w-full h-full object-cover" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/40 to-background/80" />
+              </div>
+            )}
+            <div className="relative z-10">
             <div className="flex items-center gap-4">
               <div className="h-20 w-20 rounded-full overflow-hidden bg-gradient-to-br from-sunset-orange to-sunset-magenta flex items-center justify-center text-white font-display font-bold text-3xl shrink-0">
                 {profile.avatar_url
