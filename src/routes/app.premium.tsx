@@ -87,7 +87,7 @@ function PremiumPage() {
   const handleBuy = (tier: Tier) =>
     setCheckout({ priceId: `${tier.id}_${annual ? "yearly" : "monthly"}`, title: `${tier.name} ${annual ? "anual" : "lunar"}` });
   const handleCoins = (p: typeof COIN_PACKS[0]) =>
-    setCheckout({ priceId: p.id, title: `${p.coins} {p.coins === 1 ? "șpriț" : "șprițuri"} · ${p.label}` });
+    setCheckout({ priceId: p.id, title: `${p.coins} șprițuri · ${p.label}` });
   const handleManage = async () => {
     setOpeningPortal(true);
     try {
