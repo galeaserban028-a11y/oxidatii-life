@@ -146,7 +146,12 @@ export function PromoTakeover() {
         cost_cents: 5,
       }).then(() => {});
     }
-    window.location.href = `/app/promo/${payload.campaign.id}`;
+    const c = payload.campaign;
+    if (c.cta_url) {
+      window.open(c.cta_url, "_blank", "noopener,noreferrer");
+    } else {
+      window.location.href = `/app/promo/${c.id}`;
+    }
     setPhase("gone");
   };
 
