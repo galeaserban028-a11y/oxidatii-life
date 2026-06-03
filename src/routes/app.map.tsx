@@ -89,12 +89,13 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
     const isMe = uid === userId;
     pins.push({
       user_id: uid,
-      handle: isMe ? "tu" : (p?.handle ?? null),
-      display_name: isMe ? "tu" : (p?.display_name ?? null),
+      handle: p?.handle ?? null,
+      display_name: p?.display_name ?? (isMe ? "tu" : null),
       avatar_url: p?.avatar_url ?? null,
       lat,
       lng,
-      venue_name: venue?.name ?? (live ? "în mișcare" : null),
+      venue_name: isMe ? "tu ești aici" : (venue?.name ?? (live ? "în mișcare" : null)),
+      is_me: isMe,
     });
   }
   return pins;

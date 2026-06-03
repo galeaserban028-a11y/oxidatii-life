@@ -17,6 +17,7 @@ export type FriendPin = {
   lat: number;
   lng: number;
   venue_name?: string | null;
+  is_me?: boolean;
 };
 
 const TYPE_COLOR: Record<string, string> = {
@@ -464,12 +465,16 @@ export function RomaniaMap3D({
       const wrap = document.createElement("div");
       wrap.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);z-index:10;";
 
+      const accent = f.is_me ? "#ff3158" : "#39ff88";
+      const ringSize = f.is_me ? 52 : 44;
+      const pulseSize = f.is_me ? 64 : 54;
+
       const pulse = document.createElement("div");
-      pulse.style.cssText = "position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:54px;height:54px;border-radius:9999px;background:#39ff88;opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;";
+      pulse.style.cssText = `position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:${pulseSize}px;height:${pulseSize}px;border-radius:9999px;background:${accent};opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;`;
       wrap.appendChild(pulse);
 
       const ring = document.createElement("div");
-      ring.style.cssText = "position:relative;width:44px;height:44px;border-radius:9999px;border:3px solid #39ff88;overflow:hidden;background:linear-gradient(135deg,#ff3158,#c66bff);box-shadow:0 0 18px #39ff88,0 4px 14px rgba(0,0,0,0.6);";
+      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:9999px;border:3px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3158,#c66bff);box-shadow:0 0 22px ${accent},0 4px 14px rgba(0,0,0,0.6);`;
       if (f.avatar_url) {
         const img = document.createElement("img");
         img.src = f.avatar_url; img.alt = "";
@@ -484,12 +489,22 @@ export function RomaniaMap3D({
       wrap.appendChild(ring);
 
       const live = document.createElement("div");
-      live.style.cssText = "position:absolute;top:-2px;right:-2px;width:12px;height:12px;border-radius:9999px;background:#39ff88;border:2px solid #06070a;box-shadow:0 0 8px #39ff88;";
+      live.style.cssText = `position:absolute;top:-2px;right:-2px;width:12px;height:12px;border-radius:9999px;background:${accent};border:2px solid #06070a;box-shadow:0 0 8px ${accent};`;
       ring.appendChild(live);
 
+      if (f.is_me) {
+        const crown = document.createElement("div");
+        crown.textContent = "TU";
+        crown.style.cssText = "position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:1px 6px;border-radius:9999px;background:#ff3158;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:9px;letter-spacing:0.12em;border:2px solid #06070a;box-shadow:0 0 10px #ff3158;";
+        wrap.appendChild(crown);
+      }
+
+      const labelText = f.is_me
+        ? `@${f.handle ?? f.display_name ?? "tu"}`
+        : `@${f.handle ?? f.display_name ?? "live"}`;
       const pill = document.createElement("div");
-      pill.textContent = `@${f.handle ?? f.display_name ?? "live"}`;
-      pill.style.cssText = "margin-top:4px;padding:2px 6px;border-radius:9999px;background:rgba(6,7,10,0.92);color:#39ff88;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap;border:1px solid rgba(57,255,136,0.5);";
+      pill.textContent = labelText;
+      pill.style.cssText = `margin-top:4px;padding:2px 6px;border-radius:9999px;background:rgba(6,7,10,0.92);color:${accent};font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap;border:1px solid ${accent};`;
       wrap.appendChild(pill);
 
       wrap.onclick = (e) => { e.stopPropagation(); navRef.current({ to: "/app/user/$id", params: { id: f.user_id } }); };
