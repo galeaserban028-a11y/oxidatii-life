@@ -880,24 +880,26 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
               className="w-full" style={{ accentColor: goal.color }} />
           </div>
 
-          <div className="rounded-2xl p-4 text-center relative overflow-hidden"
-            style={{ background: `linear-gradient(135deg, ${goal.color}22, ${goal.color}08)`, border: `1px solid ${goal.color}44` }}>
-            <div className="font-mono text-[10px] uppercase tracking-[0.3em]" style={{ color: goal.color }}>vei ajunge la</div>
-            <div className="font-display text-4xl mt-1" style={{ color: goal.color }}>
-              ~{(estimated / 1000).toFixed(estimated >= 10000 ? 0 : 1)}k
+          <div className="rounded-2xl p-4 relative overflow-hidden space-y-3"
+            style={{ background: `linear-gradient(135deg, ${goal.color}18, ${goal.color}06)`, border: `1px solid ${goal.color}40` }}>
+            <div className="flex items-start gap-2.5">
+              <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${goal.color}22`, color: goal.color }}>
+                <Zap size={14} />
+              </div>
+              <div className="text-[12px] leading-snug">
+                <div className="font-display uppercase text-foreground">Plătești doar ce consumi.</div>
+                <p className="text-muted-foreground mt-0.5">
+                  Reclama rulează până se termină bugetul. Vezi views și click-urile pe link în timp real, fără promisiuni false.
+                </p>
+              </div>
             </div>
-            <div className="text-xs text-muted-foreground mt-1">oameni din publicul tău</div>
-            <div className="mt-3 pt-3 border-t border-foreground/10 grid grid-cols-2 gap-2 text-left">
-              <div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">durată</div>
-                <div className="text-xs mt-0.5">~{Math.ceil(budget / Math.max(dailyCap, 1))} zile</div>
-              </div>
-              <div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">limită/zi</div>
-                <div className="text-xs mt-0.5">{dailyCap} RON</div>
-              </div>
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-foreground/10">
+              <Mini icon={<Eye size={11} />} label="Views" value="real-time" />
+              <Mini icon={<MousePointerClick size={11} />} label="Click pe link" value="real-time" />
+              <Mini icon={<Calendar size={11} />} label="Limită/zi" value={`${dailyCap} RON`} />
             </div>
           </div>
+
 
           {budget * 100 > business.wallet_balance_cents && (
             <div className="rounded-xl bg-neon-crimson/10 border border-neon-crimson/30 p-3 text-xs">
