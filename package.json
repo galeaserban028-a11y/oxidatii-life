@@ -19,6 +19,7 @@
     "@fontsource/archivo-black": "^5.2.8",
     "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/hind": "^5.2.8",
+    "@fontsource/instrument-serif": "^5.2.8",
     "@fontsource/space-grotesk": "^5.2.10",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
