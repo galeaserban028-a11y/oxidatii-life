@@ -362,12 +362,12 @@ export function RomaniaMap3D({
       wrap.title = c.name;
       const dot = document.createElement("div");
       const color = big ? "#ff3158" : "#c66bff";
-      dot.style.cssText = `width:${big ? 14 : 10}px;height:${big ? 14 : 10}px;border-radius:9999px;background:${color};border:2px solid rgba(255,255,255,0.85);box-shadow:0 0 12px ${color};`;
+      dot.style.cssText = `width:${big ? 8 : 5}px;height:${big ? 8 : 5}px;border-radius:9999px;background:${color};border:1px solid rgba(255,255,255,0.7);box-shadow:0 0 8px ${color};`;
       wrap.appendChild(dot);
       const label = document.createElement("div");
       label.textContent = c.name.toUpperCase();
       label.className = "oxi-city-label";
-      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:${big ? 11 : 9}px;letter-spacing:0.08em;color:#fff;text-shadow:0 0 6px #000,0 1px 3px #000;white-space:nowrap;`;
+      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:${big ? 10 : 8}px;letter-spacing:0.1em;color:rgba(255,255,255,0.85);text-shadow:0 0 6px #000,0 1px 3px #000;white-space:nowrap;opacity:0.9;`;
       wrap.appendChild(label);
       let pressTimer: number | null = null;
       let longPressed = false;
