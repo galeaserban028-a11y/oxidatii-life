@@ -108,7 +108,7 @@ function AppFeed() {
           <span className="text-muted-foreground">{new Date().toLocaleDateString("ro-RO", { weekday: "long" })}</span>
         </div>
         <div className="flex items-center gap-2.5">
-          <img src={logoLight} alt="" aria-hidden width={40} height={40} className="h-10 w-10 object-contain shrink-0" />
+          <img src={logoLight} alt="" aria-hidden width={56} height={56} className="h-14 w-14 object-contain shrink-0 drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]" />
           <h1 className="font-display uppercase text-xl leading-[1.05] tracking-tight">
             Ce șprițuri sunt <span className="text-gradient-chaos">diseară</span>
           </h1>
