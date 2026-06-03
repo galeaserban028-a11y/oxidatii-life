@@ -44,6 +44,7 @@ import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
 import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
 import { Route as AppPromoIdRouteImport } from './routes/app.promo.$id'
+import { Route as AppMeReputationRouteImport } from './routes/app.me.reputation'
 import { Route as AppMeRatersRouteImport } from './routes/app.me.raters'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
@@ -231,6 +232,11 @@ const AppPromoIdRoute = AppPromoIdRouteImport.update({
   path: '/promo/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMeReputationRoute = AppMeReputationRouteImport.update({
+  id: '/reputation',
+  path: '/reputation',
+  getParentRoute: () => AppMeRoute,
+} as any)
 const AppMeRatersRoute = AppMeRatersRouteImport.update({
   id: '/raters',
   path: '/raters',
@@ -329,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/me/raters': typeof AppMeRatersRoute
+  '/app/me/reputation': typeof AppMeReputationRoute
   '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
@@ -375,6 +382,7 @@ export interface FileRoutesByTo {
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/me/raters': typeof AppMeRatersRoute
+  '/app/me/reputation': typeof AppMeReputationRoute
   '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
@@ -424,6 +432,7 @@ export interface FileRoutesById {
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/me/raters': typeof AppMeRatersRoute
+  '/app/me/reputation': typeof AppMeReputationRoute
   '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
@@ -474,6 +483,7 @@ export interface FileRouteTypes {
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/me/raters'
+    | '/app/me/reputation'
     | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
@@ -520,6 +530,7 @@ export interface FileRouteTypes {
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/me/raters'
+    | '/app/me/reputation'
     | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
@@ -568,6 +579,7 @@ export interface FileRouteTypes {
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/me/raters'
+    | '/app/me/reputation'
     | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
@@ -836,6 +848,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPromoIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/me/reputation': {
+      id: '/app/me/reputation'
+      path: '/reputation'
+      fullPath: '/app/me/reputation'
+      preLoaderRoute: typeof AppMeReputationRouteImport
+      parentRoute: typeof AppMeRoute
+    }
     '/app/me/raters': {
       id: '/app/me/raters'
       path: '/raters'
@@ -944,10 +963,12 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
 
 interface AppMeRouteChildren {
   AppMeRatersRoute: typeof AppMeRatersRoute
+  AppMeReputationRoute: typeof AppMeReputationRoute
 }
 
 const AppMeRouteChildren: AppMeRouteChildren = {
   AppMeRatersRoute: AppMeRatersRoute,
+  AppMeReputationRoute: AppMeReputationRoute,
 }
 
 const AppMeRouteWithChildren = AppMeRoute._addFileChildren(AppMeRouteChildren)
