@@ -544,11 +544,11 @@ export function RomaniaMap3D({
       </div>
 
       <div className="absolute bottom-2 left-2 right-2 z-10 rounded-xl bg-black/80 backdrop-blur border border-foreground/10 px-3 py-2 pointer-events-none flex items-center justify-between gap-2">
-        <div className="font-display font-black text-xs leading-none">{venues.length} locuri · {cities.length} orașe</div>
+        <div className="font-display font-black text-xs leading-none">{venues.length} sticle · {cities.length} orașe</div>
         <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-          <span style={{color:"#c66bff"}}>● club</span>
-          <span style={{color:"#ffb000"}}>● bar</span>
-          <span style={{color:"#39ff88"}}>● terasă</span>
+          <span style={{color:"#c66bff"}}>🍾 club</span>
+          <span style={{color:"#ffb000"}}>🍸 bar</span>
+          <span style={{color:"#39ff88"}}>🍷 terasă</span>
         </div>
       </div>
     </div>
