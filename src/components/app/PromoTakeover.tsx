@@ -71,7 +71,7 @@ async function loadActive(excludeIds: string[] = []): Promise<{ campaign: Campai
   const campaign = weighted[Math.floor(Math.random() * weighted.length)];
 
   const { data: biz } = await supabase
-    .from("business_accounts_public")
+    .from("business_accounts")
     .select("id, brand_name, logo_url")
     .eq("id", campaign.business_id)
     .maybeSingle();
