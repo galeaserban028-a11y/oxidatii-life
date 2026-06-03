@@ -134,6 +134,43 @@ function PromoPage() {
           </div>
         </div>
 
+        {/* Event facts */}
+        {(campaign.event_starts_at || campaign.entry_kind || campaign.street || campaign.special_guest) && (
+          <div className="rounded-2xl bg-foreground/[0.03] border border-foreground/10 p-4 space-y-2.5">
+            {campaign.event_starts_at && (
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${color}22`, color }}><Calendar size={14} /></div>
+                <span className="text-sm">{new Date(campaign.event_starts_at).toLocaleString("ro-RO", { weekday: "long", day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" })}</span>
+              </div>
+            )}
+            {campaign.entry_kind && (
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${color}22`, color }}><Ticket size={14} /></div>
+                <span className="text-sm">{campaign.entry_kind === "free" ? "Intrare gratis" : (campaign.entry_price_text || "Intrare cu bilet")}</span>
+              </div>
+            )}
+            {campaign.street && (
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${color}22`, color }}><MapPin size={14} /></div>
+                <span className="text-sm">{campaign.street}</span>
+              </div>
+            )}
+            {campaign.special_guest && (
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${color}22`, color }}><Star size={14} /></div>
+                <span className="text-sm">Invitat special: <strong>{campaign.special_guest}</strong></span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Video clip */}
+        {campaign.video_url && (
+          <div className="rounded-2xl overflow-hidden border border-foreground/10 bg-black">
+            <video src={campaign.video_url} controls playsInline className="w-full max-h-[60vh] object-contain bg-black" />
+          </div>
+        )}
+
         {/* About brand */}
         {(biz?.description || biz?.website || biz?.contact_phone || biz?.contact_email || biz?.instagram_handle || biz?.tiktok_handle || biz?.address) && (
           <Section title={`Despre ${biz?.brand_name ?? "brand"}`}>
