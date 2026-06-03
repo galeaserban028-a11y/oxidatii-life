@@ -103,17 +103,33 @@ function PartiesPage() {
   }, [qc]);
 
   const joinMutation = useMutation({
-    mutationFn: async ({ partyId, joined }: { partyId: string; joined: boolean }) => {
+    mutationFn: async ({ partyId, joinId }: { partyId: string; joinId: string | null }) => {
       if (!user) throw new Error("login");
-      if (joined) {
-        await supabase.from("party_joins").delete().eq("party_id", partyId).eq("user_id", user.id);
+      if (joinId) {
+        await supabase.from("party_joins").delete().eq("id", joinId);
       } else {
-        await supabase.from("party_joins").insert({ party_id: partyId, user_id: user.id });
+        await supabase.from("party_joins").insert({ party_id: partyId, user_id: user.id, status: "pending" });
         try {
           const { notifyPartyJoin } = await import("@/lib/notifications.functions");
           notifyPartyJoin({ data: { partyId } }).catch(() => {});
         } catch {}
       }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
+  });
+
+  const acceptMutation = useMutation({
+    mutationFn: async (joinId: string) => {
+      const { error } = await supabase.from("party_joins").update({ status: "accepted" }).eq("id", joinId);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
+  });
+
+  const kickMutation = useMutation({
+    mutationFn: async (joinId: string) => {
+      const { error } = await supabase.from("party_joins").delete().eq("id", joinId);
+      if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
   });
@@ -134,14 +150,15 @@ function PartiesPage() {
   };
 
   // hide full parties unless user is already in
-  const takenFor = (id: string) => joins.filter(j => j.party_id === id).length;
+  const acceptedFor = (id: string) => joins.filter(j => j.party_id === id && j.status === "accepted").length;
   const visibleParties = parties.filter(p => {
-    const taken = takenFor(p.id);
+    const taken = acceptedFor(p.id);
     const free = p.spots_total - taken;
-    const inParty = !!user && joins.some(j => j.party_id === p.id && j.user_id === user.id);
+    const myJoin = !!user && joins.find(j => j.party_id === p.id && j.user_id === user.id);
     const isHost = user?.id === p.host_id;
-    return free > 0 || inParty || isHost;
+    return free > 0 || !!myJoin || isHost;
   });
+
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-4">
