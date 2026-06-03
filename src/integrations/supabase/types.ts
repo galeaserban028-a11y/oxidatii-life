@@ -21,6 +21,9 @@ export type Database = {
           emoji: string | null
           id: string
           name: string
+          premium_tier_required:
+            | Database["public"]["Enums"]["premium_tier"]
+            | null
           price_coins: number
         }
         Insert: {
@@ -29,6 +32,9 @@ export type Database = {
           emoji?: string | null
           id: string
           name: string
+          premium_tier_required?:
+            | Database["public"]["Enums"]["premium_tier"]
+            | null
           price_coins: number
         }
         Update: {
@@ -37,6 +43,9 @@ export type Database = {
           emoji?: string | null
           id?: string
           name?: string
+          premium_tier_required?:
+            | Database["public"]["Enums"]["premium_tier"]
+            | null
           price_coins?: number
         }
         Relationships: []
