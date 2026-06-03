@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      avatar_frames: {
+        Row: {
+          created_at: string
+          css_class: string
+          emoji: string | null
+          id: string
+          name: string
+          price_coins: number
+        }
+        Insert: {
+          created_at?: string
+          css_class: string
+          emoji?: string | null
+          id: string
+          name: string
+          price_coins: number
+        }
+        Update: {
+          created_at?: string
+          css_class?: string
+          emoji?: string | null
+          id?: string
+          name?: string
+          price_coins?: number
+        }
+        Relationships: []
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -304,6 +331,65 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_gift_catalog: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          name: string
+          price_coins: number
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id: string
+          name: string
+          price_coins: number
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          name?: string
+          price_coins?: number
+        }
+        Relationships: []
+      }
+      chat_gifts: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          gift_id: string
+          id: string
+          message_id: string | null
+          sender_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          gift_id: string
+          id?: string
+          message_id?: string | null
+          sender_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          gift_id?: string
+          id?: string
+          message_id?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_gifts_gift_id_fkey"
+            columns: ["gift_id"]
+            isOneToOne: false
+            referencedRelation: "chat_gift_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       check_ins: {
         Row: {
           created_at: string
@@ -378,6 +464,39 @@ export type Database = {
         }
         Relationships: []
       }
+      coin_boosts: {
+        Row: {
+          cost_coins: number
+          created_at: string
+          expires_at: string
+          id: string
+          kind: string
+          starts_at: string
+          target_id: string | null
+          user_id: string
+        }
+        Insert: {
+          cost_coins: number
+          created_at?: string
+          expires_at: string
+          id?: string
+          kind: string
+          starts_at?: string
+          target_id?: string | null
+          user_id: string
+        }
+        Update: {
+          cost_coins?: number
+          created_at?: string
+          expires_at?: string
+          id?: string
+          kind?: string
+          starts_at?: string
+          target_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       coin_purchases: {
         Row: {
           amount_cents: number
@@ -410,6 +529,33 @@ export type Database = {
           id?: string
           pack_id?: string
           stripe_session_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coin_spends: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          kind: string
+          ref_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          kind: string
+          ref_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          ref_id?: string | null
           user_id?: string
         }
         Relationships: []
@@ -734,6 +880,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_frame_id: string | null
           aura: number
           avatar_url: string | null
           bio: string | null
@@ -756,6 +903,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active_frame_id?: string | null
           aura?: number
           avatar_url?: string | null
           bio?: string | null
@@ -778,6 +926,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active_frame_id?: string | null
           aura?: number
           avatar_url?: string | null
           bio?: string | null
@@ -800,6 +949,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_active_frame_id_fkey"
+            columns: ["active_frame_id"]
+            isOneToOne: false
+            referencedRelation: "avatar_frames"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_city_fk"
             columns: ["city_id"]
@@ -1007,6 +1163,32 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_frames: {
+        Row: {
+          acquired_at: string
+          frame_id: string
+          user_id: string
+        }
+        Insert: {
+          acquired_at?: string
+          frame_id: string
+          user_id: string
+        }
+        Update: {
+          acquired_at?: string
+          frame_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_frames_frame_id_fkey"
+            columns: ["frame_id"]
+            isOneToOne: false
+            referencedRelation: "avatar_frames"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_ratings: {
         Row: {
@@ -1314,6 +1496,10 @@ export type Database = {
         Returns: boolean
       }
       iso_week_start: { Args: { _ts: string }; Returns: string }
+      spend_coins: {
+        Args: { _amount: number; _kind: string; _ref_id?: string }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "moderator"
