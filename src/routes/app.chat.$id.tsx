@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { ArrowLeft, Send, Smile, Image as ImageIcon, Users, Gift, X, Loader2, Mic, Palette, Play, Pause, Square } from "lucide-react";
+import { ArrowLeft, Send, Smile, Image as ImageIcon, Users, Gift, X, Loader2, Mic, Palette, Play, Pause } from "lucide-react";
 
 export const Route = createFileRoute("/app/chat/$id")({
   head: () => ({ meta: [{ title: "Chat · OXIDAȚII" }] }),
