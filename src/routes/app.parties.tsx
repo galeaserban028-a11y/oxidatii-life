@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Plus, Users, MapPin, Clock, X, Flame, Trash2 } from "lucide-react";
+import { Plus, Users, MapPin, Clock, X, Flame, Trash2, Check, UserX, ChevronDown, ChevronUp } from "lucide-react";
 
 export const Route = createFileRoute("/app/parties")({
   head: () => ({ meta: [{ title: "Șprițuri · OXIDAȚII" }] }),
@@ -59,19 +59,34 @@ function PartiesPage() {
     },
     enabled: hostIds.length > 0,
   });
-  const hostMap = new Map(hosts.map(h => [h.id, h]));
+  void hosts;
 
   const partyIds = parties.map(p => p.id);
   const { data: joins = [] } = useQuery({
     queryKey: ["party-joins", partyIds.sort().join(",")],
     queryFn: async () => {
       if (!partyIds.length) return [];
-      const { data } = await supabase.from("party_joins").select("party_id, user_id").in("party_id", partyIds);
-      return (data ?? []) as { party_id: string; user_id: string }[];
+      const { data } = await supabase.from("party_joins").select("id, party_id, user_id, status, created_at").in("party_id", partyIds);
+      return (data ?? []) as { id: string; party_id: string; user_id: string; status: string; created_at: string }[];
     },
     enabled: partyIds.length > 0,
     refetchInterval: 20_000,
   });
+
+  // fetch profiles for joiners + hosts together
+  const joinerIds = Array.from(new Set(joins.map(j => j.user_id)));
+  const allProfileIds = Array.from(new Set([...hostIds, ...joinerIds]));
+  const { data: profiles = [] } = useQuery({
+    queryKey: ["party-profiles", allProfileIds.sort().join(",")],
+    queryFn: async () => {
+      if (!allProfileIds.length) return [];
+      const { data } = await supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", allProfileIds);
+      return (data ?? []) as Host[];
+    },
+    enabled: allProfileIds.length > 0,
+  });
+  const profileMap = new Map(profiles.map(p => [p.id, p]));
+
 
   // realtime
   useEffect(() => {
@@ -88,17 +103,33 @@ function PartiesPage() {
   }, [qc]);
 
   const joinMutation = useMutation({
-    mutationFn: async ({ partyId, joined }: { partyId: string; joined: boolean }) => {
+    mutationFn: async ({ partyId, joinId }: { partyId: string; joinId: string | null }) => {
       if (!user) throw new Error("login");
-      if (joined) {
-        await supabase.from("party_joins").delete().eq("party_id", partyId).eq("user_id", user.id);
+      if (joinId) {
+        await supabase.from("party_joins").delete().eq("id", joinId);
       } else {
-        await supabase.from("party_joins").insert({ party_id: partyId, user_id: user.id });
+        await supabase.from("party_joins").insert({ party_id: partyId, user_id: user.id, status: "pending" });
         try {
           const { notifyPartyJoin } = await import("@/lib/notifications.functions");
           notifyPartyJoin({ data: { partyId } }).catch(() => {});
         } catch {}
       }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
+  });
+
+  const acceptMutation = useMutation({
+    mutationFn: async (joinId: string) => {
+      const { error } = await supabase.from("party_joins").update({ status: "accepted" }).eq("id", joinId);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
+  });
+
+  const kickMutation = useMutation({
+    mutationFn: async (joinId: string) => {
+      const { error } = await supabase.from("party_joins").delete().eq("id", joinId);
+      if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
   });
@@ -119,14 +150,15 @@ function PartiesPage() {
   };
 
   // hide full parties unless user is already in
-  const takenFor = (id: string) => joins.filter(j => j.party_id === id).length;
+  const acceptedFor = (id: string) => joins.filter(j => j.party_id === id && j.status === "accepted").length;
   const visibleParties = parties.filter(p => {
-    const taken = takenFor(p.id);
+    const taken = acceptedFor(p.id);
     const free = p.spots_total - taken;
-    const inParty = !!user && joins.some(j => j.party_id === p.id && j.user_id === user.id);
+    const myJoin = !!user && joins.find(j => j.party_id === p.id && j.user_id === user.id);
     const isHost = user?.id === p.host_id;
-    return free > 0 || inParty || isHost;
+    return free > 0 || !!myJoin || isHost;
   });
+
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-4">
@@ -168,12 +200,16 @@ function PartiesPage() {
       ) : (
         <div className="space-y-3">
           {visibleParties.map(p => {
-            const host = hostMap.get(p.host_id);
-            const taken = joins.filter(j => j.party_id === p.id).length;
+            const host = profileMap.get(p.host_id);
+            const partyJoins = joins.filter(j => j.party_id === p.id);
+            const accepted = partyJoins.filter(j => j.status === "accepted");
+            const pending = partyJoins.filter(j => j.status === "pending");
+            const taken = accepted.length;
             const free = Math.max(0, p.spots_total - taken);
-            const joined = !!user && joins.some(j => j.party_id === p.id && j.user_id === user.id);
+            const myJoin = user ? partyJoins.find(j => j.user_id === user.id) : undefined;
             const isHost = user?.id === p.host_id;
-            const full = free === 0 && !joined;
+            const full = free === 0 && !myJoin;
+            const myStatus = myJoin?.status;
             return (
               <article key={p.id} className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-foreground/[0.03]">
                 <div className="absolute top-0 right-0 h-24 w-24 rounded-full bg-neon-crimson/20 blur-3xl pointer-events-none" />
@@ -237,20 +273,35 @@ function PartiesPage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => joinMutation.mutate({ partyId: p.id, joined })}
-                      disabled={!user || joinMutation.isPending || (full && !joined) || isHost}
+                      onClick={() => joinMutation.mutate({ partyId: p.id, joinId: myJoin?.id ?? null })}
+                      disabled={!user || joinMutation.isPending || (full && !myJoin) || isHost}
                       className={`shrink-0 px-4 py-2 rounded-xl font-mono text-[11px] uppercase tracking-widest active:scale-95 disabled:opacity-30 transition ${
-                        joined
+                        myStatus === "accepted"
                           ? "bg-neon-green/15 text-neon-green border border-neon-green/50"
+                          : myStatus === "pending"
+                          ? "bg-foreground/5 text-muted-foreground border border-foreground/15"
                           : "bg-neon-crimson text-white shadow-[0_0_14px_-4px_var(--neon-crimson)]"
                       }`}
                     >
-                      {isHost ? "tu" : joined ? "✓ vin" : full ? "plin" : "vin și eu"}
+                      {isHost ? "tu" : myStatus === "accepted" ? "✓ vin" : myStatus === "pending" ? "în așteptare" : full ? "plin" : "vin și eu"}
                     </button>
                   </div>
+
+                  {/* Host management: pending requests + accepted list */}
+                  {isHost && (partyJoins.length > 0) && (
+                    <HostJoinsPanel
+                      pending={pending}
+                      accepted={accepted}
+                      profileMap={profileMap}
+                      onAccept={(id) => acceptMutation.mutate(id)}
+                      onReject={(id) => kickMutation.mutate(id)}
+                      busy={acceptMutation.isPending || kickMutation.isPending}
+                    />
+                  )}
                 </div>
               </article>
             );
+
           })}
         </div>
       )}
@@ -259,6 +310,111 @@ function PartiesPage() {
     </div>
   );
 }
+
+type JoinRow = { id: string; party_id: string; user_id: string; status: string; created_at: string };
+
+function HostJoinsPanel({
+  pending, accepted, profileMap, onAccept, onReject, busy,
+}: {
+  pending: JoinRow[];
+  accepted: JoinRow[];
+  profileMap: Map<string, Host>;
+  onAccept: (joinId: string) => void;
+  onReject: (joinId: string) => void;
+  busy: boolean;
+}) {
+  const [open, setOpen] = useState(pending.length > 0);
+  const total = pending.length + accepted.length;
+  return (
+    <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-3 py-2 font-mono text-[10px] uppercase tracking-widest"
+      >
+        <span className="flex items-center gap-2">
+          <span className="text-muted-foreground">// cereri</span>
+          {pending.length > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full bg-neon-crimson text-white text-[9px]">{pending.length} noi</span>
+          )}
+          <span className="text-muted-foreground">{total} total</span>
+        </span>
+        {open ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+      </button>
+      {open && (
+        <div className="px-3 pb-3 space-y-2.5">
+          {pending.length === 0 && accepted.length === 0 && (
+            <div className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">nicio cerere încă</div>
+          )}
+          {pending.map(j => {
+            const u = profileMap.get(j.user_id);
+            return (
+              <div key={j.id} className="flex items-center gap-2.5">
+                <Link
+                  to="/app/user/$id" params={{ id: j.user_id }}
+                  className="flex items-center gap-2 flex-1 min-w-0 group"
+                >
+                  <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-neon-purple to-neon-crimson flex items-center justify-center font-display text-[10px] shrink-0">
+                    {u?.avatar_url ? <img src={u.avatar_url} alt="" className="h-full w-full object-cover" /> : (u?.handle ?? "?")[0]?.toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-display text-xs truncate group-hover:underline">@{u?.handle ?? u?.display_name ?? "anonim"}</div>
+                    <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">vezi profil →</div>
+                  </div>
+                </Link>
+                <button
+                  onClick={() => onAccept(j.id)} disabled={busy}
+                  aria-label="accept"
+                  className="h-8 w-8 rounded-full flex items-center justify-center bg-neon-green/15 text-neon-green border border-neon-green/40 hover:bg-neon-green/25 active:scale-95 disabled:opacity-40"
+                >
+                  <Check size={14} strokeWidth={3} />
+                </button>
+                <button
+                  onClick={() => onReject(j.id)} disabled={busy}
+                  aria-label="respinge"
+                  className="h-8 w-8 rounded-full flex items-center justify-center bg-neon-crimson/10 text-neon-crimson border border-neon-crimson/40 hover:bg-neon-crimson/20 active:scale-95 disabled:opacity-40"
+                >
+                  <X size={14} strokeWidth={3} />
+                </button>
+              </div>
+            );
+          })}
+          {accepted.length > 0 && (
+            <>
+              {pending.length > 0 && <div className="h-px bg-foreground/10 my-2" />}
+              <div className="font-mono text-[9px] uppercase tracking-widest text-neon-green">// vin</div>
+              {accepted.map(j => {
+                const u = profileMap.get(j.user_id);
+                return (
+                  <div key={j.id} className="flex items-center gap-2.5">
+                    <Link
+                      to="/app/user/$id" params={{ id: j.user_id }}
+                      className="flex items-center gap-2 flex-1 min-w-0 group"
+                    >
+                      <div className="h-8 w-8 rounded-full overflow-hidden bg-gradient-to-br from-neon-green to-neon-purple flex items-center justify-center font-display text-[10px] shrink-0">
+                        {u?.avatar_url ? <img src={u.avatar_url} alt="" className="h-full w-full object-cover" /> : (u?.handle ?? "?")[0]?.toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-display text-xs truncate group-hover:underline">@{u?.handle ?? u?.display_name ?? "anonim"}</div>
+                      </div>
+                    </Link>
+                    <button
+                      onClick={() => onReject(j.id)} disabled={busy}
+                      aria-label="elimină"
+                      className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground border border-foreground/15 hover:text-neon-crimson hover:border-neon-crimson/40 active:scale-95 disabled:opacity-40"
+                    >
+                      <UserX size={14} />
+                    </button>
+                  </div>
+                );
+              })}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function CreatePartySheet({ onClose }: { onClose: () => void }) {
   const { user } = useAuth();
