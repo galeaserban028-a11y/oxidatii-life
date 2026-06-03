@@ -192,11 +192,25 @@ export function RomaniaMap3D({
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
         cluster: true,
-        clusterRadius: 38,
-        clusterMaxZoom: 12,
+        clusterRadius: 60,
+        clusterMaxZoom: 13,
       });
 
-      // cluster bubbles
+      // Register one bottle icon per venue type (different tints).
+      const bottleTypes: Array<[string, string]> = [
+        ["bottle-club", TYPE_COLOR.club],
+        ["bottle-bar", TYPE_COLOR.bar],
+        ["bottle-pub", TYPE_COLOR.pub],
+        ["bottle-terasa", TYPE_COLOR.terasa],
+        ["bottle-after", TYPE_COLOR.after],
+      ];
+      for (const [name, color] of bottleTypes) {
+        if (!map.hasImage(name)) {
+          try { map.addImage(name, makeBottleImage(color), { pixelRatio: 2 }); } catch {}
+        }
+      }
+
+      // cluster bubbles — softer, smaller, less screaming
       map.addLayer({
         id: "venues-clusters",
         type: "circle",
@@ -205,14 +219,14 @@ export function RomaniaMap3D({
         paint: {
           "circle-color": [
             "step", ["get", "point_count"],
-            "#ffb000", 10,
-            "#ff8a3d", 50,
-            "#ff3158",
+            "rgba(255,176,0,0.85)", 10,
+            "rgba(255,138,61,0.9)", 50,
+            "rgba(255,49,88,0.95)",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 14, 10, 18, 50, 24],
+          "circle-radius": ["step", ["get", "point_count"], 11, 10, 15, 50, 20],
           "circle-opacity": 0.85,
-          "circle-stroke-width": 2,
-          "circle-stroke-color": "rgba(0,0,0,0.6)",
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "rgba(0,0,0,0.55)",
         },
       });
       map.addLayer({
@@ -222,33 +236,34 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-size": 11,
+          "text-size": 10,
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
         },
         paint: { "text-color": "#0a0a0a" },
       });
 
-      // unclustered points
+      // unclustered points → little bottle silhouettes
       map.addLayer({
         id: "venues-points",
-        type: "circle",
+        type: "symbol",
         source: VENUES_SRC,
         filter: ["!", ["has", "point_count"]],
-        paint: {
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 3, 10, 5, 14, 8],
-          "circle-color": [
+        layout: {
+          "icon-image": [
             "match", ["get", "type"],
-            "club", TYPE_COLOR.club,
-            "bar", TYPE_COLOR.bar,
-            "pub", TYPE_COLOR.pub,
-            "terasa", TYPE_COLOR.terasa,
-            "terasă", TYPE_COLOR.terasa,
-            "after", TYPE_COLOR.after,
-            "#ffb000",
+            "club", "bottle-club",
+            "bar", "bottle-bar",
+            "pub", "bottle-pub",
+            "terasa", "bottle-terasa",
+            "terasă", "bottle-terasa",
+            "after", "bottle-after",
+            "bottle-bar",
           ],
-          "circle-opacity": 0.9,
-          "circle-stroke-width": 1.5,
-          "circle-stroke-color": "rgba(0,0,0,0.7)",
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 6, 0.18, 10, 0.32, 14, 0.55, 17, 0.75],
+          "icon-allow-overlap": false,
+          "icon-ignore-placement": false,
+          "icon-anchor": "bottom",
+          "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
         },
       });
 
