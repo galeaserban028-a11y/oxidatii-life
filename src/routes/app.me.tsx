@@ -343,7 +343,7 @@ function MePage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-display uppercase text-[13px]">Devino VIP, PRO sau ELITE</div>
-              <div className="text-[11px] text-muted-foreground">Badge, frame, teme, coins · de la 2.99 lei</div>
+              <div className="text-[11px] text-muted-foreground">Badge, frame, teme, șprițuri · de la 2.99 lei</div>
             </div>
             <span className="text-[10px] font-mono uppercase tracking-wider text-fuchsia-300">Vezi</span>
           </Link>
