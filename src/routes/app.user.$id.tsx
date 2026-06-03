@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner";
 import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
+import { getTheme } from "@/lib/premium-themes";
 
 export const Route = createFileRoute("/app/user/$id")({
   loader: async ({ params }) => {
