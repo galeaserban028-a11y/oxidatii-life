@@ -1,0 +1,1 @@
+CREATE POLICY "authenticated can read chat-media bucket" ON storage.buckets FOR SELECT TO authenticated USING (id = 'chat-media');
