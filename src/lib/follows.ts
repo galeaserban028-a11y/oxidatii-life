@@ -122,30 +122,22 @@ export function useIncomingFollowRequests(userId?: string | null) {
     enabled: !!userId,
     queryFn: async (): Promise<IncomingRequest[]> => {
       if (!userId) return [];
-      const { data, error } = await supabase
+      // The `follows` table has no declared FK to `profiles` in PostgREST,
+      // so we fetch rows and join profile rows manually.
+      const { data: rows } = await supabase
         .from("follows")
-        .select("id, follower_id, created_at, follower:profiles!follows_follower_id_fkey(id, handle, display_name, avatar_url)")
+        .select("id, follower_id, created_at")
         .eq("following_id", userId)
         .eq("status", "pending")
         .order("created_at", { ascending: false });
-      if (error) {
-        // Fallback in case the FK alias isn't recognized: fetch separately.
-        const { data: rows } = await supabase
-          .from("follows")
-          .select("id, follower_id, created_at")
-          .eq("following_id", userId)
-          .eq("status", "pending")
-          .order("created_at", { ascending: false });
-        if (!rows || rows.length === 0) return [];
-        const ids = rows.map((r) => r.follower_id);
-        const { data: profs } = await supabase
-          .from("profiles")
-          .select("id, handle, display_name, avatar_url")
-          .in("id", ids);
-        const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
-        return rows.map((r) => ({ ...r, follower: map.get(r.follower_id) ?? null })) as any;
-      }
-      return (data ?? []) as any;
+      if (!rows || rows.length === 0) return [];
+      const ids = rows.map((r) => r.follower_id);
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, handle, display_name, avatar_url")
+        .in("id", ids);
+      const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
+      return rows.map((r) => ({ ...r, follower: map.get(r.follower_id) ?? null })) as any;
     },
   });
 }
