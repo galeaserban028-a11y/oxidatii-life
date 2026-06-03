@@ -640,7 +640,7 @@ export const RO_EN: Record<string, string> = {
     "Boosts, gifts, frames, collectibles. Buy once, use whenever.",
   "Badge auriu + reacții speciale": "Gold badge + special reactions",
   "Reacții exclusive în chat": "Exclusive chat reactions",
-  "Fără reclame": "No ads",
+  
   "Vezi cine ți-a dat rating": "See who rated you",
   "Boost etic, fără #1": "Ethical boost, no #1",
   "Reacții": "Reactions",

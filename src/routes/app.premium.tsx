@@ -40,7 +40,7 @@ const TIERS: Tier[] = [
     id: "vip", index: "I.", name: "VIP", italic: "discret",
     price: 2.99, coins: 5, hue: HUE.amber.fg, surface: HUE.amber.bg,
     blurb: "Pentru cei care vor doar să arate că au gust. Fără paradă.",
-    perks: ["Insignă VIP auriu", "5 șprițuri pe lună", "Reacții doar pentru club", "Fără reclame, nicăieri"],
+    perks: ["Insignă VIP auriu", "5 șprițuri pe lună", "Reacții doar pentru club"],
   },
   {
     id: "vip_plus", index: "II.", name: "VIP+", italic: "curat",
