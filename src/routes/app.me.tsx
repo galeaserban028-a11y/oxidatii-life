@@ -15,6 +15,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
+import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
+import { PremiumExtrasCard } from "@/components/app/PremiumExtrasCard";
 
 
 export const Route = createFileRoute("/app/me")({
@@ -226,6 +228,9 @@ function MePage() {
               <MenuItem to="/app/premium" icon={<Gem size={16} className="text-fuchsia-400" />} onSelect={() => setMenuOpen(false)} label="Șpriț Premium ✨" />
               {["vip_plus", "pro", "elite"].includes((profile as any)?.premium_tier ?? "") && (
                 <MenuItem to="/app/me/raters" icon={<Gem size={16} className="text-rose-400" />} onSelect={() => setMenuOpen(false)} label="Cine ți-a dat rating" />
+              )}
+              {["pro", "elite"].includes((profile as any)?.premium_tier ?? "") && (
+                <MenuItem to="/app/me/reputation" icon={<Gem size={16} className="text-emerald-400" />} onSelect={() => setMenuOpen(false)} label="Reputation analytics" />
               )}
               <MenuItem to="/app/biz" icon={<Rocket size={16} className="text-neon-purple" />} onSelect={() => setMenuOpen(false)} label="Business · Promovare" />
               {isStaff && (
