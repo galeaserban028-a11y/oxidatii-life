@@ -499,12 +499,10 @@ export function RomaniaMap3D({
         wrap.appendChild(crown);
       }
 
-      const labelText = f.is_me
-        ? `@${f.handle ?? f.display_name ?? "tu"}`
-        : `@${f.handle ?? f.display_name ?? "live"}`;
+      const labelText = f.display_name ?? (f.handle ? `@${f.handle}` : (f.is_me ? "tu" : "live"));
       const pill = document.createElement("div");
       pill.textContent = labelText;
-      pill.style.cssText = `margin-top:4px;padding:2px 6px;border-radius:9999px;background:rgba(6,7,10,0.92);color:${accent};font-family:'JetBrains Mono',ui-monospace,monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap;border:1px solid ${accent};`;
+      pill.style.cssText = `margin-top:4px;padding:2px 7px;border-radius:9999px;background:rgba(6,7,10,0.92);color:${accent};font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:10px;letter-spacing:0.04em;white-space:nowrap;border:1px solid ${accent};max-width:120px;overflow:hidden;text-overflow:ellipsis;`;
       wrap.appendChild(pill);
 
       wrap.onclick = (e) => { e.stopPropagation(); navRef.current({ to: "/app/user/$id", params: { id: f.user_id } }); };
