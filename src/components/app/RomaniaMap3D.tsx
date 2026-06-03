@@ -28,6 +28,45 @@ const TYPE_COLOR: Record<string, string> = {
   after: "#ff3158",
 };
 
+// Render a tiny wine-bottle silhouette onto a canvas and register it as a map
+// image. One image per type/color. Replaces the "fat dot" markers with elegant
+// little bottles — instantly readable ("astea sunt locuri de băut") and far
+// less visually noisy when many venues share the same area.
+function makeBottleImage(color: string): ImageData {
+  const W = 28, H = 44;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 6;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(12, 2);
+  ctx.lineTo(16, 2);
+  ctx.lineTo(16, 6);
+  ctx.lineTo(17, 7);
+  ctx.lineTo(17, 14);
+  ctx.bezierCurveTo(22, 17, 24, 22, 24, 28);
+  ctx.lineTo(24, 39);
+  ctx.quadraticCurveTo(24, 42, 21, 42);
+  ctx.lineTo(7, 42);
+  ctx.quadraticCurveTo(4, 42, 4, 39);
+  ctx.lineTo(4, 28);
+  ctx.bezierCurveTo(4, 22, 6, 17, 11, 14);
+  ctx.lineTo(11, 7);
+  ctx.lineTo(12, 6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "rgba(0,0,0,0.55)";
+  ctx.fillRect(4, 30, 20, 7);
+  ctx.fillStyle = "rgba(255,255,255,0.45)";
+  ctx.fillRect(7, 18, 2, 18);
+  ctx.fillStyle = "#1a1208";
+  ctx.fillRect(11, 0, 6, 6);
+  return ctx.getImageData(0, 0, W, H);
+}
+
 const VOYAGER_STYLE = {
   version: 8,
   sources: {
@@ -153,11 +192,25 @@ export function RomaniaMap3D({
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
         cluster: true,
-        clusterRadius: 38,
-        clusterMaxZoom: 12,
+        clusterRadius: 60,
+        clusterMaxZoom: 13,
       });
 
-      // cluster bubbles
+      // Register one bottle icon per venue type (different tints).
+      const bottleTypes: Array<[string, string]> = [
+        ["bottle-club", TYPE_COLOR.club],
+        ["bottle-bar", TYPE_COLOR.bar],
+        ["bottle-pub", TYPE_COLOR.pub],
+        ["bottle-terasa", TYPE_COLOR.terasa],
+        ["bottle-after", TYPE_COLOR.after],
+      ];
+      for (const [name, color] of bottleTypes) {
+        if (!map.hasImage(name)) {
+          try { map.addImage(name, makeBottleImage(color), { pixelRatio: 2 }); } catch {}
+        }
+      }
+
+      // cluster bubbles — softer, smaller, less screaming
       map.addLayer({
         id: "venues-clusters",
         type: "circle",
@@ -166,14 +219,14 @@ export function RomaniaMap3D({
         paint: {
           "circle-color": [
             "step", ["get", "point_count"],
-            "#ffb000", 10,
-            "#ff8a3d", 50,
-            "#ff3158",
+            "rgba(255,176,0,0.85)", 10,
+            "rgba(255,138,61,0.9)", 50,
+            "rgba(255,49,88,0.95)",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 14, 10, 18, 50, 24],
+          "circle-radius": ["step", ["get", "point_count"], 11, 10, 15, 50, 20],
           "circle-opacity": 0.85,
-          "circle-stroke-width": 2,
-          "circle-stroke-color": "rgba(0,0,0,0.6)",
+          "circle-stroke-width": 1,
+          "circle-stroke-color": "rgba(0,0,0,0.55)",
         },
       });
       map.addLayer({
@@ -183,33 +236,34 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-size": 11,
+          "text-size": 10,
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
         },
         paint: { "text-color": "#0a0a0a" },
       });
 
-      // unclustered points
+      // unclustered points → little bottle silhouettes
       map.addLayer({
         id: "venues-points",
-        type: "circle",
+        type: "symbol",
         source: VENUES_SRC,
         filter: ["!", ["has", "point_count"]],
-        paint: {
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 6, 3, 10, 5, 14, 8],
-          "circle-color": [
+        layout: {
+          "icon-image": [
             "match", ["get", "type"],
-            "club", TYPE_COLOR.club,
-            "bar", TYPE_COLOR.bar,
-            "pub", TYPE_COLOR.pub,
-            "terasa", TYPE_COLOR.terasa,
-            "terasă", TYPE_COLOR.terasa,
-            "after", TYPE_COLOR.after,
-            "#ffb000",
+            "club", "bottle-club",
+            "bar", "bottle-bar",
+            "pub", "bottle-pub",
+            "terasa", "bottle-terasa",
+            "terasă", "bottle-terasa",
+            "after", "bottle-after",
+            "bottle-bar",
           ],
-          "circle-opacity": 0.9,
-          "circle-stroke-width": 1.5,
-          "circle-stroke-color": "rgba(0,0,0,0.7)",
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 6, 0.18, 10, 0.32, 14, 0.55, 17, 0.75],
+          "icon-allow-overlap": false,
+          "icon-ignore-placement": false,
+          "icon-anchor": "bottom",
+          "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
         },
       });
 
@@ -308,12 +362,12 @@ export function RomaniaMap3D({
       wrap.title = c.name;
       const dot = document.createElement("div");
       const color = big ? "#ff3158" : "#c66bff";
-      dot.style.cssText = `width:${big ? 14 : 10}px;height:${big ? 14 : 10}px;border-radius:9999px;background:${color};border:2px solid rgba(255,255,255,0.85);box-shadow:0 0 12px ${color};`;
+      dot.style.cssText = `width:${big ? 8 : 5}px;height:${big ? 8 : 5}px;border-radius:9999px;background:${color};border:1px solid rgba(255,255,255,0.7);box-shadow:0 0 8px ${color};`;
       wrap.appendChild(dot);
       const label = document.createElement("div");
       label.textContent = c.name.toUpperCase();
       label.className = "oxi-city-label";
-      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:${big ? 11 : 9}px;letter-spacing:0.08em;color:#fff;text-shadow:0 0 6px #000,0 1px 3px #000;white-space:nowrap;`;
+      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:${big ? 10 : 8}px;letter-spacing:0.1em;color:rgba(255,255,255,0.85);text-shadow:0 0 6px #000,0 1px 3px #000;white-space:nowrap;opacity:0.9;`;
       wrap.appendChild(label);
       let pressTimer: number | null = null;
       let longPressed = false;
@@ -490,11 +544,11 @@ export function RomaniaMap3D({
       </div>
 
       <div className="absolute bottom-2 left-2 right-2 z-10 rounded-xl bg-black/80 backdrop-blur border border-foreground/10 px-3 py-2 pointer-events-none flex items-center justify-between gap-2">
-        <div className="font-display font-black text-xs leading-none">{venues.length} locuri · {cities.length} orașe</div>
+        <div className="font-display font-black text-xs leading-none">{venues.length} sticle · {cities.length} orașe</div>
         <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-          <span style={{color:"#c66bff"}}>● club</span>
-          <span style={{color:"#ffb000"}}>● bar</span>
-          <span style={{color:"#39ff88"}}>● terasă</span>
+          <span style={{color:"#c66bff"}}>🍾 club</span>
+          <span style={{color:"#ffb000"}}>🍸 bar</span>
+          <span style={{color:"#39ff88"}}>🍷 terasă</span>
         </div>
       </div>
     </div>
