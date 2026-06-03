@@ -266,11 +266,33 @@ function MapPage() {
   const requestGeo = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
-      (pos) => setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setGeo({ lat, lng });
+        setFocusCity({ lat, lng, zoom: 13 });
+        // Publish own pin so it appears on the map immediately.
+        if (user) {
+          await supabase.from("live_locations").upsert(
+            {
+              user_id: user.id,
+              lat,
+              lng,
+              accuracy: pos.coords.accuracy ?? null,
+              heading: pos.coords.heading ?? null,
+              updated_at: new Date().toISOString(),
+              expires_at: new Date(Date.now() + 15 * 60_000).toISOString(),
+            },
+            { onConflict: "user_id" },
+          );
+          qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+        }
+      },
       () => alert("Nu am putut citi locația. Verifică permisiunile."),
       { enableHighAccuracy: true, timeout: 8000 }
     );
   };
+
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
   const [tab, setTab] = useState<"locatii" | "live">("locatii");
