@@ -86,8 +86,6 @@ export function PromoTakeover() {
   const [phase, setPhase] = useState<"hidden" | "full" | "mini" | "gone">("hidden");
   const trackedRef = useRef(false);
 
-  // Premium users see no ads
-  if (isPremium) return null;
 
   useEffect(() => {
     let alive = true;
