@@ -122,7 +122,7 @@ async function loadFeed(userId: string) {
         .gt("expires_at", new Date().toISOString())
         .maybeSingle(),
       supabase
-        .from("business_accounts")
+        .from("business_accounts_public")
         .select("id, brand_name, verified")
         .eq("id", pick.business_id)
         .maybeSingle(),

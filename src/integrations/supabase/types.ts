@@ -1224,6 +1224,8 @@ export type Database = {
           address: string | null
           brand_name: string | null
           city_id: string | null
+          contact_email: string | null
+          contact_phone: string | null
           cover_url: string | null
           created_at: string | null
           description: string | null
@@ -1232,10 +1234,12 @@ export type Database = {
           lat: number | null
           lng: number | null
           logo_url: string | null
+          owner_user_id: string | null
           slug: string | null
           tier: Database["public"]["Enums"]["business_tier"] | null
           tiktok_handle: string | null
           type: Database["public"]["Enums"]["business_type"] | null
+          updated_at: string | null
           venue_id: string | null
           verified: boolean | null
           website: string | null
@@ -1244,6 +1248,8 @@ export type Database = {
           address?: string | null
           brand_name?: string | null
           city_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           cover_url?: string | null
           created_at?: string | null
           description?: string | null
@@ -1252,10 +1258,12 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           logo_url?: string | null
+          owner_user_id?: string | null
           slug?: string | null
           tier?: Database["public"]["Enums"]["business_tier"] | null
           tiktok_handle?: string | null
           type?: Database["public"]["Enums"]["business_type"] | null
+          updated_at?: string | null
           venue_id?: string | null
           verified?: boolean | null
           website?: string | null
@@ -1264,6 +1272,8 @@ export type Database = {
           address?: string | null
           brand_name?: string | null
           city_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           cover_url?: string | null
           created_at?: string | null
           description?: string | null
@@ -1272,10 +1282,12 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           logo_url?: string | null
+          owner_user_id?: string | null
           slug?: string | null
           tier?: Database["public"]["Enums"]["business_tier"] | null
           tiktok_handle?: string | null
           type?: Database["public"]["Enums"]["business_type"] | null
+          updated_at?: string | null
           venue_id?: string | null
           verified?: boolean | null
           website?: string | null
