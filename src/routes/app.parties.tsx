@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Plus, Users, MapPin, Clock, X, Flame, Trash2 } from "lucide-react";
+import { Plus, Users, MapPin, Clock, X, Flame, Trash2, Check, UserX, ChevronDown, ChevronUp } from "lucide-react";
 
 export const Route = createFileRoute("/app/parties")({
   head: () => ({ meta: [{ title: "Șprițuri · OXIDAȚII" }] }),
