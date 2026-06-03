@@ -894,9 +894,9 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
               </div>
             </div>
             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-foreground/10">
-              <Mini icon={<Eye size={11} />} label="Views" value="real-time" />
-              <Mini icon={<MousePointerClick size={11} />} label="Click pe link" value="real-time" />
-              <Mini icon={<Calendar size={11} />} label="Limită/zi" value={`${dailyCap} RON`} />
+              <Stat icon={<Eye size={11} />} label="Views" value="real-time" />
+              <Stat icon={<MousePointerClick size={11} />} label="Click pe link" value="real-time" />
+              <Stat icon={<Calendar size={11} />} label="Limită/zi" value={`${dailyCap} RON`} />
             </div>
           </div>
 
