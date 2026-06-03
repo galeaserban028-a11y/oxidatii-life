@@ -276,7 +276,7 @@ function MePage() {
             className="relative h-[88px] w-[88px] rounded-full p-[2px] bg-gradient-to-tr from-neon-crimson via-neon-purple to-neon-green shrink-0 active:scale-95 transition"
             aria-label="Schimbă poza de profil"
           >
-            <div className="h-full w-full rounded-full overflow-hidden bg-background flex items-center justify-center text-3xl font-display">
+            <div className={`h-full w-full rounded-full overflow-hidden bg-background flex items-center justify-center text-3xl font-display ${activeFrame?.css_class ?? ""}`}>
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
               ) : (
