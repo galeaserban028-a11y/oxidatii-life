@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Check, Crown, Sparkles, Gem, Star, Coins, Zap, Eye, Palette, Heart, ShieldCheck, Settings } from "lucide-react";
+import { ArrowLeft, Coins, Settings, Plus } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { PremiumBadge, type PremiumTier } from "@/components/app/PremiumBadge";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
 import { createPremiumPortalSession } from "@/lib/premium.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export const Route = createFileRoute("/app/premium")({
   head: () => ({ meta: [{ title: "Șpriț Premium · OXIDAȚII" }] }),
@@ -20,40 +21,36 @@ type Tier = {
   coins: number;
   tagline: string;
   perks: string[];
-  highlight?: boolean;
+  accent: string; // tailwind color class
   badge?: string;
-  gradient: string;
-  ring: string;
-  icon: typeof Star;
 };
 
 const TIERS: Tier[] = [
   {
-    id: "vip", name: "VIP", price: 2.99, coins: 50, icon: Star,
-    tagline: "Badge auriu + reacții speciale",
-    gradient: "from-amber-300/20 to-amber-500/10", ring: "ring-amber-400/40",
-    perks: ["Badge VIP auriu pe profil", "50 Șpriț Coins / lună", "Reacții exclusive în chat", "Fără reclame"],
+    id: "vip", name: "VIP", price: 2.99, coins: 50,
+    tagline: "Intri în club. Badge auriu, fără reclame.",
+    accent: "text-amber-300",
+    perks: ["Badge VIP auriu", "50 coins / lună", "Reacții exclusive în chat", "Zero reclame"],
   },
   {
-    id: "vip_plus", name: "VIP+", price: 4.99, coins: 150, icon: Sparkles,
-    tagline: "Frame animat + teme profil",
-    badge: "POPULAR",
-    gradient: "from-pink-400/25 to-fuchsia-500/15", ring: "ring-fuchsia-400/50",
-    perks: ["Tot din VIP", "Frame animat pe avatar", "5 teme profil exclusive", "150 Șpriț Coins / lună", "Vezi cine ți-a dat rating"],
+    id: "vip_plus", name: "VIP+", price: 4.99, coins: 150,
+    tagline: "Frame animat, vezi cine te urmărește.",
+    accent: "text-fuchsia-300",
+    badge: "Cel mai luat",
+    perks: ["Tot din VIP", "Frame animat pe avatar", "5 teme exclusive de profil", "150 coins / lună", "Vezi cine ți-a dat rating"],
   },
   {
-    id: "pro", name: "PRO", price: 9.99, coins: 500, icon: Crown,
-    highlight: true, badge: "ALES DE 73%",
-    tagline: "Profile boost + analytics",
-    gradient: "from-violet-500/30 to-indigo-600/20", ring: "ring-violet-400/60",
-    perks: ["Tot din VIP+", "1× Profile Boost / săptămână", "Reputation Analytics complet", "Music clip 15s pe profil", "500 Șpriț Coins / lună", "Animated background"],
+    id: "pro", name: "PRO", price: 9.99, coins: 500,
+    tagline: "Boost săptămânal. Analytics complet.",
+    accent: "text-violet-300",
+    perks: ["Tot din VIP+", "1× Profile Boost / săptămână", "Reputation Analytics", "Music clip 15s pe profil", "500 coins / lună", "Animated background"],
   },
   {
-    id: "elite", name: "ELITE", price: 14.99, coins: 1500, icon: Gem,
-    badge: "DOAR 100 LOCURI",
-    tagline: "Diamond badge holografic",
-    gradient: "from-cyan-300/30 via-fuchsia-400/20 to-amber-300/30", ring: "ring-fuchsia-300/70",
-    perks: ["Tot din PRO", "Diamond badge holografic", "Featured pe Discover", "Founder recognition", "Cadou aniversar fizic", "1500 Șpriț Coins / lună", "Acces beta features"],
+    id: "elite", name: "ELITE", price: 14.99, coins: 1500,
+    tagline: "100 de locuri. Diamond holografic.",
+    accent: "text-cyan-200",
+    badge: "100 locuri",
+    perks: ["Tot din PRO", "Diamond badge holografic", "Featured pe Discover", "Founder recognition", "Cadou aniversar fizic", "1500 coins / lună", "Acces beta features"],
   },
 ];
 
@@ -70,25 +67,20 @@ function PremiumPage() {
   const [annual, setAnnual] = useState(false);
   const [checkout, setCheckout] = useState<{ priceId: string; title: string } | null>(null);
   const [openingPortal, setOpeningPortal] = useState(false);
+  const [openTier, setOpenTier] = useState<string | null>("vip_plus");
   const currentTier = (profile as any)?.premium_tier as PremiumTier;
 
   const handleBuy = (tier: Tier) => {
-    const priceId = `${tier.id}_${annual ? "yearly" : "monthly"}`;
-    setCheckout({ priceId, title: `${tier.name} ${annual ? "anual" : "lunar"}` });
+    setCheckout({ priceId: `${tier.id}_${annual ? "yearly" : "monthly"}`, title: `${tier.name} ${annual ? "anual" : "lunar"}` });
   };
-
   const handleCoins = (pack: typeof COIN_PACKS[0]) => {
     setCheckout({ priceId: pack.id, title: `${pack.coins} coins · ${pack.label}` });
   };
-
   const handleManage = async () => {
     setOpeningPortal(true);
     try {
       const result = await createPremiumPortalSession({
-        data: {
-          returnUrl: `${window.location.origin}/app/premium`,
-          environment: getStripeEnvironment(),
-        },
+        data: { returnUrl: `${window.location.origin}/app/premium`, environment: getStripeEnvironment() },
       });
       if ("error" in result) throw new Error(result.error);
       window.open(result.url, "_blank");
@@ -99,8 +91,6 @@ function PremiumPage() {
     }
   };
 
-
-
   return (
     <div className="pb-24">
       {/* Top bar */}
@@ -108,172 +98,197 @@ function PremiumPage() {
         <Link to="/app/me" className="p-1.5 -ml-1.5 active:scale-95 transition" aria-label="Înapoi">
           <ArrowLeft size={22} strokeWidth={2.2} />
         </Link>
-        <div className="font-display uppercase text-[15px]">Șpriț Premium</div>
+        <div className="font-mono uppercase text-[11px] tracking-[0.25em] text-muted-foreground">Premium</div>
         {currentTier && <div className="ml-auto"><PremiumBadge tier={currentTier} size="sm" asLink={false} /></div>}
       </header>
 
-      {/* Hero */}
-      <section className="px-4 pt-5 pb-3 text-center">
-        <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-300 via-fuchsia-400 to-amber-300 text-black mb-3 shadow-[0_0_30px_rgba(244,114,182,0.6)]">
-          <Gem size={28} strokeWidth={2.4} />
-        </div>
-        <h1 className="font-display uppercase text-3xl leading-tight">
-          Fă-ți profilul <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-pink-400 to-violet-500">legendar</span>
-        </h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
-          Badge, frame animat, teme, coins, boost — fără pay-to-win. Doar status și stil.
-        </p>
+      {/* Editorial hero */}
+      <section className="px-5 pt-8 pb-6 border-b border-foreground/10 relative overflow-hidden">
+        <div
+          className="absolute -top-20 -right-16 w-72 h-72 rounded-full pointer-events-none blur-3xl opacity-50"
+          style={{ background: "radial-gradient(circle, oklch(0.72 0.22 40 / 60%), transparent 70%)" }}
+        />
+        <div className="relative">
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+            <span className="h-px w-6 bg-foreground/40" />
+            <span>nr. 01 — abonamente</span>
+          </div>
+          <h1 className="font-display uppercase text-[clamp(2.6rem,11vw,4.2rem)] leading-[0.85] tracking-[-0.04em] mt-3">
+            Plătești <span className="italic font-light">puțin.</span><br />
+            Arăți <span className="text-sunset-orange">mult.</span>
+          </h1>
+          <p className="text-[14px] text-muted-foreground mt-4 max-w-sm leading-snug">
+            Patru trepte. Niciuna nu-ți cumpără locul în top — doar stilul, vizibilitatea și câteva monede de aruncat pe masă.
+          </p>
 
-        {/* Monthly/Annual toggle */}
-        <div className="mt-5 inline-flex items-center gap-1 rounded-full bg-foreground/10 p-1 text-[12px] font-mono uppercase">
-          <button
-            onClick={() => setAnnual(false)}
-            className={`px-4 py-1.5 rounded-full transition ${!annual ? "bg-background text-foreground shadow" : "text-muted-foreground"}`}
-          >Lunar</button>
-          <button
-            onClick={() => setAnnual(true)}
-            className={`px-4 py-1.5 rounded-full transition flex items-center gap-1.5 ${annual ? "bg-background text-foreground shadow" : "text-muted-foreground"}`}
-          >
-            Anual <span className="text-[9px] bg-neon-green/20 text-neon-green px-1.5 py-[1px] rounded-full">-17%</span>
-          </button>
+          <div className="mt-5 inline-flex items-center gap-0 rounded-full border border-foreground/15 p-[3px] text-[11px] font-mono uppercase tracking-wider">
+            <button
+              onClick={() => setAnnual(false)}
+              className={`px-4 py-1.5 rounded-full transition ${!annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
+            >Lunar</button>
+            <button
+              onClick={() => setAnnual(true)}
+              className={`px-4 py-1.5 rounded-full transition flex items-center gap-1.5 ${annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
+            >
+              Anual <span className={`text-[9px] px-1.5 py-[1px] rounded-full ${annual ? "bg-background/20" : "bg-neon-green/20 text-neon-green"}`}>−17%</span>
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Tiers */}
-      <section className="px-3 mt-2 space-y-3">
-        {TIERS.map((tier) => {
-          const Icon = tier.icon;
+      {/* Tier "tickets" — editorial list, expandable */}
+      <section className="px-3 pt-3">
+        {TIERS.map((tier, idx) => {
           const isCurrent = currentTier === tier.id;
+          const isOpen = openTier === tier.id;
           const price = annual ? (tier.price * 10).toFixed(2) : tier.price.toFixed(2);
           return (
-            <div
+            <motion.div
               key={tier.id}
-              className={`relative rounded-2xl border bg-gradient-to-br ${tier.gradient} backdrop-blur-sm p-4 ${
-                tier.highlight ? `border-violet-400/50 ring-2 ${tier.ring} shadow-[0_0_30px_rgba(139,92,246,0.25)]` : "border-foreground/10"
-              }`}
+              layout
+              transition={{ layout: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } }}
+              className={`relative border-b border-foreground/10 ${idx === 0 ? "border-t" : ""}`}
             >
-              {tier.badge && (
-                <div className="absolute -top-2 left-4 text-[9px] font-mono font-bold uppercase tracking-widest px-2 py-[3px] rounded-full bg-foreground text-background">
-                  {tier.badge}
-                </div>
-              )}
-              <div className="flex items-start gap-3">
-                <div className="h-11 w-11 shrink-0 rounded-xl bg-background/40 border border-foreground/10 flex items-center justify-center">
-                  <Icon size={22} strokeWidth={2.3} />
+              <button
+                onClick={() => setOpenTier(isOpen ? null : tier.id)}
+                className="w-full text-left px-2 py-4 flex items-center gap-3 active:bg-foreground/5 transition"
+              >
+                <div className={`font-mono text-[10px] tabular-nums ${tier.accent} w-8 shrink-0`}>
+                  0{idx + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <div className="font-display uppercase text-xl">{tier.name}</div>
-                    <PremiumBadge tier={tier.id} size="xs" asLink={false} />
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={`font-display uppercase text-xl tracking-tight ${tier.accent}`}>{tier.name}</span>
+                    {tier.badge && (
+                      <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-[2px] rounded-sm bg-foreground text-background">
+                        {tier.badge}
+                      </span>
+                    )}
+                    {isCurrent && (
+                      <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-[2px] rounded-sm border border-neon-green text-neon-green">
+                        activ
+                      </span>
+                    )}
                   </div>
-                  <div className="text-[12px] text-muted-foreground">{tier.tagline}</div>
+                  <div className="text-[12px] text-muted-foreground mt-0.5 truncate">{tier.tagline}</div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-display text-2xl leading-none">{price}<span className="text-[11px] font-mono text-muted-foreground ml-0.5">lei</span></div>
-                  <div className="text-[9px] font-mono uppercase text-muted-foreground mt-0.5">{annual ? "/an" : "/lună"}</div>
+                  <div className="font-display text-xl leading-none tabular-nums">
+                    {price}<span className="text-[10px] font-mono text-muted-foreground ml-0.5">lei</span>
+                  </div>
+                  <div className="text-[9px] font-mono uppercase text-muted-foreground/70 mt-0.5">{annual ? "/an" : "/lună"}</div>
                 </div>
-              </div>
-
-              <ul className="mt-3 space-y-1.5">
-                {tier.perks.map((p) => (
-                  <li key={p} className="flex items-start gap-2 text-[13px]">
-                    <Check size={14} className="mt-[3px] shrink-0 text-neon-green" />
-                    <span>{p}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                onClick={() => handleBuy(tier)}
-                disabled={isCurrent}
-                className={`mt-3 w-full h-10 rounded-xl font-mono font-bold uppercase tracking-wider text-[13px] transition active:scale-[0.98] ${
-                  isCurrent
-                    ? "bg-foreground/10 text-muted-foreground cursor-not-allowed"
-                    : tier.highlight
-                    ? "bg-gradient-to-r from-violet-500 to-indigo-600 text-white shadow-[0_0_20px_rgba(139,92,246,0.5)]"
-                    : "bg-foreground text-background"
-                }`}
-              >
-                {isCurrent ? "Plan curent" : `Devino ${tier.name}`}
+                <motion.div
+                  animate={{ rotate: isOpen ? 45 : 0 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="text-muted-foreground"
+                >
+                  <Plus size={18} strokeWidth={2.2} />
+                </motion.div>
               </button>
-            </div>
+
+              <motion.div
+                initial={false}
+                animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                style={{ overflow: "hidden" }}
+              >
+                <div className="px-2 pb-4 pl-[44px]">
+                  <ul className="space-y-1.5 mb-3">
+                    {tier.perks.map((p) => (
+                      <li key={p} className="flex items-baseline gap-2 text-[13px] text-foreground/85">
+                        <span className={`font-mono text-[10px] ${tier.accent} shrink-0`}>—</span>
+                        <span>{p}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={() => handleBuy(tier)}
+                    disabled={isCurrent}
+                    className={`w-full h-10 rounded-lg font-mono uppercase tracking-[0.15em] text-[12px] transition active:scale-[0.98] ${
+                      isCurrent
+                        ? "bg-foreground/10 text-muted-foreground cursor-not-allowed"
+                        : "bg-foreground text-background hover:bg-foreground/90"
+                    }`}
+                  >
+                    {isCurrent ? "ești deja aici" : `→ ia ${tier.name}`}
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
           );
         })}
       </section>
 
-      {/* What you get */}
-      <section className="px-4 mt-6">
-        <div className="font-display uppercase text-sm text-muted-foreground mb-2">Ce primești</div>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            { i: Crown, t: "Status",    d: "Badge vizibil oriunde" },
-            { i: Palette, t: "Stil",    d: "Teme & frames animate" },
-            { i: Eye, t: "Vizibilitate", d: "Boost etic, fără #1" },
-            { i: Heart, t: "Reacții",   d: "Sticker & emoji rare" },
-            { i: Zap, t: "Coins",       d: "Lunar, în cont" },
-            { i: ShieldCheck, t: "Fair", d: "Zero pay-to-win" },
-          ].map(({ i: I, t, d }) => (
-            <div key={t} className="rounded-xl border border-foreground/10 bg-card/50 p-3">
-              <I size={16} className="text-neon-purple" />
-              <div className="font-display uppercase text-[13px] mt-1">{t}</div>
-              <div className="text-[11px] text-muted-foreground">{d}</div>
-            </div>
-          ))}
+      {/* Coin counter — like a bar tab */}
+      <section className="px-5 mt-10">
+        <div className="flex items-end justify-between mb-1">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">nr. 02</div>
+            <h2 className="font-display uppercase text-2xl leading-tight mt-1">Coins la bar</h2>
+          </div>
+          <Coins size={20} className="text-amber-300 mb-1" />
         </div>
-      </section>
+        <p className="text-[12px] text-muted-foreground mb-4 max-w-xs">
+          Boost-uri, cadouri, frames. O dată plătiți, îi folosești când vrei.
+        </p>
 
-      {/* Coin store */}
-      <section className="px-4 mt-6">
-        <div className="flex items-center gap-2 mb-2">
-          <Coins size={16} className="text-amber-400" />
-          <div className="font-display uppercase text-sm">Magazin Șpriț Coins</div>
-        </div>
-        <p className="text-[11px] text-muted-foreground mb-3">Boost-uri, cadouri, frames, colecționabile. Cumperi o dată, folosești când vrei.</p>
-        <div className="space-y-2">
+        <div className="border-t border-foreground/15">
           {COIN_PACKS.map((p) => (
             <button
               key={p.id}
               onClick={() => handleCoins(p)}
-              className={`w-full flex items-center gap-3 rounded-xl border p-3 active:scale-[0.99] transition ${
-                p.popular ? "border-amber-400/50 bg-amber-400/10 ring-2 ring-amber-400/30" : "border-foreground/10 bg-card/50"
-              }`}
+              className="w-full flex items-baseline gap-3 py-3 border-b border-foreground/10 active:bg-foreground/5 transition text-left"
             >
-              <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-amber-300 to-amber-500 text-black flex items-center justify-center">
-                <Coins size={18} strokeWidth={2.5} />
+              <div className="font-mono text-[10px] text-muted-foreground tabular-nums w-8">
+                {String(COIN_PACKS.indexOf(p) + 1).padStart(2, "0")}
               </div>
-              <div className="flex-1 text-left">
-                <div className="font-display uppercase text-sm flex items-center gap-1.5">
+              <div className="flex-1 min-w-0">
+                <div className="font-display uppercase text-[15px] flex items-center gap-2">
                   {p.label}
-                  {p.popular && <span className="text-[8px] font-mono px-1.5 py-[1px] rounded-full bg-amber-400 text-black">POPULAR</span>}
+                  {p.popular && (
+                    <span className="text-[8px] font-mono uppercase tracking-wider px-1.5 py-[1px] rounded-sm bg-amber-300 text-black">
+                      ales
+                    </span>
+                  )}
                 </div>
-                <div className="text-[12px] text-muted-foreground font-mono">
-                  {p.coins} coins {p.bonus && <span className="text-neon-green ml-1">{p.bonus} bonus</span>}
+                <div className="text-[11px] text-muted-foreground font-mono tabular-nums">
+                  {p.coins} coins{p.bonus && <span className="text-neon-green ml-1.5">{p.bonus}</span>}
                 </div>
               </div>
-              <div className="text-right">
-                <div className="font-display text-lg leading-none">{p.price}<span className="text-[10px] font-mono text-muted-foreground ml-0.5">lei</span></div>
+              <div className="font-display text-lg tabular-nums">
+                {p.price}<span className="text-[10px] font-mono text-muted-foreground ml-0.5">lei</span>
               </div>
             </button>
           ))}
         </div>
       </section>
 
+      {/* Manifesto strip */}
+      <section className="mt-10 mx-3 rounded-xl border border-foreground/10 bg-card/40 p-5">
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-2">manifest</div>
+        <p className="font-display uppercase text-[18px] leading-tight">
+          „Nu vindem locul <span className="italic font-light">întâi</span>. Vindem doar cum arăți când ajungi acolo.”
+        </p>
+        <div className="mt-3 grid grid-cols-3 gap-3 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+          <div>· anulezi oricând</div>
+          <div>· plată securizată</div>
+          <div>· zero pay-to-win</div>
+        </div>
+      </section>
+
       {currentTier && (
-        <div className="px-4 mt-4">
+        <div className="px-3 mt-4">
           <button
             onClick={handleManage}
             disabled={openingPortal}
-            className="w-full flex items-center justify-center gap-2 h-10 rounded-xl border border-foreground/15 bg-card/50 font-mono uppercase text-[12px] tracking-wider disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 h-11 rounded-lg border border-foreground/15 bg-card/40 font-mono uppercase text-[11px] tracking-[0.2em] disabled:opacity-50 active:scale-[0.99] transition"
           >
             <Settings size={14} />
             {openingPortal ? "Se deschide…" : "Gestionează abonament"}
           </button>
         </div>
       )}
-
-      <p className="text-center text-[10px] font-mono text-muted-foreground/60 mt-6 px-6">
-        Anulezi oricând · Acces până la finalul perioadei plătite · Plată securizată
-      </p>
 
       <PremiumCheckoutDialog
         priceId={checkout?.priceId ?? null}
