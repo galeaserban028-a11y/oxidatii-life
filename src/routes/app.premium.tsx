@@ -140,20 +140,14 @@ function PremiumPage() {
       <section className="px-3 pt-3">
         {TIERS.map((tier, idx) => {
           const isCurrent = currentTier === tier.id;
-          const isOpen = openTier === tier.id;
           const price = annual ? (tier.price * 10).toFixed(2) : tier.price.toFixed(2);
           return (
-            <motion.div
+            <div
               key={tier.id}
-              layout
-              transition={{ layout: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } }}
-              className={`relative border-b border-foreground/10 ${idx === 0 ? "border-t" : ""}`}
+              className={`relative border-b border-foreground/10 ${idx === 0 ? "border-t" : ""} px-2 py-4`}
             >
-              <button
-                onClick={() => setOpenTier(isOpen ? null : tier.id)}
-                className="w-full text-left px-2 py-4 flex items-center gap-3 active:bg-foreground/5 transition"
-              >
-                <div className={`font-mono text-[10px] tabular-nums ${tier.accent} w-8 shrink-0`}>
+              <div className="flex items-start gap-3">
+                <div className={`font-mono text-[10px] tabular-nums ${tier.accent} w-8 shrink-0 pt-1`}>
                   0{idx + 1}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -170,7 +164,7 @@ function PremiumPage() {
                       </span>
                     )}
                   </div>
-                  <div className="text-[12px] text-muted-foreground mt-0.5 truncate">{tier.tagline}</div>
+                  <div className="text-[12px] text-muted-foreground mt-0.5">{tier.tagline}</div>
                 </div>
                 <div className="text-right shrink-0">
                   <div className="font-display text-xl leading-none tabular-nums">
@@ -178,46 +172,33 @@ function PremiumPage() {
                   </div>
                   <div className="text-[9px] font-mono uppercase text-muted-foreground/70 mt-0.5">{annual ? "/an" : "/lună"}</div>
                 </div>
-                <motion.div
-                  animate={{ rotate: isOpen ? 45 : 0 }}
-                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                  className="text-muted-foreground"
-                >
-                  <Plus size={18} strokeWidth={2.2} />
-                </motion.div>
-              </button>
+              </div>
 
-              <motion.div
-                initial={false}
-                animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                style={{ overflow: "hidden" }}
-              >
-                <div className="px-2 pb-4 pl-[44px]">
-                  <ul className="space-y-1.5 mb-3">
-                    {tier.perks.map((p) => (
-                      <li key={p} className="flex items-baseline gap-2 text-[13px] text-foreground/85">
-                        <span className={`font-mono text-[10px] ${tier.accent} shrink-0`}>—</span>
-                        <span>{p}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    onClick={() => handleBuy(tier)}
-                    disabled={isCurrent}
-                    className={`w-full h-10 rounded-lg font-mono uppercase tracking-[0.15em] text-[12px] transition active:scale-[0.98] ${
-                      isCurrent
-                        ? "bg-foreground/10 text-muted-foreground cursor-not-allowed"
-                        : "bg-foreground text-background hover:bg-foreground/90"
-                    }`}
-                  >
-                    {isCurrent ? "ești deja aici" : `→ ia ${tier.name}`}
-                  </button>
-                </div>
-              </motion.div>
-            </motion.div>
+              <div className="pl-[44px] mt-3">
+                <ul className="space-y-1.5 mb-3">
+                  {tier.perks.map((p) => (
+                    <li key={p} className="flex items-baseline gap-2 text-[13px] text-foreground/85">
+                      <span className={`font-mono text-[10px] ${tier.accent} shrink-0`}>—</span>
+                      <span>{p}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => handleBuy(tier)}
+                  disabled={isCurrent}
+                  className={`w-full h-10 rounded-lg font-mono uppercase tracking-[0.15em] text-[12px] transition active:scale-[0.98] ${
+                    isCurrent
+                      ? "bg-foreground/10 text-muted-foreground cursor-not-allowed"
+                      : "bg-foreground text-background hover:bg-foreground/90"
+                  }`}
+                >
+                  {isCurrent ? "ești deja aici" : `→ ia ${tier.name}`}
+                </button>
+              </div>
+            </div>
           );
         })}
+
       </section>
 
       {/* Coin counter — like a bar tab */}
