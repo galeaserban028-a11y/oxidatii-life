@@ -114,19 +114,69 @@ async function upsertSubscription(subscription: any, env: StripeEnv) {
     || (subscription.status === "canceled" && periodEnd && periodEnd * 1000 > Date.now());
 
   if (tierInfo && isActive) {
-    // Grant monthly coins on creation/renewal
     const { data: prof } = await supabaseAdmin
-      .from("profiles").select("coin_balance, premium_tier").eq("id", userId).maybeSingle();
+      .from("profiles").select("coin_balance, premium_tier, active_frame_id").eq("id", userId).maybeSingle();
     const currentCoins = (prof?.coin_balance as number | undefined) ?? 0;
     const wasUpgraded = prof?.premium_tier !== tierInfo.tier;
+
+    // Auto-grant premium-exclusive frame per tier
+    const PREMIUM_FRAME: Record<string, string> = {
+      vip: "vip_aurum",
+      vip_plus: "vipplus_crystal",
+      pro: "pro_holo",
+      elite: "elite_diamond",
+    };
+    const frameId = PREMIUM_FRAME[tierInfo.tier];
+    if (frameId) {
+      await supabaseAdmin.from("user_frames").upsert(
+        { user_id: userId, frame_id: frameId },
+        { onConflict: "user_id,frame_id", ignoreDuplicates: true }
+      );
+    }
 
     await supabaseAdmin.from("profiles").update({
       premium_tier: tierInfo.tier,
       premium_until: periodEndIso,
-      // Grant coins when subscription is fresh or tier changes
       ...(wasUpgraded && { coin_balance: currentCoins + tierInfo.coins }),
+      ...(wasUpgraded && frameId && !prof?.active_frame_id && { active_frame_id: frameId }),
     }).eq("id", userId);
   }
+}
+
+// Grant monthly coins on each subscription renewal payment
+async function handleInvoicePaymentSucceeded(invoice: any, _env: StripeEnv) {
+  if (invoice.billing_reason !== "subscription_cycle") return;
+  const subId = invoice.subscription;
+  if (!subId) return;
+  const line = invoice.lines?.data?.[0];
+  const priceLookup = line?.price?.lookup_key
+    || line?.price?.metadata?.lovable_external_id
+    || line?.price?.id;
+  const tierInfo = priceLookup ? TIER_MAP[priceLookup] : null;
+  if (!tierInfo) return;
+
+  const { data: sub } = await supabaseAdmin
+    .from("subscriptions").select("user_id").eq("stripe_subscription_id", subId).maybeSingle();
+  const userId = sub?.user_id;
+  if (!userId) return;
+
+  const noteTag = `renew:${invoice.id}`;
+  const { data: existing } = await supabaseAdmin
+    .from("coin_spends").select("id").eq("ref_id", noteTag).maybeSingle();
+  if (existing) return;
+
+  const { data: prof } = await supabaseAdmin
+    .from("profiles").select("coin_balance").eq("id", userId).maybeSingle();
+  const current = (prof?.coin_balance as number | undefined) ?? 0;
+  const monthlyCoins = String(priceLookup).endsWith("_yearly")
+    ? Math.floor(tierInfo.coins / 12)
+    : tierInfo.coins;
+  await supabaseAdmin.from("profiles").update({
+    coin_balance: current + monthlyCoins,
+  }).eq("id", userId);
+  await supabaseAdmin.from("coin_spends").insert({
+    user_id: userId, amount: -monthlyCoins, kind: "premium_monthly_grant", ref_id: noteTag,
+  });
 }
 
 async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
@@ -172,6 +222,9 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               break;
             case "customer.subscription.deleted":
               await handleSubscriptionDeleted(event.data.object, env);
+              break;
+            case "invoice.payment_succeeded":
+              await handleInvoicePaymentSucceeded(event.data.object, env);
               break;
             default:
               break;

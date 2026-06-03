@@ -80,10 +80,12 @@ async function loadActive(excludeIds: string[] = []): Promise<{ campaign: Campai
 }
 
 export function PromoTakeover() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isPremium = !!(profile as any)?.premium_tier;
   const [payload, setPayload] = useState<{ campaign: Campaign; biz: Biz | null } | null>(null);
   const [phase, setPhase] = useState<"hidden" | "full" | "mini" | "gone">("hidden");
   const trackedRef = useRef(false);
+
 
   useEffect(() => {
     let alive = true;
@@ -156,6 +158,7 @@ export function PromoTakeover() {
   };
 
 
+  if (isPremium) return null;
   if (!payload || phase === "hidden" || phase === "gone") return null;
   const { campaign, biz } = payload;
   const color = campaign.theme_color || "#FF2D55";
