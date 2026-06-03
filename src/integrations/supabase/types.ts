@@ -1224,6 +1224,8 @@ export type Database = {
           address: string | null
           brand_name: string | null
           city_id: string | null
+          contact_email: string | null
+          contact_phone: string | null
           cover_url: string | null
           created_at: string | null
           description: string | null
@@ -1246,6 +1248,8 @@ export type Database = {
           address?: string | null
           brand_name?: string | null
           city_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           cover_url?: string | null
           created_at?: string | null
           description?: string | null
@@ -1268,6 +1272,8 @@ export type Database = {
           address?: string | null
           brand_name?: string | null
           city_id?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           cover_url?: string | null
           created_at?: string | null
           description?: string | null
