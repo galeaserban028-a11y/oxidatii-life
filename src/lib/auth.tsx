@@ -18,6 +18,14 @@ type Profile = {
   is_public: boolean;
   coin_balance: number;
   active_frame_id: string | null;
+  premium_tier?: string | null;
+  premium_until?: string | null;
+  boost_until?: string | null;
+  last_boost_at?: string | null;
+  profile_theme_id?: string | null;
+  music_clip_url?: string | null;
+  profile_bg_url?: string | null;
+  bio?: string | null;
 };
 
 type Ctx = {
