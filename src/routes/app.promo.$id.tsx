@@ -24,7 +24,7 @@ function PromoPage() {
         .eq("id", id).single();
       if (error) throw error;
       const [biz, venue, party] = await Promise.all([
-        supabase.from("business_accounts_public")
+        supabase.from("business_accounts")
           .select("id,brand_name,type,description,logo_url,cover_url,verified,instagram_handle,tiktok_handle,website,contact_phone,contact_email,address")
           .eq("id", campaign.business_id).maybeSingle(),
         campaign.venue_id
