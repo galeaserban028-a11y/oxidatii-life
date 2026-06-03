@@ -33,37 +33,52 @@ const TYPE_COLOR: Record<string, string> = {
 // little bottles — instantly readable ("astea sunt locuri de băut") and far
 // less visually noisy when many venues share the same area.
 function makeBottleImage(color: string): ImageData {
-  const W = 28, H = 44;
+  const W = 22, H = 56;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
+
+  // Glow halo
   ctx.shadowColor = color;
-  ctx.shadowBlur = 6;
+  ctx.shadowBlur = 7;
+
+  // Wine bottle body — long narrow neck, sloped shoulders, tall body
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.moveTo(12, 2);
-  ctx.lineTo(16, 2);
-  ctx.lineTo(16, 6);
-  ctx.lineTo(17, 7);
-  ctx.lineTo(17, 14);
-  ctx.bezierCurveTo(22, 17, 24, 22, 24, 28);
-  ctx.lineTo(24, 39);
-  ctx.quadraticCurveTo(24, 42, 21, 42);
-  ctx.lineTo(7, 42);
-  ctx.quadraticCurveTo(4, 42, 4, 39);
-  ctx.lineTo(4, 28);
-  ctx.bezierCurveTo(4, 22, 6, 17, 11, 14);
-  ctx.lineTo(11, 7);
-  ctx.lineTo(12, 6);
+  ctx.moveTo(9, 4);                          // neck top L
+  ctx.lineTo(13, 4);                         // neck top R
+  ctx.lineTo(13, 22);                        // neck R (long)
+  ctx.bezierCurveTo(13, 24, 18, 26, 18, 32); // shoulder R
+  ctx.lineTo(18, 50);                        // body R
+  ctx.quadraticCurveTo(18, 54, 14, 54);      // base R
+  ctx.lineTo(8, 54);                         // base
+  ctx.quadraticCurveTo(4, 54, 4, 50);        // base L
+  ctx.lineTo(4, 32);                         // body L
+  ctx.bezierCurveTo(4, 26, 9, 24, 9, 22);    // shoulder L
   ctx.closePath();
   ctx.fill();
+
   ctx.shadowBlur = 0;
-  ctx.fillStyle = "rgba(0,0,0,0.55)";
-  ctx.fillRect(4, 30, 20, 7);
-  ctx.fillStyle = "rgba(255,255,255,0.45)";
-  ctx.fillRect(7, 18, 2, 18);
-  ctx.fillStyle = "#1a1208";
-  ctx.fillRect(11, 0, 6, 6);
+
+  // Red foil wrap on the neck
+  ctx.fillStyle = "#7a0a16";
+  ctx.fillRect(8, 2, 6, 10);
+  ctx.fillStyle = "rgba(255,255,255,0.25)";
+  ctx.fillRect(9, 3, 1, 8);
+
+  // White wine label
+  ctx.fillStyle = "rgba(245,240,225,0.92)";
+  ctx.fillRect(5, 38, 12, 11);
+  // Label lines
+  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  ctx.fillRect(6, 40, 10, 1);
+  ctx.fillRect(7, 43, 8, 1);
+  ctx.fillRect(7, 46, 8, 1);
+
+  // Glass shine on body
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  ctx.fillRect(6, 26, 1, 24);
+
   return ctx.getImageData(0, 0, W, H);
 }
 
