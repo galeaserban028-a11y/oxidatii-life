@@ -15,6 +15,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
+import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
+import { PremiumExtrasCard } from "@/components/app/PremiumExtrasCard";
 
 
 export const Route = createFileRoute("/app/me")({
@@ -227,6 +229,9 @@ function MePage() {
               {["vip_plus", "pro", "elite"].includes((profile as any)?.premium_tier ?? "") && (
                 <MenuItem to="/app/me/raters" icon={<Gem size={16} className="text-rose-400" />} onSelect={() => setMenuOpen(false)} label="Cine ți-a dat rating" />
               )}
+              {["pro", "elite"].includes((profile as any)?.premium_tier ?? "") && (
+                <MenuItem to="/app/me/reputation" icon={<Gem size={16} className="text-emerald-400" />} onSelect={() => setMenuOpen(false)} label="Reputation analytics" />
+              )}
               <MenuItem to="/app/biz" icon={<Rocket size={16} className="text-neon-purple" />} onSelect={() => setMenuOpen(false)} label="Business · Promovare" />
               {isStaff && (
                 <MenuItem to="/app/admin" icon={<ShieldAlert size={16} className="text-neon-crimson" />} onSelect={() => setMenuOpen(false)} label={isAdmin ? "Panou Admin" : "Panou Moderator"} />
@@ -351,6 +356,11 @@ function MePage() {
             <span className="text-[10px] font-mono uppercase tracking-wider text-fuchsia-300">Vezi</span>
           </Link>
         )}
+
+        <div className="mt-3 space-y-3">
+          <ProfileBoostCard />
+          <PremiumExtrasCard />
+        </div>
 
         <div className="mt-3">
           <ReputationCard

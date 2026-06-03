@@ -4,6 +4,7 @@ import { ArrowLeft, Settings, ArrowUpRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { PremiumBadge, type PremiumTier } from "@/components/app/PremiumBadge";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
+import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
 import { createPremiumPortalSession } from "@/lib/premium.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { toast } from "sonner";
@@ -368,9 +369,10 @@ function PremiumPage() {
         </div>
       </section>
 
-      {/* Manage subscription */}
+      {/* Manage subscription + boost */}
       {currentTier && (
-        <div className="px-6 mt-6">
+        <div className="px-6 mt-6 space-y-3">
+          <ProfileBoostCard />
           <button
             onClick={handleManage}
             disabled={openingPortal}

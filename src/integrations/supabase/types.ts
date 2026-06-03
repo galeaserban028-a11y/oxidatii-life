@@ -1404,6 +1404,7 @@ export type Database = {
         Args: { _target: string; _viewer: string }
         Returns: boolean
       }
+      claim_profile_boost: { Args: never; Returns: Json }
       get_business_wallet: {
         Args: { _business_id: string }
         Returns: {
