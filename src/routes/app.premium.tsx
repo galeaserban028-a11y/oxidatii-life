@@ -73,7 +73,7 @@ const FAQ = [
   { q: "Pot să anulez oricând?", a: "Da. Un singur click. Beneficiile rămân până la final de perioadă." },
   { q: "Plătesc, intru pe locul 1?", a: "Nu. Nu vindem locuri în top. Niciodată. Doar cum arăți când ajungi acolo." },
   { q: "Ce sunt șprițurile?", a: "Sunt pentru lucruri cosmetice — cadouri în chat, boost-uri scurte, rame. Nu cumperi influență." },
-  { q: "Și dacă mă răzgândesc?", a: "În primele 14 zile primești banii înapoi. Fără explicații, fără formulare." },
+  { q: "Cum funcționează plata?", a: "Plătești o dată, primești instant. Toate plățile sunt finale, fără returnări." },
 ];
 
 function PremiumPage() {
@@ -389,7 +389,7 @@ function PremiumPage() {
           <span>Vol. 04 · Nr. 06</span>
         </div>
         <p className="mt-3 text-[10px] text-muted-foreground/50 leading-relaxed max-w-[40ch]">
-          Toate plățile sunt securizate. Anulezi oricând, fără explicații. 14 zile garantat.
+          Toate plățile sunt securizate și finale. Anulezi abonamentul oricând, fără explicații.
         </p>
       </footer>
 
