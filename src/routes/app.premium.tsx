@@ -389,7 +389,7 @@ function PremiumPage() {
           <span>Vol. 04 · Nr. 06</span>
         </div>
         <p className="mt-3 text-[10px] text-muted-foreground/50 leading-relaxed max-w-[40ch]">
-          Toate plățile sunt securizate. Anulezi oricând, fără explicații. 14 zile garantat.
+          Toate plățile sunt securizate și finale. Anulezi abonamentul oricând, fără explicații.
         </p>
       </footer>
 
