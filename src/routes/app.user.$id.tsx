@@ -28,13 +28,15 @@ import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { getTheme } from "@/lib/premium-themes";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/app/user/$id")({
   loader: async ({ params }) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("id,username,display_name,bio,avatar_url")
-      .eq("id", params.id)
-      .maybeSingle();
+    const isUuid = UUID_RE.test(params.id);
+    const q = supabase.from("profiles").select("id,handle,display_name,bio,avatar_url");
+    const { data } = isUuid
+      ? await q.eq("id", params.id).maybeSingle()
+      : await q.eq("handle", params.id.toLowerCase()).maybeSingle();
     return { profile: data };
   },
   head: ({ params, loaderData }) => {
