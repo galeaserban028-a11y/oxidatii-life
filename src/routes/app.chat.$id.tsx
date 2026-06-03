@@ -356,7 +356,7 @@ function GiftSheet({ onClose, onSend }: { onClose: () => void; onSend: (g: Gift)
     queryKey: ["chat-gift-catalog"],
     queryFn: async () => {
       const { data } = await supabase.from("chat_gift_catalog" as any).select("id,emoji,name,price_coins").order("price_coins");
-      return (data ?? []) as Gift[];
+      return ((data ?? []) as unknown) as Gift[];
     },
   });
   const { user } = useAuth();
