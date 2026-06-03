@@ -34,22 +34,21 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   const friendIds = (rows ?? []).map((r: any) =>
     r.requester_id === userId ? r.addressee_id : r.requester_id,
   );
-  if (friendIds.length === 0) return [];
 
-  // Pull both: real-time GPS (live_locations) AND last venue check-in.
-  // live_locations wins when present; check_ins is the fallback so a friend
-  // who turned off location sharing still shows up at their last venue.
+  // Always include the current user so they see their own pin on the map.
+  const allIds = Array.from(new Set<string>([userId, ...friendIds]));
+
   const nowIso = new Date().toISOString();
   const [{ data: lives }, { data: checkins }] = await Promise.all([
     supabase
       .from("live_locations")
       .select("user_id, lat, lng, updated_at, expires_at")
-      .in("user_id", friendIds)
+      .in("user_id", allIds)
       .gt("expires_at", nowIso),
     supabase
       .from("check_ins")
       .select("user_id, venue_id, lat, lng, expires_at, created_at")
-      .in("user_id", friendIds)
+      .in("user_id", allIds)
       .gt("expires_at", nowIso)
       .order("created_at", { ascending: false }),
   ]);
@@ -69,7 +68,7 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
 
   const venueIds = Array.from(new Set(latestCheckin.map((c: any) => c.venue_id))).filter(Boolean);
   const [{ data: profiles }, { data: venues }] = await Promise.all([
-    supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", friendIds),
+    supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", allIds),
     venueIds.length
       ? supabase.from("venues").select("id, name, lat, lng").in("id", venueIds)
       : Promise.resolve({ data: [] as any[] }),
@@ -77,7 +76,6 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
   const venueMap = new Map((venues ?? []).map((v: any) => [v.id, v]));
 
-  // Union of users present in either source
   const userIds = new Set<string>([...liveMap.keys(), ...checkinMap.keys()]);
   const pins: FriendPin[] = [];
   for (const uid of userIds) {
@@ -87,11 +85,12 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
     const lat = Number(live?.lat ?? c?.lat ?? venue?.lat);
     const lng = Number(live?.lng ?? c?.lng ?? venue?.lng);
     if (!isFinite(lat) || !isFinite(lng)) continue;
-    const p = profMap.get(uid);
+    const p: any = profMap.get(uid);
+    const isMe = uid === userId;
     pins.push({
       user_id: uid,
-      handle: p?.handle ?? null,
-      display_name: p?.display_name ?? null,
+      handle: isMe ? "tu" : (p?.handle ?? null),
+      display_name: isMe ? "tu" : (p?.display_name ?? null),
       avatar_url: p?.avatar_url ?? null,
       lat,
       lng,
