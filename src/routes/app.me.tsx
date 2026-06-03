@@ -356,6 +356,22 @@ function MePage() {
           />
         </div>
 
+        <Link
+          to="/app/discover"
+          className="mt-3 flex items-center gap-3 rounded-2xl border border-neon-purple/30 bg-gradient-to-r from-neon-purple/10 to-neon-crimson/10 p-3 active:scale-[0.99] transition"
+        >
+          <div className="h-10 w-10 rounded-xl bg-foreground/10 flex items-center justify-center">
+            <svg className="w-5 h-5 text-neon-purple" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-display uppercase text-sm leading-tight">Caută oameni</div>
+            <div className="text-[11px] text-muted-foreground">găsește prieteni și dă follow</div>
+          </div>
+          <span className="font-display text-neon-purple">›</span>
+        </Link>
+
         {/* Action buttons */}
         <div className="mt-3 grid grid-cols-[1fr_1fr_auto] gap-1.5">
           <Dialog open={editOpen} onOpenChange={(o) => {
