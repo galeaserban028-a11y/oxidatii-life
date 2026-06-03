@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Sparkles, X, ChevronRight } from "lucide-react";
+import { Sparkles, X, ChevronRight, Calendar, MapPin, Ticket, Star, Video } from "lucide-react";
 
 type Campaign = {
   id: string;
@@ -15,7 +15,14 @@ type Campaign = {
   theme_color: string | null;
   venue_id: string | null;
   party_id: string | null;
+  event_starts_at: string | null;
+  entry_kind: string | null;
+  entry_price_text: string | null;
+  street: string | null;
+  special_guest: string | null;
+  video_url: string | null;
 };
+
 
 type Biz = { id: string; brand_name: string; logo_url: string | null };
 
