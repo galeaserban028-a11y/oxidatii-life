@@ -357,6 +357,11 @@ function MePage() {
           </Link>
         )}
 
+        <div className="mt-3 space-y-3">
+          <ProfileBoostCard />
+          <PremiumExtrasCard />
+        </div>
+
         <div className="mt-3">
           <ReputationCard
             userId={user.id}
