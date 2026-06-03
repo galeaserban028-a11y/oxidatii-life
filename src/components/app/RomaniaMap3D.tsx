@@ -17,6 +17,7 @@ export type FriendPin = {
   lat: number;
   lng: number;
   venue_name?: string | null;
+  is_me?: boolean;
 };
 
 const TYPE_COLOR: Record<string, string> = {
