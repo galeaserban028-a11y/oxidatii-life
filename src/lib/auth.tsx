@@ -16,6 +16,8 @@ type Profile = {
   onboarded: boolean;
   location_consent: boolean;
   is_public: boolean;
+  coin_balance: number;
+  active_frame_id: string | null;
 };
 
 type Ctx = {

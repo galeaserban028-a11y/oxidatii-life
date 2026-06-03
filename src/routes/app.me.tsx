@@ -44,6 +44,14 @@ function MePage() {
   const { data: followStats } = useFollowStats(user?.id);
   const { data: incomingReqs } = useIncomingFollowRequests(user?.id);
   const pendingCount = incomingReqs?.length ?? 0;
+  const { data: activeFrame } = useQuery({
+    queryKey: ["active-frame", profile?.active_frame_id],
+    enabled: !!profile?.active_frame_id,
+    queryFn: async () => {
+      const { data } = await supabase.from("avatar_frames").select("css_class").eq("id", profile!.active_frame_id!).maybeSingle();
+      return data;
+    },
+  });
 
   // tab state for the grid
   const [tab, setTab] = useState<"all" | "verified" | "tagged">("all");
@@ -268,7 +276,7 @@ function MePage() {
             className="relative h-[88px] w-[88px] rounded-full p-[2px] bg-gradient-to-tr from-neon-crimson via-neon-purple to-neon-green shrink-0 active:scale-95 transition"
             aria-label="Schimbă poza de profil"
           >
-            <div className="h-full w-full rounded-full overflow-hidden bg-background flex items-center justify-center text-3xl font-display">
+            <div className={`h-full w-full rounded-full overflow-hidden bg-background flex items-center justify-center text-3xl font-display ${activeFrame?.css_class ?? ""}`}>
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -356,21 +364,34 @@ function MePage() {
           />
         </div>
 
-        <Link
-          to="/app/discover"
-          className="mt-3 flex items-center gap-3 rounded-2xl border border-neon-purple/30 bg-gradient-to-r from-neon-purple/10 to-neon-crimson/10 p-3 active:scale-[0.99] transition"
-        >
-          <div className="h-10 w-10 rounded-xl bg-foreground/10 flex items-center justify-center">
-            <svg className="w-5 h-5 text-neon-purple" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
-            </svg>
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="font-display uppercase text-sm leading-tight">Caută oameni</div>
-            <div className="text-[11px] text-muted-foreground">găsește prieteni și dă follow</div>
-          </div>
-          <span className="font-display text-neon-purple">›</span>
-        </Link>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <Link
+            to="/app/discover"
+            className="flex items-center gap-2 rounded-2xl border border-neon-purple/30 bg-gradient-to-r from-neon-purple/10 to-neon-crimson/10 p-3 active:scale-[0.99] transition"
+          >
+            <div className="h-9 w-9 rounded-xl bg-foreground/10 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-neon-purple" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <div className="font-display uppercase text-xs leading-tight">Caută oameni</div>
+              <div className="text-[10px] text-muted-foreground truncate">dă follow</div>
+            </div>
+          </Link>
+          <Link
+            to="/app/shop"
+            className="flex items-center gap-2 rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-500/15 to-orange-500/10 p-3 active:scale-[0.99] transition"
+          >
+            <div className="h-9 w-9 rounded-xl bg-amber-400/15 flex items-center justify-center shrink-0">
+              <Gem size={16} className="text-amber-300" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-display uppercase text-xs leading-tight">Magazin coins</div>
+              <div className="text-[10px] text-amber-300 truncate">{profile.coin_balance ?? 0} coins · cheltuie</div>
+            </div>
+          </Link>
+        </div>
 
         {/* Action buttons */}
         <div className="mt-3 grid grid-cols-[1fr_1fr_auto] gap-1.5">
