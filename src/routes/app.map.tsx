@@ -77,6 +77,7 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   const venueMap = new Map((venues ?? []).map((v: any) => [v.id, v]));
 
   const userIds = new Set<string>([...liveMap.keys(), ...checkinMap.keys()]);
+  const pins: FriendPin[] = [];
 
   // Fallback for self: if no live row and no active check-in, use the most
   // recent (even expired) live_location, then last check-in venue, then city.
