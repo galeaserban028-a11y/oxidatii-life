@@ -44,6 +44,14 @@ function MePage() {
   const { data: followStats } = useFollowStats(user?.id);
   const { data: incomingReqs } = useIncomingFollowRequests(user?.id);
   const pendingCount = incomingReqs?.length ?? 0;
+  const { data: activeFrame } = useQuery({
+    queryKey: ["active-frame", profile?.active_frame_id],
+    enabled: !!profile?.active_frame_id,
+    queryFn: async () => {
+      const { data } = await supabase.from("avatar_frames").select("css_class").eq("id", profile!.active_frame_id!).maybeSingle();
+      return data;
+    },
+  });
 
   // tab state for the grid
   const [tab, setTab] = useState<"all" | "verified" | "tagged">("all");
