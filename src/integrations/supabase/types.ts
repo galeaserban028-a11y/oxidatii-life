@@ -1232,10 +1232,12 @@ export type Database = {
           lat: number | null
           lng: number | null
           logo_url: string | null
+          owner_user_id: string | null
           slug: string | null
           tier: Database["public"]["Enums"]["business_tier"] | null
           tiktok_handle: string | null
           type: Database["public"]["Enums"]["business_type"] | null
+          updated_at: string | null
           venue_id: string | null
           verified: boolean | null
           website: string | null
@@ -1252,10 +1254,12 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           logo_url?: string | null
+          owner_user_id?: string | null
           slug?: string | null
           tier?: Database["public"]["Enums"]["business_tier"] | null
           tiktok_handle?: string | null
           type?: Database["public"]["Enums"]["business_type"] | null
+          updated_at?: string | null
           venue_id?: string | null
           verified?: boolean | null
           website?: string | null
@@ -1272,10 +1276,12 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           logo_url?: string | null
+          owner_user_id?: string | null
           slug?: string | null
           tier?: Database["public"]["Enums"]["business_tier"] | null
           tiktok_handle?: string | null
           type?: Database["public"]["Enums"]["business_type"] | null
+          updated_at?: string | null
           venue_id?: string | null
           verified?: boolean | null
           website?: string | null
