@@ -20,7 +20,7 @@ function PromoPage() {
     queryFn: async () => {
       const { data: campaign, error } = await supabase
         .from("campaigns")
-        .select("id,business_id,kind,title,subtitle,cta_text,cta_url,image_urls,theme_color,venue_id,party_id,city_id,starts_at,ends_at,impressions,clicks")
+        .select("id,business_id,kind,title,subtitle,cta_text,cta_url,image_urls,theme_color,venue_id,party_id,city_id,starts_at,ends_at,impressions,clicks,event_starts_at,entry_kind,entry_price_text,street,special_guest,video_url")
         .eq("id", id).single();
       if (error) throw error;
       const [biz, venue, party] = await Promise.all([
