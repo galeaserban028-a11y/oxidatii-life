@@ -9,11 +9,10 @@ export function Nav() {
           <img
             src={logoUrl}
             alt="OXIDAȚII"
-            width={32}
-            height={32}
-            className="h-8 w-8 object-contain shrink-0 invert-0 dark:invert"
+            width={56}
+            height={56}
+            className="h-14 w-14 object-contain shrink-0 drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]"
           />
-          <span className="font-display uppercase text-base tracking-[0.1em] leading-none">OXIDAȚII</span>
         </Link>
 
         <div className="flex items-center gap-2">
