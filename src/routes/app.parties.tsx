@@ -59,7 +59,7 @@ function PartiesPage() {
     },
     enabled: hostIds.length > 0,
   });
-  const hostMap = new Map(hosts.map(h => [h.id, h]));
+  void hosts;
 
   const partyIds = parties.map(p => p.id);
   const { data: joins = [] } = useQuery({
