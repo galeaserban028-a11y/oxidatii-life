@@ -28,13 +28,15 @@ import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { getTheme } from "@/lib/premium-themes";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const Route = createFileRoute("/app/user/$id")({
   loader: async ({ params }) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("id,username,display_name,bio,avatar_url")
-      .eq("id", params.id)
-      .maybeSingle();
+    const isUuid = UUID_RE.test(params.id);
+    const q = supabase.from("profiles").select("id,handle,display_name,bio,avatar_url");
+    const { data } = isUuid
+      ? await q.eq("id", params.id).maybeSingle()
+      : await q.eq("handle", params.id.toLowerCase()).maybeSingle();
     return { profile: data };
   },
   head: ({ params, loaderData }) => {
@@ -66,36 +68,38 @@ export const Route = createFileRoute("/app/user/$id")({
 });
 
 function UserPage() {
-  const { id } = Route.useParams();
+  const { id: slug } = Route.useParams();
+  const isUuid = UUID_RE.test(slug);
   const { user } = useAuth();
   const nav = useNavigate();
   const [opening, setOpening] = useState(false);
-  const isMe = user?.id === id;
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["user-detail", slug],
+    queryFn: async () => {
+      const sel = "id, handle, display_name, avatar_url, bio, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, premium_tier, premium_until, profile_theme_id, music_clip_url, profile_bg_url, boost_until, city:cities(name, slug)";
+      const q = supabase.from("profiles").select(sel);
+      const res = isUuid
+        ? await q.eq("id", slug).maybeSingle()
+        : await q.eq("handle", slug.toLowerCase()).maybeSingle();
+      return { profile: res.data };
+    },
+  });
+
+  const profile = data?.profile as any;
+  const id = profile?.id ?? (isUuid ? slug : "");
+  const isMe = !!user && !!id && user.id === id;
+  const handle = profile?.handle ?? profile?.display_name ?? "anonim";
+  const isPublic = profile?.is_public ?? true;
 
   const openDM = async () => {
-    if (!user || isMe) return;
+    if (!user || isMe || !id) return;
     setOpening(true);
     try {
       const cid = await openOrCreateDM(user.id, id);
       nav({ to: "/app/chat/$id", params: { id: cid } });
     } catch (e: any) { alert(e.message ?? "Eroare"); setOpening(false); }
   };
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["user-detail", id],
-    queryFn: async () => {
-      const profRes = await supabase
-        .from("profiles")
-        .select("id, handle, display_name, avatar_url, bio, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, premium_tier, premium_until, profile_theme_id, music_clip_url, profile_bg_url, boost_until, city:cities(name, slug)")
-        .eq("id", id)
-        .maybeSingle();
-      return { profile: profRes.data };
-    },
-  });
-
-  const profile = data?.profile as any;
-  const handle = profile?.handle ?? profile?.display_name ?? "anonim";
-  const isPublic = profile?.is_public ?? true;
 
   const { data: stats } = useFollowStats(id);
   const { data: followStatus = "none" } = useFollowStatus(user?.id, id);

@@ -66,16 +66,50 @@ function MePage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   async function shareProfile() {
-    const url = `${window.location.origin}/app/user/${user?.id}`;
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: `@${profile?.handle ?? "oxidat"} pe OXIDAȚII`, url });
-      } else {
-        await navigator.clipboard.writeText(url);
-        toast.success("Link copiat");
+    if (!user) return;
+    // Always use the published domain so shared links work for anyone, not just preview users
+    const base = "https://oxidatii.lovable.app";
+    const slug = profile?.handle ? profile.handle : user.id;
+    const url = `${base}/app/user/${slug}`;
+    const title = `@${profile?.handle ?? profile?.display_name ?? "oxidat"} pe OXIDAȚII`;
+    const text = "Vezi profilul meu pe OXIDAȚII 🍻";
+
+    // Try native share first (mobile / supported browsers)
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title, text, url });
+        return;
+      } catch (e: any) {
+        // AbortError = user cancelled; anything else falls through to clipboard
+        if (e?.name === "AbortError") return;
       }
-    } catch {/* user cancelled */}
+    }
+
+    // Fallback: copy to clipboard
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copiat — dă-l la prieteni!", { description: url });
+        return;
+      }
+    } catch {/* fall through */}
+
+    // Last resort: legacy execCommand copy via hidden textarea
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      toast.success("Link copiat", { description: url });
+    } catch {
+      toast.error("Nu am putut copia. Link: " + url, { duration: 8000 });
+    }
   }
+
 
   async function saveProfile() {
     if (!user) return;
