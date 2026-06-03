@@ -61,7 +61,7 @@ function ShopPage() {
     },
   });
 
-  async function spend(amount: number, kind: string, refId: string | null = null) {
+  async function spend(amount: number, kind: string, refId?: string) {
     const { data, error } = await supabase.rpc("spend_coins", {
       _amount: amount, _kind: kind, _ref_id: refId,
     });
