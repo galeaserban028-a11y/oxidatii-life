@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Sparkles, X, ChevronRight } from "lucide-react";
+import { Sparkles, X, ChevronRight, Calendar, MapPin, Ticket, Star, Video } from "lucide-react";
 
 type Campaign = {
   id: string;
@@ -15,7 +15,14 @@ type Campaign = {
   theme_color: string | null;
   venue_id: string | null;
   party_id: string | null;
+  event_starts_at: string | null;
+  entry_kind: string | null;
+  entry_price_text: string | null;
+  street: string | null;
+  special_guest: string | null;
+  video_url: string | null;
 };
+
 
 type Biz = { id: string; brand_name: string; logo_url: string | null };
 
@@ -45,13 +52,14 @@ async function loadActive(excludeIds: string[] = []): Promise<{ campaign: Campai
   const nowIso = new Date().toISOString();
   const { data } = await supabase
     .from("campaigns")
-    .select("id, business_id, kind, title, subtitle, cta_text, cta_url, image_urls, theme_color, venue_id, party_id")
+    .select("id, business_id, kind, title, subtitle, cta_text, cta_url, image_urls, theme_color, venue_id, party_id, event_starts_at, entry_kind, entry_price_text, street, special_guest, video_url")
     .eq("status", "active")
     .lte("starts_at", nowIso)
     .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
     .in("kind", ["boost_story", "boost_feed", "boost_discover"])
     .order("bid_cents", { ascending: false })
     .limit(20);
+
 
   const dismissed = new Set([...getDismissed(), ...excludeIds]);
   const list = ((data ?? []) as Campaign[]).filter((c) => !dismissed.has(c.id));
@@ -149,44 +157,103 @@ export function PromoTakeover() {
   const img = campaign.image_urls?.[0];
 
   if (phase === "full") {
+    const facts: { Icon: typeof Calendar; text: string }[] = [];
+    if (campaign.event_starts_at) {
+      const d = new Date(campaign.event_starts_at);
+      facts.push({
+        Icon: Calendar,
+        text: d.toLocaleString("ro-RO", { weekday: "long", day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" }),
+      });
+    }
+    if (campaign.entry_kind === "free") facts.push({ Icon: Ticket, text: "Intrare gratis" });
+    if (campaign.entry_kind === "paid") facts.push({ Icon: Ticket, text: campaign.entry_price_text || "Intrare cu bilet" });
+    if (campaign.street) facts.push({ Icon: MapPin, text: campaign.street });
+    if (campaign.special_guest) facts.push({ Icon: Star, text: campaign.special_guest });
+
     return (
-      <div className="fixed inset-0 z-[140] animate-fade-in">
-        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${color}, ${color}66)` }}>
-          {img && <img src={img} alt="" className="absolute inset-0 w-full h-full object-cover opacity-90" />}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
+      <div className="fixed inset-0 z-[140] animate-fade-in flex flex-col">
+        {/* Blurred backdrop using the same image */}
+        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${color}, #000)` }}>
+          {img && <img src={img} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-50" />}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black" />
         </div>
+
         <button
-          onClick={() => {
-            if (payload) markSeenFull(payload.campaign.id);
-            setPhase("mini");
-          }}
-          className="absolute top-4 right-4 p-2 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 z-10"
+          onClick={() => { markSeenFull(payload.campaign.id); setPhase("mini"); }}
+          className="absolute top-4 right-4 p-2 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 z-20"
           aria-label="Închide"
         >
           <X size={16} className="text-white" />
         </button>
-        <div className="absolute top-4 left-4 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-sm flex items-center gap-1.5">
+        <div className="absolute top-4 left-4 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-sm flex items-center gap-1.5 z-20">
           <Sparkles size={11} className="text-white" />
           <span className="font-mono text-[10px] uppercase tracking-widest text-white">Promovat</span>
         </div>
-        <div className="absolute inset-x-0 bottom-0 p-6 pb-24 text-white space-y-4 animate-fade-in">
-          <div className="flex items-center gap-2">
-            {biz?.logo_url && <img src={biz.logo_url} alt="" className="h-8 w-8 rounded-md object-cover" />}
-            <span className="font-mono text-[10px] uppercase tracking-widest opacity-80">{biz?.brand_name ?? "Brand"}</span>
+
+        {/* Scrollable content */}
+        <div className="relative z-10 flex-1 overflow-y-auto pt-16 pb-32">
+          <div className="max-w-md mx-auto px-4 space-y-4">
+            {/* Brand strip */}
+            <div className="flex items-center gap-2 text-white">
+              {biz?.logo_url && <img src={biz.logo_url} alt="" className="h-9 w-9 rounded-md object-cover border border-white/20" />}
+              <span className="font-mono text-[10px] uppercase tracking-widest opacity-80">{biz?.brand_name ?? "Brand"}</span>
+            </div>
+
+            {/* Poster — image at native ratio, no crop */}
+            {(img || campaign.video_url) && (
+              <div className="relative rounded-2xl overflow-hidden bg-black border border-white/10 shadow-2xl">
+                {campaign.video_url ? (
+                  <video src={campaign.video_url} controls playsInline autoPlay muted className="w-full max-h-[55vh] object-contain bg-black" />
+                ) : (
+                  <img src={img!} alt="" className="w-full max-h-[55vh] object-contain bg-black" />
+                )}
+                {campaign.video_url && (
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-sm flex items-center gap-1">
+                    <Video size={10} className="text-white" />
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-white">Clip</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Title + subtitle */}
+            <div className="text-white space-y-2">
+              <h2 className="font-display uppercase text-3xl leading-[0.95] tracking-tight">{campaign.title}</h2>
+              {campaign.subtitle && <p className="text-sm opacity-90">{campaign.subtitle}</p>}
+            </div>
+
+            {/* Event facts card */}
+            {facts.length > 0 && (
+              <div className="rounded-2xl bg-white/[0.06] backdrop-blur-md border border-white/10 p-4 space-y-2.5">
+                {facts.map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 text-white">
+                    <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${color}33`, color }}>
+                      <f.Icon size={14} />
+                    </div>
+                    <span className="text-sm leading-tight">{f.text}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <h2 className="font-display uppercase text-4xl leading-[0.95] tracking-tight">{campaign.title}</h2>
-          {campaign.subtitle && <p className="text-base opacity-95 line-clamp-3">{campaign.subtitle}</p>}
-          <button
-            onClick={handleClick}
-            className="w-full mt-2 px-5 py-4 rounded-xl text-base font-display uppercase tracking-widest flex items-center justify-center gap-2"
-            style={{ background: color, boxShadow: `0 12px 32px -8px ${color}` }}
-          >
-            {campaign.cta_text || "Vezi detalii"} <ChevronRight size={18} />
-          </button>
+        </div>
+
+        {/* Sticky CTA */}
+        <div className="absolute inset-x-0 bottom-0 p-4 pb-[calc(env(safe-area-inset-bottom)+16px)] bg-gradient-to-t from-black via-black/90 to-transparent z-10">
+          <div className="max-w-md mx-auto">
+            <button
+              onClick={handleClick}
+              className="w-full px-5 py-4 rounded-xl text-base font-display uppercase tracking-widest text-white flex items-center justify-center gap-2"
+              style={{ background: color, boxShadow: `0 12px 32px -8px ${color}` }}
+            >
+              {campaign.cta_text || "Vezi detalii"} <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       </div>
     );
   }
+
 
   // top sticky banner on home page
   return (
