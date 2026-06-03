@@ -441,9 +441,19 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
   const [dailyCap, setDailyCap] = useState(20);
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
+  // event details (shown on the promo card)
+  const [eventStartsAt, setEventStartsAt] = useState(""); // datetime-local
+  const [entryKind, setEntryKind] = useState<"" | "free" | "paid">("");
+  const [entryPriceText, setEntryPriceText] = useState("");
+  const [street, setStreet] = useState("");
+  const [specialGuest, setSpecialGuest] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [videoBusy, setVideoBusy] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
+
 
   const pickGoal = (id: typeof goalId) => {
     const g = GOALS.find((x) => x.id === id)!;
