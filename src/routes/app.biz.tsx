@@ -473,7 +473,16 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
     selectedParty?.location_text ||
     (goal.id === "fans" ? "Intră în comunitate" : "Nu rata seara asta");
 
-  const estimated = useMemo(() => Math.floor((budget * 100) / Math.max(bidBani, 1)) * 1000, [budget, bidBani]);
+  // Prefill event start from party
+  useEffect(() => {
+    if (selectedParty?.starts_at && !eventStartsAt) {
+      const d = new Date(selectedParty.starts_at);
+      const pad = (n: number) => String(n).padStart(2, "0");
+      setEventStartsAt(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);
+    }
+    if (selectedParty?.location_text && !street) setStreet(selectedParty.location_text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partyId]);
 
   const uploadImages = async (files: FileList | null) => {
     if (!files || !user) return;
@@ -488,6 +497,18 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
     setImages((prev) => [...prev, ...uploaded].slice(0, 4));
   };
 
+  const uploadVideo = async (file: File | null | undefined) => {
+    if (!file || !user) return;
+    if (file.size > 50 * 1024 * 1024) { alert("Clipul e prea mare (max 50 MB)."); return; }
+    setVideoBusy(true);
+    const path = `${user.id}/biz/${business.id}/video-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+    const { error } = await supabase.storage.from("venue-photos").upload(path, file, { upsert: false, contentType: file.type });
+    if (error) { setVideoBusy(false); alert(error.message); return; }
+    const { data } = supabase.storage.from("venue-photos").getPublicUrl(path);
+    setVideoUrl(data.publicUrl);
+    setVideoBusy(false);
+  };
+
   const submit = async () => {
     if (!autoTitle.trim()) { alert("Adaugă un titlu"); return; }
     if (budget * 100 > business.wallet_balance_cents) {
@@ -499,6 +520,12 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
       title: autoTitle, subtitle: autoSubtitle,
       cta_text: ctaText || goal.cta, cta_url: ctaUrl || null,
       image_urls: images, theme_color: themeColor,
+      video_url: videoUrl || null,
+      event_starts_at: eventStartsAt ? new Date(eventStartsAt).toISOString() : (selectedParty?.starts_at ?? null),
+      entry_kind: entryKind || null,
+      entry_price_text: entryKind === "paid" ? (entryPriceText.trim() || null) : null,
+      street: street.trim() || null,
+      special_guest: specialGuest.trim() || null,
       status: "active",
       bid_cents: bidBani, budget_cents: Math.round(budget * 100),
       daily_cap_cents: Math.round(dailyCap * 100),
@@ -517,22 +544,64 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
     onCreated(inserted);
   };
 
+  const eventFacts: { icon: typeof Calendar; text: string }[] = [];
+  if (eventStartsAt) {
+    const d = new Date(eventStartsAt);
+    eventFacts.push({
+      icon: Calendar,
+      text: d.toLocaleString("ro-RO", { weekday: "short", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }),
+    });
+  }
+  if (entryKind === "free") eventFacts.push({ icon: Ticket, text: "Intrare gratis" });
+  if (entryKind === "paid") eventFacts.push({ icon: Ticket, text: entryPriceText || "Intrare cu bilet" });
+  if (street.trim()) eventFacts.push({ icon: MapPin, text: street });
+  if (specialGuest.trim()) eventFacts.push({ icon: Star, text: specialGuest });
+
   const Preview = (
-    <div className="rounded-2xl overflow-hidden border border-foreground/15 relative shadow-lg">
-      <div className="aspect-[16/9] relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}66)` }}>
-        {images[0] && <img src={images[0]} alt="" className="absolute inset-0 w-full h-full object-cover opacity-95" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+    <div className="rounded-2xl overflow-hidden border border-foreground/15 relative shadow-xl bg-background">
+      {/* Poster — image at native aspect, blurred backdrop fills the rest */}
+      <div className="relative aspect-[4/5] overflow-hidden bg-black">
+        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}55)` }} />
+        {images[0] && (
+          <>
+            <img src={images[0]} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-60" />
+            <img src={images[0]} alt="" className="absolute inset-0 w-full h-full object-contain" />
+          </>
+        )}
+        {!images[0] && videoUrl && (
+          <video src={videoUrl} className="absolute inset-0 w-full h-full object-cover" muted playsInline />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
         <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm flex items-center gap-1">
           <Sparkles size={9} className="text-white" />
           <span className="font-mono text-[9px] uppercase tracking-widest text-white">Promovat</span>
         </div>
+        {videoUrl && images[0] && (
+          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm flex items-center gap-1">
+            <Video size={9} className="text-white" />
+            <span className="font-mono text-[9px] uppercase tracking-widest text-white">Clip</span>
+          </div>
+        )}
         <div className="absolute bottom-0 inset-x-0 p-3 text-white">
-          <div className="font-display uppercase text-xl leading-tight line-clamp-1">{autoTitle || "Titlu campanie"}</div>
-          <div className="text-xs opacity-90 line-clamp-1">{autoSubtitle}</div>
+          <div className="font-display uppercase text-xl leading-tight line-clamp-2">{autoTitle || "Titlu campanie"}</div>
+          {autoSubtitle && <div className="text-xs opacity-90 line-clamp-2 mt-0.5">{autoSubtitle}</div>}
         </div>
       </div>
-      <div className="flex items-center justify-between p-2.5 bg-foreground/[0.04]">
+      {/* Facts strip */}
+      {eventFacts.length > 0 && (
+        <div className="px-3 py-2.5 bg-foreground/[0.04] border-t border-foreground/10 space-y-1.5">
+          {eventFacts.map((f, i) => {
+            const I = f.icon;
+            return (
+              <div key={i} className="flex items-center gap-2 text-[11px]">
+                <I size={11} style={{ color: themeColor }} className="flex-shrink-0" />
+                <span className="truncate">{f.text}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <div className="flex items-center justify-between p-2.5 bg-foreground/[0.02]">
         <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">{business.brand_name}</span>
         <span className="text-[10px] font-display uppercase px-2.5 py-1 rounded-md text-white" style={{ background: themeColor }}>
           {ctaText || goal.cta} →
@@ -540,6 +609,7 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
       </div>
     </div>
   );
+
 
   const StepDots = (
     <div className="flex items-center gap-1.5 justify-center">
