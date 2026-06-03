@@ -387,8 +387,8 @@ function MePage() {
               <Gem size={16} className="text-amber-300" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="font-display uppercase text-xs leading-tight">Magazin coins</div>
-              <div className="text-[10px] text-amber-300 truncate">{profile.coin_balance ?? 0} coins · cheltuie</div>
+              <div className="font-display uppercase text-xs leading-tight">Bar</div>
+              <div className="text-[10px] text-amber-300 truncate">{profile.coin_balance ?? 0} {(profile.coin_balance ?? 0) === 1 ? "șpriț" : "șprițuri"} · dă rândul</div>
             </div>
           </Link>
         </div>
