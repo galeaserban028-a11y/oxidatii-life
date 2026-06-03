@@ -763,6 +763,83 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
               onChange={(e) => uploadImages(e.target.files)} />
           </div>
 
+          {/* Video clip */}
+          <div className="space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground flex items-center justify-between">
+              <span>clip promo (opțional)</span>
+              <span className="text-foreground/50 normal-case tracking-normal text-[10px]">max 50 MB · mp4</span>
+            </div>
+            {videoUrl ? (
+              <div className="relative rounded-lg overflow-hidden bg-black aspect-video">
+                <video src={videoUrl} controls playsInline className="w-full h-full" />
+                <button onClick={() => setVideoUrl("")}
+                  className="absolute top-1.5 right-1.5 p-1 rounded-md bg-black/70"><X size={12} className="text-white" /></button>
+              </div>
+            ) : (
+              <button onClick={() => videoRef.current?.click()} disabled={videoBusy}
+                className="w-full aspect-[3/1] rounded-lg border-2 border-dashed border-foreground/20 hover:border-foreground/40 flex items-center justify-center gap-2 text-muted-foreground disabled:opacity-50">
+                <Video size={16} />
+                <span className="text-[11px] font-mono uppercase tracking-widest">{videoBusy ? "Se urcă..." : "Adaugă clip"}</span>
+              </button>
+            )}
+            <input ref={videoRef} type="file" accept="video/*" className="hidden"
+              onChange={(e) => uploadVideo(e.target.files?.[0])} />
+          </div>
+
+          {/* Event details */}
+          <div className="space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">detaliile evenimentului</div>
+
+            <div className="space-y-1">
+              <Label>Când</Label>
+              <input type="datetime-local" value={eventStartsAt}
+                onChange={(e) => setEventStartsAt(e.target.value)} className={inputStyle} />
+            </div>
+
+            <div className="space-y-1">
+              <Label>Intrare</Label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {([
+                  { v: "", l: "—" },
+                  { v: "free", l: "Gratis" },
+                  { v: "paid", l: "Cu bani" },
+                ] as const).map((o) => (
+                  <button key={o.v} onClick={() => setEntryKind(o.v)}
+                    className={`px-2 py-2 rounded-md text-[10px] font-mono uppercase tracking-widest border ${
+                      entryKind === o.v ? "bg-foreground text-background border-foreground" : "border-foreground/15 text-muted-foreground"}`}>
+                    {o.l}
+                  </button>
+                ))}
+              </div>
+              {entryKind === "paid" && (
+                <input value={entryPriceText} onChange={(e) => setEntryPriceText(e.target.value)}
+                  placeholder="ex: 30 RON / 50 RON la ușă" maxLength={40} className={inputStyle} />
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <Label>Stradă / Adresă</Label>
+              <input value={street} onChange={(e) => setStreet(e.target.value)}
+                placeholder={selectedParty?.location_text || "ex: Str. Mihai Viteazul 4"}
+                maxLength={120} className={inputStyle} />
+            </div>
+
+            <div className="space-y-1">
+              <Label>Invitat special (opțional)</Label>
+              <input value={specialGuest} onChange={(e) => setSpecialGuest(e.target.value)}
+                placeholder="ex: DJ Andrei · Connect-R"
+                maxLength={80} className={inputStyle} />
+            </div>
+
+            <div className="space-y-1">
+              <Label>Link extern (opțional — pe el îi duci la click)</Label>
+              <input type="url" value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)}
+                placeholder="https://..."
+                className={inputStyle} />
+            </div>
+          </div>
+
+
           <button onClick={() => setAdvancedOpen((s) => !s)}
             className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-foreground/10 hover:border-foreground/25 text-xs">
             <span className="font-mono uppercase tracking-widest text-muted-foreground">Targeting avansat</span>
