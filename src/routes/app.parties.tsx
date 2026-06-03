@@ -66,12 +66,27 @@ function PartiesPage() {
     queryKey: ["party-joins", partyIds.sort().join(",")],
     queryFn: async () => {
       if (!partyIds.length) return [];
-      const { data } = await supabase.from("party_joins").select("party_id, user_id").in("party_id", partyIds);
-      return (data ?? []) as { party_id: string; user_id: string }[];
+      const { data } = await supabase.from("party_joins").select("id, party_id, user_id, status, created_at").in("party_id", partyIds);
+      return (data ?? []) as { id: string; party_id: string; user_id: string; status: string; created_at: string }[];
     },
     enabled: partyIds.length > 0,
     refetchInterval: 20_000,
   });
+
+  // fetch profiles for joiners + hosts together
+  const joinerIds = Array.from(new Set(joins.map(j => j.user_id)));
+  const allProfileIds = Array.from(new Set([...hostIds, ...joinerIds]));
+  const { data: profiles = [] } = useQuery({
+    queryKey: ["party-profiles", allProfileIds.sort().join(",")],
+    queryFn: async () => {
+      if (!allProfileIds.length) return [];
+      const { data } = await supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", allProfileIds);
+      return (data ?? []) as Host[];
+    },
+    enabled: allProfileIds.length > 0,
+  });
+  const profileMap = new Map(profiles.map(p => [p.id, p]));
+
 
   // realtime
   useEffect(() => {
