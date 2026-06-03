@@ -95,6 +95,7 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
       lat,
       lng,
       venue_name: isMe ? "tu ești aici" : (venue?.name ?? (live ? "în mișcare" : null)),
+      is_me: isMe,
     });
   }
   return pins;
