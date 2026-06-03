@@ -163,6 +163,9 @@ export type Database = {
           cta_url: string | null
           daily_cap_cents: number
           ends_at: string | null
+          entry_kind: string | null
+          entry_price_text: string | null
+          event_starts_at: string | null
           id: string
           image_urls: string[] | null
           impressions: number
@@ -170,15 +173,18 @@ export type Database = {
           party_id: string | null
           pricing_model: string
           schedule: Json
+          special_guest: string | null
           spent_cents: number
           starts_at: string
           status: Database["public"]["Enums"]["campaign_status"]
+          street: string | null
           subtitle: string | null
           targeting: Json
           theme_color: string | null
           title: string
           updated_at: string
           venue_id: string | null
+          video_url: string | null
         }
         Insert: {
           bid_cents?: number
@@ -191,6 +197,9 @@ export type Database = {
           cta_url?: string | null
           daily_cap_cents?: number
           ends_at?: string | null
+          entry_kind?: string | null
+          entry_price_text?: string | null
+          event_starts_at?: string | null
           id?: string
           image_urls?: string[] | null
           impressions?: number
@@ -198,15 +207,18 @@ export type Database = {
           party_id?: string | null
           pricing_model?: string
           schedule?: Json
+          special_guest?: string | null
           spent_cents?: number
           starts_at?: string
           status?: Database["public"]["Enums"]["campaign_status"]
+          street?: string | null
           subtitle?: string | null
           targeting?: Json
           theme_color?: string | null
           title: string
           updated_at?: string
           venue_id?: string | null
+          video_url?: string | null
         }
         Update: {
           bid_cents?: number
@@ -219,6 +231,9 @@ export type Database = {
           cta_url?: string | null
           daily_cap_cents?: number
           ends_at?: string | null
+          entry_kind?: string | null
+          entry_price_text?: string | null
+          event_starts_at?: string | null
           id?: string
           image_urls?: string[] | null
           impressions?: number
@@ -226,15 +241,18 @@ export type Database = {
           party_id?: string | null
           pricing_model?: string
           schedule?: Json
+          special_guest?: string | null
           spent_cents?: number
           starts_at?: string
           status?: Database["public"]["Enums"]["campaign_status"]
+          street?: string | null
           subtitle?: string | null
           targeting?: Json
           theme_color?: string | null
           title?: string
           updated_at?: string
           venue_id?: string | null
+          video_url?: string | null
         }
         Relationships: [
           {
