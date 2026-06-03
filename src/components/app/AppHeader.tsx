@@ -26,7 +26,7 @@ export function AppHeader() {
         <img
           src={logoBanner}
           alt="Logo OXIDAȚII — nightlife România"
-          className="h-10 w-auto object-contain drop-shadow-[0_2px_8px_rgba(255,49,88,0.4)]"
+          className="h-14 w-auto object-contain drop-shadow-[0_4px_14px_rgba(255,49,88,0.55)]"
         />
       </div>
       <div className="flex items-center gap-1">
