@@ -200,12 +200,16 @@ function PartiesPage() {
       ) : (
         <div className="space-y-3">
           {visibleParties.map(p => {
-            const host = hostMap.get(p.host_id);
-            const taken = joins.filter(j => j.party_id === p.id).length;
+            const host = profileMap.get(p.host_id);
+            const partyJoins = joins.filter(j => j.party_id === p.id);
+            const accepted = partyJoins.filter(j => j.status === "accepted");
+            const pending = partyJoins.filter(j => j.status === "pending");
+            const taken = accepted.length;
             const free = Math.max(0, p.spots_total - taken);
-            const joined = !!user && joins.some(j => j.party_id === p.id && j.user_id === user.id);
+            const myJoin = user ? partyJoins.find(j => j.user_id === user.id) : undefined;
             const isHost = user?.id === p.host_id;
-            const full = free === 0 && !joined;
+            const full = free === 0 && !myJoin;
+            const myStatus = myJoin?.status;
             return (
               <article key={p.id} className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-foreground/[0.03]">
                 <div className="absolute top-0 right-0 h-24 w-24 rounded-full bg-neon-crimson/20 blur-3xl pointer-events-none" />
@@ -269,20 +273,35 @@ function PartiesPage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => joinMutation.mutate({ partyId: p.id, joined })}
-                      disabled={!user || joinMutation.isPending || (full && !joined) || isHost}
+                      onClick={() => joinMutation.mutate({ partyId: p.id, joinId: myJoin?.id ?? null })}
+                      disabled={!user || joinMutation.isPending || (full && !myJoin) || isHost}
                       className={`shrink-0 px-4 py-2 rounded-xl font-mono text-[11px] uppercase tracking-widest active:scale-95 disabled:opacity-30 transition ${
-                        joined
+                        myStatus === "accepted"
                           ? "bg-neon-green/15 text-neon-green border border-neon-green/50"
+                          : myStatus === "pending"
+                          ? "bg-foreground/5 text-muted-foreground border border-foreground/15"
                           : "bg-neon-crimson text-white shadow-[0_0_14px_-4px_var(--neon-crimson)]"
                       }`}
                     >
-                      {isHost ? "tu" : joined ? "✓ vin" : full ? "plin" : "vin și eu"}
+                      {isHost ? "tu" : myStatus === "accepted" ? "✓ vin" : myStatus === "pending" ? "în așteptare" : full ? "plin" : "vin și eu"}
                     </button>
                   </div>
+
+                  {/* Host management: pending requests + accepted list */}
+                  {isHost && (partyJoins.length > 0) && (
+                    <HostJoinsPanel
+                      pending={pending}
+                      accepted={accepted}
+                      profileMap={profileMap}
+                      onAccept={(id) => acceptMutation.mutate(id)}
+                      onReject={(id) => kickMutation.mutate(id)}
+                      busy={acceptMutation.isPending || kickMutation.isPending}
+                    />
+                  )}
                 </div>
               </article>
             );
+
           })}
         </div>
       )}
