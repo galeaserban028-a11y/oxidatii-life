@@ -17,6 +17,8 @@ type Profile = {
   avatar_url: string | null;
   rank: string | null;
   aura: number | null;
+  boost_until?: string | null;
+  premium_tier?: string | null;
 };
 
 function DiscoverPage() {
