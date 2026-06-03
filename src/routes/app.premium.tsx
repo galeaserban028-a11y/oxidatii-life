@@ -7,7 +7,7 @@ import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
 import { createPremiumPortalSession } from "@/lib/premium.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+
 
 export const Route = createFileRoute("/app/premium")({
   head: () => ({ meta: [{ title: "Șpriț Premium · OXIDAȚII" }] }),
