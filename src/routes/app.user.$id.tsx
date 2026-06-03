@@ -85,7 +85,7 @@ function UserPage() {
     queryFn: async () => {
       const profRes = await supabase
         .from("profiles")
-        .select("id, handle, display_name, avatar_url, bio, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, city:cities(name, slug)")
+        .select("id, handle, display_name, avatar_url, bio, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, premium_tier, premium_until, profile_theme_id, music_clip_url, profile_bg_url, boost_until, city:cities(name, slug)")
         .eq("id", id)
         .maybeSingle();
       return { profile: profRes.data };
