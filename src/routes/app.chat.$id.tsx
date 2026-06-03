@@ -161,8 +161,9 @@ function ChatPage() {
       const path = `${user.id}/${id}/${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("chat-media").upload(path, file, { contentType: file.type || `${prefix === "🎤" ? "audio" : "image"}/${ext}`, upsert: false });
       if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from("chat-media").getPublicUrl(path);
-      const url = pub.publicUrl;
+      const { data: signed, error: signErr } = await supabase.storage.from("chat-media").createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+      if (signErr) throw signErr;
+      const url = signed.signedUrl;
       const body = prefix === "🎤" && durationMs
         ? `🎤 ${url}|${Math.round(durationMs / 1000)}`
         : `${prefix} ${url}`;
