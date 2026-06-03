@@ -28,6 +28,45 @@ const TYPE_COLOR: Record<string, string> = {
   after: "#ff3158",
 };
 
+// Render a tiny wine-bottle silhouette onto a canvas and register it as a map
+// image. One image per type/color. Replaces the "fat dot" markers with elegant
+// little bottles — instantly readable ("astea sunt locuri de băut") and far
+// less visually noisy when many venues share the same area.
+function makeBottleImage(color: string): ImageData {
+  const W = 28, H = 44;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 6;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(12, 2);
+  ctx.lineTo(16, 2);
+  ctx.lineTo(16, 6);
+  ctx.lineTo(17, 7);
+  ctx.lineTo(17, 14);
+  ctx.bezierCurveTo(22, 17, 24, 22, 24, 28);
+  ctx.lineTo(24, 39);
+  ctx.quadraticCurveTo(24, 42, 21, 42);
+  ctx.lineTo(7, 42);
+  ctx.quadraticCurveTo(4, 42, 4, 39);
+  ctx.lineTo(4, 28);
+  ctx.bezierCurveTo(4, 22, 6, 17, 11, 14);
+  ctx.lineTo(11, 7);
+  ctx.lineTo(12, 6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = "rgba(0,0,0,0.55)";
+  ctx.fillRect(4, 30, 20, 7);
+  ctx.fillStyle = "rgba(255,255,255,0.45)";
+  ctx.fillRect(7, 18, 2, 18);
+  ctx.fillStyle = "#1a1208";
+  ctx.fillRect(11, 0, 6, 6);
+  return ctx.getImageData(0, 0, W, H);
+}
+
 const VOYAGER_STYLE = {
   version: 8,
   sources: {
