@@ -37,42 +37,42 @@ const HUE = {
 const TIERS: Tier[] = [
   {
     id: "vip", index: "I.", name: "VIP", italic: "discret",
-    price: 2.99, coins: 50, hue: HUE.amber.fg, surface: HUE.amber.bg,
+    price: 2.99, coins: 5, hue: HUE.amber.fg, surface: HUE.amber.bg,
     blurb: "Pentru cei care vor doar să arate că au gust. Fără paradă.",
-    perks: ["Insignă VIP auriu", "50 monede pe lună", "Reacții doar pentru club", "Fără reclame, nicăieri"],
+    perks: ["Insignă VIP auriu", "5 șprițuri pe lună", "Reacții doar pentru club", "Fără reclame, nicăieri"],
   },
   {
     id: "vip_plus", index: "II.", name: "VIP+", italic: "curat",
-    price: 4.99, coins: 150, hue: HUE.blush.fg, surface: HUE.blush.bg, badge: "cel mai luat",
+    price: 4.99, coins: 15, hue: HUE.blush.fg, surface: HUE.blush.bg, badge: "cel mai luat",
     blurb: "Profilul tău începe să fie observat. Frame animat, teme, vederi.",
-    perks: ["Tot din VIP", "Frame animat pe avatar", "5 teme exclusive de profil", "150 monede pe lună", "Vezi cine ți-a dat rating"],
+    perks: ["Tot din VIP", "Frame animat pe avatar", "5 teme exclusive de profil", "15 șprițuri pe lună", "Vezi cine ți-a dat rating"],
   },
   {
     id: "pro", index: "III.", name: "Pro", italic: "serios",
-    price: 9.99, coins: 500, hue: HUE.violet.fg, surface: HUE.violet.bg,
+    price: 9.99, coins: 40, hue: HUE.violet.fg, surface: HUE.violet.bg,
     blurb: "Pentru regulari. Boost săptămânal, analytics, un music clip pe profil.",
-    perks: ["Tot din VIP+", "1× Profile Boost / săptămână", "Reputation analytics complet", "Music clip 15s pe profil", "500 monede pe lună", "Animated background"],
+    perks: ["Tot din VIP+", "1× Profile Boost / săptămână", "Reputation analytics complet", "Music clip 15s pe profil", "40 șprițuri pe lună", "Animated background"],
   },
   {
     id: "elite", index: "IV.", name: "Elite", italic: "rar",
-    price: 14.99, coins: 1500, hue: HUE.glacier.fg, surface: HUE.glacier.bg, badge: "100 locuri",
+    price: 14.99, coins: 120, hue: HUE.glacier.fg, surface: HUE.glacier.bg, badge: "100 locuri",
     blurb: "O sută de oameni pe an. Numele tău rămâne pe perete.",
-    perks: ["Tot din Pro", "Diamond badge holografic", "Featured pe Discover", "Founder recognition pe vecie", "Cadou aniversar fizic", "1500 monede pe lună", "Acces beta features"],
+    perks: ["Tot din Pro", "Diamond badge holografic", "Featured pe Discover", "Founder recognition pe vecie", "Cadou aniversar fizic", "120 șprițuri pe lună", "Acces beta features"],
   },
 ];
 
 const COIN_PACKS = [
-  { id: "coins_mic", coins: 50, price: 4.99, label: "Mic" },
-  { id: "coins_mediu", coins: 200, price: 14.99, label: "Mediu", bonus: "+10%" },
-  { id: "coins_mare", coins: 600, price: 39.99, label: "Mare", bonus: "+20%", popular: true },
-  { id: "coins_boss", coins: 1500, price: 89.99, label: "Boss", bonus: "+35%" },
-  { id: "coins_legenda", coins: 5000, price: 249, label: "Legendă", bonus: "+50%" },
+  { id: "coins_mic", coins: 5, price: 4.99, label: "Un rând" },
+  { id: "coins_mediu", coins: 15, price: 12.99, label: "Pentru gașcă", bonus: "+10%" },
+  { id: "coins_mare", coins: 40, price: 29.99, label: "Petrecere", bonus: "+20%", popular: true },
+  { id: "coins_boss", coins: 100, price: 69.99, label: "Toată haita", bonus: "+35%" },
+  { id: "coins_legenda", coins: 300, price: 179, label: "Legendă", bonus: "+50%" },
 ];
 
 const FAQ = [
   { q: "Pot să anulez oricând?", a: "Da. Un singur click. Beneficiile rămân până la final de perioadă." },
   { q: "Plătesc, intru pe locul 1?", a: "Nu. Nu vindem locuri în top. Niciodată. Doar cum arăți când ajungi acolo." },
-  { q: "Ce sunt monedele?", a: "Sunt pentru lucruri cosmetice — cadouri în chat, boost-uri scurte, rame. Nu cumperi influență." },
+  { q: "Ce sunt șprițurile?", a: "Sunt pentru lucruri cosmetice — cadouri în chat, boost-uri scurte, rame. Nu cumperi influență." },
   { q: "Și dacă mă răzgândesc?", a: "În primele 14 zile primești banii înapoi. Fără explicații, fără formulare." },
 ];
 
@@ -87,7 +87,7 @@ function PremiumPage() {
   const handleBuy = (tier: Tier) =>
     setCheckout({ priceId: `${tier.id}_${annual ? "yearly" : "monthly"}`, title: `${tier.name} ${annual ? "anual" : "lunar"}` });
   const handleCoins = (p: typeof COIN_PACKS[0]) =>
-    setCheckout({ priceId: p.id, title: `${p.coins} monede · ${p.label}` });
+    setCheckout({ priceId: p.id, title: `${p.coins} șprițuri · ${p.label}` });
   const handleManage = async () => {
     setOpeningPortal(true);
     try {
@@ -138,7 +138,7 @@ function PremiumPage() {
         <p className="mt-8 text-[15px] leading-relaxed text-foreground/80 max-w-[28ch]">
           Patru trepte. Niciuna nu-ți cumpără locul în top — doar
           <span className="italic" style={{ fontFamily: "'Instrument Serif', serif" }}> stilul</span>,
-          <span className="italic" style={{ fontFamily: "'Instrument Serif', serif" }}> vizibilitatea</span> și câteva monede de aruncat pe masă.
+          <span className="italic" style={{ fontFamily: "'Instrument Serif', serif" }}> vizibilitatea</span> și câteva rânduri de aruncat pe masă.
         </p>
 
         {/* signature line */}
@@ -272,14 +272,14 @@ function PremiumPage() {
         })}
       </section>
 
-      {/* COINS — bar tab spread */}
+      {/* DRINKS — bar tab spread */}
       <section className="px-6 pt-12 pb-8 border-b border-foreground/15">
         <div className="flex items-baseline justify-between mb-1">
-          <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-muted-foreground">V. monede</div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-muted-foreground">V. bar</div>
           <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70">tab la bar</div>
         </div>
         <h2 className="font-display uppercase text-3xl mt-2 leading-tight">
-          Monede pe care le <span className="italic font-normal" style={{ fontFamily: "'Instrument Serif', serif", color: "oklch(0.85 0.13 75)" }}>arunci pe masă.</span>
+          Șprițurile pe care le <span className="italic font-normal" style={{ fontFamily: "'Instrument Serif', serif", color: "oklch(0.85 0.13 75)" }}>arunci pe masă.</span>
         </h2>
         <p className="text-[13px] text-foreground/70 mt-3 max-w-[36ch]">
           Cadouri, boost-uri, frame-uri. O dată plătite, le folosești când vrei. Nu expiră.
@@ -299,7 +299,7 @@ function PremiumPage() {
                 <div className="flex items-baseline gap-3 flex-wrap">
                   <span className="font-display uppercase text-lg tracking-tight">{p.label}</span>
                   <span className="text-lg italic text-muted-foreground/80" style={{ fontFamily: "'Instrument Serif', serif" }}>
-                    {p.coins} monede
+                    {p.coins} {p.coins === 1 ? "șpriț" : "șprițuri"}
                   </span>
                   {p.bonus && (
                     <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300">{p.bonus} cadou</span>

@@ -4,14 +4,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Coins, Rocket, Crown, Gift, PartyPopper, ArrowLeft, Check, Loader2 } from "lucide-react";
+import { Rocket, Crown, Gift, PartyPopper, ArrowLeft, Check, Loader2, Beer } from "lucide-react";
 
 export const Route = createFileRoute("/app/shop")({
-  head: () => ({ meta: [{ title: "Magazin Coins · OXIDAȚII" }] }),
+  head: () => ({ meta: [{ title: "Bar · OXIDAȚII" }] }),
   component: ShopPage,
 });
 
 type Tab = "boost" | "frames" | "gifts" | "party";
+
+// thematic helper — "5 șprițuri" / "1 șpriț"
+const drink = (n: number) => `${n} ${n === 1 ? "șpriț" : "șprițuri"}`;
 
 function ShopPage() {
   const { user, profile, refreshProfile } = useAuth();
@@ -73,13 +76,13 @@ function ShopPage() {
     if (!user) return;
     setBusy("profile-boost");
     try {
-      const newBal = await spend(50, "boost_profile");
+      const newBal = await spend(5, "boost_profile");
       const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       const { error } = await supabase.from("coin_boosts").insert({
-        user_id: user.id, kind: "profile", expires_at: expires, cost_coins: 50,
+        user_id: user.id, kind: "profile", expires_at: expires, cost_coins: 5,
       });
       if (error) throw error;
-      toast.success(`Profil boostat 24h! Sold: ${newBal} coins`);
+      toast.success(`Profil boostat 24h! Mai ai ${drink(newBal)}`);
       await refreshProfile();
       qc.invalidateQueries({ queryKey: ["discover-suggestions"] });
     } catch (e: any) {
@@ -91,13 +94,13 @@ function ShopPage() {
     if (!user) return;
     setBusy(`party-${partyId}`);
     try {
-      const newBal = await spend(150, "boost_party", partyId);
+      const newBal = await spend(15, "boost_party", partyId);
       const expires = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
       const { error } = await supabase.from("coin_boosts").insert({
-        user_id: user.id, kind: "party", target_id: partyId, expires_at: expires, cost_coins: 150,
+        user_id: user.id, kind: "party", target_id: partyId, expires_at: expires, cost_coins: 15,
       });
       if (error) throw error;
-      toast.success(`Petrecere boostată 12h! Sold: ${newBal} coins`);
+      toast.success(`Petrecere boostată 12h! Mai ai ${drink(newBal)}`);
       await refreshProfile();
     } catch (e: any) {
       toast.error(e.message || "Eroare");
@@ -107,7 +110,6 @@ function ShopPage() {
   async function buyFrame(frame: any) {
     if (!user) return;
     if (ownedFrames?.has(frame.id)) {
-      // just activate
       const { error } = await supabase.from("profiles").update({ active_frame_id: frame.id }).eq("id", user.id);
       if (error) return toast.error(error.message);
       toast.success(`Rama "${frame.name}" activată`);
@@ -120,7 +122,7 @@ function ShopPage() {
       const { error: e1 } = await supabase.from("user_frames").insert({ user_id: user.id, frame_id: frame.id });
       if (e1) throw e1;
       await supabase.from("profiles").update({ active_frame_id: frame.id }).eq("id", user.id);
-      toast.success(`Ai cumpărat "${frame.name}"! Sold: ${newBal} coins`);
+      toast.success(`Ai luat „${frame.name}"! Mai ai ${drink(newBal)}`);
       await refreshProfile();
       qc.invalidateQueries({ queryKey: ["owned-frames"] });
     } catch (e: any) {
@@ -141,15 +143,32 @@ function ShopPage() {
         <button onClick={() => nav({ to: "/app/me" })} className="p-2 -ml-2 rounded-full hover:bg-white/5">
           <ArrowLeft size={20} />
         </button>
-        <h1 className="font-display text-2xl tracking-wide flex-1">MAGAZIN COINS</h1>
+        <h1 className="font-display text-2xl tracking-wide flex-1 uppercase">Bar</h1>
         <Link to="/app/premium" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-sm font-semibold">
-          <Coins size={16} /> {balance}
+          <Beer size={16} /> {balance}
         </Link>
       </header>
 
+      {/* Weekly free drink — the new headline idea */}
+      <div className="relative overflow-hidden rounded-2xl border border-amber-400/30 p-5"
+        style={{ background: "linear-gradient(135deg, oklch(0.30 0.06 50 / 0.5), oklch(0.20 0.03 30 / 0.5))" }}>
+        <div className="absolute -right-4 -top-4 text-7xl opacity-15 select-none">🍺</div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-amber-300/80">săptămâna asta</div>
+        <div className="mt-1 font-display uppercase text-xl leading-tight">
+          1 șpriț gratis, din partea casei
+        </div>
+        <p className="text-[12px] text-foreground/70 mt-1 max-w-[34ch]">
+          Îți pică automat în cont luni dimineața. Mai vrei? Iei un rând de mai jos.
+        </p>
+        <div className="mt-3 inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-amber-300/70">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-pulse" />
+          în curând — runda săptămânală
+        </div>
+      </div>
+
       <p className="text-sm text-muted-foreground">
-        Cheltuie coins pe boost-uri, rame de avatar, cadouri în chat și boost de petrecere. Coins nu expiră niciodată.
-        Mai ai nevoie? <Link to="/app/premium" className="underline text-amber-300">Cumpără pachet</Link>.
+        Șprițurile sunt moneda din bar. Le dai pe boost-uri, rame, cadouri în chat, sau pe boost de petrecere.
+        Rămân la tine — nu expiră. Mai vrei? <Link to="/app/premium" className="underline text-amber-300">Mai iei un rând</Link>.
       </p>
 
       <nav className="flex gap-2 overflow-x-auto -mx-4 px-4">
@@ -166,7 +185,7 @@ function ShopPage() {
               <Rocket className="text-fuchsia-300" />
             </div>
             <div className="flex-1">
-              <div className="font-display text-lg">Boost profil 24h</div>
+              <div className="font-display text-lg uppercase">Boost profil · 24h</div>
               <div className="text-sm text-muted-foreground">
                 Apari primul în <em>Caută oameni</em> și pe Discover timp de 24 de ore.
               </div>
@@ -174,11 +193,11 @@ function ShopPage() {
           </div>
           <button
             onClick={buyProfileBoost}
-            disabled={!!busy || balance < 50}
+            disabled={!!busy || balance < 5}
             className="mt-4 w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-purple-600 font-display text-sm uppercase tracking-wide text-white disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {busy === "profile-boost" ? <Loader2 className="animate-spin" size={16} /> : <Coins size={16} />}
-            Cumpără boost · 50 coins
+            {busy === "profile-boost" ? <Loader2 className="animate-spin" size={16} /> : <Beer size={16} />}
+            Dă rândul · {drink(5)}
           </button>
         </Card>
       )}
@@ -205,8 +224,8 @@ function ShopPage() {
                       disabled={!!busy || (!owned && balance < f.price_coins)}
                       className="w-full py-2 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
-                      {busy === `frame-${f.id}` ? <Loader2 className="animate-spin" size={12} /> : <Coins size={12} />}
-                      {owned ? "Activează" : `${f.price_coins} coins`}
+                      {busy === `frame-${f.id}` ? <Loader2 className="animate-spin" size={12} /> : <Beer size={12} />}
+                      {owned ? "Activează" : drink(f.price_coins)}
                     </button>
                   )}
                 </div>
@@ -218,7 +237,7 @@ function ShopPage() {
 
       {tab === "gifts" && (
         <Card>
-          <div className="font-display text-base mb-2">Cadouri pentru chat</div>
+          <div className="font-display text-base mb-2 uppercase">Cadouri pentru chat</div>
           <p className="text-xs text-muted-foreground mb-3">
             Trimite un cadou într-o conversație din butonul 🎁. Catalogul:
           </p>
@@ -228,7 +247,7 @@ function ShopPage() {
                 <div className="text-3xl">{g.emoji}</div>
                 <div className="text-xs mt-1">{g.name}</div>
                 <div className="text-[11px] text-amber-300 flex items-center justify-center gap-1 mt-1">
-                  <Coins size={10} /> {g.price_coins}
+                  <Beer size={10} /> {g.price_coins}
                 </div>
               </div>
             ))}
@@ -243,11 +262,11 @@ function ShopPage() {
               <PartyPopper className="text-pink-300" />
             </div>
             <div className="flex-1">
-              <div className="font-display text-lg">Boost petrecere 12h</div>
+              <div className="font-display text-lg uppercase">Boost petrecere · 12h</div>
               <div className="text-sm text-muted-foreground">
                 Petrecerea ta apare promovată în feed și pe hartă timp de 12 ore.
               </div>
-              <div className="text-xs text-amber-300 mt-1">150 coins / petrecere</div>
+              <div className="text-xs text-amber-300 mt-1">{drink(15)} / petrecere</div>
             </div>
           </div>
           {!myParties?.length ? (
@@ -266,11 +285,11 @@ function ShopPage() {
                   </div>
                   <button
                     onClick={() => buyPartyBoost(p.id)}
-                    disabled={!!busy || balance < 150}
+                    disabled={!!busy || balance < 15}
                     className="px-3 py-2 rounded-lg bg-pink-500/20 border border-pink-500/40 text-pink-200 text-xs disabled:opacity-50 flex items-center gap-1.5 shrink-0"
                   >
                     {busy === `party-${p.id}` ? <Loader2 className="animate-spin" size={12} /> : <Rocket size={12} />}
-                    Boost · 150
+                    Boost · {drink(15)}
                   </button>
                 </div>
               ))}
