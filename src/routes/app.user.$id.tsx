@@ -270,7 +270,17 @@ function UserPage() {
                 )}
               </div>
             )}
+            {isPremium && profile.music_clip_url && (
+              <div className="mt-4 pt-4 border-t border-foreground/10">
+                <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1.5">🎵 music clip</div>
+                <audio src={profile.music_clip_url} controls className="w-full h-9" />
+              </div>
+            )}
+            </div>
           </div>
+            );
+          })()}
+
 
           {/* Reputație + rating */}
           <ReputationCard
