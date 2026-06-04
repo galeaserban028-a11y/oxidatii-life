@@ -22,6 +22,7 @@ const EventSchema = z.object({
 });
 
 export const generateChaosEvents = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data }) => {
     const key = process.env.LOVABLE_API_KEY;
