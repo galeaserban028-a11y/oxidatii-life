@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: "OXIDAȚII",
   webDir: "dist/client",
   server: {
-    url: "https://id-preview--c7d68625-ce68-4035-8023-bc8b4887c4dd.lovable.app",
+    url: "https://oxidatii.lovable.app",
     cleartext: false,
   },
   ios: {
