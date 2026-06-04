@@ -1405,6 +1405,13 @@ export type Database = {
         Returns: boolean
       }
       claim_profile_boost: { Args: never; Returns: Json }
+      get_business_contact: {
+        Args: { _business_id: string }
+        Returns: {
+          contact_email: string
+          contact_phone: string
+        }[]
+      }
       get_business_wallet: {
         Args: { _business_id: string }
         Returns: {
