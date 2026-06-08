@@ -271,6 +271,7 @@ function MePage() {
                 <MenuItem to="/app/admin" icon={<ShieldAlert size={16} className="text-neon-crimson" />} onSelect={() => setMenuOpen(false)} label={isAdmin ? "Panou Admin" : "Panou Moderator"} />
               )}
               <div className="my-1 border-t border-foreground/10" />
+              <MenuItem to="/app/me/archive" icon={<Bookmark size={16} className="text-amber-400" />} onSelect={() => setMenuOpen(false)} label="Arhiva ta" />
               <MenuItem to="/app/notifications" icon={<Bell size={16} />} onSelect={() => setMenuOpen(false)} label="Notificări" />
               <MenuItem to="/app/requests" icon={<UserPlus size={16} />} onSelect={() => setMenuOpen(false)}
                 label="Cereri urmărire" badge={pendingCount > 0 ? pendingCount : undefined} />

@@ -46,6 +46,7 @@ import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
 import { Route as AppPromoIdRouteImport } from './routes/app.promo.$id'
 import { Route as AppMeReputationRouteImport } from './routes/app.me.reputation'
 import { Route as AppMeRatersRouteImport } from './routes/app.me.raters'
+import { Route as AppMeArchiveRouteImport } from './routes/app.me.archive'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminUsersRouteImport } from './routes/app.admin.users'
@@ -242,6 +243,11 @@ const AppMeRatersRoute = AppMeRatersRouteImport.update({
   path: '/raters',
   getParentRoute: () => AppMeRoute,
 } as any)
+const AppMeArchiveRoute = AppMeArchiveRouteImport.update({
+  id: '/archive',
+  path: '/archive',
+  getParentRoute: () => AppMeRoute,
+} as any)
 const AppCitySlugRoute = AppCitySlugRouteImport.update({
   id: '/city/$slug',
   path: '/city/$slug',
@@ -334,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
+  '/app/me/archive': typeof AppMeArchiveRoute
   '/app/me/raters': typeof AppMeRatersRoute
   '/app/me/reputation': typeof AppMeReputationRoute
   '/app/promo/$id': typeof AppPromoIdRoute
@@ -381,6 +388,7 @@ export interface FileRoutesByTo {
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
+  '/app/me/archive': typeof AppMeArchiveRoute
   '/app/me/raters': typeof AppMeRatersRoute
   '/app/me/reputation': typeof AppMeReputationRoute
   '/app/promo/$id': typeof AppPromoIdRoute
@@ -431,6 +439,7 @@ export interface FileRoutesById {
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
+  '/app/me/archive': typeof AppMeArchiveRoute
   '/app/me/raters': typeof AppMeRatersRoute
   '/app/me/reputation': typeof AppMeReputationRoute
   '/app/promo/$id': typeof AppPromoIdRoute
@@ -482,6 +491,7 @@ export interface FileRouteTypes {
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
+    | '/app/me/archive'
     | '/app/me/raters'
     | '/app/me/reputation'
     | '/app/promo/$id'
@@ -529,6 +539,7 @@ export interface FileRouteTypes {
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
+    | '/app/me/archive'
     | '/app/me/raters'
     | '/app/me/reputation'
     | '/app/promo/$id'
@@ -578,6 +589,7 @@ export interface FileRouteTypes {
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
+    | '/app/me/archive'
     | '/app/me/raters'
     | '/app/me/reputation'
     | '/app/promo/$id'
@@ -862,6 +874,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMeRatersRouteImport
       parentRoute: typeof AppMeRoute
     }
+    '/app/me/archive': {
+      id: '/app/me/archive'
+      path: '/archive'
+      fullPath: '/app/me/archive'
+      preLoaderRoute: typeof AppMeArchiveRouteImport
+      parentRoute: typeof AppMeRoute
+    }
     '/app/city/$slug': {
       id: '/app/city/$slug'
       path: '/city/$slug'
@@ -962,11 +981,13 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
 )
 
 interface AppMeRouteChildren {
+  AppMeArchiveRoute: typeof AppMeArchiveRoute
   AppMeRatersRoute: typeof AppMeRatersRoute
   AppMeReputationRoute: typeof AppMeReputationRoute
 }
 
 const AppMeRouteChildren: AppMeRouteChildren = {
+  AppMeArchiveRoute: AppMeArchiveRoute,
   AppMeRatersRoute: AppMeRatersRoute,
   AppMeReputationRoute: AppMeReputationRoute,
 }
@@ -1050,13 +1071,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
