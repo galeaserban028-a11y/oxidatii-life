@@ -30,10 +30,17 @@ function AdminCampaigns() {
   };
 
   const del = async (id: string) => {
-    if (!confirm("Șterg campania?")) return;
-    const { error } = await supabase.from("campaigns").delete().eq("id", id);
+    if (!confirm("Șterg campania? Acțiune ireversibilă.")) return;
+    const { data: deleted, error } = await supabase
+      .from("campaigns")
+      .delete()
+      .eq("id", id)
+      .select("id");
     if (error) return toast.error(error.message);
-    toast.success("Ștearsă");
+    if (!deleted || deleted.length === 0) {
+      return toast.error("Nu ai permisiune să ștergi (doar admin total poate șterge campanii).");
+    }
+    toast.success("Campanie ștearsă");
     qc.invalidateQueries({ queryKey: ["admin-campaigns"] });
   };
 
