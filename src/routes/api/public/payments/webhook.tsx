@@ -203,7 +203,15 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
     updated_at: new Date().toISOString(),
   }).eq("stripe_subscription_id", subscription.id).eq("environment", env);
 
-  // Revoke premium when subscription fully ends (Stripe sends this after period_end if not renewed)
+  // Biz Pro: revoke pro on business
+  if (subscription.metadata?.kind === "biz_pro" && subscription.metadata?.business_id) {
+    await supabaseAdmin.from("business_accounts").update({
+      pro_tier: null, pro_until: null,
+    }).eq("id", subscription.metadata.business_id);
+    return;
+  }
+
+  // Revoke premium when user subscription fully ends
   if (userId) {
     await supabaseAdmin.from("profiles").update({
       premium_tier: null,
