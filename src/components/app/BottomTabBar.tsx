@@ -65,6 +65,10 @@ export function BottomTabBar() {
     try { window.sessionStorage.setItem("oxi-alc-warn", "1"); } catch {}
   };
 
+  if (loc.pathname.startsWith("/app/biz") || loc.pathname.startsWith("/app/admin")) {
+    return null;
+  }
+
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 pb-[env(safe-area-inset-bottom)] pointer-events-none">
       <div className="mx-auto max-w-md px-3 pb-3 space-y-2 pointer-events-auto">
