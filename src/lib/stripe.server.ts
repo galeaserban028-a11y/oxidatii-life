@@ -58,6 +58,13 @@ export function getStripeErrorMessage(error: unknown): string {
   return "Stripe request failed";
 }
 
+export function getCheckoutClientSecret(session: unknown): string {
+  if (!session || typeof session !== "object") return "";
+  const value = (session as { client_secret?: unknown; clientSecret?: unknown }).client_secret
+    ?? (session as { clientSecret?: unknown }).clientSecret;
+  return typeof value === "string" ? value : "";
+}
+
 export async function verifyWebhook(req: Request, env: StripeEnv): Promise<{ type: string; data: { object: any } }> {
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();

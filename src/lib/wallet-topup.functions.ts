@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
+import { type StripeEnv, createStripeClient, getCheckoutClientSecret, getStripeErrorMessage } from "@/lib/stripe.server";
 
 type CheckoutResult = { clientSecret: string } | { error: string };
 
@@ -86,7 +86,9 @@ export const createWalletTopupCheckout = createServerFn({ method: "POST" })
         },
       });
 
-      return { clientSecret: session.client_secret ?? "" };
+      const clientSecret = getCheckoutClientSecret(session);
+      if (!clientSecret) return { error: "Plata nu a putut porni. Reîncearcă în câteva secunde." };
+      return { clientSecret };
     } catch (error) {
       return { error: getStripeErrorMessage(error) };
     }

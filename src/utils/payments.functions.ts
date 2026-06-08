@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { type StripeEnv, createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
+import { type StripeEnv, createStripeClient, getCheckoutClientSecret, getStripeErrorMessage } from "@/lib/stripe.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type CheckoutResult = { clientSecret: string } | { error: string };
@@ -74,7 +74,9 @@ export const createBizProCheckout = createServerFn({ method: "POST" })
         },
       });
 
-      return { clientSecret: session.client_secret ?? "" };
+      const clientSecret = getCheckoutClientSecret(session);
+      if (!clientSecret) return { error: "Plata nu a putut porni. Reîncearcă în câteva secunde." };
+      return { clientSecret };
     } catch (e) {
       return { error: getStripeErrorMessage(e) };
     }
