@@ -123,10 +123,10 @@ function BizPage() {
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Business · Promovare</span>
         </div>
         <h1 className="font-display uppercase text-3xl leading-[0.95] tracking-tight">
-          Promovează <span className="text-gradient-chaos">cum vrei tu.</span>
+          Alege simplu <span className="text-gradient-chaos">ce vrei azi.</span>
         </h1>
         <p className="text-xs text-zinc-400">
-          6 tipuri de reclamă · poze · targeting · plătești doar ce consumi.
+          Încarci bani, pornești reclama, vezi rezultatul. Fără panou complicat.
         </p>
       </header>
 
@@ -241,7 +241,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 
       </div>
 
-      <div className="p-4 -mt-10 relative space-y-3">
+      <div className="p-4 -mt-10 relative space-y-4">
         <div className="flex items-end gap-3">
           <div className="w-14 h-14 rounded-xl bg-background border-2 border-background overflow-hidden flex-shrink-0">
             {business.logo_url ? <img src={business.logo_url} alt="" className="w-full h-full object-cover" />
@@ -257,47 +257,24 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 
         {business.description && <p className="text-xs text-muted-foreground line-clamp-2">{business.description}</p>}
 
-        {/* Wallet */}
-        <div className="rounded-xl bg-gradient-to-br from-neon-purple/10 to-neon-crimson/10 border border-foreground/10 p-3 flex items-center justify-between gap-3">
-          <div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-              <Wallet size={10} /> Wallet
-            </div>
-            <div className="font-display text-2xl leading-none mt-0.5">
-              {ron(business.wallet_balance_cents)} <span className="text-xs text-muted-foreground">RON</span>
-            </div>
-            <div className="text-[9px] text-muted-foreground mt-1">Card · Revolut · Apple/Google Pay · SEPA</div>
-          </div>
-          <button
-            onClick={onTopup}
-            className="font-display uppercase text-[11px] tracking-widest px-4 py-2.5 rounded-md text-white flex items-center gap-1.5"
-            style={{ background: "var(--gradient-chaos)" }}
-          >
-            <Plus size={12} /> Top-up
-          </button>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
-          <Stat icon={<TrendingUp size={11} />} label="Spent" value={`${ron(totalSpent)} RON`} />
-          <Stat icon={<Eye size={11} />} label="Views" value={totalImpressions.toLocaleString()} />
-          <Stat icon={<MousePointerClick size={11} />} label="Clicks" value={totalClicks.toLocaleString()} />
-        </div>
-
-        <button onClick={() => hasCampaignFunds ? setBuilderOpen(true) : onTopup()}
-          className="w-full font-display uppercase text-[12px] tracking-widest px-4 py-3 rounded-md text-white flex items-center justify-center gap-1.5 disabled:opacity-50"
-          style={{ background: "var(--gradient-chaos)" }}>
-          <Megaphone size={13} /> {hasCampaignFunds ? "Pornește campania" : "Adaugă fonduri pentru campanie"}
-        </button>
-        {!hasCampaignFunds && (
-          <div className="text-[10px] text-muted-foreground text-center">
-            Ai nevoie de minim 50 RON în wallet ca să lansezi prima campanie.
-          </div>
-        )}
+        <SimpleBizMap
+          balanceCents={business.wallet_balance_cents ?? 0}
+          activeCount={activeCount}
+          totalSpent={totalSpent}
+          totalImpressions={totalImpressions}
+          totalClicks={totalClicks}
+          onTopup={onTopup}
+          onCampaign={() => hasCampaignFunds ? setBuilderOpen(true) : onTopup()}
+        />
 
         {/* Campaign list */}
         {campaigns.length > 0 && (
-          <div className="space-y-1.5">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">campanii</div>
+          <details className="rounded-xl bg-foreground/[0.03] border border-foreground/10 overflow-hidden">
+            <summary className="cursor-pointer list-none px-3 py-3 flex items-center justify-between gap-3">
+              <span className="text-sm font-medium">Campaniile tale</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{campaigns.length} total · {activeCount} active</span>
+            </summary>
+            <div className="space-y-1.5 px-3 pb-3">
             {campaigns.map((c) => {
               const placement = PLACEMENTS.find((p) => p.value === c.kind);
               const Icon = placement?.icon ?? Rocket;
@@ -341,7 +318,8 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
                 </div>
               );
             })}
-          </div>
+            </div>
+          </details>
         )}
 
         <BizUniquePanel business={business} />
