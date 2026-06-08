@@ -88,9 +88,14 @@ export type Database = {
           logo_url: string | null
           monthly_credits_cents: number
           owner_user_id: string
+          pro_tier: string | null
+          pro_until: string | null
+          reputation_score: number
           slug: string | null
           tier: Database["public"]["Enums"]["business_tier"]
           tiktok_handle: string | null
+          total_reviews: number
+          total_visits: number
           type: Database["public"]["Enums"]["business_type"]
           updated_at: string
           venue_id: string | null
@@ -114,9 +119,14 @@ export type Database = {
           logo_url?: string | null
           monthly_credits_cents?: number
           owner_user_id: string
+          pro_tier?: string | null
+          pro_until?: string | null
+          reputation_score?: number
           slug?: string | null
           tier?: Database["public"]["Enums"]["business_tier"]
           tiktok_handle?: string | null
+          total_reviews?: number
+          total_visits?: number
           type?: Database["public"]["Enums"]["business_type"]
           updated_at?: string
           venue_id?: string | null
@@ -140,9 +150,14 @@ export type Database = {
           logo_url?: string | null
           monthly_credits_cents?: number
           owner_user_id?: string
+          pro_tier?: string | null
+          pro_until?: string | null
+          reputation_score?: number
           slug?: string | null
           tier?: Database["public"]["Enums"]["business_tier"]
           tiktok_handle?: string | null
+          total_reviews?: number
+          total_visits?: number
           type?: Database["public"]["Enums"]["business_type"]
           updated_at?: string
           venue_id?: string | null
@@ -151,6 +166,158 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      business_battles: {
+        Row: {
+          business_id: string
+          category: string
+          city_id: string | null
+          created_at: string
+          id: string
+          score: number
+          stake_cents: number
+          week_start: string
+        }
+        Insert: {
+          business_id: string
+          category: string
+          city_id?: string | null
+          created_at?: string
+          id?: string
+          score?: number
+          stake_cents?: number
+          week_start?: string
+        }
+        Update: {
+          business_id?: string
+          category?: string
+          city_id?: string | null
+          created_at?: string
+          id?: string
+          score?: number
+          stake_cents?: number
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_battles_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_battles_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_offers: {
+        Row: {
+          active: boolean
+          business_id: string
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          image_url: string | null
+          max_redemptions: number | null
+          min_user_rating: number | null
+          redeemed_count: number
+          reward_text: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          business_id: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          max_redemptions?: number | null
+          min_user_rating?: number | null
+          redeemed_count?: number
+          reward_text: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          business_id?: string
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          max_redemptions?: number | null
+          min_user_rating?: number | null
+          redeemed_count?: number
+          reward_text?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_offers_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_reviews: {
+        Row: {
+          business_id: string
+          check_in_id: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          reviewer_id: string
+          updated_at: string
+        }
+        Insert: {
+          business_id: string
+          check_in_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          reviewer_id: string
+          updated_at?: string
+        }
+        Update: {
+          business_id?: string
+          check_in_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          reviewer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_reviews_check_in_id_fkey"
+            columns: ["check_in_id"]
+            isOneToOne: false
+            referencedRelation: "check_ins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       campaign_events: {
         Row: {
@@ -796,6 +963,48 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      offer_redemptions: {
+        Row: {
+          check_in_id: string | null
+          code: string
+          id: string
+          offer_id: string
+          redeemed_at: string
+          user_id: string
+        }
+        Insert: {
+          check_in_id?: string | null
+          code?: string
+          id?: string
+          offer_id: string
+          redeemed_at?: string
+          user_id: string
+        }
+        Update: {
+          check_in_id?: string | null
+          code?: string
+          id?: string
+          offer_id?: string
+          redeemed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_redemptions_check_in_id_fkey"
+            columns: ["check_in_id"]
+            isOneToOne: false
+            referencedRelation: "check_ins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_redemptions_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "business_offers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       parties: {
         Row: {
@@ -1444,6 +1653,10 @@ export type Database = {
       can_view_profile: {
         Args: { _target: string; _viewer: string }
         Returns: boolean
+      }
+      claim_business_offer: {
+        Args: { _check_in_id?: string; _offer_id: string }
+        Returns: Json
       }
       claim_profile_boost: { Args: never; Returns: Json }
       get_business_contact: {
