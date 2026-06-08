@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, X, Upload } from "lucide-react";
 import { toast } from "sonner";
@@ -402,13 +403,15 @@ function StoryUploadSheet({
     }
   }, [file]);
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 pb-24 sm:pb-24 animate-fade-in"
+      className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:pb-4 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="w-full sm:max-w-md bg-zinc-900/70 backdrop-blur-3xl border border-white/10 rounded-t-[32px] sm:rounded-[32px] p-5 space-y-5 max-h-[calc(100vh-7rem)] overflow-y-auto shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] animate-scale-in"
+        className="w-full sm:max-w-md bg-zinc-900/70 backdrop-blur-3xl border border-white/10 rounded-t-[32px] sm:rounded-[32px] p-5 space-y-5 max-h-[calc(100dvh-10rem-env(safe-area-inset-bottom))] sm:max-h-[92dvh] overflow-y-auto shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -483,7 +486,8 @@ function StoryUploadSheet({
           </div>
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
