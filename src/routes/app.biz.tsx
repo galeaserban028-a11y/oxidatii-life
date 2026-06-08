@@ -123,10 +123,10 @@ function BizPage() {
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Business · Promovare</span>
         </div>
         <h1 className="font-display uppercase text-3xl leading-[0.95] tracking-tight">
-          Promovează <span className="text-gradient-chaos">cum vrei tu.</span>
+          Alege simplu <span className="text-gradient-chaos">ce vrei azi.</span>
         </h1>
         <p className="text-xs text-zinc-400">
-          6 tipuri de reclamă · poze · targeting · plătești doar ce consumi.
+          Încarci bani, pornești reclama, vezi rezultatul. Fără panou complicat.
         </p>
       </header>
 
@@ -241,7 +241,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 
       </div>
 
-      <div className="p-4 -mt-10 relative space-y-3">
+      <div className="p-4 -mt-10 relative space-y-4">
         <div className="flex items-end gap-3">
           <div className="w-14 h-14 rounded-xl bg-background border-2 border-background overflow-hidden flex-shrink-0">
             {business.logo_url ? <img src={business.logo_url} alt="" className="w-full h-full object-cover" />
@@ -257,47 +257,24 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 
         {business.description && <p className="text-xs text-muted-foreground line-clamp-2">{business.description}</p>}
 
-        {/* Wallet */}
-        <div className="rounded-xl bg-gradient-to-br from-neon-purple/10 to-neon-crimson/10 border border-foreground/10 p-3 flex items-center justify-between gap-3">
-          <div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground flex items-center gap-1">
-              <Wallet size={10} /> Wallet
-            </div>
-            <div className="font-display text-2xl leading-none mt-0.5">
-              {ron(business.wallet_balance_cents)} <span className="text-xs text-muted-foreground">RON</span>
-            </div>
-            <div className="text-[9px] text-muted-foreground mt-1">Card · Revolut · Apple/Google Pay · SEPA</div>
-          </div>
-          <button
-            onClick={onTopup}
-            className="font-display uppercase text-[11px] tracking-widest px-4 py-2.5 rounded-md text-white flex items-center gap-1.5"
-            style={{ background: "var(--gradient-chaos)" }}
-          >
-            <Plus size={12} /> Top-up
-          </button>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2">
-          <Stat icon={<TrendingUp size={11} />} label="Spent" value={`${ron(totalSpent)} RON`} />
-          <Stat icon={<Eye size={11} />} label="Views" value={totalImpressions.toLocaleString()} />
-          <Stat icon={<MousePointerClick size={11} />} label="Clicks" value={totalClicks.toLocaleString()} />
-        </div>
-
-        <button onClick={() => hasCampaignFunds ? setBuilderOpen(true) : onTopup()}
-          className="w-full font-display uppercase text-[12px] tracking-widest px-4 py-3 rounded-md text-white flex items-center justify-center gap-1.5 disabled:opacity-50"
-          style={{ background: "var(--gradient-chaos)" }}>
-          <Megaphone size={13} /> {hasCampaignFunds ? "Pornește campania" : "Adaugă fonduri pentru campanie"}
-        </button>
-        {!hasCampaignFunds && (
-          <div className="text-[10px] text-muted-foreground text-center">
-            Ai nevoie de minim 50 RON în wallet ca să lansezi prima campanie.
-          </div>
-        )}
+        <SimpleBizMap
+          balanceCents={business.wallet_balance_cents ?? 0}
+          activeCount={activeCount}
+          totalSpent={totalSpent}
+          totalImpressions={totalImpressions}
+          totalClicks={totalClicks}
+          onTopup={onTopup}
+          onCampaign={() => hasCampaignFunds ? setBuilderOpen(true) : onTopup()}
+        />
 
         {/* Campaign list */}
         {campaigns.length > 0 && (
-          <div className="space-y-1.5">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">campanii</div>
+          <details className="rounded-xl bg-foreground/[0.03] border border-foreground/10 overflow-hidden">
+            <summary className="cursor-pointer list-none px-3 py-3 flex items-center justify-between gap-3">
+              <span className="text-sm font-medium">Campaniile tale</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{campaigns.length} total · {activeCount} active</span>
+            </summary>
+            <div className="space-y-1.5 px-3 pb-3">
             {campaigns.map((c) => {
               const placement = PLACEMENTS.find((p) => p.value === c.kind);
               const Icon = placement?.icon ?? Rocket;
@@ -341,7 +318,8 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
                 </div>
               );
             })}
-          </div>
+            </div>
+          </details>
         )}
 
         <BizUniquePanel business={business} />
@@ -364,6 +342,94 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
         <CampaignEditor business={business} campaign={editCampaign}
           onClose={() => setEditCampaign(null)}
           onSaved={() => { setEditCampaign(null); qc.invalidateQueries({ queryKey: ["biz"] }); }} />
+      )}
+    </div>
+  );
+}
+
+function SimpleBizMap({ balanceCents, activeCount, totalSpent, totalImpressions, totalClicks, onTopup, onCampaign }: {
+  balanceCents: number;
+  activeCount: number;
+  totalSpent: number;
+  totalImpressions: number;
+  totalClicks: number;
+  onTopup: () => void;
+  onCampaign: () => void;
+}) {
+  const hasFunds = balanceCents >= 5000;
+  const steps = [
+    {
+      n: "1",
+      title: "Încarcă buget",
+      text: `${ron(balanceCents)} RON disponibili`,
+      action: "Top-up",
+      icon: Wallet,
+      onClick: onTopup,
+      active: !hasFunds,
+    },
+    {
+      n: "2",
+      title: "Pornește reclama",
+      text: hasFunds ? "Ai minimul necesar pentru start" : "Minim 50 RON pentru prima campanie",
+      action: hasFunds ? "Creează" : "Adaugă 50 RON",
+      icon: Megaphone,
+      onClick: onCampaign,
+      active: hasFunds,
+    },
+    {
+      n: "3",
+      title: "Urmărește rezultatul",
+      text: `${activeCount} active · ${totalImpressions.toLocaleString()} views · ${totalClicks.toLocaleString()} click-uri`,
+      action: null,
+      icon: TrendingUp,
+      onClick: undefined,
+      active: activeCount > 0,
+    },
+  ];
+
+  return (
+    <div className="rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/[0.025]">
+      <div className="p-4 border-b border-foreground/10 flex items-start justify-between gap-3">
+        <div>
+          <div className="font-display uppercase text-xl leading-none">Planul tău</div>
+          <p className="text-xs text-muted-foreground mt-1">3 pași clari. Nu trebuie să alegi din zeci de opțiuni.</p>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <div className="font-display text-2xl leading-none">{ron(balanceCents)}</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">RON wallet</div>
+        </div>
+      </div>
+
+      <div className="divide-y divide-foreground/10">
+        {steps.map((s) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.n} className={`p-3 flex items-center gap-3 ${s.active ? "bg-primary/5" : ""}`}>
+              <div className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 ${s.active ? "bg-primary text-primary-foreground" : "bg-foreground/5 text-muted-foreground"}`}>
+                <Icon size={16} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-muted-foreground">{s.n}</span>
+                  <span className="text-sm font-medium truncate">{s.title}</span>
+                </div>
+                <div className="text-[11px] text-muted-foreground truncate">{s.text}</div>
+              </div>
+              {s.action && s.onClick && (
+                <button onClick={s.onClick} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium flex-shrink-0">
+                  {s.action}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {totalSpent > 0 && (
+        <div className="px-4 py-2.5 bg-background/40 text-[11px] text-muted-foreground flex items-center justify-between">
+          <span>Cheltuit până acum</span>
+          <span className="font-medium text-foreground">{ron(totalSpent)} RON</span>
+        </div>
       )}
     </div>
   );

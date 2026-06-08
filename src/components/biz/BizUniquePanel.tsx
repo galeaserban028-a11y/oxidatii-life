@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Star, Gift, Swords, Crown, Plus, Trash2, X, Check, Trophy,
-  ChevronDown, MapPin, MessageSquare, BarChart3, ShieldCheck,
+  ChevronDown, MapPin, MessageSquare, BarChart3, ShieldCheck, Wallet,
 } from "lucide-react";
 import { BizProEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 
@@ -132,7 +132,7 @@ function ProUpgradeCard({ business }: { business: any }) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium flex items-center gap-1.5">
-            Verified Pro <ShieldCheck size={13} className="text-yellow-400" />
+            Pro Business activ <ShieldCheck size={13} className="text-yellow-400" />
           </div>
           <div className="text-[11px] text-zinc-400">
             Activ până {new Date(business.pro_until).toLocaleDateString("ro-RO")}
@@ -143,10 +143,10 @@ function ProUpgradeCard({ business }: { business: any }) {
   }
 
   const benefits = [
-    { icon: ShieldCheck, label: "Badge verde verificat" },
-    { icon: MapPin, label: "Pin permanent pe hartă" },
-    { icon: MessageSquare, label: "Răspunzi la review-uri" },
-    { icon: BarChart3, label: "Statistici avansate" },
+    { icon: Wallet, label: "primești 50 RON credite lunar" },
+    { icon: ShieldCheck, label: "badge Pro pe brand" },
+    { icon: MapPin, label: "mai multă încredere pe hartă" },
+    { icon: BarChart3, label: "vezi ce reclame merg" },
   ];
 
   return (
@@ -164,9 +164,9 @@ function ProUpgradeCard({ business }: { business: any }) {
             <Crown size={20} className="text-yellow-400" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold">Devino Verified Pro</div>
+            <div className="text-sm font-semibold">Pro Business, fără confuzie</div>
             <div className="text-[11px] text-zinc-400 mt-0.5">
-              Apari mai sus în Discover. Userii au mai multă încredere.
+              Plătești 49 RON/lună și primești 50 RON credit pentru promovare.
             </div>
           </div>
           <div className="text-right">
@@ -191,10 +191,10 @@ function ProUpgradeCard({ business }: { business: any }) {
           className="w-full py-3 rounded-xl font-medium text-sm text-black transition-transform active:scale-[0.98]"
           style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)" }}
         >
-          Activează Pro · 49 RON/lună
+          Activează Pro Business
         </button>
         <div className="text-[10px] text-zinc-500 text-center -mt-2">
-          Anulezi oricând. Acces până la final de perioadă.
+          Anulezi oricând. Dacă oprești, rămâne activ până la finalul perioadei.
         </div>
       </div>
 
