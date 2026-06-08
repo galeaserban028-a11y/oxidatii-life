@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { createWalletTopupCheckout } from "@/lib/wallet-topup.functions";
@@ -19,13 +19,13 @@ export function WalletTopupDialog({
   onClose: () => void;
 }) {
   const [amount, setAmount] = useState<number>(PACKAGES[0]);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [checkoutReady, setCheckoutReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) {
-      setClientSecret(null);
+      setCheckoutReady(false);
       setError(null);
       setAmount(PACKAGES[0]);
     }
@@ -41,24 +41,28 @@ export function WalletTopupDialog({
     setLoading(true);
     setError(null);
     try {
-      const result = await createWalletTopupCheckout({
-        data: {
-          businessId,
-          amount,
-          currency: CURRENCY,
-          returnUrl: `${window.location.origin}/app/biz?topup=success&session_id={CHECKOUT_SESSION_ID}`,
-          environment: getStripeEnvironment(),
-        },
-      });
-      if ("error" in result) throw new Error(result.error);
-      if (!result.clientSecret) throw new Error("Lipsește client secret");
-      setClientSecret(result.clientSecret);
+      setCheckoutReady(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Eroare necunoscută");
     } finally {
       setLoading(false);
     }
   };
+
+  const fetchClientSecret = useCallback(async (): Promise<string> => {
+    const result = await createWalletTopupCheckout({
+      data: {
+        businessId,
+        amount,
+        currency: CURRENCY,
+        returnUrl: `${window.location.origin}/app/biz?topup=success&session_id={CHECKOUT_SESSION_ID}`,
+        environment: getStripeEnvironment(),
+      },
+    });
+    if ("error" in result) throw new Error(result.error);
+    if (!result.clientSecret) throw new Error("Lipsește client secret");
+    return result.clientSecret;
+  }, [amount, businessId]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
@@ -73,9 +77,9 @@ export function WalletTopupDialog({
           </button>
         </div>
 
-        {clientSecret ? (
+        {checkoutReady ? (
           <div className="p-2">
-            <EmbeddedCheckoutProvider stripe={getStripe()} options={{ clientSecret }}>
+            <EmbeddedCheckoutProvider stripe={getStripe()} options={{ fetchClientSecret }}>
               <EmbeddedCheckout />
             </EmbeddedCheckoutProvider>
           </div>
