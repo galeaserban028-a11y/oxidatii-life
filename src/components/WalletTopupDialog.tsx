@@ -4,29 +4,10 @@ import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { createWalletTopupCheckout } from "@/lib/wallet-topup.functions";
 import { X, Wallet } from "lucide-react";
 
-type Currency = "ron" | "eur";
-
-const PACKAGES: Record<Currency, number[]> = {
-  ron: [50, 100, 250, 500],
-  eur: [10, 20, 50, 100],
-};
-
-const MIN: Record<Currency, number> = { ron: 50, eur: 10 };
-
-async function detectCurrency(): Promise<Currency> {
-  try {
-    const res = await fetch("https://www.cloudflare.com/cdn-cgi/trace", { cache: "no-store" });
-    const txt = await res.text();
-    const m = txt.match(/loc=([A-Z]{2})/);
-    if (m && m[1] === "RO") return "ron";
-    if (m && m[1] !== "RO") return "eur";
-  } catch {
-    /* fallback below */
-  }
-  // Fallback: locale
-  const lang = navigator.language?.toLowerCase() || "";
-  return lang.startsWith("ro") ? "ron" : "eur";
-}
+const PACKAGES = [50, 100, 250];
+const MIN_AMOUNT = 50;
+const CURRENCY = "ron" as const;
+const SYMBOL = "RON";
 
 export function WalletTopupDialog({
   businessId,
@@ -37,39 +18,24 @@ export function WalletTopupDialog({
   open: boolean;
   onClose: () => void;
 }) {
-  const [currency, setCurrency] = useState<Currency | null>(null);
-  const [amount, setAmount] = useState<number>(0);
-  const [customStr, setCustomStr] = useState("");
+  const [amount, setAmount] = useState<number>(PACKAGES[0]);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) return;
-    detectCurrency().then((c) => {
-      setCurrency(c);
-      setAmount(PACKAGES[c][1]);
-    });
-  }, [open]);
-
-  useEffect(() => {
     if (!open) {
       setClientSecret(null);
       setError(null);
-      setAmount(0);
-      setCustomStr("");
+      setAmount(PACKAGES[0]);
     }
   }, [open]);
 
   if (!open) return null;
 
-  const symbol = currency === "ron" ? "RON" : "EUR";
-
   const startCheckout = async () => {
-    if (!currency) return;
-    const finalAmount = customStr ? parseFloat(customStr) : amount;
-    if (!finalAmount || finalAmount < MIN[currency]) {
-      setError(`Sumă minimă: ${MIN[currency]} ${symbol}`);
+    if (!amount || amount < MIN_AMOUNT) {
+      setError(`Sumă minimă: ${MIN_AMOUNT} ${SYMBOL}`);
       return;
     }
     setLoading(true);
@@ -78,8 +44,8 @@ export function WalletTopupDialog({
       const result = await createWalletTopupCheckout({
         data: {
           businessId,
-          amount: finalAmount,
-          currency,
+          amount,
+          currency: CURRENCY,
           returnUrl: `${window.location.origin}/app/biz?topup=success&session_id={CHECKOUT_SESSION_ID}`,
           environment: getStripeEnvironment(),
         },
