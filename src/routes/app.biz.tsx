@@ -200,6 +200,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
   const totalImpressions = campaigns.reduce((s, c) => s + (c.impressions || 0), 0);
   const totalClicks = campaigns.reduce((s, c) => s + (c.clicks || 0), 0);
   const activeCount = campaigns.filter((c) => c.status === "active").length;
+  const hasCampaignFunds = business.wallet_balance_cents >= 5000;
 
   const toggleCampaign = async (c: any) => {
     const next = c.status === "active" ? "paused" : "active";
@@ -282,15 +283,14 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
           <Stat icon={<MousePointerClick size={11} />} label="Clicks" value={totalClicks.toLocaleString()} />
         </div>
 
-        <button onClick={() => setBuilderOpen(true)}
-          disabled={business.wallet_balance_cents < 100}
+        <button onClick={() => hasCampaignFunds ? setBuilderOpen(true) : onTopup()}
           className="w-full font-display uppercase text-[12px] tracking-widest px-4 py-3 rounded-md text-white flex items-center justify-center gap-1.5 disabled:opacity-50"
           style={{ background: "var(--gradient-chaos)" }}>
-          <Megaphone size={13} /> Pornește campania
+          <Megaphone size={13} /> {hasCampaignFunds ? "Pornește campania" : "Adaugă fonduri pentru campanie"}
         </button>
-        {business.wallet_balance_cents < 100 && (
+        {!hasCampaignFunds && (
           <div className="text-[10px] text-muted-foreground text-center">
-            Adaugă cel puțin 1 RON ca să poți lansa o campanie.
+            Ai nevoie de minim 50 RON în wallet ca să lansezi prima campanie.
           </div>
         )}
 
