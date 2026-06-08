@@ -31,8 +31,6 @@ export function WalletTopupDialog({
     }
   }, [open]);
 
-  if (!open) return null;
-
   const startCheckout = async () => {
     if (!amount || amount < MIN_AMOUNT) {
       setError(`Sumă minimă: ${MIN_AMOUNT} ${SYMBOL}`);
@@ -63,6 +61,8 @@ export function WalletTopupDialog({
     if (!result.clientSecret) throw new Error("Lipsește client secret");
     return result.clientSecret;
   }, [amount, businessId]);
+
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
