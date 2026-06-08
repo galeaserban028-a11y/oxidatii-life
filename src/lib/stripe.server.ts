@@ -62,7 +62,20 @@ export function getCheckoutClientSecret(session: unknown): string {
   if (!session || typeof session !== "object") return "";
   const value = (session as { client_secret?: unknown; clientSecret?: unknown }).client_secret
     ?? (session as { clientSecret?: unknown }).clientSecret;
-  return typeof value === "string" ? value : "";
+  if (typeof value === "string") return value;
+
+  const seen = new WeakSet<object>();
+  const scan = (input: unknown, depth: number): string => {
+    if (typeof input === "string" && input.startsWith("cs_") && input.includes("_secret_")) return input;
+    if (!input || typeof input !== "object" || depth > 4 || seen.has(input)) return "";
+    seen.add(input);
+    for (const nested of Object.values(input as Record<string, unknown>)) {
+      const found = scan(nested, depth + 1);
+      if (found) return found;
+    }
+    return "";
+  };
+  return scan(session, 0);
 }
 
 export async function verifyWebhook(req: Request, env: StripeEnv): Promise<{ type: string; data: { object: any } }> {
