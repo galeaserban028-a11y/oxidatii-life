@@ -65,7 +65,7 @@ export const createBizProCheckout = createServerFn({ method: "POST" })
       const session = await stripe.checkout.sessions.create({
         line_items: [{ price: price.id, quantity: 1 }],
         mode: "subscription",
-        ui_mode: "embedded_page",
+        ui_mode: "embedded",
         return_url: data.returnUrl,
         customer: customerId,
         metadata: { userId, kind: "biz_pro", business_id: data.businessId },

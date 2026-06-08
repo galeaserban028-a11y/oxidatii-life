@@ -64,7 +64,7 @@ export const createWalletTopupCheckout = createServerFn({ method: "POST" })
           quantity: 1,
         }],
         mode: "payment",
-        ui_mode: "embedded_page",
+        ui_mode: "embedded",
         return_url: data.returnUrl,
         customer: customerId,
         payment_intent_data: {
