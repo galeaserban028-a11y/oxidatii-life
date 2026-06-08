@@ -310,14 +310,14 @@ function MePage() {
         </Sheet>
       </header>
 
-      <div className="px-4 pt-4">
+      <div className="px-5 pt-6">
         {/* Avatar + stats row */}
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-6">
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="relative h-[88px] w-[88px] rounded-full p-[2px] bg-gradient-to-tr from-neon-crimson via-neon-purple to-neon-green shrink-0 active:scale-95 transition"
+            className="relative h-[88px] w-[88px] rounded-full p-[2px] bg-gradient-to-tr from-[#ff0099] to-[#6600ff] shadow-[0_0_18px_rgba(255,0,153,0.25)] shrink-0 active:scale-95 transition"
             aria-label="Schimbă poza de profil"
           >
             <div className={`h-full w-full rounded-full overflow-hidden bg-background flex items-center justify-center text-3xl font-display ${activeFrame?.css_class ?? ""}`}>
@@ -327,8 +327,8 @@ function MePage() {
                 (profile.handle ?? "?")[0].toUpperCase()
               )}
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 h-6 w-6 rounded-full bg-foreground text-background flex items-center justify-center ring-[3px] ring-background">
-              <Camera size={12} strokeWidth={2.6} />
+            <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#1a1a1a] border border-white/10 text-zinc-300 flex items-center justify-center shadow-lg">
+              <Camera size={13} strokeWidth={2.4} />
             </div>
             {uploading && (
               <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center text-[10px] font-mono uppercase">…</div>
@@ -356,21 +356,21 @@ function MePage() {
         </div>
 
         {/* Bio block */}
-        <div className="mt-3">
-          <div className="font-display uppercase text-[15px] leading-tight flex items-center gap-2 flex-wrap">
+        <div className="mt-6 space-y-1">
+          <div className="font-display uppercase text-[18px] leading-tight flex items-center gap-2 flex-wrap tracking-tight">
             <span>{profile.display_name || `@${profile.handle ?? "—"}`}</span>
             <PremiumBadge tier={(profile as any).premium_tier} size="sm" />
           </div>
           {profile.display_name && profile.handle && (
-            <div className="text-[12px] font-mono text-muted-foreground mt-0.5">@{profile.handle}</div>
+            <div className="text-[12px] font-mono text-muted-foreground">@{profile.handle}</div>
           )}
-          <div className="text-[10px] font-mono uppercase tracking-widest text-neon-crimson mt-0.5">
+          <div className="text-[10px] font-mono uppercase tracking-widest text-neon-crimson pt-1">
             {RANK_LABELS[profile.rank] ?? profile.rank}
           </div>
           {(profile as any).bio && (
-            <p className="text-[13px] text-foreground/80 mt-1 whitespace-pre-line">{(profile as any).bio}</p>
+            <p className="text-[13px] text-foreground/80 pt-2 whitespace-pre-line leading-relaxed">{(profile as any).bio}</p>
           )}
-          <div className="text-[12px] text-muted-foreground mt-1">
+          <div className="text-[12px] text-muted-foreground pt-1">
             aură <span className="text-neon-purple font-mono">{profile.aura ?? 0}</span>
             {moments?.city && <> · din <span className="text-foreground">{moments.city.name}</span></>}
           </div>
@@ -380,25 +380,25 @@ function MePage() {
         {!(profile as any).premium_tier && (
           <Link
             to="/app/premium"
-            className="mt-3 flex items-center gap-3 rounded-2xl border border-fuchsia-400/30 bg-gradient-to-r from-amber-300/10 via-fuchsia-500/15 to-violet-600/15 p-3 active:scale-[0.99] transition"
+            className="mt-8 flex items-center gap-4 rounded-2xl border border-white/5 bg-gradient-to-br from-indigo-600/15 via-purple-600/10 to-transparent p-4 active:scale-[0.99] transition group"
           >
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-cyan-300 via-fuchsia-400 to-amber-300 text-black flex items-center justify-center shadow-[0_0_18px_rgba(244,114,182,0.5)]">
-              <span className="text-base">💎</span>
+            <div className="h-11 w-11 rounded-xl bg-indigo-500/10 flex items-center justify-center shadow-inner">
+              <Gem size={18} className="text-indigo-300" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-display uppercase text-[13px]">Devino VIP, PRO sau ELITE</div>
-              <div className="text-[11px] text-muted-foreground">Badge, frame, teme, șprițuri · de la 2.99 lei</div>
+              <div className="font-display uppercase text-[12px] tracking-wider text-white">Devino VIP, PRO sau ELITE</div>
+              <div className="text-[10px] text-zinc-500 mt-0.5">Badge, frame, teme, șprițuri · de la 2.99 lei</div>
             </div>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-fuchsia-300">Vezi</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 group-hover:text-white transition-colors">Vezi →</span>
           </Link>
         )}
 
-        <div className="mt-3 space-y-3">
+        <div className="mt-8 space-y-3">
           <ProfileBoostCard />
           <PremiumExtrasCard />
         </div>
 
-        <div className="mt-3">
+        <div className="mt-8">
           <ReputationCard
             userId={user.id}
             sprits={profile.lifetime_sprits ?? 0}
@@ -413,31 +413,31 @@ function MePage() {
           />
         </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-2">
+        <div className="mt-8 grid grid-cols-2 gap-4">
           <Link
             to="/app/discover"
-            className="flex items-center gap-2 rounded-2xl border border-neon-purple/30 bg-gradient-to-r from-neon-purple/10 to-neon-crimson/10 p-3 active:scale-[0.99] transition"
+            className="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
           >
-            <div className="h-9 w-9 rounded-xl bg-foreground/10 flex items-center justify-center shrink-0">
-              <svg className="w-4 h-4 text-neon-purple" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center">
+              <svg className="w-5 h-5 text-pink-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
               </svg>
             </div>
-            <div className="min-w-0">
-              <div className="font-display uppercase text-xs leading-tight">Caută oameni</div>
-              <div className="text-[10px] text-muted-foreground truncate">dă follow</div>
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-wider">Caută oameni</div>
+              <div className="text-[10px] text-zinc-500 mt-0.5">dă follow</div>
             </div>
           </Link>
           <Link
             to="/app/shop"
-            className="flex items-center gap-2 rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-500/15 to-orange-500/10 p-3 active:scale-[0.99] transition"
+            className="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
           >
-            <div className="h-9 w-9 rounded-xl bg-amber-400/15 flex items-center justify-center shrink-0">
-              <Gem size={16} className="text-amber-300" />
+            <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+              <Gem size={18} className="text-amber-400 group-hover:scale-110 transition-transform" />
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="font-display uppercase text-xs leading-tight">Bar</div>
-              <div className="text-[10px] text-amber-300 truncate">{profile.coin_balance ?? 0} {(profile.coin_balance ?? 0) === 1 ? "șpriț" : "șprițuri"} · dă rândul</div>
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-wider">Bar</div>
+              <div className="text-[10px] text-zinc-500 mt-0.5">{profile.coin_balance ?? 0} {(profile.coin_balance ?? 0) === 1 ? "șpriț" : "șprițuri"} · dă rândul</div>
             </div>
           </Link>
         </div>
