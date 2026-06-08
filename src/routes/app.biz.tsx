@@ -222,7 +222,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 
 
   return (
-    <div className="rounded-2xl bg-foreground/[0.03] border border-foreground/10 overflow-hidden">
+    <div className="rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur overflow-hidden">
       {/* Cover */}
       <div className="relative h-28 bg-gradient-to-br from-neon-purple/30 to-neon-crimson/30 overflow-hidden">
         {business.cover_url && <img src={business.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover" />}
