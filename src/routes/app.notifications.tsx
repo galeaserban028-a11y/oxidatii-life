@@ -54,16 +54,17 @@ function NotificationsPage() {
   }
 
   return (
-    <div className="px-5 pt-5 pb-10 max-w-xl mx-auto space-y-4">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="font-display uppercase text-2xl leading-none">Notificări</h1>
-          <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground mt-1">
-            cine te-a căutat în noaptea asta
-          </p>
+    <div className="px-5 pt-8 pb-12 max-w-xl mx-auto space-y-7">
+      <header className="flex items-end justify-between gap-3">
+        <div className="space-y-2">
+          <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">activitate</div>
+          <h1 className="font-display uppercase text-3xl leading-[0.95]">Notificări.</h1>
+          <p className="text-xs text-zinc-500">cine te-a căutat în noaptea asta</p>
         </div>
-        <Bell size={22} className="text-muted-foreground shrink-0" />
-      </div>
+        <div className="h-11 w-11 rounded-2xl bg-zinc-900/30 border border-white/5 flex items-center justify-center shrink-0">
+          <Bell size={18} className="text-zinc-400" />
+        </div>
+      </header>
 
       <NotificationSettings />
 
@@ -104,8 +105,8 @@ function NotificationItem({
 
   return (
     <li
-      className={`flex items-center gap-3 p-3 rounded-2xl border bg-card transition ${
-        n.read_at ? "border-border" : "border-sunset-orange/40 bg-card/80"
+      className={`flex items-center gap-3 p-3 rounded-2xl border transition ${
+        n.read_at ? "border-white/5 bg-zinc-900/30" : "border-neon-crimson/30 bg-zinc-900/40"
       }`}
     >
       {n.actor?.id ? (

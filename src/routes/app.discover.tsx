@@ -113,11 +113,11 @@ function DiscoverPage() {
   const list = q.trim().length >= 2 ? (results ?? []) : (suggestions ?? []);
 
   return (
-    <div className="px-4 pt-5 pb-6 space-y-5">
-      <header>
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-purple">// CAUTĂ OAMENI</div>
-        <h1 className="font-display uppercase text-2xl mt-1 leading-none">Găsește lumea.</h1>
-        <p className="text-xs text-muted-foreground mt-1">Caută după @handle sau nume și dă-le follow.</p>
+    <div className="px-5 pt-8 pb-8 space-y-7">
+      <header className="space-y-3">
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">caută oameni</div>
+        <h1 className="font-display uppercase text-3xl leading-[0.95]">Găsește lumea.</h1>
+        <p className="text-xs text-zinc-500">Caută după @handle sau nume și dă-le follow.</p>
       </header>
 
       <div className="relative">
@@ -125,15 +125,15 @@ function DiscoverPage() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="@handle sau nume..."
-          className="w-full p-3 pl-10 rounded-xl bg-foreground/[0.05] border border-foreground/15 text-sm focus:outline-none focus:border-neon-purple/50 transition-colors"
+          className="w-full p-3.5 pl-11 rounded-2xl bg-zinc-900/30 border border-white/5 text-sm focus:outline-none focus:border-neon-purple/40 transition-colors backdrop-blur"
         />
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
         </svg>
       </div>
 
       {q.trim().length < 2 && (
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">sugestii populare</div>
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 pt-2">sugestii populare</div>
       )}
 
       {isFetching && q.trim().length >= 2 ? (

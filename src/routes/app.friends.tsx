@@ -104,19 +104,19 @@ function FriendsPage() {
   }
 
   return (
-    <div className="px-4 pt-5 pb-6 space-y-5">
-      <header>
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-green">// PRIETENI</div>
-        <h1 className="font-display uppercase text-2xl mt-1 leading-none">Băieții tăi.</h1>
-        <p className="text-xs text-muted-foreground mt-1">Adaugă prieteni după @handle ca să-i vezi pe hartă când ies în oraș.</p>
+    <div className="px-5 pt-8 pb-8 space-y-7">
+      <header className="space-y-3">
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">prieteni</div>
+        <h1 className="font-display uppercase text-3xl leading-[0.95]">Băieții tăi.</h1>
+        <p className="text-xs text-zinc-500">Adaugă-i după @handle ca să-i vezi pe hartă când ies în oraș.</p>
       </header>
 
       {/* Step-by-step visual */}
-      <div className="rounded-xl border border-foreground/10 p-4 space-y-3 bg-foreground/[0.02]">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">cum adaugi prieteni</div>
+      <div className="rounded-2xl border border-white/5 bg-zinc-900/30 backdrop-blur p-5 space-y-4">
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">cum adaugi prieteni</div>
         <div className="flex items-center gap-3">
           <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">1</div>
-          <p className="text-sm">Scrie @handle-ul sau numele în căsuța de mai jos</p>
+          <p className="text-sm">Scrie @handle-ul sau numele mai jos</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">2</div>
@@ -124,7 +124,7 @@ function FriendsPage() {
         </div>
         <div className="flex items-center gap-3">
           <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">3</div>
-          <p className="text-sm">Când acceptă, îl vezi <span className="text-neon-purple font-display">live pe hartă</span> când iese</p>
+          <p className="text-sm">Când acceptă, îl vezi <span className="text-neon-purple font-display">live pe hartă</span></p>
         </div>
       </div>
 
@@ -135,9 +135,9 @@ function FriendsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="@handle sau nume..."
-            className="w-full p-3 pl-10 rounded-xl bg-foreground/[0.05] border border-foreground/15 text-sm focus:outline-none focus:border-neon-crimson/50 transition-colors"
+            className="w-full p-3.5 pl-11 rounded-2xl bg-zinc-900/30 border border-white/5 text-sm focus:outline-none focus:border-neon-crimson/40 transition-colors backdrop-blur"
           />
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
           </svg>
         </div>

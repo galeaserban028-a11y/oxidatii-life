@@ -160,20 +160,19 @@ function FeedPage() {
   }
 
   return (
-    <div className="px-4 pt-5 pb-24 space-y-4">
-      <header className="space-y-1">
+    <div className="px-5 pt-8 pb-24 space-y-8">
+      <header className="space-y-3">
         <div className="flex items-center gap-2">
-          <Lock size={11} className="text-neon-crimson" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-crimson">
-            // FEED PRIVAT
+          <Lock size={10} className="text-zinc-500" />
+          <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+            feed privat
           </span>
         </div>
-        <h1 className="font-display uppercase text-2xl leading-none tracking-tight">
+        <h1 className="font-display uppercase text-3xl leading-[0.95] tracking-tight">
           Doar tu <span className="text-gradient-chaos">& trupa ta.</span>
         </h1>
-        <p className="text-xs text-muted-foreground">
-          Cele mai tari momente și recomandări de la oamenii pe care îi urmărești cu accept.
-          Doar voi vedeți astea.
+        <p className="text-xs text-zinc-500 max-w-sm">
+          Momente și recomandări de la oamenii pe care îi urmărești cu accept. Doar voi vedeți astea.
         </p>
       </header>
 
