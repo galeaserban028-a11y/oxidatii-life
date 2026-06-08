@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useFollowStats, useIncomingFollowRequests } from "@/lib/follows";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { ShieldAlert } from "lucide-react";
+import { StoriesStrip } from "@/components/app/StoriesStrip";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { ReputationCard } from "@/components/app/ReputationCard";
@@ -555,8 +556,10 @@ function MePage() {
 
       </div>
 
-      <div className="mt-3 border-t border-foreground/10" />
+      {/* Stories — propriile story-uri + prieteni */}
+      <StoriesStrip />
 
+      <div className="mt-3 border-t border-foreground/10" />
 
       {/* Grid moments */}
       {tabMoments.length === 0 ? (
