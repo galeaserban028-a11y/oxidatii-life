@@ -343,6 +343,8 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
             })}
           </div>
         )}
+
+        <BizUniquePanel business={business} />
       </div>
 
       {builderOpen && (
