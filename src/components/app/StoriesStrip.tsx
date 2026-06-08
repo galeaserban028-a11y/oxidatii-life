@@ -83,6 +83,32 @@ async function loadStories(viewerId: string) {
   return { groups };
 }
 
+// ─── helpers ──────────────────────────────────────────────────────────────
+
+const GRADIENTS: { bg: string; glow: string }[] = [
+  { bg: "linear-gradient(to top right, #ff3158, #ff8c31)", glow: "rgba(255,49,88,0.3)" },
+  { bg: "linear-gradient(to top right, #8a2be2, #ff3158)", glow: "rgba(138,43,226,0.3)" },
+  { bg: "linear-gradient(to bottom right, #ff3158, #ed1e79, #ff8c31)", glow: "rgba(237,30,121,0.3)" },
+  { bg: "linear-gradient(to top right, #f97316, #ed1e79, #8a2be2)", glow: "rgba(249,115,22,0.3)" },
+  { bg: "linear-gradient(to bottom right, #8a2be2, #4f46e5, #ff3158)", glow: "rgba(79,70,229,0.3)" },
+];
+
+function pickGradient(seed: string) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  return GRADIENTS[Math.abs(h) % GRADIENTS.length];
+}
+
+function Cover({ cover, avatar, fallback }: { cover: string | null; avatar: string | null; fallback: string }) {
+  if (cover) return <img src={cover} alt="" className="h-full w-full object-cover" />;
+  if (avatar) return <img src={avatar} alt="" className="h-full w-full object-cover" />;
+  return (
+    <div className="h-full w-full grid place-items-center font-display font-bold text-sm text-white/70">
+      {fallback[0]?.toUpperCase()}
+    </div>
+  );
+}
+
 export function StoriesStrip() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -437,28 +463,3 @@ function StoryUploadSheet({
   );
 }
 
-// ─── helpers ──────────────────────────────────────────────────────────────
-
-const GRADIENTS: { bg: string; glow: string }[] = [
-  { bg: "linear-gradient(to top right, #ff3158, #ff8c31)", glow: "rgba(255,49,88,0.3)" },
-  { bg: "linear-gradient(to top right, #8a2be2, #ff3158)", glow: "rgba(138,43,226,0.3)" },
-  { bg: "linear-gradient(to bottom right, #ff3158, #ed1e79, #ff8c31)", glow: "rgba(237,30,121,0.3)" },
-  { bg: "linear-gradient(to top right, #f97316, #ed1e79, #8a2be2)", glow: "rgba(249,115,22,0.3)" },
-  { bg: "linear-gradient(to bottom right, #8a2be2, #4f46e5, #ff3158)", glow: "rgba(79,70,229,0.3)" },
-];
-
-function pickGradient(seed: string) {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
-  return GRADIENTS[Math.abs(h) % GRADIENTS.length];
-}
-
-function Cover({ cover, avatar, fallback }: { cover: string | null; avatar: string | null; fallback: string }) {
-  if (cover) return <img src={cover} alt="" className="h-full w-full object-cover" />;
-  if (avatar) return <img src={avatar} alt="" className="h-full w-full object-cover" />;
-  return (
-    <div className="h-full w-full grid place-items-center font-display font-bold text-sm text-white/70">
-      {fallback[0]?.toUpperCase()}
-    </div>
-  );
-}
