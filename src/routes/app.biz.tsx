@@ -109,43 +109,43 @@ function BizPage() {
   };
 
   return (
-    <div className="px-4 pt-5 pb-24 space-y-5">
+    <div className="px-4 pt-8 pb-24 space-y-7">
       <PaymentTestModeBanner />
       <WalletTopupDialog
         businessId={topupBizId ?? ""}
         open={!!topupBizId}
         onClose={() => setTopupBizId(null)}
       />
-      <header className="space-y-1">
+      <header className="space-y-2">
         <div className="flex items-center gap-2">
           <Building2 size={11} className="text-neon-purple" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-purple">// BUSINESS · PROMOVARE</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Business · Promovare</span>
         </div>
-        <h1 className="font-display uppercase text-2xl leading-none tracking-tight">
+        <h1 className="font-display uppercase text-3xl leading-[0.95] tracking-tight">
           Promovează <span className="text-gradient-chaos">cum vrei tu.</span>
         </h1>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-zinc-400">
           6 tipuri de reclamă · poze · targeting · plătești doar ce consumi.
         </p>
       </header>
 
       {isLoading ? (
-        <div className="h-32 rounded-2xl bg-foreground/[0.04] animate-pulse" />
+        <div className="h-40 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur animate-pulse" />
       ) : data?.businesses.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-foreground/15 p-6 text-center space-y-3">
+        <div className="rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur p-8 text-center space-y-3">
           <div className="text-4xl">🏢</div>
           <div className="font-display uppercase">Niciun business încă</div>
-          <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+          <p className="text-xs text-zinc-400 max-w-xs mx-auto">
             Înregistrează-ți brandul și începe să promovezi evenimente.
           </p>
           <button onClick={() => setCreateOpen(true)}
-            className="inline-flex items-center gap-1.5 font-display uppercase text-[11px] tracking-widest px-4 py-2 rounded-md text-white"
+            className="inline-flex items-center gap-1.5 font-display uppercase text-[11px] tracking-widest px-4 py-2 rounded-2xl text-white"
             style={{ background: "var(--gradient-chaos)" }}>
             <Plus size={12} /> Creează business
           </button>
         </div>
       ) : (
-        <>
+        <div className="space-y-5">
           {data!.businesses.map((b) => (
             <BusinessCard key={b.id} business={b}
               campaigns={data!.campaigns.filter((c) => c.business_id === b.id)}
@@ -153,10 +153,10 @@ function BizPage() {
               onTopup={() => setTopupBizId(b.id)} />
           ))}
           <button onClick={() => setCreateOpen(true)}
-            className="w-full font-mono text-[10px] uppercase tracking-widest px-4 py-3 rounded-md border border-dashed border-foreground/20 hover:border-neon-crimson flex items-center justify-center gap-1.5">
+            className="w-full font-mono text-[10px] uppercase tracking-widest px-4 py-3 rounded-2xl border border-dashed border-white/10 hover:border-neon-crimson text-zinc-400 hover:text-neon-crimson flex items-center justify-center gap-1.5 backdrop-blur">
             <Plus size={12} /> Adaugă un alt business
           </button>
-        </>
+        </div>
       )}
 
       {createOpen && (
