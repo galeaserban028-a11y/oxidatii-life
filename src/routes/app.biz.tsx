@@ -11,6 +11,7 @@ import {
   Settings2, X, Calendar, Target, Palette, Upload, ChevronRight, Pencil,
   Users, Heart, Flame, ChevronDown, Check, Zap, Trash2, Ticket, Video, Clock,
 } from "lucide-react";
+import { BizUniquePanel } from "@/components/biz/BizUniquePanel";
 
 export const Route = createFileRoute("/app/biz")({
   head: () => ({ meta: [{ title: "Business · OXIDAȚII" }] }),
@@ -342,6 +343,8 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
             })}
           </div>
         )}
+
+        <BizUniquePanel business={business} />
       </div>
 
       {builderOpen && (
