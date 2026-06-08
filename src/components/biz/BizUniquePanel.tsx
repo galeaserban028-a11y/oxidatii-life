@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Star, Gift, Swords, Crown, Plus, Trash2, Sparkles, X, Check, Users, Trophy, Calendar,
 } from "lucide-react";
+import { BizProEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 
 const BATTLE_CATEGORIES = [
   "club", "bar", "cafenea", "festival", "restaurant", "beach", "promoter",
