@@ -83,6 +83,17 @@ async function handleCoinPackPurchase(session: any, env: StripeEnv) {
     .update({ coin_balance: current + coins }).eq("id", userId);
 }
 
+async function upsertBizProSubscription(subscription: any, env: StripeEnv, periodEndIso: string | null) {
+  const businessId = subscription.metadata?.business_id;
+  if (!businessId) return;
+  const isActive = ["active", "trialing", "past_due"].includes(subscription.status)
+    || (subscription.status === "canceled" && periodEndIso && new Date(periodEndIso) > new Date());
+  await supabaseAdmin.from("business_accounts").update({
+    pro_tier: isActive ? "pro" : null,
+    pro_until: isActive ? periodEndIso : null,
+  }).eq("id", businessId);
+}
+
 async function upsertSubscription(subscription: any, env: StripeEnv) {
   const userId = subscription.metadata?.userId;
   if (!userId) return;
