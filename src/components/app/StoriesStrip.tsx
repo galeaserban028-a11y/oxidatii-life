@@ -152,24 +152,14 @@ export function StoriesStrip() {
           {/* "Adaugă story" tile (mereu primul) */}
           <button
             onClick={() => setUploadOpen(true)}
-            className="shrink-0 flex flex-col items-center w-[68px] active:scale-95 transition-transform"
+            className="shrink-0 flex flex-col items-center gap-2 w-[72px] active:scale-95 transition-transform"
             aria-label="Adaugă story"
           >
-            <div className="relative w-[64px] h-[64px] flex items-center justify-center">
-              <div className="absolute inset-0 border border-dashed border-white/30 rounded-full animate-[spin_10s_linear_infinite]" />
-              <div className="relative w-[52px] h-[52px] bg-[#1a1a1a] rounded-full flex items-center justify-center overflow-hidden">
-                {myGroup?.avatar_url ? (
-                  <img src={myGroup.avatar_url} alt="" className="h-full w-full object-cover opacity-50 grayscale" />
-                ) : (
-                  <Plus size={20} strokeWidth={3} className="text-neon-crimson" />
-                )}
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-neon-crimson rounded-full flex items-center justify-center shadow-[0_0_10px_var(--neon-crimson)]">
-                  <Plus size={12} strokeWidth={4} className="text-white" />
-                </div>
-              </div>
+            <div className="relative w-[68px] h-[68px] rounded-full border-2 border-dashed border-white/20 flex items-center justify-center bg-white/[0.03] hover:bg-white/[0.06] transition-colors">
+              <Plus size={22} strokeWidth={2.5} className="text-white/60" />
             </div>
-            <span className="mt-3 text-[9px] font-mono tracking-[0.1em] uppercase text-white/50 truncate w-full text-center">
-              {myGroup ? "story nou" : "story nou"}
+            <span className="text-[10px] font-bold tracking-wider uppercase text-white/50">
+              story nou
             </span>
           </button>
 
@@ -184,30 +174,34 @@ export function StoriesStrip() {
               <button
                 key={g.user_id}
                 onClick={() => setViewerIdx(i)}
-                className="shrink-0 flex flex-col items-center w-[68px] active:scale-95 transition-transform"
+                className="shrink-0 flex flex-col items-center gap-2 w-[72px] active:scale-95 transition-transform"
               >
                 {allSeen ? (
-                  <div className="relative p-[1px] rounded-full bg-white/10">
-                    <div className="w-[62px] h-[62px] rounded-full overflow-hidden bg-[#111] opacity-40">
-                      <Cover cover={cover} avatar={g.avatar_url} fallback={g.handle} />
+                  <div className="relative p-[2px] rounded-full bg-white/10">
+                    <div className="bg-background p-[2px] rounded-full">
+                      <div className="w-[60px] h-[60px] rounded-full overflow-hidden bg-[#111] opacity-50 grayscale">
+                        <Cover cover={cover} avatar={g.avatar_url} fallback={g.handle} />
+                      </div>
                     </div>
                   </div>
                 ) : (
                   <div
-                    className="relative p-[3px] rounded-full"
+                    className="relative p-[2.5px] rounded-full"
                     style={{
                       backgroundImage: gradient.bg,
                       boxShadow: `0 0 15px ${gradient.glow}`,
                     }}
                   >
-                    <div className="w-[58px] h-[58px] rounded-full border-[3px] border-background overflow-hidden bg-[#111]">
-                      <Cover cover={cover} avatar={g.avatar_url} fallback={g.handle} />
+                    <div className="bg-background p-[2px] rounded-full">
+                      <div className="w-[60px] h-[60px] rounded-full overflow-hidden bg-[#111]">
+                        <Cover cover={cover} avatar={g.avatar_url} fallback={g.handle} />
+                      </div>
                     </div>
                   </div>
                 )}
                 <span
-                  className={`mt-2 text-[9px] font-mono tracking-[0.05em] uppercase truncate w-full text-center ${
-                    allSeen ? "text-white/30" : "text-white"
+                  className={`text-[10px] font-bold tracking-wider uppercase truncate w-full text-center ${
+                    allSeen ? "text-white/40" : "text-white"
                   }`}
                 >
                   {label}
@@ -217,6 +211,7 @@ export function StoriesStrip() {
           })}
         </div>
       </div>
+
 
 
       {viewerIdx !== null && groups[viewerIdx] && (
