@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Star, Gift, Swords, Crown, Plus, Trash2, Sparkles, X, Check, Users, Trophy, Calendar,
+  Star, Gift, Swords, Crown, Plus, Trash2, X, Check, Trophy,
+  ChevronDown, MapPin, MessageSquare, BarChart3, ShieldCheck,
 } from "lucide-react";
 import { BizProEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 
@@ -12,50 +13,94 @@ const BATTLE_CATEGORIES = [
 
 export function BizUniquePanel({ business }: { business: any }) {
   return (
-    <div className="space-y-3 pt-2">
-      <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-purple flex items-center gap-1.5">
-        <Sparkles size={11} /> Features unice
-      </div>
-      <ReputationCard business={business} />
-      <OffersCard business={business} />
-      <BattleCard business={business} />
+    <div className="space-y-3 pt-4">
+      {/* PRO upsell on top — the most important decision */}
       <ProUpgradeCard business={business} />
+
+      {/* Reputation = quick glance */}
+      <ReputationCard business={business} />
+
+      {/* Power tools — collapsed by default to reduce noise */}
+      <Section
+        icon={<Gift size={14} className="text-neon-crimson" />}
+        title="Oferte fizice"
+        subtitle="Userul scanează la fața locului, primește reward."
+        defaultOpen={false}
+      >
+        <OffersCard business={business} />
+      </Section>
+
+      <Section
+        icon={<Swords size={14} className="text-neon-purple" />}
+        title="Battle săptămânal"
+        subtitle="Câștigătorul = spotlight gratis 7 zile pe Discover."
+        defaultOpen={false}
+      >
+        <BattleCard business={business} />
+      </Section>
     </div>
   );
 }
 
-/* ============= 1. REPUTATION SCORE ============= */
-function ReputationCard({ business }: { business: any }) {
-  const { data: reviews } = useQuery({
-    queryKey: ["biz-reviews", business.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("business_reviews")
-        .select("id, rating, comment, created_at, reviewer_id")
-        .eq("business_id", business.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
-      return data ?? [];
-    },
-  });
+/* ============= Reusable collapsible section ============= */
+function Section({
+  icon, title, subtitle, defaultOpen = false, children,
+}: { icon: React.ReactNode; title: string; subtitle: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-2xl bg-zinc-900/40 border border-white/5 overflow-hidden">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-3 p-4 text-left hover:bg-white/[0.02] transition-colors"
+      >
+        <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium">{title}</div>
+          <div className="text-[11px] text-zinc-500 truncate">{subtitle}</div>
+        </div>
+        <ChevronDown
+          size={16}
+          className={`text-zinc-500 transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-1 border-t border-white/5">{children}</div>
+      )}
+    </div>
+  );
+}
 
+/* ============= 1. REPUTATION — hero stat ============= */
+function ReputationCard({ business }: { business: any }) {
   const score = Number(business.reputation_score ?? 0);
+  const reviews = business.total_reviews ?? 0;
+  const visits = business.total_visits ?? 0;
   const tier = score >= 4.5 ? "ELITE" : score >= 4.0 ? "TOP" : score >= 3.0 ? "VERIFIED" : "NEW";
   const tierColor = score >= 4.5 ? "#39FF14" : score >= 4.0 ? "#FFD60A" : score >= 3.0 ? "#00D4FF" : "#9D4EDD";
 
   return (
-    <div className="rounded-2xl bg-zinc-900/40 border border-white/5 backdrop-blur p-4 space-y-3">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500 flex items-center gap-1">
-            <Star size={10} /> Reputation Score
+    <div className="rounded-2xl bg-zinc-900/40 border border-white/5 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-0.5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                size={16}
+                className={i < Math.round(score) ? "fill-yellow-400 text-yellow-400" : "text-zinc-700"}
+              />
+            ))}
           </div>
-          <div className="font-display text-4xl leading-none mt-1">
-            {score.toFixed(2)}
-            <span className="text-sm text-zinc-500 ml-1">/ 5</span>
-          </div>
-          <div className="text-[10px] text-zinc-400 mt-1">
-            {business.total_reviews ?? 0} review-uri · {business.total_visits ?? 0} vizite verificate
+          <div>
+            <div className="font-display text-xl leading-none">
+              {score.toFixed(1)}
+              <span className="text-xs text-zinc-500 ml-1">/ 5</span>
+            </div>
+            <div className="text-[10px] text-zinc-500 mt-0.5">
+              {reviews} review · {visits} vizite
+            </div>
           </div>
         </div>
         <div
@@ -65,30 +110,121 @@ function ReputationCard({ business }: { business: any }) {
           {tier}
         </div>
       </div>
-
-      {reviews && reviews.length > 0 ? (
-        <div className="space-y-1.5 pt-1">
-          {reviews.slice(0, 3).map((r) => (
-            <div key={r.id} className="flex items-start gap-2 rounded-lg bg-white/[0.02] p-2">
-              <div className="flex items-center gap-0.5 text-[10px] font-mono">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} size={9} className={i < r.rating ? "fill-yellow-400 text-yellow-400" : "text-zinc-700"} />
-                ))}
-              </div>
-              {r.comment && <div className="text-[11px] text-zinc-300 line-clamp-1 flex-1">{r.comment}</div>}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-[10px] text-zinc-500 italic">
-          Userii care fac check-in la tine îți pot lăsa rating. Scor mai mare = costuri mai mici pe campanii.
+      {reviews === 0 && (
+        <div className="text-[10px] text-zinc-500 italic mt-2">
+          Scor mai mare = costuri mai mici pe campanii.
         </div>
       )}
     </div>
   );
 }
 
-/* ============= 2. PROOF-OF-VISIT OFFERS ============= */
+/* ============= 2. PRO UPGRADE — the hero ============= */
+function ProUpgradeCard({ business }: { business: any }) {
+  const [open, setOpen] = useState(false);
+  const isPro = business.pro_tier && business.pro_until && new Date(business.pro_until) > new Date();
+
+  if (isPro) {
+    return (
+      <div className="rounded-2xl bg-gradient-to-br from-yellow-500/20 via-amber-500/10 to-transparent border border-yellow-500/30 p-4 flex items-center gap-3">
+        <div className="w-11 h-11 rounded-xl bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+          <Crown size={20} className="text-yellow-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium flex items-center gap-1.5">
+            Verified Pro <ShieldCheck size={13} className="text-yellow-400" />
+          </div>
+          <div className="text-[11px] text-zinc-400">
+            Activ până {new Date(business.pro_until).toLocaleDateString("ro-RO")}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const benefits = [
+    { icon: ShieldCheck, label: "Badge verde verificat" },
+    { icon: MapPin, label: "Pin permanent pe hartă" },
+    { icon: MessageSquare, label: "Răspunzi la review-uri" },
+    { icon: BarChart3, label: "Statistici avansate" },
+  ];
+
+  return (
+    <>
+      <div
+        className="rounded-2xl p-4 space-y-4 relative overflow-hidden"
+        style={{
+          background: "linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.05) 60%, transparent)",
+          border: "1px solid rgba(245,158,11,0.25)",
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-start gap-3">
+          <div className="w-11 h-11 rounded-xl bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+            <Crown size={20} className="text-yellow-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold">Devino Verified Pro</div>
+            <div className="text-[11px] text-zinc-400 mt-0.5">
+              Apari mai sus în Discover. Userii au mai multă încredere.
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="font-display text-lg leading-none text-yellow-400">49<span className="text-[11px] text-zinc-400 font-mono"> RON</span></div>
+            <div className="text-[9px] text-zinc-500 uppercase tracking-widest">/ lună</div>
+          </div>
+        </div>
+
+        {/* Benefits */}
+        <div className="grid grid-cols-2 gap-2">
+          {benefits.map((b) => (
+            <div key={b.label} className="flex items-center gap-2 text-[11px] text-zinc-300">
+              <b.icon size={12} className="text-yellow-400 flex-shrink-0" />
+              <span className="truncate">{b.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <button
+          onClick={() => setOpen(true)}
+          className="w-full py-3 rounded-xl font-medium text-sm text-black transition-transform active:scale-[0.98]"
+          style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)" }}
+        >
+          Activează Pro · 49 RON/lună
+        </button>
+        <div className="text-[10px] text-zinc-500 text-center -mt-2">
+          Anulezi oricând. Acces până la final de perioadă.
+        </div>
+      </div>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4"
+          onClick={() => setOpen(false)}>
+          <div
+            className="bg-zinc-950 rounded-2xl max-w-lg w-full mt-8 border border-white/10 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-white/5">
+              <div className="font-display uppercase text-sm flex items-center gap-2">
+                <Crown size={16} className="text-yellow-400" /> Verified Pro
+              </div>
+              <button onClick={() => setOpen(false)} className="p-1 text-zinc-400 hover:text-white">
+                <X size={16} />
+              </button>
+            </div>
+            <BizProEmbeddedCheckout
+              businessId={business.id}
+              returnUrl={`${window.location.origin}/app/biz?pro=success`}
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ============= 3. OFFERS ============= */
 function OffersCard({ business }: { business: any }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -117,25 +253,7 @@ function OffersCard({ business }: { business: any }) {
   };
 
   return (
-    <div className="rounded-2xl bg-zinc-900/40 border border-white/5 backdrop-blur p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500 flex items-center gap-1">
-            <Gift size={10} /> Proof-of-Visit Rewards
-          </div>
-          <div className="text-[11px] text-zinc-400 mt-1">
-            Userul vine fizic + scanează codul = primește reward. ROI dovedit.
-          </div>
-        </div>
-        <button
-          onClick={() => setOpen(true)}
-          className="font-mono text-[10px] uppercase tracking-widest px-2.5 py-1.5 rounded-md text-white flex items-center gap-1"
-          style={{ background: "var(--gradient-chaos)" }}
-        >
-          <Plus size={11} /> Ofertă
-        </button>
-      </div>
-
+    <div className="space-y-2 pt-3">
       {offers && offers.length > 0 ? (
         <div className="space-y-1.5">
           {offers.map((o) => {
@@ -148,7 +266,7 @@ function OffersCard({ business }: { business: any }) {
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-medium truncate">{o.title}</div>
                   <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500 truncate">
-                    {o.reward_text} · {used} claim · min ★{Number(o.min_user_rating).toFixed(1)}
+                    {o.reward_text} · {used} claim
                   </div>
                 </div>
                 <button onClick={() => toggleActive(o)}
@@ -163,8 +281,16 @@ function OffersCard({ business }: { business: any }) {
           })}
         </div>
       ) : (
-        <div className="text-[10px] text-zinc-500 italic">Nicio ofertă activă. Creează prima ca să atragi clienți.</div>
+        <div className="text-[11px] text-zinc-500 italic text-center py-3">
+          Nicio ofertă activă încă.
+        </div>
       )}
+      <button
+        onClick={() => setOpen(true)}
+        className="w-full py-2.5 rounded-xl border border-dashed border-white/15 text-[12px] text-zinc-300 hover:border-neon-crimson hover:text-neon-crimson transition-colors flex items-center justify-center gap-1.5"
+      >
+        <Plus size={13} /> Adaugă ofertă
+      </button>
 
       {open && <OfferCreator businessId={business.id} onClose={() => setOpen(false)} />}
     </div>
@@ -250,7 +376,7 @@ function OfferCreator({ businessId, onClose }: { businessId: string; onClose: ()
   );
 }
 
-/* ============= 3. BATTLE MODE ============= */
+/* ============= 4. BATTLE MODE ============= */
 function BattleCard({ business }: { business: any }) {
   const qc = useQueryClient();
   const [category, setCategory] = useState<string>("club");
@@ -293,16 +419,7 @@ function BattleCard({ business }: { business: any }) {
   };
 
   return (
-    <div className="rounded-2xl bg-zinc-900/40 border border-white/5 backdrop-blur p-4 space-y-3">
-      <div>
-        <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500 flex items-center gap-1">
-          <Swords size={10} /> Battle Mode · săptămâna asta
-        </div>
-        <div className="text-[11px] text-zinc-400 mt-1">
-          Intră în competiție. Câștigătorul = badge + spotlight gratis pe Discover 7 zile.
-        </div>
-      </div>
-
+    <div className="space-y-3 pt-3">
       <div className="flex flex-wrap gap-1.5">
         {BATTLE_CATEGORIES.map((c) => (
           <button key={c} onClick={() => setCategory(c)}
@@ -329,7 +446,7 @@ function BattleCard({ business }: { business: any }) {
           })}
         </div>
       ) : (
-        <div className="text-[10px] text-zinc-500 italic">Nicio competiție începută. Fii primul.</div>
+        <div className="text-[11px] text-zinc-500 italic text-center py-2">Nicio competiție începută. Fii primul.</div>
       )}
 
       {!myEntry ? (
@@ -356,76 +473,5 @@ function BattleCard({ business }: { business: any }) {
         </div>
       )}
     </div>
-  );
-}
-
-/* ============= 4. VERIFIED PRO ============= */
-function ProUpgradeCard({ business }: { business: any }) {
-  const [open, setOpen] = useState(false);
-  const isPro = business.pro_tier && business.pro_until && new Date(business.pro_until) > new Date();
-
-  if (isPro) {
-    return (
-      <div className="rounded-2xl bg-gradient-to-br from-yellow-500/20 to-amber-600/10 border border-yellow-500/30 backdrop-blur p-4 flex items-center gap-3">
-        <Crown size={28} className="text-yellow-400" />
-        <div className="flex-1">
-          <div className="font-display uppercase text-sm">Verified Pro</div>
-          <div className="text-[10px] text-zinc-400">
-            Activ până {new Date(business.pro_until).toLocaleDateString("ro-RO")} · badge verde + pin permanent + statistici
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <div className="rounded-2xl bg-zinc-900/40 border border-white/5 backdrop-blur p-4 space-y-3">
-        <div className="flex items-start gap-3">
-          <Crown size={20} className="text-yellow-400 mt-0.5" />
-          <div className="flex-1">
-            <div className="font-display uppercase text-sm">Devino Verified Pro</div>
-            <div className="text-[10px] text-zinc-400 mt-0.5">
-              49 RON/lună · badge oficial · pin permanent pe hartă · răspuns la review-uri · statistici avansate
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-1.5 text-[10px] text-zinc-300">
-          <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Badge verde</div>
-          <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Pin pe hartă</div>
-          <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Răspuns review</div>
-          <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Stats avansate</div>
-        </div>
-        <button
-          onClick={() => setOpen(true)}
-          className="w-full py-2.5 rounded-lg font-display uppercase text-[11px] tracking-widest text-white"
-          style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}>
-          Upgrade Pro — 49 RON/lună
-        </button>
-      </div>
-
-      {open && (
-        <div
-          className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4"
-          onClick={() => setOpen(false)}>
-          <div
-            className="bg-zinc-950 rounded-2xl max-w-lg w-full mt-8 border border-white/10 overflow-hidden"
-            onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-4 border-b border-white/5">
-              <div className="font-display uppercase text-sm flex items-center gap-2">
-                <Crown size={16} className="text-yellow-400" /> Verified Pro
-              </div>
-              <button onClick={() => setOpen(false)} className="p-1 text-zinc-400 hover:text-white">
-                <X size={16} />
-              </button>
-            </div>
-            <BizProEmbeddedCheckout
-              businessId={business.id}
-              returnUrl={`${window.location.origin}/app/biz?pro=success`}
-            />
-          </div>
-        </div>
-      )}
-    </>
   );
 }
