@@ -557,9 +557,11 @@ function MePage() {
       </div>
 
       {/* Stories — propriile story-uri + prieteni */}
-      <StoriesStrip />
+      <div className="mt-10">
+        <StoriesStrip />
+      </div>
 
-      <div className="mt-3 border-t border-foreground/10" />
+      <div className="mt-6 border-t border-foreground/5" />
 
       {/* Grid moments */}
       {tabMoments.length === 0 ? (
