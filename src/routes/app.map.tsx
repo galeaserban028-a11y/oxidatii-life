@@ -338,15 +338,15 @@ function MapPage() {
   return (
     <div className="pb-4">
       {/* Sticky app-style header */}
-      <header className="sticky top-0 z-30 -mx-0 px-4 pt-5 pb-3 bg-background/85 backdrop-blur-xl border-b border-border/60">
+      <header className="sticky top-0 z-30 -mx-0 px-5 pt-8 pb-6 bg-background/85 backdrop-blur-xl border-b border-foreground/5">
         <div className="flex items-end justify-between gap-3">
           <div>
             <h1 className="font-display font-black text-2xl tracking-tight lowercase">hartă</h1>
-            <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-foreground/5 border border-border font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                <MapPin size={9} /> {venues.length} locuri
+            <div className="mt-2 flex items-center gap-3 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-zinc-500">
+                <MapPin size={10} /> {venues.length} locuri
               </span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-green/10 border border-neon-green/30 font-mono text-[9px] uppercase tracking-widest text-neon-green">
+              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-neon-green">
                 <span className="h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse" /> {friendPins.length} live
               </span>
             </div>
@@ -354,14 +354,14 @@ function MapPage() {
           <button
             onClick={requestGeo}
             aria-label="Locația mea"
-            className={`h-10 w-10 grid place-items-center rounded-full border ${geo ? "border-neon-green/50 text-neon-green bg-neon-green/10" : "border-border text-muted-foreground bg-card/60"} backdrop-blur active:scale-95 transition`}
+            className={`h-11 w-11 grid place-items-center rounded-2xl border ${geo ? "border-neon-green/40 text-neon-green bg-neon-green/10" : "border-white/5 text-zinc-400 bg-zinc-900/30"} backdrop-blur active:scale-95 transition`}
           >
             <Navigation size={16} />
           </button>
         </div>
       </header>
 
-      <div className="px-4 pt-3 space-y-3">
+      <div className="px-5 pt-6 space-y-5">
         <VenueFilters
           query={query} setQuery={setQuery}
           type={type} setType={setType}
@@ -375,17 +375,17 @@ function MapPage() {
         />
 
         {/* Quick country chips strip */}
-        <div className="-mx-4 px-4 overflow-x-auto scrollbar-none">
-          <div className="flex items-center gap-1.5 pb-1">
+        <div className="-mx-5 px-5 overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-2 pb-1">
             <button
               onClick={() => { setCountry("all"); setCityId("all"); }}
-              className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border transition ${country === "all" ? "bg-neon-crimson text-background border-neon-crimson" : "bg-foreground/5 border-foreground/10 text-muted-foreground"}`}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === "all" ? "bg-neon-crimson text-background border-neon-crimson" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"}`}
             >🌍 toate</button>
             {countries.map(c => (
               <button
                 key={c.code}
                 onClick={() => { setCountry(c.code); setCityId("all"); }}
-                className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border transition ${country === c.code ? "bg-neon-crimson text-background border-neon-crimson" : "bg-foreground/5 border-foreground/10 text-muted-foreground"}`}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === c.code ? "bg-neon-crimson text-background border-neon-crimson" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"}`}
               >{c.label}<span className="opacity-60 ml-1">{c.count}</span></button>
             ))}
           </div>
