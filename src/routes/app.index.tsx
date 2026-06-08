@@ -99,46 +99,52 @@ function AppFeed() {
   });
 
   return (
-    <div className="px-4 pt-4 pb-6 space-y-4">
+    <div className="px-5 pt-6 pb-6 space-y-8">
       <PromoTakeover />
-      {/* Compact header */}
-      <header className="space-y-2.5">
-        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+      {/* Airy header */}
+      <header className="space-y-5">
+        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.3em]">
           <span className="text-neon-crimson flicker">● LIVE · ROMÂNIA</span>
-          <span className="text-muted-foreground">{new Date().toLocaleDateString("ro-RO", { weekday: "long" })}</span>
+          <span className="text-zinc-500">{new Date().toLocaleDateString("ro-RO", { weekday: "long" })}</span>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <img src={logoLight} alt="" aria-hidden width={56} height={56} className="h-14 w-14 object-contain shrink-0 drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]" />
-          <h1 className="font-display uppercase text-xl leading-[1.05] tracking-tight">
+          <h1 className="font-display uppercase text-2xl leading-[1.05] tracking-tight">
             Ce șprițuri sunt <span className="text-gradient-chaos">diseară</span>
           </h1>
         </div>
 
-        {/* Quick actions row */}
-        <div className="grid grid-cols-3 gap-1.5">
+        {/* Quick actions — calm glass tiles */}
+        <div className="grid grid-cols-3 gap-3 pt-2">
           <Link
             to="/app/scan"
-            className="flex flex-col items-start gap-1 p-2.5 rounded-xl bg-neon-crimson/10 border border-neon-crimson/30 active:scale-[0.97] transition"
+            className="p-4 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
           >
-            <Plus size={16} className="text-neon-crimson" strokeWidth={2.6} />
-            <span className="font-display font-bold text-[11px] leading-tight">deschide șpriț</span>
+            <div className="w-9 h-9 rounded-full bg-neon-crimson/10 flex items-center justify-center">
+              <Plus size={16} strokeWidth={2.4} className="text-neon-crimson group-hover:scale-110 transition-transform" />
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">deschide șpriț</span>
           </Link>
           <Link
             to="/app/faze"
-            className="flex flex-col items-start gap-1 p-2.5 rounded-xl bg-foreground/[0.05] border border-foreground/10 active:scale-[0.97] transition"
+            className="p-4 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
           >
-            <span className="text-base leading-none">🎬</span>
-            <span className="font-display font-bold text-[11px] leading-tight">faze din teren</span>
+            <div className="w-9 h-9 rounded-full bg-amber-500/10 flex items-center justify-center text-base leading-none">🎬</div>
+            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">faze din teren</span>
           </Link>
           <Link
             to="/app/squad"
-            className="flex flex-col items-start gap-1 p-2.5 rounded-xl bg-foreground/[0.05] border border-foreground/10 active:scale-[0.97] transition"
+            className="p-4 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
           >
-            <Users size={16} className="text-neon-purple" />
-            <span className="font-display font-bold text-[11px] leading-tight">haita ta</span>
+            <div className="w-9 h-9 rounded-full bg-neon-purple/10 flex items-center justify-center">
+              <Users size={16} className="text-neon-purple group-hover:scale-110 transition-transform" />
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">haita ta</span>
           </Link>
         </div>
       </header>
+
+
 
       <LiveSpritzStrip />
 
