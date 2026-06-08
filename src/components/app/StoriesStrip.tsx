@@ -152,24 +152,14 @@ export function StoriesStrip() {
           {/* "Adaugă story" tile (mereu primul) */}
           <button
             onClick={() => setUploadOpen(true)}
-            className="shrink-0 flex flex-col items-center w-[68px] active:scale-95 transition-transform"
+            className="shrink-0 flex flex-col items-center gap-2 w-[72px] active:scale-95 transition-transform"
             aria-label="Adaugă story"
           >
-            <div className="relative w-[64px] h-[64px] flex items-center justify-center">
-              <div className="absolute inset-0 border border-dashed border-white/30 rounded-full animate-[spin_10s_linear_infinite]" />
-              <div className="relative w-[52px] h-[52px] bg-[#1a1a1a] rounded-full flex items-center justify-center overflow-hidden">
-                {myGroup?.avatar_url ? (
-                  <img src={myGroup.avatar_url} alt="" className="h-full w-full object-cover opacity-50 grayscale" />
-                ) : (
-                  <Plus size={20} strokeWidth={3} className="text-neon-crimson" />
-                )}
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-neon-crimson rounded-full flex items-center justify-center shadow-[0_0_10px_var(--neon-crimson)]">
-                  <Plus size={12} strokeWidth={4} className="text-white" />
-                </div>
-              </div>
+            <div className="relative w-[68px] h-[68px] rounded-full border-2 border-dashed border-white/20 flex items-center justify-center bg-white/[0.03] hover:bg-white/[0.06] transition-colors">
+              <Plus size={22} strokeWidth={2.5} className="text-white/60" />
             </div>
-            <span className="mt-3 text-[9px] font-mono tracking-[0.1em] uppercase text-white/50 truncate w-full text-center">
-              {myGroup ? "story nou" : "story nou"}
+            <span className="text-[10px] font-bold tracking-wider uppercase text-white/50">
+              story nou
             </span>
           </button>
 
@@ -184,30 +174,34 @@ export function StoriesStrip() {
               <button
                 key={g.user_id}
                 onClick={() => setViewerIdx(i)}
-                className="shrink-0 flex flex-col items-center w-[68px] active:scale-95 transition-transform"
+                className="shrink-0 flex flex-col items-center gap-2 w-[72px] active:scale-95 transition-transform"
               >
                 {allSeen ? (
-                  <div className="relative p-[1px] rounded-full bg-white/10">
-                    <div className="w-[62px] h-[62px] rounded-full overflow-hidden bg-[#111] opacity-40">
-                      <Cover cover={cover} avatar={g.avatar_url} fallback={g.handle} />
+                  <div className="relative p-[2px] rounded-full bg-white/10">
+                    <div className="bg-background p-[2px] rounded-full">
+                      <div className="w-[60px] h-[60px] rounded-full overflow-hidden bg-[#111] opacity-50 grayscale">
+                        <Cover cover={cover} avatar={g.avatar_url} fallback={g.handle} />
+                      </div>
                     </div>
                   </div>
                 ) : (
                   <div
-                    className="relative p-[3px] rounded-full"
+                    className="relative p-[2.5px] rounded-full"
                     style={{
                       backgroundImage: gradient.bg,
                       boxShadow: `0 0 15px ${gradient.glow}`,
                     }}
                   >
-                    <div className="w-[58px] h-[58px] rounded-full border-[3px] border-background overflow-hidden bg-[#111]">
-                      <Cover cover={cover} avatar={g.avatar_url} fallback={g.handle} />
+                    <div className="bg-background p-[2px] rounded-full">
+                      <div className="w-[60px] h-[60px] rounded-full overflow-hidden bg-[#111]">
+                        <Cover cover={cover} avatar={g.avatar_url} fallback={g.handle} />
+                      </div>
                     </div>
                   </div>
                 )}
                 <span
-                  className={`mt-2 text-[9px] font-mono tracking-[0.05em] uppercase truncate w-full text-center ${
-                    allSeen ? "text-white/30" : "text-white"
+                  className={`text-[10px] font-bold tracking-wider uppercase truncate w-full text-center ${
+                    allSeen ? "text-white/40" : "text-white"
                   }`}
                 >
                   {label}
@@ -217,6 +211,7 @@ export function StoriesStrip() {
           })}
         </div>
       </div>
+
 
 
       {viewerIdx !== null && groups[viewerIdx] && (
@@ -399,31 +394,33 @@ function StoryUploadSheet({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-[80] bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose}>
-      <div className="w-full bg-background border-t border-foreground/10 rounded-t-2xl p-4 space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between">
-          <div className="font-display uppercase text-lg">Story nou · 24h</div>
-          <button onClick={onClose} className="text-muted-foreground text-2xl leading-none">×</button>
-        </div>
+  // Auto-deschide selectorul nativ când nu există fișier
+  useEffect(() => {
+    if (!file) {
+      const t = setTimeout(() => inputRef.current?.click(), 50);
+      return () => clearTimeout(t);
+    }
+  }, [file]);
 
-        {previewUrl ? (
-          <div className="rounded-xl overflow-hidden border border-foreground/10 bg-black aspect-[9/16] max-h-[50vh] flex items-center justify-center">
-            {mediaType === "video" ? (
-              <video src={previewUrl} className="max-h-full max-w-full" controls playsInline />
-            ) : (
-              <img src={previewUrl} alt="" className="max-h-full max-w-full object-contain" />
-            )}
-          </div>
-        ) : (
+  return (
+    <div
+      className="fixed inset-0 z-[80] bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fade-in"
+      onClick={onClose}
+    >
+      <div
+        className="w-full sm:max-w-md bg-zinc-900/70 backdrop-blur-3xl border border-white/10 rounded-t-[32px] sm:rounded-[32px] p-5 space-y-5 max-h-[92vh] overflow-y-auto shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-white font-semibold text-lg tracking-tight">Postează story</h3>
           <button
-            onClick={() => inputRef.current?.click()}
-            className="w-full aspect-[9/16] max-h-[50vh] rounded-xl border-2 border-dashed border-foreground/20 grid place-items-center gap-2 text-muted-foreground"
+            onClick={onClose}
+            className="p-2 hover:bg-white/5 rounded-full transition-colors text-zinc-400"
+            aria-label="Închide"
           >
-            <Upload size={28} />
-            <span className="font-mono text-[10px] uppercase tracking-widest">alege foto / video</span>
+            <X size={18} />
           </button>
-        )}
+        </div>
 
         <input
           ref={inputRef}
@@ -433,33 +430,61 @@ function StoryUploadSheet({
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
         />
 
-        {file && (
+        {previewUrl ? (
+          <div className="relative aspect-[3/4] w-full bg-zinc-950 rounded-3xl overflow-hidden border border-white/5">
+            {mediaType === "video" ? (
+              <video src={previewUrl} className="w-full h-full object-cover" playsInline autoPlay muted loop />
+            ) : (
+              <img src={previewUrl} alt="" className="w-full h-full object-cover" />
+            )}
+
+            {/* Caption suprapus */}
+            <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+              <input
+                type="text"
+                value={caption}
+                onChange={(e) => setCaption(e.target.value.slice(0, 200))}
+                placeholder="Adaugă un mesaj…"
+                className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#FF3B8E]/50 backdrop-blur-xl text-sm"
+              />
+            </div>
+
+            {/* Schimbă media */}
+            <button
+              onClick={() => inputRef.current?.click()}
+              className="absolute top-3 right-3 p-2.5 bg-black/50 backdrop-blur-md rounded-2xl text-white border border-white/10 hover:bg-black/70 transition-all"
+              aria-label="Schimbă media"
+            >
+              <Upload size={16} />
+            </button>
+          </div>
+        ) : (
           <button
             onClick={() => inputRef.current?.click()}
-            className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
+            className="w-full aspect-[3/4] rounded-3xl border-2 border-dashed border-white/15 grid place-items-center gap-3 text-zinc-400 bg-zinc-950/40 hover:bg-zinc-900/40 transition-colors"
           >
-            schimbă fișierul
+            <Upload size={28} />
+            <span className="font-bold text-xs uppercase tracking-widest">alege foto / video</span>
           </button>
         )}
-
-        <textarea
-          value={caption}
-          onChange={(e) => setCaption(e.target.value.slice(0, 200))}
-          placeholder="Scrie ceva (opțional)…"
-          className="w-full rounded-xl bg-foreground/[0.04] border border-foreground/10 px-3 py-2 text-sm resize-none"
-          rows={2}
-        />
 
         <button
           disabled={!file || uploading}
           onClick={submit}
-          className="w-full py-3 rounded-xl font-display uppercase tracking-widest text-sm text-white disabled:opacity-40"
-          style={{ background: "var(--gradient-chaos)" }}
+          className="group relative w-full overflow-hidden rounded-2xl transition-all active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100"
         >
-          {uploading ? "se încarcă…" : "postează story"}
+          {file && !uploading && (
+            <div className="absolute inset-0 bg-gradient-to-r from-[#FF3B8E] to-[#FF8C00] opacity-60 blur-xl" />
+          )}
+          <div className="relative w-full py-4 bg-gradient-to-r from-[#FF3B8E] to-[#FF8C00] rounded-2xl flex items-center justify-center gap-2">
+            <span className="text-white font-bold text-base tracking-wide">
+              {uploading ? "se încarcă…" : "Publică acum"}
+            </span>
+          </div>
         </button>
       </div>
     </div>
   );
 }
+
 
