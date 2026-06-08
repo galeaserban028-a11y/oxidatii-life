@@ -11,12 +11,18 @@ function apply(t: Theme) {
 }
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "dark";
-    return (localStorage.getItem(KEY) as Theme) || "dark";
-  });
+  const [theme, setTheme] = useState<Theme>("dark");
+
+  // Hydrate from localStorage on client only
+  useEffect(() => {
+    try {
+      const stored = (localStorage.getItem(KEY) as Theme) || "dark";
+      setTheme(stored);
+    } catch {}
+  }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     apply(theme);
     try { localStorage.setItem(KEY, theme); } catch {}
   }, [theme]);
