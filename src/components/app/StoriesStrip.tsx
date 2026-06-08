@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, X, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,64 +95,103 @@ export function StoriesStrip() {
 
   const [viewerIdx, setViewerIdx] = useState<number | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [seenIds, setSeenIds] = useState<Set<string>>(() => new Set());
   const groups = data?.groups ?? [];
   const myGroup = useMemo(() => groups.find((g) => g.user_id === user?.id) ?? null, [groups, user]);
+
+  // Hydrate seen-set from localStorage (client only)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem("oxi-stories-seen");
+      if (raw) setSeenIds(new Set(JSON.parse(raw)));
+    } catch {}
+  }, []);
+
+  const markSeen = (ids: string[]) => {
+    setSeenIds((prev) => {
+      const next = new Set(prev);
+      for (const id of ids) next.add(id);
+      try { window.localStorage.setItem("oxi-stories-seen", JSON.stringify(Array.from(next))); } catch {}
+      return next;
+    });
+  };
 
   if (!user) return null;
 
   return (
     <>
       <div className="-mx-4 px-4 pb-2">
-        <div className="flex gap-3 overflow-x-auto scrollbar-none pb-1">
+        <div className="flex items-start gap-5 overflow-x-auto scrollbar-none py-2 px-1">
           {/* "Adaugă story" tile (mereu primul) */}
           <button
             onClick={() => setUploadOpen(true)}
-            className="shrink-0 flex flex-col items-center gap-1.5 w-[68px]"
+            className="shrink-0 flex flex-col items-center w-[68px] active:scale-95 transition-transform"
             aria-label="Adaugă story"
           >
-            <div className="relative h-[60px] w-[60px] rounded-full bg-foreground/[0.05] border-2 border-dashed border-foreground/20 grid place-items-center">
-              {myGroup?.avatar_url ? (
-                <img src={myGroup.avatar_url} alt="" className="h-full w-full object-cover rounded-full opacity-60" />
-              ) : null}
-              <div className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-neon-crimson grid place-items-center border-2 border-background">
-                <Plus size={11} className="text-white" strokeWidth={3} />
+            <div className="relative w-[64px] h-[64px] flex items-center justify-center">
+              <div className="absolute inset-0 border border-dashed border-white/30 rounded-full animate-[spin_10s_linear_infinite]" />
+              <div className="relative w-[52px] h-[52px] bg-[#1a1a1a] rounded-full flex items-center justify-center overflow-hidden">
+                {myGroup?.avatar_url ? (
+                  <img src={myGroup.avatar_url} alt="" className="h-full w-full object-cover opacity-50 grayscale" />
+                ) : (
+                  <Plus size={20} strokeWidth={3} className="text-neon-crimson" />
+                )}
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-neon-crimson rounded-full flex items-center justify-center shadow-[0_0_10px_var(--neon-crimson)]">
+                  <Plus size={12} strokeWidth={4} className="text-white" />
+                </div>
               </div>
             </div>
-            <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground truncate w-full text-center">
-              {myGroup ? "adaugă" : "story nou"}
+            <span className="mt-3 text-[9px] font-mono tracking-[0.1em] uppercase text-white/50 truncate w-full text-center">
+              {myGroup ? "story nou" : "story nou"}
             </span>
           </button>
 
           {groups.map((g, i) => {
             const last = g.stories[g.stories.length - 1];
             const cover = last.media_type === "image" ? last.media_url : null;
+            const allSeen = g.stories.every((s) => seenIds.has(s.id));
+            const gradient = pickGradient(g.user_id);
+            const label = g.user_id === user.id ? "tu" : g.handle;
+
             return (
               <button
                 key={g.user_id}
                 onClick={() => setViewerIdx(i)}
-                className="shrink-0 flex flex-col items-center gap-1.5 w-[68px]"
+                className="shrink-0 flex flex-col items-center w-[68px] active:scale-95 transition-transform"
               >
-                <div className="relative h-[60px] w-[60px] rounded-full p-[2px] bg-gradient-to-br from-[#ff8a3d] via-neon-crimson to-neon-purple">
-                  <div className="h-full w-full rounded-full bg-background p-[2px]">
-                    {cover ? (
-                      <img src={cover} alt="" className="h-full w-full rounded-full object-cover" />
-                    ) : g.avatar_url ? (
-                      <img src={g.avatar_url} alt="" className="h-full w-full rounded-full object-cover" />
-                    ) : (
-                      <div className="h-full w-full rounded-full bg-foreground/10 grid place-items-center font-display font-bold text-sm">
-                        {g.handle[0]?.toUpperCase()}
-                      </div>
-                    )}
+                {allSeen ? (
+                  <div className="relative p-[1px] rounded-full bg-white/10">
+                    <div className="w-[62px] h-[62px] rounded-full overflow-hidden bg-[#111] opacity-40">
+                      <Cover cover={cover} avatar={g.avatar_url} fallback={g.handle} />
+                    </div>
                   </div>
-                </div>
-                <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground truncate w-full text-center">
-                  {g.user_id === user.id ? "tu" : g.handle}
+                ) : (
+                  <div
+                    className="relative p-[3px] rounded-full"
+                    style={{
+                      backgroundImage: gradient.bg,
+                      boxShadow: `0 0 15px ${gradient.glow}`,
+                    }}
+                  >
+                    <div className="w-[58px] h-[58px] rounded-full border-[3px] border-background overflow-hidden bg-[#111]">
+                      <Cover cover={cover} avatar={g.avatar_url} fallback={g.handle} />
+                    </div>
+                  </div>
+                )}
+                <span
+                  className={`mt-2 text-[9px] font-mono tracking-[0.05em] uppercase truncate w-full text-center ${
+                    allSeen ? "text-white/30" : "text-white"
+                  }`}
+                >
+                  {label}
                 </span>
               </button>
             );
           })}
         </div>
       </div>
+
 
       {viewerIdx !== null && groups[viewerIdx] && (
         <StoryViewer
