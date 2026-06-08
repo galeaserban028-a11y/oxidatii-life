@@ -199,9 +199,11 @@ export function StoriesStrip() {
           startIndex={viewerIdx}
           onClose={() => setViewerIdx(null)}
           onDeleted={() => qc.invalidateQueries({ queryKey: ["stories-strip"] })}
+          onSeen={markSeen}
           viewerId={user.id}
         />
       )}
+
 
       {uploadOpen && (
         <StoryUploadSheet
@@ -222,12 +224,14 @@ function StoryViewer({
   startIndex,
   onClose,
   onDeleted,
+  onSeen,
   viewerId,
 }: {
   groups: Group[];
   startIndex: number;
   onClose: () => void;
   onDeleted: () => void;
+  onSeen: (ids: string[]) => void;
   viewerId: string;
 }) {
   const [gi, setGi] = useState(startIndex);
@@ -235,7 +239,13 @@ function StoryViewer({
   const group = groups[gi];
   const story = group?.stories[si];
 
+  // Mark each viewed story as seen
+  useEffect(() => {
+    if (story) onSeen([story.id]);
+  }, [story, onSeen]);
+
   if (!group || !story) return null;
+
 
   const next = () => {
     if (si + 1 < group.stories.length) setSi(si + 1);
