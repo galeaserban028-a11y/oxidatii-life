@@ -198,6 +198,23 @@ async function handleInvoicePaymentSucceeded(invoice: any, _env: StripeEnv) {
   const priceLookup = line?.price?.lookup_key
     || line?.price?.metadata?.lovable_external_id
     || line?.price?.id;
+
+  // Biz Pro renewal → grant 50 RON wallet credits
+  if (priceLookup === "biz_pro_monthly") {
+    const { data: sub } = await supabaseAdmin
+      .from("subscriptions").select("stripe_subscription_id").eq("stripe_subscription_id", subId).maybeSingle();
+    // Pull business_id from the Stripe subscription metadata via the saved sub row's customer link is not stored; rely on invoice.subscription_details.metadata or fetch via subscription metadata cached in business_accounts
+    const { data: biz } = await supabaseAdmin
+      .from("business_accounts").select("id").eq("pro_tier", "pro").not("pro_until", "is", null).limit(50);
+    // Resolve specific business via invoice metadata
+    const businessId = invoice.subscription_details?.metadata?.business_id
+      || invoice.lines?.data?.[0]?.metadata?.business_id;
+    if (businessId) {
+      await grantBizProMonthlyCredits(businessId, `biz_pro_renew:${invoice.id}`);
+    }
+    return;
+  }
+
   const tierInfo = priceLookup ? TIER_MAP[priceLookup] : null;
   if (!tierInfo) return;
 
