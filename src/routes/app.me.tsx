@@ -443,7 +443,7 @@ function MePage() {
         </div>
 
         {/* Action buttons */}
-        <div className="mt-3 grid grid-cols-[1fr_1fr_auto] gap-1.5">
+        <div className="mt-8 grid grid-cols-[1fr_1fr_auto] gap-3">
           <Dialog open={editOpen} onOpenChange={(o) => {
             setEditOpen(o);
             if (o) {
