@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Star, Gift, Swords, Crown, Plus, Trash2, Sparkles, X, Check, Users, Trophy, Calendar,
 } from "lucide-react";
+import { BizProEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 
 const BATTLE_CATEGORIES = [
   "club", "bar", "cafenea", "festival", "restaurant", "beach", "promoter",
@@ -360,6 +361,7 @@ function BattleCard({ business }: { business: any }) {
 
 /* ============= 4. VERIFIED PRO ============= */
 function ProUpgradeCard({ business }: { business: any }) {
+  const [open, setOpen] = useState(false);
   const isPro = business.pro_tier && business.pro_until && new Date(business.pro_until) > new Date();
 
   if (isPro) {
@@ -377,28 +379,53 @@ function ProUpgradeCard({ business }: { business: any }) {
   }
 
   return (
-    <div className="rounded-2xl bg-zinc-900/40 border border-white/5 backdrop-blur p-4 space-y-3">
-      <div className="flex items-start gap-3">
-        <Crown size={20} className="text-yellow-400 mt-0.5" />
-        <div className="flex-1">
-          <div className="font-display uppercase text-sm">Devino Verified Pro</div>
-          <div className="text-[10px] text-zinc-400 mt-0.5">
-            49 RON/lună · badge oficial · pin permanent pe hartă · răspuns la review-uri · statistici avansate
+    <>
+      <div className="rounded-2xl bg-zinc-900/40 border border-white/5 backdrop-blur p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <Crown size={20} className="text-yellow-400 mt-0.5" />
+          <div className="flex-1">
+            <div className="font-display uppercase text-sm">Devino Verified Pro</div>
+            <div className="text-[10px] text-zinc-400 mt-0.5">
+              49 RON/lună · badge oficial · pin permanent pe hartă · răspuns la review-uri · statistici avansate
+            </div>
           </div>
         </div>
+        <div className="grid grid-cols-2 gap-1.5 text-[10px] text-zinc-300">
+          <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Badge verde</div>
+          <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Pin pe hartă</div>
+          <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Răspuns review</div>
+          <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Stats avansate</div>
+        </div>
+        <button
+          onClick={() => setOpen(true)}
+          className="w-full py-2.5 rounded-lg font-display uppercase text-[11px] tracking-widest text-white"
+          style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}>
+          Upgrade Pro — 49 RON/lună
+        </button>
       </div>
-      <div className="grid grid-cols-2 gap-1.5 text-[10px] text-zinc-300">
-        <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Badge verde</div>
-        <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Pin pe hartă</div>
-        <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Răspuns review</div>
-        <div className="flex items-center gap-1"><Check size={10} className="text-neon-green" /> Stats avansate</div>
-      </div>
-      <button
-        onClick={() => alert("Plata abonamentelor se conectează la Stripe în pasul următor.")}
-        className="w-full py-2.5 rounded-lg font-display uppercase text-[11px] tracking-widest text-white"
-        style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}>
-        Upgrade Pro — 49 RON/lună
-      </button>
-    </div>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4"
+          onClick={() => setOpen(false)}>
+          <div
+            className="bg-zinc-950 rounded-2xl max-w-lg w-full mt-8 border border-white/10 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-white/5">
+              <div className="font-display uppercase text-sm flex items-center gap-2">
+                <Crown size={16} className="text-yellow-400" /> Verified Pro
+              </div>
+              <button onClick={() => setOpen(false)} className="p-1 text-zinc-400 hover:text-white">
+                <X size={16} />
+              </button>
+            </div>
+            <BizProEmbeddedCheckout
+              businessId={business.id}
+              returnUrl={`${window.location.origin}/app/biz?pro=success`}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

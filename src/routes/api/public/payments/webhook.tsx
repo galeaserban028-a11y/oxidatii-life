@@ -83,6 +83,17 @@ async function handleCoinPackPurchase(session: any, env: StripeEnv) {
     .update({ coin_balance: current + coins }).eq("id", userId);
 }
 
+async function upsertBizProSubscription(subscription: any, env: StripeEnv, periodEndIso: string | null) {
+  const businessId = subscription.metadata?.business_id;
+  if (!businessId) return;
+  const isActive = ["active", "trialing", "past_due"].includes(subscription.status)
+    || (subscription.status === "canceled" && periodEndIso && new Date(periodEndIso) > new Date());
+  await supabaseAdmin.from("business_accounts").update({
+    pro_tier: isActive ? "pro" : null,
+    pro_until: isActive ? periodEndIso : null,
+  }).eq("id", businessId);
+}
+
 async function upsertSubscription(subscription: any, env: StripeEnv) {
   const userId = subscription.metadata?.userId;
   if (!userId) return;
@@ -107,6 +118,12 @@ async function upsertSubscription(subscription: any, env: StripeEnv) {
     environment: env,
     updated_at: new Date().toISOString(),
   }, { onConflict: "stripe_subscription_id" });
+
+  // Biz Pro subscription → update business_accounts, skip profile premium sync
+  if (subscription.metadata?.kind === "biz_pro") {
+    await upsertBizProSubscription(subscription, env, periodEndIso);
+    return;
+  }
 
   // Sync premium_tier on profile
   const tierInfo = priceLookup ? TIER_MAP[priceLookup] : null;
@@ -186,7 +203,15 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
     updated_at: new Date().toISOString(),
   }).eq("stripe_subscription_id", subscription.id).eq("environment", env);
 
-  // Revoke premium when subscription fully ends (Stripe sends this after period_end if not renewed)
+  // Biz Pro: revoke pro on business
+  if (subscription.metadata?.kind === "biz_pro" && subscription.metadata?.business_id) {
+    await supabaseAdmin.from("business_accounts").update({
+      pro_tier: null, pro_until: null,
+    }).eq("id", subscription.metadata.business_id);
+    return;
+  }
+
+  // Revoke premium when user subscription fully ends
   if (userId) {
     await supabaseAdmin.from("profiles").update({
       premium_tier: null,
