@@ -42,7 +42,7 @@ export const createBizProCheckout = createServerFn({ method: "POST" })
       const { supabase, userId } = context;
       const { data: biz, error: bizErr } = await supabase
         .from("business_accounts")
-        .select("id, owner_user_id, name")
+        .select("id, owner_user_id")
         .eq("id", data.businessId)
         .maybeSingle();
       if (bizErr || !biz) throw new Error("Business inexistent");
