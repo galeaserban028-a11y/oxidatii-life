@@ -28,11 +28,13 @@ async function resolveCustomer(stripe: ReturnType<typeof createStripeClient>, us
     query: `metadata['userId']:'${userId}'`,
     limit: 1,
   });
-  if (found.data.length) return found.data[0].id;
+  const foundCustomers = Array.isArray(found.data) ? found.data : [];
+  if (foundCustomers.length) return foundCustomers[0].id;
   if (email) {
     const existing = await stripe.customers.list({ email, limit: 1 });
-    if (existing.data.length) {
-      const c = existing.data[0];
+    const existingCustomers = Array.isArray(existing.data) ? existing.data : [];
+    if (existingCustomers.length) {
+      const c = existingCustomers[0];
       if (c.metadata?.userId !== userId) {
         await stripe.customers.update(c.id, { metadata: { ...c.metadata, userId } });
       }
@@ -63,8 +65,9 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
     try {
       const stripe = createStripeClient(data.environment);
       const prices = await stripe.prices.list({ lookup_keys: [data.priceId], limit: 1 });
-      if (!prices.data.length) return { error: "Preț indisponibil" };
-      const stripePrice = prices.data[0];
+      const matchedPrices = Array.isArray(prices.data) ? prices.data : [];
+      if (!matchedPrices.length) return { error: "Preț indisponibil" };
+      const stripePrice = matchedPrices[0];
       const isRecurring = stripePrice.type === "recurring";
       const isCoinPack = data.priceId.startsWith("coins_");
 

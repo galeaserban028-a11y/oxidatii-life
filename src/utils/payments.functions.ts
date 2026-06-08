@@ -13,11 +13,13 @@ async function resolveOrCreateCustomer(
     query: `metadata['userId']:'${options.userId}'`,
     limit: 1,
   });
-  if (found.data.length) return found.data[0].id;
+  const foundCustomers = Array.isArray(found.data) ? found.data : [];
+  if (foundCustomers.length) return foundCustomers[0].id;
   if (options.email) {
     const existing = await stripe.customers.list({ email: options.email, limit: 1 });
-    if (existing.data.length) {
-      const c = existing.data[0];
+    const existingCustomers = Array.isArray(existing.data) ? existing.data : [];
+    if (existingCustomers.length) {
+      const c = existingCustomers[0];
       if (c.metadata?.userId !== options.userId) {
         await stripe.customers.update(c.id, { metadata: { ...c.metadata, userId: options.userId } });
       }
@@ -50,8 +52,9 @@ export const createBizProCheckout = createServerFn({ method: "POST" })
 
       const stripe = createStripeClient(data.environment);
       const prices = await stripe.prices.list({ lookup_keys: ["biz_pro_monthly"] });
-      if (!prices.data.length) throw new Error("Preț Pro indisponibil");
-      const price = prices.data[0];
+      const matchedPrices = Array.isArray(prices.data) ? prices.data : [];
+      if (!matchedPrices.length) throw new Error("Preț Pro indisponibil");
+      const price = matchedPrices[0];
 
       const { data: userRes } = await supabase.auth.getUser();
       const customerId = await resolveOrCreateCustomer(stripe, {

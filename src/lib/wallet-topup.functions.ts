@@ -44,8 +44,9 @@ export const createWalletTopupCheckout = createServerFn({ method: "POST" })
         query: `metadata['userId']:'${userId}'`,
         limit: 1,
       });
-      if (found.data.length) {
-        customerId = found.data[0].id;
+      const foundCustomers = Array.isArray(found.data) ? found.data : [];
+      if (foundCustomers.length) {
+        customerId = foundCustomers[0].id;
       } else {
         const created = await stripe.customers.create({
           metadata: { userId },
