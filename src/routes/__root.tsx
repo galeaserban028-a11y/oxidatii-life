@@ -147,6 +147,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  React.useEffect(() => {
+    import("@/hooks/useTheme").then((m) => m.initThemeEarly());
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
