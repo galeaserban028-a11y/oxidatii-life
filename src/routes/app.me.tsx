@@ -556,8 +556,10 @@ function MePage() {
 
       </div>
 
-      <div className="mt-3 border-t border-foreground/10" />
+      {/* Stories — propriile story-uri + prieteni */}
+      <StoriesStrip />
 
+      <div className="mt-3 border-t border-foreground/10" />
 
       {/* Grid moments */}
       {tabMoments.length === 0 ? (
