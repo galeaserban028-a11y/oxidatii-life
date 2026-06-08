@@ -119,6 +119,12 @@ async function upsertSubscription(subscription: any, env: StripeEnv) {
     updated_at: new Date().toISOString(),
   }, { onConflict: "stripe_subscription_id" });
 
+  // Biz Pro subscription → update business_accounts, skip profile premium sync
+  if (subscription.metadata?.kind === "biz_pro") {
+    await upsertBizProSubscription(subscription, env, periodEndIso);
+    return;
+  }
+
   // Sync premium_tier on profile
   const tierInfo = priceLookup ? TIER_MAP[priceLookup] : null;
   const isActive = ["active", "trialing", "past_due"].includes(subscription.status)
