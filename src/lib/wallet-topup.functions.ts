@@ -86,7 +86,10 @@ export const createWalletTopupCheckout = createServerFn({ method: "POST" })
         },
       });
 
-      const clientSecret = getCheckoutClientSecret(session);
+      let clientSecret = getCheckoutClientSecret(session);
+      if (!clientSecret && session.id) {
+        clientSecret = getCheckoutClientSecret(await stripe.checkout.sessions.retrieve(session.id));
+      }
       if (!clientSecret) return { error: "Plata nu a putut porni. Reîncearcă în câteva secunde." };
       return { clientSecret };
     } catch (error) {
