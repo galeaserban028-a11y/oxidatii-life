@@ -347,6 +347,94 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
   );
 }
 
+function SimpleBizMap({ balanceCents, activeCount, totalSpent, totalImpressions, totalClicks, onTopup, onCampaign }: {
+  balanceCents: number;
+  activeCount: number;
+  totalSpent: number;
+  totalImpressions: number;
+  totalClicks: number;
+  onTopup: () => void;
+  onCampaign: () => void;
+}) {
+  const hasFunds = balanceCents >= 5000;
+  const steps = [
+    {
+      n: "1",
+      title: "Încarcă buget",
+      text: `${ron(balanceCents)} RON disponibili`,
+      action: "Top-up",
+      icon: Wallet,
+      onClick: onTopup,
+      active: !hasFunds,
+    },
+    {
+      n: "2",
+      title: "Pornește reclama",
+      text: hasFunds ? "Ai minimul necesar pentru start" : "Minim 50 RON pentru prima campanie",
+      action: hasFunds ? "Creează" : "Adaugă 50 RON",
+      icon: Megaphone,
+      onClick: onCampaign,
+      active: hasFunds,
+    },
+    {
+      n: "3",
+      title: "Urmărește rezultatul",
+      text: `${activeCount} active · ${totalImpressions.toLocaleString()} views · ${totalClicks.toLocaleString()} click-uri`,
+      action: null,
+      icon: TrendingUp,
+      onClick: undefined,
+      active: activeCount > 0,
+    },
+  ];
+
+  return (
+    <div className="rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/[0.025]">
+      <div className="p-4 border-b border-foreground/10 flex items-start justify-between gap-3">
+        <div>
+          <div className="font-display uppercase text-xl leading-none">Planul tău</div>
+          <p className="text-xs text-muted-foreground mt-1">3 pași clari. Nu trebuie să alegi din zeci de opțiuni.</p>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <div className="font-display text-2xl leading-none">{ron(balanceCents)}</div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">RON wallet</div>
+        </div>
+      </div>
+
+      <div className="divide-y divide-foreground/10">
+        {steps.map((s) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.n} className={`p-3 flex items-center gap-3 ${s.active ? "bg-primary/5" : ""}`}>
+              <div className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 ${s.active ? "bg-primary text-primary-foreground" : "bg-foreground/5 text-muted-foreground"}`}>
+                <Icon size={16} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-muted-foreground">{s.n}</span>
+                  <span className="text-sm font-medium truncate">{s.title}</span>
+                </div>
+                <div className="text-[11px] text-muted-foreground truncate">{s.text}</div>
+              </div>
+              {s.action && s.onClick && (
+                <button onClick={s.onClick} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium flex-shrink-0">
+                  {s.action}
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {totalSpent > 0 && (
+        <div className="px-4 py-2.5 bg-background/40 text-[11px] text-muted-foreground flex items-center justify-between">
+          <span>Cheltuit până acum</span>
+          <span className="font-medium text-foreground">{ron(totalSpent)} RON</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ============================ Campaign Builder ============================ */
 /* Psychologically-tuned 3-step flow: GOAL → STORY → BOOST.
    Outcome-framed goals, tier-anchored budgets with social proof,
