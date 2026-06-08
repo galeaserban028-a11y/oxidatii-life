@@ -71,30 +71,31 @@ function RequestsPage() {
   }
 
   return (
-    <div className="px-5 pt-5 pb-10 max-w-xl mx-auto space-y-4">
-      <div>
-        <h1 className="font-display uppercase text-2xl leading-none">Cereri de urmărire</h1>
-        <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground mt-1">
+    <div className="px-5 pt-8 pb-12 max-w-xl mx-auto space-y-7">
+      <header className="space-y-3">
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">activitate</div>
+        <h1 className="font-display uppercase text-3xl leading-[0.95]">Cereri de urmărire.</h1>
+        <p className="text-xs text-zinc-500">
           {reqs?.length ?? 0} {reqs?.length === 1 ? "cerere" : "cereri"} în așteptare
         </p>
-      </div>
+      </header>
 
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
           />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="caută după @handle sau nume"
-            className="w-full h-10 pl-9 pr-3 rounded-xl bg-card border border-border text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:border-neon-crimson/60"
+            className="w-full h-11 pl-10 pr-3 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur text-sm placeholder:text-zinc-600 focus:outline-none focus:border-neon-crimson/40"
           />
         </div>
         <button
           onClick={() => setSort((s) => (s === "newest" ? "oldest" : "newest"))}
-          className="h-10 px-3 rounded-xl bg-card border border-border flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest active:scale-95 transition"
+          className="h-11 px-3 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold active:scale-95 transition"
           aria-label="Schimbă sortarea"
         >
           <ArrowDownUp size={13} />
@@ -123,7 +124,7 @@ function RequestsPage() {
             return (
               <li
                 key={r.id}
-                className="flex items-center gap-3 p-3 rounded-2xl border border-border bg-card"
+                className="flex items-center gap-3 p-3 rounded-2xl border border-white/5 bg-zinc-900/30 backdrop-blur"
               >
                 <Link
                   to="/app/user/$id"

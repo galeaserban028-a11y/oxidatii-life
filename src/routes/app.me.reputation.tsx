@@ -64,19 +64,24 @@ function ReputationAnalyticsPage() {
   const last30 = ratings.filter((r: any) => new Date(r.created_at) > new Date(Date.now() - 30 * 86400000));
 
   return (
-    <div className="px-5 pt-5 pb-10 max-w-xl mx-auto space-y-5">
-      <Link to="/app/me" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-        <ArrowLeft size={14} /> înapoi
+    <div className="px-5 pt-8 pb-12 max-w-xl mx-auto space-y-7">
+      <Link to="/app/me" className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+        <ArrowLeft size={12} /> înapoi
       </Link>
-      <header className="flex items-center gap-2">
-        <BarChart3 size={20} className="text-neon-purple" />
-        <h1 className="font-display uppercase text-2xl">Reputation</h1>
+      <header className="space-y-3">
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">analytics</div>
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-2xl bg-zinc-900/30 border border-white/5 flex items-center justify-center">
+            <BarChart3 size={18} className="text-neon-purple" />
+          </div>
+          <h1 className="font-display uppercase text-3xl leading-[0.95]">Reputation.</h1>
+        </div>
       </header>
 
       {isLoading ? (
-        <div className="text-sm text-muted-foreground">Se încarcă...</div>
+        <div className="text-sm text-zinc-500">Se încarcă...</div>
       ) : total === 0 ? (
-        <div className="rounded-2xl border border-foreground/15 p-6 text-center text-sm text-muted-foreground">
+        <div className="rounded-2xl border border-white/5 bg-zinc-900/30 p-8 text-center text-sm text-zinc-500">
           Nimeni nu te-a evaluat încă.
         </div>
       ) : (
@@ -87,16 +92,16 @@ function ReputationAnalyticsPage() {
             <Stat label="ultimele 30z" value={last30.length} />
           </div>
 
-          <div className="rounded-2xl border border-foreground/15 overflow-hidden">
+          <div className="rounded-2xl border border-white/5 bg-zinc-900/30 backdrop-blur overflow-hidden">
             {byCategory.map((c) => (
-              <div key={c.cat} className="p-4 border-b border-foreground/10 last:border-b-0">
-                <div className="flex items-baseline justify-between mb-1.5">
+              <div key={c.cat} className="p-4 border-b border-white/5 last:border-b-0">
+                <div className="flex items-baseline justify-between mb-2">
                   <div className="font-display uppercase text-sm">{CAT_LABELS[c.cat]}</div>
-                  <div className="font-mono text-xs tabular-nums text-muted-foreground">
+                  <div className="text-[10px] uppercase tracking-wider tabular-nums text-zinc-500">
                     {c.count} · {c.avg.toFixed(2)}/5
                   </div>
                 </div>
-                <div className="h-2 rounded-full bg-foreground/10 overflow-hidden">
+                <div className="h-2 rounded-full bg-zinc-800/50 overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-neon-purple to-neon-crimson"
                     style={{ width: `${(c.avg / 5) * 100}%` }}
@@ -113,9 +118,9 @@ function ReputationAnalyticsPage() {
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-xl bg-foreground/5 p-3 text-center">
+    <div className="rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur p-4 text-center">
       <div className="font-display text-2xl tabular-nums">{value}</div>
-      <div className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">{label}</div>
+      <div className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 mt-1.5">{label}</div>
     </div>
   );
 }

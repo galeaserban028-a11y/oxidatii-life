@@ -126,17 +126,17 @@ function ArchivePage() {
   const c = data?.counts;
 
   return (
-    <div className="px-4 pt-5 pb-24 space-y-5 max-w-xl mx-auto">
-      <header className="space-y-2">
-        <Link to="/app/me" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+    <div className="px-5 pt-8 pb-24 space-y-7 max-w-xl mx-auto">
+      <header className="space-y-4">
+        <Link to="/app/me" className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-zinc-500 hover:text-foreground">
           <ArrowLeft size={12} /> înapoi la profil
         </Link>
-        <div>
-          <div className="text-[11px] uppercase tracking-[0.2em] text-primary font-medium">Arhiva ta</div>
-          <h1 className="font-display font-bold text-3xl leading-tight">
-            <span className="text-gradient-sunset">Tot ce-ai făcut</span>
+        <div className="space-y-2">
+          <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">arhiva ta</div>
+          <h1 className="font-display uppercase text-3xl leading-[0.95]">
+            <span className="text-gradient-sunset">Tot ce-ai făcut.</span>
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-zinc-500">
             {total} momente · de la primul șpriț până azi.
           </p>
         </div>
@@ -151,7 +151,7 @@ function ArchivePage() {
         </div>
       )}
 
-      <div className="flex gap-1.5 overflow-x-auto scrollbar-none -mx-1 px-1">
+      <div className="flex gap-2 overflow-x-auto scrollbar-none -mx-1 px-1">
         {([
           ["all", "Toate"],
           ["photos", "Faze"],
@@ -162,10 +162,10 @@ function ArchivePage() {
           <button
             key={k}
             onClick={() => setFilter(k)}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
+            className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${
               filter === k
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-card text-muted-foreground border-border"
+                ? "bg-neon-crimson text-background border-neon-crimson"
+                : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"
             }`}
           >
             {label}
@@ -249,10 +249,10 @@ function ArchivePage() {
 
 function Stat({ label, value, icon: Icon }: { label: string; value: number; icon: any }) {
   return (
-    <div className="rounded-xl bg-card border border-border p-3 text-center">
-      <Icon size={14} className="mx-auto text-muted-foreground" />
-      <div className="font-display font-bold text-xl mt-1 leading-none">{value}</div>
-      <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">{label}</div>
+    <div className="rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur p-3 text-center">
+      <Icon size={14} className="mx-auto text-zinc-500" />
+      <div className="font-display font-bold text-xl mt-1.5 leading-none">{value}</div>
+      <div className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 mt-1.5">{label}</div>
     </div>
   );
 }

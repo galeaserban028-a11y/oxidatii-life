@@ -37,9 +37,9 @@ function RatersPage() {
 
   return (
     <div className="pb-24 min-h-screen bg-background">
-      <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-foreground/10 px-3 h-12 flex items-center gap-2">
-        <Link to="/app/me" className="p-1.5 -ml-1.5"><ArrowLeft size={22} /></Link>
-        <div className="font-mono uppercase text-[10px] tracking-[0.3em] text-muted-foreground">Cine ți-a dat rating</div>
+      <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-white/5 px-5 h-14 flex items-center gap-3">
+        <Link to="/app/me" className="h-9 w-9 -ml-1.5 rounded-xl bg-zinc-900/30 border border-white/5 flex items-center justify-center active:scale-95 transition"><ArrowLeft size={18} /></Link>
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">Cine ți-a dat rating</div>
       </header>
 
       {!allowed ? (

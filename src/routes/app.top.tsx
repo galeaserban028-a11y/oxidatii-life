@@ -129,35 +129,35 @@ function TopPage() {
   const Icon = METRIC_META[metric].icon;
 
   return (
-    <div className="px-5 pt-6 pb-8 max-w-xl mx-auto space-y-5">
-      <header className="space-y-1.5">
-        <div className="text-[11px] uppercase tracking-[0.2em] text-primary font-medium">
-          Leaderboard · {monthLabel}
+    <div className="px-5 pt-8 pb-10 max-w-xl mx-auto space-y-7">
+      <header className="space-y-3">
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+          leaderboard · {monthLabel}
         </div>
-        <h1 className="font-display font-bold text-3xl leading-tight">
+        <h1 className="font-display uppercase text-3xl leading-[0.95]">
           Top <span className="text-gradient-sunset">{METRIC_META[metric].label}</span>
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-zinc-500">
           Cei mai tari {scopeLabel}. Se resetează în {daysLeft} {daysLeft === 1 ? "zi" : "zile"}.
         </p>
       </header>
 
 
       {/* Scope selector */}
-      <div className="space-y-2">
-        <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-secondary border border-border">
+      <div className="space-y-3">
+        <div className="grid grid-cols-3 gap-2 text-[11px] font-bold uppercase tracking-wider">
           <button
             onClick={() => setScope("world")}
-            className={`py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 ${
-              scope === "world" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+            className={`py-2.5 rounded-2xl border transition flex items-center justify-center gap-1.5 ${
+              scope === "world" ? "bg-neon-crimson text-background border-neon-crimson" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"
             }`}
           >
-            <Globe2 size={13} /> Lume
+            <Globe2 size={12} /> Lume
           </button>
           <button
             onClick={() => setScope("country")}
-            className={`py-2 rounded-xl text-xs font-semibold transition ${
-              scope === "country" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+            className={`py-2.5 rounded-2xl border transition ${
+              scope === "country" ? "bg-neon-crimson text-background border-neon-crimson" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"
             }`}
           >
             Țară
@@ -165,8 +165,8 @@ function TopPage() {
           <button
             onClick={() => setScope("city")}
             disabled={!cityId}
-            className={`py-2 rounded-xl text-xs font-semibold transition disabled:opacity-40 ${
-              scope === "city" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+            className={`py-2.5 rounded-2xl border transition disabled:opacity-40 ${
+              scope === "city" ? "bg-neon-crimson text-background border-neon-crimson" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"
             }`}
           >
             Oraș
@@ -178,7 +178,7 @@ function TopPage() {
           <div className="relative">
             <button
               onClick={() => setCountryOpen((o) => !o)}
-              className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl border border-border bg-card text-sm font-semibold"
+              className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-white/5 bg-zinc-900/30 backdrop-blur text-sm font-semibold"
             >
               <span>{COUNTRY_LABEL[country] ?? country}</span>
               <ChevronDown size={16} className={`transition ${countryOpen ? "rotate-180" : ""}`} />

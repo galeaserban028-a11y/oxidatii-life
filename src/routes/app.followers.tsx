@@ -60,24 +60,24 @@ function FollowersPage() {
   }
 
   return (
-    <div className="px-4 pt-5 pb-24 space-y-4">
-      <header>
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-green">
-          // CONEXIUNI
+    <div className="px-5 pt-8 pb-24 space-y-7">
+      <header className="space-y-3">
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+          conexiuni
         </div>
-        <h1 className="font-display uppercase text-2xl mt-1 leading-none">
-          {tab === "followers" ? "Urmăritorii tăi" : "Urmărești"}
+        <h1 className="font-display uppercase text-3xl leading-[0.95]">
+          {tab === "followers" ? "Urmăritorii tăi." : "Urmărești."}
         </h1>
       </header>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 text-[11px] font-bold uppercase tracking-wider">
         <Link
           to="/app/followers"
           search={{ tab: "followers" }}
-          className={`text-center py-2.5 rounded-xl border font-display uppercase text-xs tracking-widest ${
+          className={`text-center py-2.5 rounded-2xl border transition ${
             tab === "followers"
-              ? "border-neon-crimson/50 bg-neon-crimson/10 text-neon-crimson"
-              : "border-foreground/10 text-muted-foreground"
+              ? "bg-neon-crimson text-background border-neon-crimson"
+              : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"
           }`}
         >
           Followers
@@ -85,10 +85,10 @@ function FollowersPage() {
         <Link
           to="/app/followers"
           search={{ tab: "following" }}
-          className={`text-center py-2.5 rounded-xl border font-display uppercase text-xs tracking-widest ${
+          className={`text-center py-2.5 rounded-2xl border transition ${
             tab === "following"
-              ? "border-neon-purple/50 bg-neon-purple/10 text-neon-purple"
-              : "border-foreground/10 text-muted-foreground"
+              ? "bg-neon-purple text-background border-neon-purple"
+              : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"
           }`}
         >
           Urmărești
@@ -123,13 +123,13 @@ function FollowersPage() {
               <Link
                 to="/app/user/$id"
                 params={{ id: p.id }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04] border border-foreground/10 hover:border-neon-crimson/40 transition"
+                className="flex items-center gap-3 p-3 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur hover:bg-zinc-800/40 active:scale-[0.99] transition"
               >
                 <div className="h-11 w-11 rounded-full bg-foreground/10 overflow-hidden flex items-center justify-center shrink-0">
                   {p.avatar_url ? (
                     <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <span className="font-display text-sm text-muted-foreground">
+                    <span className="font-display text-sm text-zinc-400">
                       {(p.handle ?? p.display_name ?? "?").slice(0, 1).toUpperCase()}
                     </span>
                   )}
@@ -138,11 +138,11 @@ function FollowersPage() {
                   <div className="font-display text-sm truncate">
                     @{p.handle ?? p.display_name ?? "anonim"}
                   </div>
-                  <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                  <div className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 mt-0.5">
                     {p.rank ?? "MDS"}
                   </div>
                 </div>
-                <span className="font-mono text-[10px] uppercase text-muted-foreground">→</span>
+                <span className="text-[10px] uppercase tracking-wider text-zinc-500">→</span>
               </Link>
             </li>
           ))}

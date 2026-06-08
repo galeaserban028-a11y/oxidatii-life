@@ -80,21 +80,26 @@ function InboxPage() {
   const filtered = tab === "dm" ? dms : tab === "grup" ? groups : conversations;
 
   return (
-    <div className="px-4 pt-4 pb-6 space-y-5 max-w-2xl mx-auto">
+    <div className="px-5 pt-6 pb-8 space-y-7 max-w-2xl mx-auto">
       {/* Top bar */}
       <div className="flex items-center justify-between">
-        <Link to="/app" aria-label="înapoi" className="h-10 w-10 -ml-2 rounded-full flex items-center justify-center active:bg-foreground/10 transition">
-          <ArrowLeft size={22} />
+        <Link to="/app" aria-label="înapoi" className="h-11 w-11 -ml-2 rounded-2xl flex items-center justify-center bg-zinc-900/30 border border-white/5 active:scale-95 transition">
+          <ArrowLeft size={20} />
         </Link>
-        <h1 className="font-display font-black text-base tracking-tight">Mesaje</h1>
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">mesaje</div>
         <button
           onClick={() => setShowNew(true)}
           aria-label="mesaj nou"
-          className="h-10 w-10 -mr-2 rounded-full flex items-center justify-center active:bg-foreground/10 transition"
+          className="h-11 w-11 -mr-2 rounded-2xl flex items-center justify-center bg-zinc-900/30 border border-white/5 active:scale-95 transition"
         >
-          <PenSquare size={20} />
+          <PenSquare size={18} />
         </button>
       </div>
+
+      <header className="space-y-2">
+        <h1 className="font-display uppercase text-3xl leading-[0.95]">Conversațiile tale.</h1>
+        <p className="text-xs text-zinc-500">DM-uri și grupuri cu trupa.</p>
+      </header>
 
       {/* Friends row (story-style) */}
       {conversations.length > 0 && (
@@ -106,7 +111,7 @@ function InboxPage() {
       )}
 
       {/* Segmented */}
-      <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-foreground/[0.05] text-[12px] font-display font-bold">
+      <div className="grid grid-cols-3 gap-2 text-[11px] font-bold uppercase tracking-wider">
         {([
           ["toate", conversations.length],
           ["dm", dms.length],
@@ -115,9 +120,9 @@ function InboxPage() {
           <button
             key={k}
             onClick={() => setTab(k as Tab)}
-            className={`py-2 rounded-xl transition capitalize ${tab === k ? "bg-background shadow-sm text-foreground" : "text-muted-foreground"}`}
+            className={`py-2.5 rounded-2xl border transition ${tab === k ? "bg-neon-crimson text-background border-neon-crimson" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"}`}
           >
-            {k} <span className="opacity-50">· {n}</span>
+            {k} <span className="opacity-60">· {n}</span>
           </button>
         ))}
       </div>
