@@ -376,7 +376,7 @@ function StoryUploadSheet({
     setUploading(true);
     try {
       const ext = file.name.split(".").pop() ?? (mediaType === "video" ? "mp4" : "jpg");
-      const path = `stories/${userId}/${Date.now()}.${ext}`;
+      const path = `${userId}/stories/${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, {
         contentType: file.type,
         upsert: false,
