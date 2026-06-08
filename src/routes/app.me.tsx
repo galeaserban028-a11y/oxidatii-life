@@ -516,13 +516,13 @@ function MePage() {
 
           <button
             onClick={shareProfile}
-            className="h-9 rounded-lg bg-foreground/10 hover:bg-foreground/15 active:scale-[0.98] transition flex items-center justify-center gap-1.5 text-[13px] font-semibold"
+            className="h-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-[0.98] transition flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest"
           >
             <Share2 size={13} /> Distribuie
           </button>
           <Link
             to="/app/notifications"
-            className="h-9 w-9 rounded-lg bg-foreground/10 hover:bg-foreground/15 active:scale-[0.98] transition flex items-center justify-center relative"
+            className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-[0.98] transition flex items-center justify-center relative"
             aria-label="Notificări"
           >
             <Bell size={16} />
