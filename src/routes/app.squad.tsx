@@ -143,51 +143,60 @@ function SquadPage() {
 
   return (
     <div className="pb-4">
-      {/* Header — compact */}
-      <header className="px-4 pt-5 pb-3">
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">organizare</div>
-        <h1 className="font-display font-black text-2xl mt-1 tracking-tight leading-none">cu cine ieșim?</h1>
+      {/* Header — airy */}
+      <header className="px-5 pt-8 pb-6">
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">organizare</div>
+        <h1 className="font-display font-black text-3xl mt-2 tracking-tight leading-none">cu cine ieșim?</h1>
       </header>
 
-      {/* Quick stats strip */}
-      <div className="px-4 mb-3">
-        <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-foreground/10 bg-foreground/[0.03] p-1.5">
-          <a href="#live" className="flex flex-col items-center py-1.5 rounded-lg active:bg-foreground/5">
-            <div className="font-display font-black text-lg leading-none text-neon-crimson">{openCount}</div>
-            <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground mt-1">deschise</div>
+      {/* Quick stats — open row, no card */}
+      <div className="px-5 mb-8">
+        <div className="flex items-stretch">
+          <a href="#live" className="flex-1 flex flex-col items-center py-2 active:opacity-70 transition-opacity">
+            <div className="font-display font-black text-2xl leading-none text-neon-crimson">{openCount}</div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-zinc-500 mt-2">deschise</div>
           </a>
-          <a href="#groups" className="flex flex-col items-center py-1.5 rounded-lg active:bg-foreground/5 border-x border-foreground/10">
-            <div className="font-display font-black text-lg leading-none text-neon-green">{groupCount}</div>
-            <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground mt-1">găști</div>
+          <div className="w-px bg-white/5 mx-1" />
+          <a href="#groups" className="flex-1 flex flex-col items-center py-2 active:opacity-70 transition-opacity">
+            <div className="font-display font-black text-2xl leading-none text-neon-green">{groupCount}</div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-zinc-500 mt-2">găști</div>
           </a>
-          <a href="#friends" className="flex flex-col items-center py-1.5 rounded-lg active:bg-foreground/5">
-            <div className="font-display font-black text-lg leading-none text-neon-purple">{friendCount}</div>
-            <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground mt-1">haita</div>
+          <div className="w-px bg-white/5 mx-1" />
+          <a href="#friends" className="flex-1 flex flex-col items-center py-2 active:opacity-70 transition-opacity">
+            <div className="font-display font-black text-2xl leading-none text-neon-purple">{friendCount}</div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-zinc-500 mt-2">haita</div>
           </a>
         </div>
       </div>
 
-      {/* Primary actions — side by side */}
-      <div className="px-4 mb-5 grid grid-cols-2 gap-2">
+      {/* Primary actions — calmer glass tiles */}
+      <div className="px-5 mb-10 grid grid-cols-2 gap-4">
         <Link
           to="/app/parties"
-          className="relative overflow-hidden rounded-2xl border border-neon-crimson/40 bg-gradient-to-br from-neon-crimson/20 to-neon-crimson/[0.04] p-3 active:scale-[0.98] transition"
+          className="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
         >
-          <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-neon-crimson/30 blur-2xl pointer-events-none" />
-          <Flame className="text-neon-crimson mb-2" size={20} />
-          <div className="font-display font-black text-sm leading-tight">deschide unul</div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">cheamă lumea</div>
+          <div className="w-10 h-10 rounded-full bg-neon-crimson/10 flex items-center justify-center">
+            <Flame size={18} className="text-neon-crimson group-hover:scale-110 transition-transform" />
+          </div>
+          <div>
+            <div className="text-[12px] font-bold uppercase tracking-wider">deschide unul</div>
+            <div className="text-[10px] text-zinc-500 mt-0.5">cheamă lumea</div>
+          </div>
         </Link>
         <Link
           to="/app/friends"
-          className="relative overflow-hidden rounded-2xl border border-neon-purple/40 bg-gradient-to-br from-neon-purple/20 to-neon-purple/[0.04] p-3 active:scale-[0.98] transition"
+          className="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
         >
-          <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-neon-purple/30 blur-2xl pointer-events-none" />
-          <Plus className="text-neon-purple mb-2" size={20} strokeWidth={2.6} />
-          <div className="font-display font-black text-sm leading-tight">grup nou</div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5">cu prietenii tăi</div>
+          <div className="w-10 h-10 rounded-full bg-neon-purple/10 flex items-center justify-center">
+            <Plus size={18} strokeWidth={2.4} className="text-neon-purple group-hover:scale-110 transition-transform" />
+          </div>
+          <div>
+            <div className="text-[12px] font-bold uppercase tracking-wider">grup nou</div>
+            <div className="text-[10px] text-zinc-500 mt-0.5">cu prietenii tăi</div>
+          </div>
         </Link>
       </div>
+
 
       {/* LIVE ȘPRIȚURI */}
       <section id="live" className="px-4 space-y-2 scroll-mt-4">
