@@ -408,7 +408,7 @@ function StoryUploadSheet({
       onClick={onClose}
     >
       <div
-        className="w-full sm:max-w-md bg-zinc-900/70 backdrop-blur-3xl border border-white/10 rounded-t-[32px] sm:rounded-[32px] p-5 space-y-5 max-h-[92vh] overflow-y-auto shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] animate-scale-in"
+        className="w-full sm:max-w-md bg-zinc-900/70 backdrop-blur-3xl border border-white/10 rounded-t-[32px] sm:rounded-[32px] p-5 pb-[calc(env(safe-area-inset-bottom)+6rem)] sm:pb-5 space-y-5 max-h-[92vh] overflow-y-auto shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
