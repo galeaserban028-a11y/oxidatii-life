@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -147,6 +148,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    import("@/hooks/useTheme").then((m) => m.initThemeEarly());
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

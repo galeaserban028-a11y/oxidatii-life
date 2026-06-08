@@ -3,6 +3,8 @@ import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import logoBanner from "@/assets/logo-oxidatii.png";
 import { NotificationsBell } from "./NotificationsBell";
+import { ThemeToggle } from "./ThemeToggle";
+import { GlobalSearch } from "./GlobalSearch";
 
 export function AppHeader() {
   const location = useLocation();
@@ -29,11 +31,10 @@ export function AppHeader() {
           className="h-14 w-auto object-contain drop-shadow-[0_4px_14px_rgba(255,49,88,0.55)]"
         />
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
+        <GlobalSearch />
+        <ThemeToggle />
         <NotificationsBell />
-        <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground flicker">
-          ● {t("live")}
-        </span>
       </div>
     </header>
   );

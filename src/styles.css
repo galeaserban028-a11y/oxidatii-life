@@ -108,6 +108,43 @@
   --glow-crimson: var(--shadow-elevated);
 }
 
+/* Light theme — opt-in via .light class on <html> */
+.light {
+  --background: oklch(0.99 0.005 80);
+  --foreground: oklch(0.20 0.02 30);
+
+  --card: oklch(0.97 0.008 70);
+  --card-foreground: oklch(0.20 0.02 30);
+  --popover: oklch(0.98 0.006 70);
+  --popover-foreground: oklch(0.20 0.02 30);
+
+  --primary: oklch(0.62 0.20 35);
+  --primary-foreground: oklch(0.99 0.005 80);
+
+  --secondary: oklch(0.94 0.012 60);
+  --secondary-foreground: oklch(0.22 0.02 30);
+
+  --muted: oklch(0.94 0.01 60);
+  --muted-foreground: oklch(0.45 0.02 40);
+
+  --accent: oklch(0.58 0.22 350);
+  --accent-foreground: oklch(0.99 0 0);
+
+  --destructive: oklch(0.58 0.24 25);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --border: oklch(0.88 0.012 60);
+  --input: oklch(0.94 0.012 60);
+  --ring: oklch(0.62 0.20 35);
+
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 6%), 0 8px 24px -8px oklch(0 0 0 / 10%);
+  --shadow-elevated: 0 20px 48px -16px oklch(0.62 0.20 35 / 22%), 0 4px 12px -4px oklch(0 0 0 / 8%);
+}
+
+.light .glass {
+  background: oklch(0.98 0.006 70 / 75%);
+}
+
 
 @layer base {
   * {
