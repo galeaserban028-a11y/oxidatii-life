@@ -68,15 +68,26 @@ function VenuePage() {
         .select("id,name,type,description,ig_handle,address,cover_url,verified,opening_hours,street:streets(id,name,city:cities(name,slug))")
         .eq("id", id).single();
       if (error) throw error;
-      const { data: photos } = await supabase
-        .from("venue_photos").select("id,photo_url,media_type,caption,created_at,user_id")
-        .eq("venue_id", id).order("created_at", { ascending: false }).limit(36);
-      const { count: liveCount } = await supabase
-        .from("check_ins").select("id", { count: "exact", head: true })
-        .eq("venue_id", id).gt("expires_at", new Date().toISOString());
-      return { venue, photos: photos ?? [], liveCount: liveCount ?? 0 };
+      const [{ data: photos }, { count: liveCount }, { data: biz }] = await Promise.all([
+        supabase.from("venue_photos").select("id,photo_url,media_type,caption,created_at,user_id")
+          .eq("venue_id", id).order("created_at", { ascending: false }).limit(36),
+        supabase.from("check_ins").select("id", { count: "exact", head: true })
+          .eq("venue_id", id).gt("expires_at", new Date().toISOString()),
+        supabase.from("business_accounts").select("id, brand_name").eq("venue_id", id).maybeSingle(),
+      ]);
+      return { venue, photos: photos ?? [], liveCount: liveCount ?? 0, biz: biz ?? null };
     },
   });
+
+  // Real profile-view counter (fires once per mount)
+  const tracked = useRef(false);
+  useEffect(() => {
+    if (!data?.biz?.id || tracked.current) return;
+    tracked.current = true;
+    supabase.rpc("increment_business_visit", { _business_id: data.biz.id }).then(() => {});
+  }, [data?.biz?.id]);
+
+
 
   async function uploadPhoto(file: File) {
     if (!user) { toast.error("Trebuie să fii logat"); return; }
