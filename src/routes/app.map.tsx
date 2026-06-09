@@ -469,10 +469,13 @@ function MapPage() {
               </button>
             </div>
           )}
+          {/* Top CTA — "fă-ți localul vizibil", dismissible */}
+          {!activeCity && <BusinessVisibilityCTA />}
 
           {/* Floating promo banner — bottom of map, dismissible */}
           <PromoBanner promotedMeta={promotedMeta} />
         </div>
+
 
 
         <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
