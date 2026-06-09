@@ -4,7 +4,7 @@ import { ArrowLeft, Lock, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-export const Route = createFileRoute("/app/me/raters")({
+export const Route = createFileRoute("/app/me_/raters")({
   head: () => ({ meta: [{ title: "Cine ți-a dat rating · OXIDAȚII" }] }),
   component: RatersPage,
 });
