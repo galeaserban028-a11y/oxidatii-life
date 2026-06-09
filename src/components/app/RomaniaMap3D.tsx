@@ -135,7 +135,7 @@ export function RomaniaMap3D({
   onCityClick?: (city: City) => void;
   focusCity?: { lat: number; lng: number; zoom?: number } | null;
   fitBounds?: [[number, number], [number, number]] | null;
-  promotedMeta?: Record<string, { theme: string; cover: string | null }>;
+  promotedMeta?: Record<string, { theme: string; cover: string | null; campaignId?: string }>;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
@@ -418,7 +418,11 @@ export function RomaniaMap3D({
 
         wrap.onclick = (e) => {
           e.stopPropagation();
-          navRef.current({ to: "/app/venue/$id", params: { id: v.id } });
+          if (meta.campaignId) {
+            navRef.current({ to: "/app/promo/$id", params: { id: meta.campaignId } });
+          } else {
+            navRef.current({ to: "/app/venue/$id", params: { id: v.id } });
+          }
         };
 
         const marker = new maplibregl.Marker({ element: wrap, anchor: "bottom" })
