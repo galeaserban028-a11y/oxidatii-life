@@ -82,9 +82,18 @@ function UserPage() {
       const res = isUuid
         ? await q.eq("id", slug).maybeSingle()
         : await q.eq("handle", slug.toLowerCase()).maybeSingle();
-      return { profile: res.data };
+      if (res.data) return { profile: res.data, minimal: false };
+      // RLS hides private profiles entirely; fetch minimal card so the
+      // viewer can still see the handle/avatar and send a follow request.
+      if (isUuid) {
+        const { data: card } = await supabase.rpc("get_profile_card", { _id: slug });
+        const row = Array.isArray(card) ? card[0] : card;
+        if (row) return { profile: row, minimal: true };
+      }
+      return { profile: null, minimal: false };
     },
   });
+
 
   const profile = data?.profile as any;
   const id = profile?.id ?? (isUuid ? slug : "");
