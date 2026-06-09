@@ -1771,6 +1771,10 @@ export type Database = {
         Returns: boolean
       }
       iso_week_start: { Args: { _ts: string }; Returns: string }
+      send_chat_gift: {
+        Args: { _conversation_id: string; _gift_id: string }
+        Returns: Json
+      }
       spend_coins: {
         Args: { _amount: number; _kind: string; _ref_id?: string }
         Returns: number
