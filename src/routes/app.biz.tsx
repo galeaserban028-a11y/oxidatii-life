@@ -412,6 +412,30 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
+  // "Pune-l pe mapă" — auto-create a venue tied to this campaign if the
+  // business is not linked to one yet. Pre-fills from existing business data.
+  const [createVenueOnMap, setCreateVenueOnMap] = useState<boolean>(!business.venue_id);
+  const [venueType, setVenueType] = useState<string>(
+    ["club", "bar", "pub", "terasa", "after"].includes(business.type) ? business.type : "club"
+  );
+  const [venueCityId, setVenueCityId] = useState<string>(business.city_id ?? "");
+  const [venueCoords, setVenueCoords] = useState<{ lat: number; lng: number } | null>(
+    business.lat != null && business.lng != null ? { lat: Number(business.lat), lng: Number(business.lng) } : null
+  );
+  const [venueGeoState, setVenueGeoState] = useState<"idle" | "loading" | "ok" | "err">(
+    business.lat != null && business.lng != null ? "ok" : "idle"
+  );
+
+  const requestVenueLoc = () => {
+    if (!navigator.geolocation) { setVenueGeoState("err"); return; }
+    setVenueGeoState("loading");
+    navigator.geolocation.getCurrentPosition(
+      (p) => { setVenueCoords({ lat: p.coords.latitude, lng: p.coords.longitude }); setVenueGeoState("ok"); },
+      () => setVenueGeoState("err"),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
 
   const pickGoal = (id: typeof goalId) => {
     const g = GOALS.find((x) => x.id === id)!;
