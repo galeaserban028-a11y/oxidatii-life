@@ -420,7 +420,7 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
     setBudget(g.suggestedBudget);
     const pm = PLACEMENTS.find((p) => p.value === g.placement)!;
     setBidBani(pm.min);
-    setTargetType(g.id === "fans" ? "brand" : g.id === "city" ? "venue" : "party");
+    setTargetType("brand");
   };
 
   const selectedParty = parties.find((p) => p.id === partyId);
