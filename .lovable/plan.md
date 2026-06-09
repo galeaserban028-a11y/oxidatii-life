@@ -1,63 +1,76 @@
-# Push notifications
+# Setări hartă · Privacy & Visibility
 
-## Ce livrez
+Setările trăiesc într-un sheet nou deschis din butonul „⚙️” pe `/app/map`, lângă chip-ul „live · X oxidați activi”. Tot ce alegi se salvează imediat pe profil și se aplică la următorul ping GPS.
 
-Push-uri pentru:
-1. **Petrecere nouă în orașul tău** — la INSERT în `parties`, notific oamenii cu `profiles.city_id = party.host city`.
-2. **Cineva s-a alăturat petrecerii tale** — la INSERT în `party_joins`, notific `parties.host_id`.
-3. **Prieten live pe hartă** — la INSERT în `check_ins`, notific prietenii (`friendships accepted`).
-4. **Rivalitate / provocare** — momentan nu există tabel `challenges`. Adaug un tabel minim `challenges` (challenger → challenged, venue, message). Push pentru challenger când e challenged, și invers la accept.
+## Ce poate seta userul
 
-Fiecare tip e opt-in separat în `/app/notifications`.
+1. **Ghost mode** (toggle mare, sus)
+   - Off → ești pe hartă normal
+   - On → nu mai apari nicăieri, nu mai trimitem `live_locations`. Profil normal, doar pin-ul live dispare. Apare un banner discret „👻 Ești invizibil pe hartă”.
 
-## Bucățile de implementat
+2. **Cine îți vede pin-ul live** (3 opțiuni radio)
+   - **Toți prietenii** (default, ca acum)
+   - **Doar close friends** — listă curată pe care o gestionezi din setări
+   - **Nimeni** (echivalent cu ghost, dar păstrezi check-in-urile vizibile)
 
-### 1. Bază de date (migrație)
-- `push_subscriptions` (user_id, endpoint UNIQUE, p256dh, auth, user_agent, created_at)
-- `notification_prefs` (user_id PK, new_party_in_city bool default true, party_join bool default true, friend_live bool default true, challenge bool default true)
-- `challenges` (id, challenger_id, challenged_id, venue_id nullable, message, status: pending/accepted/declined, created_at)
-- RLS + GRANT pentru toate.
+3. **Precizie pin** (segment)
+   - **Exact** (default) — punctul real
+   - **Aproximativ ~200m** — jitter random în jurul punctului, pentru cazurile când vrei „sunt în zonă” fără să-ți vadă adresa
+   - **Doar oraș** — pin pe centrul orașului, fără coordonate reale
 
-### 2. Secrets (VAPID)
-- `VAPID_PUBLIC_KEY` (și expus client-side ca `VITE_VAPID_PUBLIC_KEY`)
-- `VAPID_PRIVATE_KEY`
-- `VAPID_SUBJECT` (mailto)
+4. **Auto-ghost după X ore de inactivitate** (slider 1/4/8/12h, default 8h)
+   - Dacă nu deschizi aplicația X ore, ștergem `live_locations` automat (deja avem `expires_at`, doar îl scurtăm).
 
-Generez perechea local cu `web-push` și îți cer să le adaugi prin formularul securizat.
+5. **Locații private** (listă)
+   - Adaugi venue-uri (acasă, job, sala) — când GPS-ul te plasează în raza lor (~150m), pin-ul tău nu se publică deloc cât timp ești acolo.
 
-### 3. Service worker (`public/push-sw.js`)
-- Doar `push` + `notificationclick`. Fără caching, fără offline (evită problemele cu preview iframe).
-- Înregistrare guard-ată: nu se înregistrează în iframe / pe domenii `id-preview--` / `lovableproject.com`.
+6. **Cine te vede pe lista „live”** (toggle)
+   - Off → nu mai apari în feed-ul `live · X oxidați activi`, dar prietenii care îți deschid profilul pot vedea ultimul check-in. Bun pentru lurkers.
 
-### 4. Client
-- `src/lib/push.ts`: `enablePush()`, `disablePush()`, `getPushState()`.
-- Component `NotificationSettings` în `/app/profile` (sau o rută nouă `/app/notifications`) cu un toggle master + toggle-uri per tip.
-- Banner discret în `/app` care apare o dată după onboarding pentru a oferi activarea.
-- Pe iOS: detectează `display-mode: standalone`; dacă nu, afișează „instalează PWA-ul ca să primești notificări".
+7. **Lasă-mă să văd doar prietenii care mă văd și pe mine** (toggle reciprocity)
+   - On → ascunde de pe harta ta prietenii care te-au pus pe ghost / close friends fără tine. Fair-play simetric.
 
-### 5. Server functions (`createServerFn`)
-- `sendPush(userIds, payload)` — server-only, folosește `web-push` cu cheile VAPID, citește subscriptions din DB, curăță endpoint-uri 410/404.
-- Triggere apelate din client după mutații (mai simplu și fără edge functions Deno):
-  - După `INSERT parties` → `notifyNewPartyInCity(partyId)`
-  - După `INSERT party_joins` → `notifyPartyJoin(joinId)`
-  - După `INSERT check_ins` → `notifyFriendsLive(checkInId)`
-  - După `INSERT challenges` → `notifyChallenge(challengeId)`
-- Fiecare verifică `notification_prefs` și nu trimite la `user_id` egal cu actor.
+## Structură UI
 
-### 6. UI rivalități (minim)
-- Buton „provoacă" pe profil user (`/app/user/$id`) → modal cu mesaj + optional venue → INSERT în `challenges`.
-- Listă „provocări" în `/app/notifications` cu accept/decline.
+```text
+/app/map
+└─ buton ⚙ (top-right map, lângă chip live)
+   └─ <Sheet> "Setări hartă"
+      ├─ 👻 Ghost mode                     [switch]
+      ├─ Cine te vede live                 [radio: toți / close / nimeni]
+      ├─ Precizie pin                      [segment: exact / ~200m / oraș]
+      ├─ Auto-ghost după inactivitate      [slider]
+      ├─ Locații private                   [listă + buton "+ Adaugă"]
+      ├─ Apar în lista "live"              [switch]
+      └─ Reciprocitate                     [switch]
+```
 
-## Out of scope (pentru acum)
-- Bandă largă de cache offline / strategii Workbox.
-- Trimitere prin cron / DB triggers (folosesc client-side calls după mutații; suficient pentru toate cazurile listate).
-- Notificări native iOS din App Store (doar web push pe PWA installed, conform alegerii tale).
+## Detalii tehnice
 
-## Ordine de execuție
-1. Migrație DB.
-2. Generez VAPID + îți cer să adaugi secrets.
-3. Service worker + client lib + UI opt-in.
-4. Server fn `sendPush` + 4 trigger fn-uri.
-5. Wire-up în AddPartySheet, party-join, check-in, challenges modal.
+- **Migration**: coloane noi pe `profiles`:
+  - `map_ghost boolean default false`
+  - `map_visibility text default 'friends' check in ('friends','close','nobody')`
+  - `map_precision text default 'exact' check in ('exact','approx','city')`
+  - `map_auto_ghost_hours int default 8`
+  - `map_hide_from_live_list boolean default false`
+  - `map_require_reciprocity boolean default false`
+  - tabel nou `close_friends (user_id, friend_id, created_at)` cu RLS self-only
+  - tabel nou `private_locations (id, user_id, label, lat, lng, radius_m default 150)` cu RLS self-only
+- **RLS update** pe `live_locations`:
+  - select extins: `are_friends(viewer, owner) AND (map_visibility='friends' OR (map_visibility='close' AND viewer ∈ close_friends(owner))) AND map_ghost=false`
+- **Write path** (`app.map.tsx` → `upsert live_locations`):
+  - dacă `map_ghost` sau `map_visibility='nobody'` → nu mai facem upsert, ștergem rândul
+  - dacă user e în raza unei `private_locations` → idem, skip
+  - dacă `map_precision='approx'` → jitter ±0.0018° (≈200m); dacă `='city'` → snap la `city.lat/lng`
+  - `expires_at = now() + auto_ghost_hours`
+- **Read path** (harta + sheet live):
+  - filtrul de `reciprocity` se aplică client-side cu lista de close_friends a userului curent
 
-Confirmi planul și pornesc cu migrația?
+## Ce las pe dinafară (idei extra pentru altă tură)
+
+- „Apară-mi-se ca alt nume pe hartă” (alias temporar)
+- „Time-bombed share” – pin care expiră în 30 min indiferent de setări (gen Snap Map)
+- Heatmap anonim al zonelor cu prieteni, fără pin-uri identificabile
+- „Cere live” – buton pe profilul unui prieten ghost prin care îi ceri să apară 1h
+
+Spune-mi dacă merg așa, sau dacă vrei să tai/adaugi opțiuni înainte să fac migration-ul + UI-ul.
