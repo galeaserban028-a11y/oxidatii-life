@@ -123,6 +123,9 @@ function AdminUsers() {
                 </div>
               </div>
               <div className="flex items-center gap-1">
+                <IconBtn title="Adaugă/scade șprițuri" onClick={() => grantCoins(u.id, u.display_name || u.handle || "user")}>
+                  <Beer size={13} />
+                </IconBtn>
                 <IconBtn title={admin ? "Retrage admin" : "Fă admin"} onClick={() => toggleAdmin(u.id)}>
                   {admin ? <ShieldOff size={13} /> : <Shield size={13} />}
                 </IconBtn>
