@@ -11,7 +11,7 @@ import {
   Settings2, X, Calendar, Target, Palette, Upload, ChevronRight, Pencil,
   Users, Heart, Flame, ChevronDown, Check, Zap, Trash2, Ticket, Video, Clock,
 } from "lucide-react";
-import { BizUniquePanel } from "@/components/biz/BizUniquePanel";
+import { BizCommandCenter } from "@/components/biz/BizCommandCenter";
 import { launchBusinessCampaign } from "@/lib/business-promotion.functions";
 
 export const Route = createFileRoute("/app/biz")({
