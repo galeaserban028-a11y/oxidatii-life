@@ -633,6 +633,24 @@ export type Database = {
         }
         Relationships: []
       }
+      close_friends: {
+        Row: {
+          created_at: string
+          friend_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       coin_boosts: {
         Row: {
           cost_coins: number
@@ -1089,6 +1107,36 @@ export type Database = {
           },
         ]
       }
+      private_locations: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          lat: number
+          lng: number
+          radius_m: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          lat: number
+          lng: number
+          radius_m?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          lat?: number
+          lng?: number
+          radius_m?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           active_frame_id: string | null
@@ -1107,6 +1155,12 @@ export type Database = {
           lifetime_sprits: number
           location_consent: boolean
           longest_streak: number
+          map_auto_ghost_hours: number
+          map_ghost: boolean
+          map_hide_from_live_list: boolean
+          map_precision: string
+          map_require_reciprocity: boolean
+          map_visibility: string
           onboarded: boolean
           premium_tier: Database["public"]["Enums"]["premium_tier"] | null
           premium_until: string | null
@@ -1130,6 +1184,12 @@ export type Database = {
           lifetime_sprits?: number
           location_consent?: boolean
           longest_streak?: number
+          map_auto_ghost_hours?: number
+          map_ghost?: boolean
+          map_hide_from_live_list?: boolean
+          map_precision?: string
+          map_require_reciprocity?: boolean
+          map_visibility?: string
           onboarded?: boolean
           premium_tier?: Database["public"]["Enums"]["premium_tier"] | null
           premium_until?: string | null
@@ -1153,6 +1213,12 @@ export type Database = {
           lifetime_sprits?: number
           location_consent?: boolean
           longest_streak?: number
+          map_auto_ghost_hours?: number
+          map_ghost?: boolean
+          map_hide_from_live_list?: boolean
+          map_precision?: string
+          map_require_reciprocity?: boolean
+          map_visibility?: string
           onboarded?: boolean
           premium_tier?: Database["public"]["Enums"]["premium_tier"] | null
           premium_until?: string | null
@@ -1650,6 +1716,10 @@ export type Database = {
     }
     Functions: {
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      can_view_live_location: {
+        Args: { _owner: string; _viewer: string }
+        Returns: boolean
+      }
       can_view_profile: {
         Args: { _target: string; _viewer: string }
         Returns: boolean
