@@ -41,15 +41,20 @@ function PromoPage() {
 
   // Track view as impression on this dedicated page (counts as quality engagement)
   useEffect(() => {
-    if (!data?.campaign || !user || trackedRef.current) return;
+    if (!data?.campaign || trackedRef.current) return;
     trackedRef.current = true;
-    supabase.from("campaign_events").insert({
-      campaign_id: data.campaign.id,
-      user_id: user.id,
-      event_type: "view_detail",
-      cost_cents: 3,
-    }).then(() => {});
+    // Real profile-view counter on the business
+    supabase.rpc("increment_business_visit", { _business_id: data.campaign.business_id }).then(() => {});
+    if (user) {
+      supabase.from("campaign_events").insert({
+        campaign_id: data.campaign.id,
+        user_id: user.id,
+        event_type: "view_detail",
+        cost_cents: 3,
+      }).then(() => {});
+    }
   }, [data, user]);
+
 
   const handleCtaClick = () => {
     if (!data?.campaign) return;
