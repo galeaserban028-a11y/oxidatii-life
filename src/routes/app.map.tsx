@@ -469,7 +469,11 @@ function MapPage() {
               </button>
             </div>
           )}
+
+          {/* Floating promo banner — bottom of map, dismissible */}
+          <PromoBanner promotedMeta={promotedMeta} />
         </div>
+
 
         <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
 
