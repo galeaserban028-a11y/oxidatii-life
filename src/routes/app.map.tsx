@@ -429,6 +429,7 @@ function MapPage() {
             <RomaniaMap3D
               cities={citiesScoped}
               venues={filtered}
+              promotedMeta={promotedMeta}
               friends={friendPins}
               focusCity={focusCity}
               fitBounds={fitBounds}
