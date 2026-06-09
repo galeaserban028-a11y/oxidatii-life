@@ -339,6 +339,33 @@ function MapPage() {
 
   useEffect(() => { setVisible(40); }, [query, type, country, cityId, maxKm]);
 
+  // Load user's privacy settings + private locations so we can apply them when publishing the pin.
+  const privacyQ = useQuery({
+    queryKey: ["map-privacy", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const [pRes, locRes, cityRes] = await Promise.all([
+        supabase.from("profiles")
+          .select("map_ghost, map_visibility, map_precision, map_auto_ghost_hours, city_id")
+          .eq("id", user!.id).maybeSingle(),
+        supabase.from("private_locations").select("lat, lng, radius_m").eq("user_id", user!.id),
+        Promise.resolve(null as any),
+      ]);
+      let cityCenter: { lat: number; lng: number } | null = null;
+      if (pRes.data?.city_id) {
+        const { data: c } = await supabase.from("cities").select("lat, lng").eq("id", pRes.data.city_id).maybeSingle();
+        if (c) cityCenter = { lat: Number(c.lat), lng: Number(c.lng) };
+      }
+      return {
+        settings: (pRes.data ?? { map_ghost: false, map_visibility: "friends", map_precision: "exact", map_auto_ghost_hours: 8 }) as any,
+        privateLocs: (locRes.data ?? []) as { lat: number; lng: number; radius_m: number }[],
+        cityCenter,
+      };
+    },
+  });
+
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   const requestGeo = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
@@ -347,22 +374,50 @@ function MapPage() {
         const lng = pos.coords.longitude;
         setGeo({ lat, lng });
         setFocusCity({ lat, lng, zoom: 13 });
-        // Publish own pin so it appears on the map immediately.
-        if (user) {
-          await supabase.from("live_locations").upsert(
-            {
-              user_id: user.id,
-              lat,
-              lng,
-              accuracy: pos.coords.accuracy ?? null,
-              heading: pos.coords.heading ?? null,
-              updated_at: new Date().toISOString(),
-              expires_at: new Date(Date.now() + 15 * 60_000).toISOString(),
-            },
-            { onConflict: "user_id" },
-          );
+        if (!user) return;
+
+        const s = privacyQ.data?.settings;
+        // Ghost mode or fully hidden → wipe and skip publishing.
+        if (s?.map_ghost || s?.map_visibility === "nobody") {
+          await supabase.from("live_locations").delete().eq("user_id", user.id);
           qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+          return;
         }
+        // Inside a private location → skip.
+        const inPrivate = (privacyQ.data?.privateLocs ?? []).some((pl) => {
+          const dKm = distanceKm(lat, lng, Number(pl.lat), Number(pl.lng));
+          return dKm * 1000 <= pl.radius_m;
+        });
+        if (inPrivate) {
+          await supabase.from("live_locations").delete().eq("user_id", user.id);
+          qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+          return;
+        }
+        // Apply precision.
+        let outLat = lat, outLng = lng;
+        if (s?.map_precision === "approx") {
+          // ±~200m random jitter (1 deg lat ≈ 111km)
+          const j = 0.0018;
+          outLat = lat + (Math.random() * 2 - 1) * j;
+          outLng = lng + (Math.random() * 2 - 1) * j;
+        } else if (s?.map_precision === "city" && privacyQ.data?.cityCenter) {
+          outLat = privacyQ.data.cityCenter.lat;
+          outLng = privacyQ.data.cityCenter.lng;
+        }
+        const hours = Math.max(1, Math.min(24, s?.map_auto_ghost_hours ?? 8));
+        await supabase.from("live_locations").upsert(
+          {
+            user_id: user.id,
+            lat: outLat,
+            lng: outLng,
+            accuracy: s?.map_precision === "exact" ? (pos.coords.accuracy ?? null) : null,
+            heading: s?.map_precision === "exact" ? (pos.coords.heading ?? null) : null,
+            updated_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + hours * 60 * 60_000).toISOString(),
+          },
+          { onConflict: "user_id" },
+        );
+        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
       },
       () => alert("Nu am putut citi locația. Verifică permisiunile."),
       { enableHighAccuracy: true, timeout: 8000 }
