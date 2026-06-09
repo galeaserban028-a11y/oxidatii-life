@@ -623,9 +623,9 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
                         </span>
                         <span className="text-base translate-y-[-1px]">🥂</span>
                       </span>
-                      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-emerald-300/90 flex items-center gap-1.5">
-                        <span className="h-1 w-1 rounded-full bg-emerald-300 animate-pulse" />
-                        cost: 0 coins · gratis
+                      <span className={`font-mono text-[10px] uppercase tracking-[0.3em] flex items-center gap-1.5 ${canAfford ? "text-emerald-300/90" : "text-neon-crimson"}`}>
+                        <span className={`h-1 w-1 rounded-full ${canAfford ? "bg-emerald-300" : "bg-neon-crimson"} animate-pulse`} />
+                        cost: {PARTY_COST} coins · ai {balance} 🍺
                       </span>
                     </>
                   )}
