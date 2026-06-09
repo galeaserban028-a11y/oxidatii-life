@@ -266,6 +266,63 @@
   .flicker, .marquee, .glitch:hover { animation: none; }
 }
 
+/* ── MapLibre controls — OXI dark glass aesthetic ── */
+.maplibregl-ctrl-group {
+  background: oklch(0.16 0.015 30 / 0.75) !important;
+  backdrop-filter: blur(16px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  border: 1px solid oklch(0.30 0.02 30) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 24px -8px oklch(0 0 0 / 50%), 0 2px 6px -2px oklch(0 0 0 / 30%) !important;
+  overflow: hidden;
+}
+
+.maplibregl-ctrl-group button {
+  background: transparent !important;
+  border-bottom: 1px solid oklch(0.30 0.02 30 / 0.6) !important;
+  color: var(--foreground) !important;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.maplibregl-ctrl-group button:last-child {
+  border-bottom: none !important;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background: oklch(0.72 0.20 40 / 0.15) !important;
+}
+
+.maplibregl-ctrl-group button:active {
+  transform: scale(0.94);
+}
+
+.maplibregl-ctrl-icon {
+  filter: drop-shadow(0 0 2px oklch(0.72 0.20 40 / 0.4));
+}
+
+.maplibregl-ctrl-compass .maplibregl-ctrl-icon {
+  filter: drop-shadow(0 0 3px oklch(0.80 0.16 65 / 0.5));
+}
+
+.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon {
+  filter: drop-shadow(0 0 3px oklch(0.65 0.24 350 / 0.5));
+}
+
+/* MapLibre attribution compact */
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  background: oklch(0.16 0.015 30 / 0.65) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid oklch(0.30 0.02 30 / 0.5) !important;
+  border-radius: 10px !important;
+  color: var(--muted-foreground) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 9px !important;
+}
+
+.maplibregl-ctrl-attrib a {
+  color: var(--muted-foreground) !important;
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
