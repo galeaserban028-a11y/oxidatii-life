@@ -127,6 +127,7 @@ export function RomaniaMap3D({
   onCityClick,
   focusCity,
   fitBounds,
+  promotedMeta = {},
 }: {
   cities: City[];
   venues?: Venue[];
@@ -134,6 +135,7 @@ export function RomaniaMap3D({
   onCityClick?: (city: City) => void;
   focusCity?: { lat: number; lng: number; zoom?: number } | null;
   fitBounds?: [[number, number], [number, number]] | null;
+  promotedMeta?: Record<string, { theme: string; cover: string | null }>;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
