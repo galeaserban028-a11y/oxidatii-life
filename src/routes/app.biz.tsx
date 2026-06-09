@@ -497,6 +497,36 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
       alert(`Wallet insuficient: ai ${ron(business.wallet_balance_cents)} RON, ai nevoie de ${budget} RON.`); return;
     }
     setBusy(true);
+
+    // Resolve venue_id: reuse existing, or auto-create a venue pinned on the map.
+    let resolvedVenueId: string | null = business.venue_id ?? null;
+    if (!resolvedVenueId && createVenueOnMap) {
+      if (!venueCityId) { setBusy(false); alert("Alege orașul localului ca să-l punem pe mapă."); return; }
+      if (!venueCoords) { setBusy(false); alert('Apasă "Prinde locația GPS" sau dezactivează "Pune-l pe mapă".'); return; }
+      const baseSlug = (business.brand_name ?? "loc").toLowerCase().normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "loc";
+      const slug = `${baseSlug}-${Date.now().toString(36).slice(-4)}`;
+      const { data: createdV, error: vErr } = await supabase.from("venues").insert({
+        name: business.brand_name,
+        slug,
+        type: venueType,
+        city_id: venueCityId,
+        lat: venueCoords.lat,
+        lng: venueCoords.lng,
+        address: street.trim() || business.address || null,
+        cover_url: images[0] ?? business.cover_url ?? business.logo_url ?? null,
+      }).select("id").single();
+      if (vErr) { setBusy(false); alert("Nu am putut adăuga localul pe mapă: " + vErr.message); return; }
+      resolvedVenueId = createdV.id;
+      await supabase.from("business_accounts").update({
+        venue_id: resolvedVenueId,
+        lat: venueCoords.lat,
+        lng: venueCoords.lng,
+        city_id: venueCityId,
+        address: street.trim() || business.address || null,
+      }).eq("id", business.id);
+    }
+
     const insertData: any = {
       business_id: business.id, kind: goal.placement,
       title: autoTitle, subtitle: autoSubtitle,
@@ -512,9 +542,9 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
       bid_cents: bidBani, budget_cents: Math.round(budget * 100),
       daily_cap_cents: Math.round(dailyCap * 100),
       pricing_model: "cpm",
-      city_id: cityId || null,
+      city_id: cityId || venueCityId || null,
       party_id: targetType === "party" ? partyId || null : null,
-      venue_id: targetType === "venue" ? venueId || null : null,
+      venue_id: resolvedVenueId,
       starts_at: startsAt || new Date().toISOString(),
       ends_at: endsAt || selectedParty?.expires_at || null,
       targeting: { vibes, age_min: ageMin, age_max: ageMax, days, hour_from: hourFrom, hour_to: hourTo },
