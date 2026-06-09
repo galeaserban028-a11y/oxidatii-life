@@ -509,7 +509,7 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
       const { data: createdV, error: vErr } = await supabase.from("venues").insert({
         name: business.brand_name,
         slug,
-        type: venueType,
+        type: venueType as any,
         city_id: venueCityId,
         lat: venueCoords.lat,
         lng: venueCoords.lng,
