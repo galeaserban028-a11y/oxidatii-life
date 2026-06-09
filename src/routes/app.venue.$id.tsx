@@ -3,7 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, Camera, MapPin, Instagram, Upload, Clock } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { BusinessReviewCard } from "@/components/biz/BusinessReviewCard";
 import { toast } from "sonner";
 import { evalOpenNow, normalizeHours, formatSlot, DAY_KEYS, DAY_LABELS } from "@/lib/openingHours";
 
