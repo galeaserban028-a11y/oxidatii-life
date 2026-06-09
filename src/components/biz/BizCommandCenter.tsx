@@ -65,8 +65,8 @@ async function loadCommandData(businessId: string, ownerId: string) {
         (await supabase.from("campaigns").select("id").eq("business_id", businessId))
           .data?.map((c) => c.id) ?? ["00000000-0000-0000-0000-000000000000"],
       ).limit(500),
-    supabase.from("business_offers").select("id, title, redemptions, created_at")
-      .eq("business_id", businessId).order("created_at", { ascending: false }).limit(10),
+    supabase.from("business_offers").select("id, title, redeemed_count, active, created_at")
+      .eq("business_id", businessId).eq("active", true).order("created_at", { ascending: false }).limit(10),
   ]);
 
   return {
