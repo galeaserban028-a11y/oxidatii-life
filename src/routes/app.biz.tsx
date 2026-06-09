@@ -191,6 +191,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
   onTopup: () => void;
 }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editCampaign, setEditCampaign] = useState<any | null>(null);
