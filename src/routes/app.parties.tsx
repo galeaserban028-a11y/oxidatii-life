@@ -508,6 +508,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
   const sheet = (
     <div className="fixed inset-0 z-[9999] bg-background/90 backdrop-blur-xl flex items-start justify-center px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:items-center" onClick={onClose}>
       <div
+        ref={scrollRef}
         className="w-full max-w-md bg-background border border-foreground/10 rounded-3xl p-5 space-y-4 max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] overflow-y-auto overscroll-contain shadow-[0_24px_100px_-35px_var(--neon-crimson)]"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}
         onClick={(e) => e.stopPropagation()}
