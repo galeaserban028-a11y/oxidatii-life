@@ -207,12 +207,12 @@ function MapPage() {
       const nowIso = new Date().toISOString();
       const { data, error } = await supabase
         .from("campaigns")
-        .select("id, venue_id, theme_color, image_urls, business_id, business_accounts!inner(venue_id, logo_url, cover_url)")
+        .select("id, title, venue_id, theme_color, image_urls, business_id, business_accounts!inner(venue_id, logo_url, cover_url, brand_name), venues(name)")
         .eq("status", "active")
         .lte("starts_at", nowIso)
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`);
       if (error) throw error;
-      const map: Record<string, { theme: string; cover: string | null; campaignId: string }> = {};
+      const map: Record<string, { theme: string; cover: string | null; campaignId: string; title: string | null; venueName: string | null }> = {};
       for (const c of (data ?? []) as any[]) {
         const vid = c.venue_id ?? c.business_accounts?.venue_id;
         if (!vid) continue;
@@ -221,12 +221,19 @@ function MapPage() {
           ?? c.business_accounts?.logo_url
           ?? c.business_accounts?.cover_url
           ?? null;
-        map[vid] = { theme: c.theme_color ?? "#ff3158", cover, campaignId: c.id };
+        map[vid] = {
+          theme: c.theme_color ?? "#ff3158",
+          cover,
+          campaignId: c.id,
+          title: c.title ?? null,
+          venueName: c.venues?.name ?? c.business_accounts?.brand_name ?? null,
+        };
       }
       return map;
     },
     refetchInterval: 60_000,
   });
+
 
   const { data: friendPins = [] } = useQuery({
     queryKey: ["friend-pins", user?.id],
