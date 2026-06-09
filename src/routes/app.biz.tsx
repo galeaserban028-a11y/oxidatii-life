@@ -412,6 +412,30 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
   const fileRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
 
+  // "Pune-l pe mapă" — auto-create a venue tied to this campaign if the
+  // business is not linked to one yet. Pre-fills from existing business data.
+  const [createVenueOnMap, setCreateVenueOnMap] = useState<boolean>(!business.venue_id);
+  const [venueType, setVenueType] = useState<string>(
+    ["club", "bar", "pub", "terasa", "after"].includes(business.type) ? business.type : "club"
+  );
+  const [venueCityId, setVenueCityId] = useState<string>(business.city_id ?? "");
+  const [venueCoords, setVenueCoords] = useState<{ lat: number; lng: number } | null>(
+    business.lat != null && business.lng != null ? { lat: Number(business.lat), lng: Number(business.lng) } : null
+  );
+  const [venueGeoState, setVenueGeoState] = useState<"idle" | "loading" | "ok" | "err">(
+    business.lat != null && business.lng != null ? "ok" : "idle"
+  );
+
+  const requestVenueLoc = () => {
+    if (!navigator.geolocation) { setVenueGeoState("err"); return; }
+    setVenueGeoState("loading");
+    navigator.geolocation.getCurrentPosition(
+      (p) => { setVenueCoords({ lat: p.coords.latitude, lng: p.coords.longitude }); setVenueGeoState("ok"); },
+      () => setVenueGeoState("err"),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
 
   const pickGoal = (id: typeof goalId) => {
     const g = GOALS.find((x) => x.id === id)!;
@@ -473,6 +497,36 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
       alert(`Wallet insuficient: ai ${ron(business.wallet_balance_cents)} RON, ai nevoie de ${budget} RON.`); return;
     }
     setBusy(true);
+
+    // Resolve venue_id: reuse existing, or auto-create a venue pinned on the map.
+    let resolvedVenueId: string | null = business.venue_id ?? null;
+    if (!resolvedVenueId && createVenueOnMap) {
+      if (!venueCityId) { setBusy(false); alert("Alege orașul localului ca să-l punem pe mapă."); return; }
+      if (!venueCoords) { setBusy(false); alert('Apasă "Prinde locația GPS" sau dezactivează "Pune-l pe mapă".'); return; }
+      const baseSlug = (business.brand_name ?? "loc").toLowerCase().normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "loc";
+      const slug = `${baseSlug}-${Date.now().toString(36).slice(-4)}`;
+      const { data: createdV, error: vErr } = await supabase.from("venues").insert({
+        name: business.brand_name,
+        slug,
+        type: venueType as any,
+        city_id: venueCityId,
+        lat: venueCoords.lat,
+        lng: venueCoords.lng,
+        address: street.trim() || business.address || null,
+        cover_url: images[0] ?? business.cover_url ?? business.logo_url ?? null,
+      }).select("id").single();
+      if (vErr) { setBusy(false); alert("Nu am putut adăuga localul pe mapă: " + vErr.message); return; }
+      resolvedVenueId = createdV.id;
+      await supabase.from("business_accounts").update({
+        venue_id: resolvedVenueId,
+        lat: venueCoords.lat,
+        lng: venueCoords.lng,
+        city_id: venueCityId,
+        address: street.trim() || business.address || null,
+      }).eq("id", business.id);
+    }
+
     const insertData: any = {
       business_id: business.id, kind: goal.placement,
       title: autoTitle, subtitle: autoSubtitle,
@@ -488,9 +542,9 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
       bid_cents: bidBani, budget_cents: Math.round(budget * 100),
       daily_cap_cents: Math.round(dailyCap * 100),
       pricing_model: "cpm",
-      city_id: cityId || null,
+      city_id: cityId || venueCityId || null,
       party_id: targetType === "party" ? partyId || null : null,
-      venue_id: targetType === "venue" ? venueId || null : null,
+      venue_id: resolvedVenueId,
       starts_at: startsAt || new Date().toISOString(),
       ends_at: endsAt || selectedParty?.expires_at || null,
       targeting: { vibes, age_min: ageMin, age_max: ageMax, days, hour_from: hourFrom, hour_to: hourTo },
@@ -656,6 +710,92 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
                 <div className="text-[11px] text-muted-foreground">Reclama duce către profilul brandului tău.</div>
               </div>
             </div>
+          </div>
+
+          {/* Pune-l pe mapă — auto-create venue with promo cover if not yet pinned */}
+          <div className="space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">pe hartă</div>
+            {business.venue_id ? (
+              <div className="rounded-xl border border-neon-green/30 bg-neon-green/5 p-3 flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-neon-green/15 text-neon-green flex items-center justify-center">
+                  <Check size={16} />
+                </div>
+                <div className="text-[12px] leading-snug">
+                  <div className="font-display uppercase text-[13px]">Localul tău e deja pe mapă</div>
+                  <div className="text-[10px] text-muted-foreground">Reclama va lumina pin-ul lui pe hartă cu poza promovată.</div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setCreateVenueOnMap((s) => !s)}
+                  className={`w-full rounded-xl border p-3 flex items-center gap-3 text-left transition ${
+                    createVenueOnMap ? "border-neon-green/40 bg-neon-green/5" : "border-foreground/15 bg-foreground/[0.03]"
+                  }`}
+                >
+                  <div className={`h-5 w-5 rounded-md border flex items-center justify-center ${
+                    createVenueOnMap ? "bg-neon-green border-neon-green text-background" : "border-foreground/30"
+                  }`}>
+                    {createVenueOnMap && <Check size={12} />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-display uppercase text-[13px] leading-tight">Pune-l automat pe mapă</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      Creăm un pin cu numele brandului, poza promovată și coordonatele exacte. Toți utilizatorii îl văd ca local promovat.
+                    </div>
+                  </div>
+                </button>
+
+                {createVenueOnMap && (
+                  <div className="space-y-2 p-3 rounded-xl bg-foreground/[0.03] border border-foreground/10">
+                    <div>
+                      <Label>Tip local</Label>
+                      <div className="grid grid-cols-5 gap-1.5 mt-1">
+                        {["club", "bar", "pub", "terasa", "after"].map((t) => (
+                          <button key={t} type="button" onClick={() => setVenueType(t)}
+                            className={`py-2 rounded-md text-[10px] font-mono uppercase tracking-widest border ${
+                              venueType === t ? "bg-foreground text-background border-foreground" : "border-foreground/15 text-muted-foreground"}`}>
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Oraș</Label>
+                      <select value={venueCityId} onChange={(e) => setVenueCityId(e.target.value)} className={selectStyle}>
+                        <option value="">— alege oraș —</option>
+                        {cities.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <Label>Coordonate exacte</Label>
+                      <button type="button" onClick={requestVenueLoc} disabled={venueGeoState === "loading"}
+                        className={`w-full p-3 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 text-xs font-mono uppercase tracking-widest ${
+                          venueGeoState === "ok" ? "border-neon-green/50 bg-neon-green/5 text-neon-green" : "border-foreground/25 text-muted-foreground"
+                        }`}>
+                        <MapPin size={14} />
+                        {venueGeoState === "loading" ? "caut locația..."
+                          : venueGeoState === "ok" && venueCoords ? `${venueCoords.lat.toFixed(5)}, ${venueCoords.lng.toFixed(5)}`
+                          : venueGeoState === "err" ? "GPS refuzat — reîncearcă"
+                          : "Prinde locația GPS"}
+                      </button>
+                      <div className="flex gap-1.5 mt-1.5">
+                        <input type="number" step="0.000001" placeholder="lat" value={venueCoords?.lat ?? ""}
+                          onChange={(e) => { const lat = parseFloat(e.target.value); setVenueCoords((c) => ({ lat: isFinite(lat) ? lat : 0, lng: c?.lng ?? 0 })); setVenueGeoState("ok"); }}
+                          className={inputStyle} />
+                        <input type="number" step="0.000001" placeholder="lng" value={venueCoords?.lng ?? ""}
+                          onChange={(e) => { const lng = parseFloat(e.target.value); setVenueCoords((c) => ({ lat: c?.lat ?? 0, lng: isFinite(lng) ? lng : 0 })); setVenueGeoState("ok"); }}
+                          className={inputStyle} />
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-1">
+                        Adresa o iei din câmpul „Stradă / Adresă" de mai jos. Poza de copertă va fi prima imagine de la promovare.
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           <div className="space-y-2">
