@@ -225,7 +225,13 @@ function VenuePage() {
           </button>
         </div>
 
+        {/* Real ratings & reviews */}
+        {data.biz?.id && (
+          <BusinessReviewCard businessId={data.biz.id} brandName={data.biz.brand_name} />
+        )}
+
         {/* Photo gallery — only user-uploaded */}
+
         <div>
           <div className="flex items-center justify-between mb-3">
             <div>
