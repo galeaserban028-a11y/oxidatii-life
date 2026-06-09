@@ -533,7 +533,7 @@ function MapPage() {
             <button
               onClick={() => setSettingsOpen(true)}
               aria-label="Setări hartă"
-              className="absolute top-2 right-2 z-20 h-9 w-9 grid place-items-center rounded-full bg-black/70 backdrop-blur border border-foreground/15 text-foreground hover:bg-black/85 active:scale-95 transition"
+              className="absolute bottom-24 right-2 z-20 h-9 w-9 grid place-items-center rounded-full bg-black/70 backdrop-blur border border-foreground/15 text-foreground hover:bg-black/85 active:scale-95 transition"
             >
               {privacyQ.data?.settings?.map_ghost ? (
                 <Ghost size={15} className="text-fuchsia-400" />
