@@ -1680,6 +1680,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_business_visit: {
+        Args: { _business_id: string }
+        Returns: undefined
+      }
       is_blocked: { Args: { _a: string; _b: string }; Returns: boolean }
       is_conversation_member: {
         Args: { _conv: string; _user: string }

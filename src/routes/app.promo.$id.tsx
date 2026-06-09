@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useEffect, useRef } from "react";
 import { ArrowLeft, Sparkles, MapPin, Calendar, ExternalLink, ChevronRight, Eye, MousePointerClick, Globe, Phone, Mail, Instagram, Music2, Clock, Users, Ticket, Star } from "lucide-react";
+import { BusinessReviewCard } from "@/components/biz/BusinessReviewCard";
 
 export const Route = createFileRoute("/app/promo/$id")({
   component: PromoPage,
@@ -41,15 +42,20 @@ function PromoPage() {
 
   // Track view as impression on this dedicated page (counts as quality engagement)
   useEffect(() => {
-    if (!data?.campaign || !user || trackedRef.current) return;
+    if (!data?.campaign || trackedRef.current) return;
     trackedRef.current = true;
-    supabase.from("campaign_events").insert({
-      campaign_id: data.campaign.id,
-      user_id: user.id,
-      event_type: "view_detail",
-      cost_cents: 3,
-    }).then(() => {});
+    // Real profile-view counter on the business
+    supabase.rpc("increment_business_visit", { _business_id: data.campaign.business_id }).then(() => {});
+    if (user) {
+      supabase.from("campaign_events").insert({
+        campaign_id: data.campaign.id,
+        user_id: user.id,
+        event_type: "view_detail",
+        cost_cents: 3,
+      }).then(() => {});
+    }
   }, [data, user]);
+
 
   const handleCtaClick = () => {
     if (!data?.campaign) return;
@@ -134,7 +140,11 @@ function PromoPage() {
           </div>
         </div>
 
+        {/* Rating real pentru club / brand */}
+        <BusinessReviewCard businessId={campaign.business_id} brandName={biz?.brand_name} />
+
         {/* Event facts */}
+
         {(campaign.event_starts_at || campaign.entry_kind || campaign.street || campaign.special_guest) && (
           <div className="rounded-2xl bg-foreground/[0.03] border border-foreground/10 p-4 space-y-2.5">
             {campaign.event_starts_at && (
