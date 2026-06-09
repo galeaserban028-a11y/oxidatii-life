@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
-import { UserPlus, Users, MapPin, Clock, X, Beer, List, Navigation } from "lucide-react";
+import { UserPlus, Users, MapPin, Clock, X, Beer, List, Navigation, Sparkles } from "lucide-react";
 import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilters";
 import { AddVenueSheet } from "@/components/app/AddVenueSheet";
 import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
@@ -469,10 +469,13 @@ function MapPage() {
               </button>
             </div>
           )}
+          {/* Top CTA — "fă-ți localul vizibil", dismissible */}
+          {!activeCity && <BusinessVisibilityCTA />}
 
           {/* Floating promo banner — bottom of map, dismissible */}
           <PromoBanner promotedMeta={promotedMeta} />
         </div>
+
 
 
         <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
@@ -693,6 +696,47 @@ function PromoBanner({ promotedMeta }: { promotedMeta: Record<string, PromoMeta>
           <X size={12} />
         </button>
       </div>
+    </div>
+  );
+}
+
+function BusinessVisibilityCTA() {
+  const [hidden, setHidden] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try { return sessionStorage.getItem("oxi_hide_biz_cta") === "1"; } catch { return false; }
+  });
+  if (hidden) return null;
+  const dismiss = () => {
+    setHidden(true);
+    try { sessionStorage.setItem("oxi_hide_biz_cta", "1"); } catch {}
+  };
+  return (
+    <div className="absolute top-2 left-2 right-2 z-10 flex items-stretch">
+      <Link
+        to="/app/biz"
+        className="flex-1 min-w-0 flex items-center gap-2.5 rounded-l-2xl bg-background/95 backdrop-blur border border-r-0 border-neon-crimson/50 pl-2.5 pr-3 py-2 active:scale-[0.99] transition"
+        style={{ boxShadow: "0 6px 20px rgba(255,49,88,0.25), inset 0 0 0 1px rgba(255,49,88,0.15)" }}
+      >
+        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-neon-crimson to-neon-purple grid place-items-center shrink-0">
+          <Sparkles size={16} className="text-background" strokeWidth={2.8} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-display font-black uppercase text-[13px] leading-tight truncate">
+            fă-ți localul vizibil
+          </div>
+          <div className="font-mono text-[8.5px] uppercase tracking-[0.18em] text-muted-foreground mt-0.5 truncate">
+            creează-ți business · promovează →
+          </div>
+        </div>
+      </Link>
+      <button
+        onClick={dismiss}
+        aria-label="Ascunde"
+        className="w-9 grid place-items-center rounded-r-2xl bg-background/95 backdrop-blur border border-l-0 border-neon-crimson/50 text-muted-foreground active:scale-95"
+        style={{ boxShadow: "0 6px 20px rgba(255,49,88,0.25)" }}
+      >
+        <X size={13} />
+      </button>
     </div>
   );
 }
