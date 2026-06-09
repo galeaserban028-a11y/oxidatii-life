@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Plus, Users, MapPin, Clock, X, Flame, Trash2, Check, UserX, ChevronDown, ChevronUp } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/parties")({
   head: () => ({ meta: [{ title: "Șprițuri · OXIDAȚII" }] }),
@@ -196,6 +197,13 @@ function PartiesPage() {
           <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
             fii primul · deschide un șpriț
           </div>
+          <button
+            onClick={() => setShowCreate(true)}
+            disabled={!user}
+            className="mx-auto mt-2 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-br from-neon-crimson to-neon-purple text-white font-mono text-[11px] uppercase tracking-widest shadow-[0_0_18px_-4px_var(--neon-crimson)] active:scale-95 disabled:opacity-40"
+          >
+            <Plus size={14} strokeWidth={3} /> deschid șpriț
+          </button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -449,8 +457,10 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["parties"] });
+      toast.success("Șpriț deschis.");
       onClose();
     },
+    onError: (error: any) => toast.error(error?.message ?? "Nu s-a putut deschide șprițul."),
   });
 
   const valid = title.trim().length >= 2 && loc.trim().length >= 2 && spots >= 1;
@@ -459,6 +469,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-[60] bg-background/80 backdrop-blur-sm flex items-end" onClick={onClose}>
       <div
         className="w-full max-w-md mx-auto bg-background border-t border-foreground/10 rounded-t-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
