@@ -117,16 +117,17 @@ function BizPage() {
       />
       <header className="space-y-2">
         <div className="flex items-center gap-2">
-          <Building2 size={11} className="text-neon-purple" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Business · Promovare</span>
+          <Building2 size={11} className="text-sunset-amber" />
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Business · Command Center</span>
         </div>
         <h1 className="font-display uppercase text-3xl leading-[0.95] tracking-tight">
-          Alege simplu <span className="text-gradient-chaos">ce vrei azi.</span>
+          Gestionează și crește <span className="text-gradient-chaos">localul tău.</span>
         </h1>
         <p className="text-xs text-zinc-400">
-          Încarci bani, pornești reclama, vezi rezultatul. Fără panou complicat.
+          Date reale, măsurabile. Fără promisiuni, fără estimări inventate.
         </p>
       </header>
+
 
       {isLoading ? (
         <div className="h-40 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur animate-pulse" />
