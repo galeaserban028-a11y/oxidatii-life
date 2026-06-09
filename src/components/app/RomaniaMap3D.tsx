@@ -141,6 +141,7 @@ export function RomaniaMap3D({
   const mapRef = useRef<MlMap | null>(null);
   const cityMarkers = useRef<Marker[]>([]);
   const friendMarkers = useRef<Map<string, Marker>>(new Map());
+  const promotedMarkers = useRef<Map<string, Marker>>(new Map());
   const loadedRef = useRef(false);
   const onCityClickRef = useRef<typeof onCityClick>(onCityClick);
   const nav = useNavigate();
