@@ -712,6 +712,92 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
             </div>
           </div>
 
+          {/* Pune-l pe mapă — auto-create venue with promo cover if not yet pinned */}
+          <div className="space-y-2">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">pe hartă</div>
+            {business.venue_id ? (
+              <div className="rounded-xl border border-neon-green/30 bg-neon-green/5 p-3 flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-neon-green/15 text-neon-green flex items-center justify-center">
+                  <Check size={16} />
+                </div>
+                <div className="text-[12px] leading-snug">
+                  <div className="font-display uppercase text-[13px]">Localul tău e deja pe mapă</div>
+                  <div className="text-[10px] text-muted-foreground">Reclama va lumina pin-ul lui pe hartă cu poza promovată.</div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setCreateVenueOnMap((s) => !s)}
+                  className={`w-full rounded-xl border p-3 flex items-center gap-3 text-left transition ${
+                    createVenueOnMap ? "border-neon-green/40 bg-neon-green/5" : "border-foreground/15 bg-foreground/[0.03]"
+                  }`}
+                >
+                  <div className={`h-5 w-5 rounded-md border flex items-center justify-center ${
+                    createVenueOnMap ? "bg-neon-green border-neon-green text-background" : "border-foreground/30"
+                  }`}>
+                    {createVenueOnMap && <Check size={12} />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-display uppercase text-[13px] leading-tight">Pune-l automat pe mapă</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      Creăm un pin cu numele brandului, poza promovată și coordonatele exacte. Toți utilizatorii îl văd ca local promovat.
+                    </div>
+                  </div>
+                </button>
+
+                {createVenueOnMap && (
+                  <div className="space-y-2 p-3 rounded-xl bg-foreground/[0.03] border border-foreground/10">
+                    <div>
+                      <Label>Tip local</Label>
+                      <div className="grid grid-cols-5 gap-1.5 mt-1">
+                        {["club", "bar", "pub", "terasa", "after"].map((t) => (
+                          <button key={t} type="button" onClick={() => setVenueType(t)}
+                            className={`py-2 rounded-md text-[10px] font-mono uppercase tracking-widest border ${
+                              venueType === t ? "bg-foreground text-background border-foreground" : "border-foreground/15 text-muted-foreground"}`}>
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Oraș</Label>
+                      <select value={venueCityId} onChange={(e) => setVenueCityId(e.target.value)} className={selectStyle}>
+                        <option value="">— alege oraș —</option>
+                        {cities.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <Label>Coordonate exacte</Label>
+                      <button type="button" onClick={requestVenueLoc} disabled={venueGeoState === "loading"}
+                        className={`w-full p-3 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 text-xs font-mono uppercase tracking-widest ${
+                          venueGeoState === "ok" ? "border-neon-green/50 bg-neon-green/5 text-neon-green" : "border-foreground/25 text-muted-foreground"
+                        }`}>
+                        <MapPin size={14} />
+                        {venueGeoState === "loading" ? "caut locația..."
+                          : venueGeoState === "ok" && venueCoords ? `${venueCoords.lat.toFixed(5)}, ${venueCoords.lng.toFixed(5)}`
+                          : venueGeoState === "err" ? "GPS refuzat — reîncearcă"
+                          : "Prinde locația GPS"}
+                      </button>
+                      <div className="flex gap-1.5 mt-1.5">
+                        <input type="number" step="0.000001" placeholder="lat" value={venueCoords?.lat ?? ""}
+                          onChange={(e) => { const lat = parseFloat(e.target.value); setVenueCoords((c) => ({ lat: isFinite(lat) ? lat : 0, lng: c?.lng ?? 0 })); setVenueGeoState("ok"); }}
+                          className={inputStyle} />
+                        <input type="number" step="0.000001" placeholder="lng" value={venueCoords?.lng ?? ""}
+                          onChange={(e) => { const lng = parseFloat(e.target.value); setVenueCoords((c) => ({ lat: c?.lat ?? 0, lng: isFinite(lng) ? lng : 0 })); setVenueGeoState("ok"); }}
+                          className={inputStyle} />
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-1">
+                        Adresa o iei din câmpul „Stradă / Adresă" de mai jos. Poza de copertă va fi prima imagine de la promovare.
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
           <div className="space-y-2">
             <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">povestea ta</div>
             <input value={title} onChange={(e) => setTitle(e.target.value)}
