@@ -425,9 +425,12 @@ function HostJoinsPanel({
 }
 
 
+const PARTY_COST = 2;
+
 function CreatePartySheet({ onClose }: { onClose: () => void }) {
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth() as any;
   const qc = useQueryClient();
+  const scrollRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
   const locRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
@@ -435,7 +438,17 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
   const [loc, setLoc] = useState("");
   const [spots, setSpots] = useState(10);
   const [vibe, setVibe] = useState("");
-  const [whenMin, setWhenMin] = useState(0); // minutes from now
+  const [whenMin, setWhenMin] = useState(0);
+
+  const balance = profile?.coin_balance ?? 0;
+  const canAfford = balance >= PARTY_COST;
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ top: 0 });
+      titleRef.current?.focus();
+    });
+  }, []);
 
   const create = useMutation({
     mutationFn: async () => {
@@ -452,6 +465,13 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
       }).select("id").single();
       if (error) throw error;
       if (inserted?.id) {
+        const { error: payErr } = await supabase.rpc("spend_coins", {
+          _amount: PARTY_COST, _kind: "spend", _ref_id: inserted.id,
+        });
+        if (payErr) {
+          await supabase.from("parties").delete().eq("id", inserted.id);
+          throw new Error(/insufficient/i.test(payErr.message) ? `n-ai destui coins (ai ${balance}, trebuie ${PARTY_COST})` : payErr.message);
+        }
         try {
           const { notifyNewPartyInCity } = await import("@/lib/notifications.functions");
           notifyNewPartyInCity({ data: { partyId: inserted.id } }).catch(() => {});
@@ -460,7 +480,8 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["parties"] });
-      toast.success("Șpriț deschis.");
+      refreshProfile?.();
+      toast.success(`Șpriț deschis. -${PARTY_COST} coins 🍺`);
       onClose();
     },
     onError: (error: any) => toast.error(error?.message ?? "Nu s-a putut deschide șprițul."),
@@ -471,10 +492,11 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
   if (title.trim().length < 2) missing.push("titlu");
   if (loc.trim().length < 2) missing.push("locație");
   if (spots < 1) missing.push("locuri");
-  const isDisabled = !valid || create.isPending;
+  if (!canAfford) missing.push(`${PARTY_COST} coins (ai ${balance})`);
+  const isDisabled = !valid || !canAfford || create.isPending;
   const handleCreateClick = () => {
     if (create.isPending) return;
-    if (!valid) {
+    if (!valid || !canAfford) {
       toast.error(`mai trebuie: ${missing.join(" · ")}`);
       if (title.trim().length < 2) titleRef.current?.focus();
       else if (loc.trim().length < 2) locRef.current?.focus();
