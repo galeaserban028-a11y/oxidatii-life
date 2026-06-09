@@ -418,7 +418,11 @@ export function RomaniaMap3D({
 
         wrap.onclick = (e) => {
           e.stopPropagation();
-          navRef.current({ to: "/app/venue/$id", params: { id: v.id } });
+          if (meta.campaignId) {
+            navRef.current({ to: "/app/promo/$id", params: { id: meta.campaignId } });
+          } else {
+            navRef.current({ to: "/app/venue/$id", params: { id: v.id } });
+          }
         };
 
         const marker = new maplibregl.Marker({ element: wrap, anchor: "bottom" })
