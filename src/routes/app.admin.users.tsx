@@ -77,6 +77,17 @@ function AdminUsers() {
     qc.invalidateQueries({ queryKey: ["admin-users"] });
   };
 
+  const grantCoins = async (uid: string, label: string) => {
+    const raw = prompt(`Câte coins adaugi lui ${label}? (folosește număr negativ ca să scazi)`, "10");
+    if (raw === null) return;
+    const amount = parseInt(raw, 10);
+    if (!Number.isFinite(amount) || amount === 0) return toast.error("Sumă invalidă");
+    const { data, error } = await supabase.rpc("admin_grant_coins" as any, { _user_id: uid, _amount: amount });
+    if (error) return toast.error(error.message);
+    toast.success(`Balanță nouă: ${data} șprițuri`);
+    qc.invalidateQueries({ queryKey: ["admin-users"] });
+  };
+
   return (
     <div className="space-y-3">
       <div className="relative">
