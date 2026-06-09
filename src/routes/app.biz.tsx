@@ -332,18 +332,18 @@ const GOALS = [
   {
     id: "fill",
     icon: Users,
-    title: "Vreau localul plin",
-    promise: "Apar la oameni care ies în seara asta în orașul tău.",
+    title: "Card în feed",
+    promise: "Brandul tău apare ca un card promovat în feed-ul utilizatorilor din oraș.",
     placement: "boost_feed" as const,
     color: "#FF2D55",
     suggestedBudget: 50,
-    cta: "Vin",
+    cta: "Vezi locul",
   },
   {
     id: "city",
     icon: Flame,
-    title: "Vreau să vadă tot orașul",
-    promise: "Banner premium + pin animat pe hartă. Maximă expunere.",
+    title: "Reclamă full-screen",
+    promise: "Reclamă full-screen la deschiderea aplicației + banner sticky. Expunere maximă.",
     placement: "boost_story" as const,
     color: "#00D4FF",
     suggestedBudget: 150,
@@ -352,9 +352,9 @@ const GOALS = [
   {
     id: "fans",
     icon: Heart,
-    title: "Vreau followers & status",
-    promise: "Brandul tău în secțiunea VIP. Construiești comunitate.",
-    placement: "boost_brand" as const,
+    title: "Banner rotativ",
+    promise: "Banner promovat rotit în secțiunile principale ale aplicației.",
+    placement: "boost_discover" as const,
     color: "#9D4EDD",
     suggestedBudget: 100,
     cta: "Urmărește",
@@ -377,7 +377,7 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
   const [goalId, setGoalId] = useState<(typeof GOALS)[number]["id"]>("fill");
   const goal = useMemo(() => GOALS.find((g) => g.id === goalId)!, [goalId]);
 
-  const [targetType, setTargetType] = useState<"party" | "venue" | "brand">("party");
+  const [targetType, setTargetType] = useState<"party" | "venue" | "brand">("brand");
   const [partyId, setPartyId] = useState("");
   const [venueId, setVenueId] = useState("");
   const [title, setTitle] = useState("");
@@ -420,7 +420,7 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
     setBudget(g.suggestedBudget);
     const pm = PLACEMENTS.find((p) => p.value === g.placement)!;
     setBidBani(pm.min);
-    setTargetType(g.id === "fans" ? "brand" : g.id === "city" ? "venue" : "party");
+    setTargetType("brand");
   };
 
   const selectedParty = parties.find((p) => p.id === partyId);
@@ -645,38 +645,16 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
       {step === 2 && (
         <>
           <div className="space-y-2">
-            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">link către</div>
-            <div className="grid grid-cols-3 gap-1.5">
-              {([
-                { v: "party", l: "Petrecere" },
-                { v: "venue", l: "Locație" },
-                { v: "brand", l: "Brand" },
-              ] as const).map((t) => (
-                <button key={t.v} onClick={() => setTargetType(t.v)}
-                  className={`px-2 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest border transition ${
-                    targetType === t.v ? "bg-foreground text-background border-foreground" : "border-foreground/10 text-muted-foreground"}`}>
-                  {t.l}
-                </button>
-              ))}
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">promovezi</div>
+            <div className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg flex items-center justify-center" style={{ background: `${themeColor}22`, color: themeColor }}>
+                <Building2 size={18} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-display uppercase text-sm leading-tight truncate">{business.brand_name}</div>
+                <div className="text-[11px] text-muted-foreground">Reclama duce către profilul brandului tău.</div>
+              </div>
             </div>
-            {targetType === "party" && (
-              parties.length === 0 ? (
-                <div className="text-[11px] text-muted-foreground p-2 rounded-md bg-foreground/[0.03]">
-                  Nu ai petreceri active. <Link to="/app/parties" className="underline">Creează una</Link>.
-                </div>
-              ) : (
-                <select value={partyId} onChange={(e) => setPartyId(e.target.value)} className={selectStyle}>
-                  <option value="">— alege petrecere —</option>
-                  {parties.map((p) => <option key={p.id} value={p.id}>{p.title} · {p.location_text}</option>)}
-                </select>
-              )
-            )}
-            {targetType === "venue" && (
-              <select value={venueId} onChange={(e) => setVenueId(e.target.value)} className={selectStyle}>
-                <option value="">— alege locație —</option>
-                {venues.map((v) => <option key={v.id} value={v.id}>{v.name}{v.address ? " · " + v.address : ""}</option>)}
-              </select>
-            )}
           </div>
 
           <div className="space-y-2">
