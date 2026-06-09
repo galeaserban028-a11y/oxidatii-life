@@ -703,31 +703,44 @@ function PromoBanner({ promotedMeta }: { promotedMeta: Record<string, PromoMeta>
 function BusinessVisibilityCTA() {
   const [hidden, setHidden] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
-    try { return sessionStorage.getItem("oxi_hide_biz_cta_v2") === "1"; } catch { return false; }
+    try { return sessionStorage.getItem("oxi_hide_biz_cta_v3") === "1"; } catch { return false; }
   });
   if (hidden) return null;
   const dismiss = () => {
     setHidden(true);
-    try { sessionStorage.setItem("oxi_hide_biz_cta_v2", "1"); } catch {}
+    try { sessionStorage.setItem("oxi_hide_biz_cta_v3", "1"); } catch {}
   };
   return (
-    <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded-full bg-sunset-amber text-black pl-2.5 pr-1 py-1 shadow-[0_4px_14px_rgba(0,0,0,0.35)] border border-black/10">
-      <Link
-        to="/app/biz"
-        className="flex items-center gap-1.5 active:scale-[0.97] transition-transform"
-      >
-        <span className="text-[12px] leading-none">✨</span>
-        <span className="font-display text-[11px] font-semibold leading-none">
-          Fă-ți localul vizibil
-        </span>
-      </Link>
-      <button
-        onClick={dismiss}
-        aria-label="Ascunde"
-        className="h-5 w-5 grid place-items-center rounded-full hover:bg-black/10 transition-colors text-black/70"
-      >
-        <X size={10} />
-      </button>
-    </div>
+    <>
+      <style>{`
+        @keyframes oxi-float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-4px) } }
+        @keyframes oxi-glow {
+          0%,100% { box-shadow: 0 0 12px rgba(255,176,0,0.35), 0 0 24px rgba(255,176,0,0.18); }
+          50%     { box-shadow: 0 0 18px rgba(255,176,0,0.65), 0 0 36px rgba(255,176,0,0.3); }
+        }
+        .oxi-cta-wrap { animation: oxi-float 3.6s ease-in-out infinite; }
+        .oxi-cta-pill { animation: oxi-glow 2.8s ease-in-out infinite; }
+      `}</style>
+      <div className="oxi-cta-wrap absolute top-11 left-3 z-20 will-change-transform">
+        <div className="oxi-cta-pill flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sunset-amber to-[#ffd66b] text-black pl-2.5 pr-1 py-1 border border-black/10">
+          <Link
+            to="/app/biz"
+            className="flex items-center gap-1.5 active:scale-[0.97] transition-transform"
+          >
+            <span className="text-[12px] leading-none">✨</span>
+            <span className="font-display text-[11px] font-semibold leading-none whitespace-nowrap">
+              Fă-ți localul vizibil
+            </span>
+          </Link>
+          <button
+            onClick={dismiss}
+            aria-label="Ascunde"
+            className="h-5 w-5 grid place-items-center rounded-full hover:bg-black/10 transition-colors text-black/70"
+          >
+            <X size={10} />
+          </button>
+        </div>
+      </div>
+    </>
   );
 }
