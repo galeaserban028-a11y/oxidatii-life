@@ -145,8 +145,7 @@ export function BizCommandCenter({
   const profileViews   = business.total_visits ?? 0;
   const reviewCount    = business.total_reviews ?? 0;
   const rating         = Number(business.reputation_score ?? 0);
-  const followers      = data?.followers ?? 0;
-  const followersGain  = followers - (data?.followersPrev ?? 0);
+  const newReviews7    = data?.recentReviews?.length ?? 0;
 
   const upcomingEvents = useMemo(
     () => parties.filter((p) => new Date(p.starts_at).getTime() > Date.now() - 86400_000)
@@ -159,10 +158,10 @@ export function BizCommandCenter({
     const map = { discover: 0, map: 0, search: 0, direct: 0, other: 0 };
     for (const e of data?.events7 ?? []) {
       const t = (e.event_type || "").toLowerCase();
-      if (t.includes("discover") || t === "feed_view" || t === "feed_impression") map.discover++;
+      if (t.includes("feed") || t.includes("discover")) map.discover++;
       else if (t.includes("map")) map.map++;
       else if (t.includes("search")) map.search++;
-      else if (t.includes("profile") || t.includes("direct")) map.direct++;
+      else if (t === "view_detail" || t.includes("profile") || t.includes("direct")) map.direct++;
       else map.other++;
     }
     return map;
@@ -188,7 +187,7 @@ export function BizCommandCenter({
   // AI-style insights from real data only --------------------------
   const insights = useMemo(() => {
     const out: string[] = [];
-    if (followersGain > 0) out.push(`+${followersGain} urmăritori noi în ultimele 7 zile.`);
+    if (newReviews7 > 0) out.push(`${newReviews7} recenzii noi în ultimele 7 zile.`);
     const ev7 = data?.events7?.length ?? 0;
     const ev14 = data?.events14?.length ?? 0;
     if (ev14 > 0) {
@@ -198,9 +197,10 @@ export function BizCommandCenter({
     if (completeness < 70) out.push(`Profilul este completat în proporție de ${completeness}%. Completează datele lipsă pentru vizibilitate mai bună.`);
     if (upcomingEvents.length === 0) out.push("Nu ai niciun eveniment viitor publicat.");
     if (rating > 0 && reviewCount >= 3) out.push(`Reputație curentă: ${rating.toFixed(2)} din 5, pe baza ${reviewCount} recenzii.`);
+    if (profileViews === 0) out.push("Profilul nu a fost încă vizitat. Distribuie linkul ca să aduci primii oameni.");
     if (out.length === 0) out.push("Încă nu avem suficiente date ca să generăm recomandări utile.");
     return out;
-  }, [followersGain, data, completeness, upcomingEvents.length, rating, reviewCount]);
+  }, [newReviews7, data, completeness, upcomingEvents.length, rating, reviewCount, profileViews]);
 
   const totalSpent       = campaigns.reduce((s, c) => s + (c.spent_cents || 0), 0);
   const totalBudget      = campaigns.reduce((s, c) => s + (c.budget_cents || 0), 0);
@@ -212,12 +212,13 @@ export function BizCommandCenter({
     <div className="space-y-5">
       {/* ============== 1. OVERVIEW ============== */}
       <GlassCard className="p-4">
-        <SectionHeader icon={BarChart3} label="Privire de ansamblu" hint="Ultimele 7 zile" />
+        <SectionHeader icon={BarChart3} label="Privire de ansamblu" hint="Date reale, live" />
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <StatTile label="Vizualizări profil" value={fmt(profileViews)} accent="amber" />
-          <StatTile label="Urmăritori"        value={fmt(followers)}    sub={followersGain >= 0 ? `+${followersGain} săpt.` : `${followersGain} săpt.`} accent="orange" />
-          <StatTile label="Recenzii"          value={fmt(reviewCount)}  sub={rating ? `${rating.toFixed(2)}★` : "—"} accent="magenta" />
+          <StatTile label="Recenzii (7z)"     value={fmt(newReviews7)}   sub="noi" accent="orange" />
+          <StatTile label="Recenzii total"    value={fmt(reviewCount)}   sub={rating ? `${rating.toFixed(2)}★` : "—"} accent="magenta" />
           <StatTile label="Evenimente active" value={upcomingEvents.length} accent="amber" />
+
           <StatTile label="Campanii active"   value={activeCount}        accent="orange" />
           <StatTile label="Ofertă activă"     value={(data?.offers?.length ?? 0)} accent="magenta" />
         </div>
