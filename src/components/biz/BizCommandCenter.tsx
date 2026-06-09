@@ -49,9 +49,9 @@ async function loadCommandData(businessId: string, ownerId: string) {
       .eq("business_id", businessId).gte("created_at", since7)
       .order("created_at", { ascending: false }).limit(5),
     supabase.from("follows").select("*", { count: "exact", head: true })
-      .eq("followee_id", ownerId),
+      .eq("following_id", ownerId),
     supabase.from("follows").select("*", { count: "exact", head: true })
-      .eq("followee_id", ownerId).lt("created_at", since7),
+      .eq("following_id", ownerId).lt("created_at", since7),
     supabase.from("campaigns").select("id").eq("business_id", businessId),
     supabase.from("campaign_events").select("event_type, cost_cents, created_at, campaign_id")
       .gte("created_at", since7).in(
