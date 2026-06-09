@@ -473,26 +473,25 @@ function MapPage() {
 
         <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
 
-        {/* Slim friends CTA — only when 0 friends live */}
-        {friendPins.length === 0 && (
-          <Link
-            to="/app/friends"
-            className="group block rounded-2xl p-[1.5px] bg-gradient-to-r from-neon-green via-neon-purple to-neon-crimson active:scale-[0.99] transition"
-          >
-            <div className="rounded-[14px] bg-background/95 px-3.5 py-3 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-neon-green/15 border border-neon-green/40 grid place-items-center shrink-0">
-                <UserPlus className="text-neon-green" size={18} strokeWidth={2.6} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-display font-black uppercase text-sm leading-tight">cheamă oxidații</div>
-                <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
-                  adaugă prieteni → vezi-i pe hartă
-                </div>
-              </div>
-              <span className="font-display text-neon-green text-xl">→</span>
+        {/* Friends CTA — always visible under "add venue" */}
+        <Link
+          to="/app/friends"
+          className="group block rounded-2xl p-[1.5px] bg-gradient-to-r from-neon-green via-neon-purple to-neon-crimson active:scale-[0.99] transition"
+        >
+          <div className="rounded-[14px] bg-background/95 px-3.5 py-3 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-neon-green/15 border border-neon-green/40 grid place-items-center shrink-0">
+              <UserPlus className="text-neon-green" size={18} strokeWidth={2.6} />
             </div>
-          </Link>
-        )}
+            <div className="flex-1 min-w-0">
+              <div className="font-display font-black uppercase text-sm leading-tight">cheamă oxidații</div>
+              <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
+                adaugă prieteni → vezi-i pe hartă
+              </div>
+            </div>
+            <span className="font-display text-neon-green text-xl">→</span>
+          </div>
+        </Link>
+
 
         {/* Tabs */}
         <div className="flex items-center gap-1 p-1 rounded-xl bg-foreground/5 border border-border">
