@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Plus, Users, MapPin, Clock, X, Flame, Trash2, Check, UserX, ChevronDown, ChevronUp } from "lucide-react";
@@ -427,6 +428,8 @@ function HostJoinsPanel({
 function CreatePartySheet({ onClose }: { onClose: () => void }) {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const titleRef = useRef<HTMLInputElement>(null);
+  const locRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [loc, setLoc] = useState("");
@@ -464,22 +467,41 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
   });
 
   const valid = title.trim().length >= 2 && loc.trim().length >= 2 && spots >= 1;
+  const missing: string[] = [];
+  if (title.trim().length < 2) missing.push("titlu");
+  if (loc.trim().length < 2) missing.push("locație");
+  if (spots < 1) missing.push("locuri");
+  const isDisabled = !valid || create.isPending;
+  const handleCreateClick = () => {
+    if (create.isPending) return;
+    if (!valid) {
+      toast.error(`mai trebuie: ${missing.join(" · ")}`);
+      if (title.trim().length < 2) titleRef.current?.focus();
+      else if (loc.trim().length < 2) locRef.current?.focus();
+      return;
+    }
+    create.mutate();
+  };
 
-  return (
-    <div className="fixed inset-0 z-[60] bg-background/80 backdrop-blur-sm flex items-end" onClick={onClose}>
+  const sheet = (
+    <div className="fixed inset-0 z-[9999] bg-background/90 backdrop-blur-xl flex items-start justify-center px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:items-center" onClick={onClose}>
       <div
-        className="w-full max-w-md mx-auto bg-background border-t border-foreground/10 rounded-t-3xl p-5 space-y-4 max-h-[92vh] overflow-y-auto"
+        className="w-full max-w-md bg-background border border-foreground/10 rounded-3xl p-5 space-y-4 max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] overflow-y-auto overscroll-contain shadow-[0_24px_100px_-35px_var(--neon-crimson)]"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
-          <h2 className="font-display font-black text-xl">deschid un șpriț.</h2>
+        <div className="sticky top-0 z-10 -mx-5 -mt-5 px-5 pt-5 pb-3 bg-background/95 backdrop-blur-xl border-b border-foreground/10 flex items-center justify-between">
+          <div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.28em] text-neon-crimson">// formular șpriț</div>
+            <h2 className="font-display font-black text-xl">deschid un șpriț.</h2>
+          </div>
           <button onClick={onClose} className="h-9 w-9 rounded-full bg-foreground/5 flex items-center justify-center"><X size={16} /></button>
         </div>
 
         <div className="space-y-1.5">
           <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">// titlu</label>
           <input
+            ref={titleRef}
             value={title} onChange={(e) => setTitle(e.target.value)}
             maxLength={80}
             placeholder="ex: șpriț pe terasa mea, gașca lu' tata"
@@ -490,6 +512,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
         <div className="space-y-1.5">
           <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">// unde</label>
           <input
+            ref={locRef}
             value={loc} onChange={(e) => setLoc(e.target.value)}
             maxLength={120}
             placeholder="ex: scara mea, Cluj — Mărăști, casa Mihaela"
@@ -549,28 +572,14 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
           />
         </div>
 
-        {(() => {
-          const missing: string[] = [];
-          if (title.trim().length < 2) missing.push("titlu");
-          if (loc.trim().length < 2) missing.push("locație");
-          if (spots < 1) missing.push("locuri");
-          const isDisabled = !valid || create.isPending;
-          const handleClick = () => {
-            if (create.isPending) return;
-            if (!valid) {
-              toast.error(`mai trebuie: ${missing.join(" · ")}`);
-              return;
-            }
-            create.mutate();
-          };
-          return (
-            <div className="pt-1">
+        <div className="sticky bottom-0 z-10 -mx-5 -mb-5 px-5 pt-3 pb-5 bg-background/95 backdrop-blur-xl border-t border-foreground/10">
               <button
                 type="button"
-                onClick={handleClick}
+                onClick={handleCreateClick}
                 aria-disabled={isDisabled}
+                disabled={create.isPending}
                 className={`group relative w-full overflow-hidden rounded-2xl p-[1.5px] transition-all duration-300 active:scale-[0.98] ${
-                  isDisabled ? "opacity-70" : "shadow-[0_10px_40px_-10px_var(--neon-crimson)] hover:shadow-[0_14px_50px_-8px_var(--neon-purple)]"
+                  isDisabled ? "opacity-90" : "shadow-[0_10px_40px_-10px_var(--neon-crimson)] hover:shadow-[0_14px_50px_-8px_var(--neon-purple)]"
                 }`}
               >
                 <span
@@ -587,13 +596,13 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
                     <>
                       <span className="flex items-center gap-2">
                         <span className="font-display font-black uppercase tracking-[0.18em] text-base bg-gradient-to-r from-neon-crimson via-rose-400 to-neon-purple bg-clip-text text-transparent">
-                          dă drumu' la șpriț
+                          deschide șprițul
                         </span>
                         <span className="text-base translate-y-[-1px]">🥂</span>
                       </span>
                       <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-emerald-300/90 flex items-center gap-1.5">
                         <span className="h-1 w-1 rounded-full bg-emerald-300 animate-pulse" />
-                        gratis · 0 șprițuri 🍺
+                        cost: 0 coins · gratis
                       </span>
                     </>
                   )}
@@ -602,12 +611,13 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
               <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.25em] text-center text-muted-foreground">
                 {isDisabled && missing.length > 0 && !create.isPending
                   ? `lipsește: ${missing.join(" · ")}`
-                  : "dispare automat după 12h · gratis din partea casei"}
+                  : "apare instant · dispare automat după 12h"}
               </p>
             </div>
-          );
-        })()}
       </div>
     </div>
   );
+
+  if (typeof document === "undefined") return null;
+  return createPortal(sheet, document.body);
 }
