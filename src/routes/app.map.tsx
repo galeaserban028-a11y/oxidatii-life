@@ -711,31 +711,22 @@ function BusinessVisibilityCTA() {
     try { sessionStorage.setItem("oxi_hide_biz_cta", "1"); } catch {}
   };
   return (
-    <div className="absolute top-2 left-2 right-2 z-10 flex items-stretch">
+    <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-full bg-card/90 backdrop-blur-sm border border-sunset-amber/30 pl-3 pr-1 py-1 shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
       <Link
         to="/app/biz"
-        className="flex-1 min-w-0 flex items-center gap-2.5 rounded-l-2xl bg-background/95 backdrop-blur border border-r-0 border-neon-crimson/50 pl-2.5 pr-3 py-2 active:scale-[0.99] transition"
-        style={{ boxShadow: "0 6px 20px rgba(255,49,88,0.25), inset 0 0 0 1px rgba(255,49,88,0.15)" }}
+        className="flex items-center gap-1.5 active:scale-[0.97] transition-transform"
       >
-        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-neon-crimson to-neon-purple grid place-items-center shrink-0">
-          <Sparkles size={16} className="text-background" strokeWidth={2.8} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="font-display font-black uppercase text-[13px] leading-tight truncate">
-            fă-ți localul vizibil
-          </div>
-          <div className="font-mono text-[8.5px] uppercase tracking-[0.18em] text-muted-foreground mt-0.5 truncate">
-            creează-ți business · promovează →
-          </div>
-        </div>
+        <span className="h-1.5 w-1.5 rounded-full bg-sunset-amber shrink-0" />
+        <span className="font-display text-[11px] font-medium text-foreground leading-none">
+          Fă-ți localul vizibil
+        </span>
       </Link>
       <button
         onClick={dismiss}
         aria-label="Ascunde"
-        className="w-9 grid place-items-center rounded-r-2xl bg-background/95 backdrop-blur border border-l-0 border-neon-crimson/50 text-muted-foreground active:scale-95"
-        style={{ boxShadow: "0 6px 20px rgba(255,49,88,0.25)" }}
+        className="h-5 w-5 grid place-items-center rounded-full hover:bg-muted/60 transition-colors text-muted-foreground"
       >
-        <X size={13} />
+        <X size={10} />
       </button>
     </div>
   );
