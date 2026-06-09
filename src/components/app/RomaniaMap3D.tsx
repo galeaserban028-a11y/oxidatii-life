@@ -357,7 +357,7 @@ export function RomaniaMap3D({
       src.setData({
         type: "FeatureCollection",
         features: venues
-          .filter(v => isValidLngLat(v.lng, v.lat))
+          .filter(v => isValidLngLat(v.lng, v.lat) && !promotedMeta[v.id])
           .map(v => ({
             type: "Feature",
             geometry: { type: "Point", coordinates: [Number(v.lng), Number(v.lat)] },
