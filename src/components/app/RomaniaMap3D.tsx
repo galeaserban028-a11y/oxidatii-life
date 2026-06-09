@@ -376,11 +376,18 @@ export function RomaniaMap3D({
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
     const build = () => {
+      // Read dismissed promo ids from sessionStorage so an X dismissal sticks
+      // for the current browsing session without nuking the database.
+      let dismissed = new Set<string>();
+      try {
+        dismissed = new Set(JSON.parse(sessionStorage.getItem("oxi_dismissed_promos") || "[]"));
+      } catch {}
       const seen = new Set<string>();
       for (const v of venues) {
         const meta = promotedMeta[v.id];
         if (!meta) continue;
         if (!isValidLngLat(v.lng, v.lat)) continue;
+        if (meta.campaignId && dismissed.has(meta.campaignId)) continue;
         seen.add(v.id);
         const existing = promotedMarkers.current.get(v.id);
         if (existing) {
@@ -389,14 +396,14 @@ export function RomaniaMap3D({
         }
         const theme = meta.theme || "#ff3158";
         const wrap = document.createElement("div");
-        wrap.style.cssText = "position:relative;width:54px;height:54px;cursor:pointer;transform:translateY(-50%);z-index:5;";
+        wrap.style.cssText = "position:relative;width:40px;height:40px;cursor:pointer;transform:translateY(-50%);z-index:5;";
 
         const pulse = document.createElement("div");
-        pulse.style.cssText = `position:absolute;inset:-6px;border-radius:9999px;background:${theme};opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;`;
+        pulse.style.cssText = `position:absolute;inset:-3px;border-radius:9999px;background:${theme};opacity:0.18;animation:oxi-pulse-strong 2.4s ease-out infinite;pointer-events:none;`;
         wrap.appendChild(pulse);
 
         const ring = document.createElement("div");
-        ring.style.cssText = `position:relative;width:54px;height:54px;border-radius:9999px;border:3px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 24px ${theme},0 6px 18px rgba(0,0,0,0.7);`;
+        ring.style.cssText = `position:relative;width:40px;height:40px;border-radius:9999px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 12px ${theme}99,0 4px 12px rgba(0,0,0,0.6);`;
         if (meta.cover) {
           const img = document.createElement("img");
           img.src = meta.cover; img.alt = "";
@@ -406,15 +413,37 @@ export function RomaniaMap3D({
         } else {
           const ini = document.createElement("div");
           ini.textContent = (v.name?.[0] ?? "?").toUpperCase();
-          ini.style.cssText = `width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${theme};font-weight:900;font-family:'Space Grotesk',sans-serif;font-size:22px;`;
+          ini.style.cssText = `width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${theme};font-weight:900;font-family:'Space Grotesk',sans-serif;font-size:16px;`;
           ring.appendChild(ini);
         }
         wrap.appendChild(ring);
 
         const badge = document.createElement("div");
-        badge.textContent = "PROMO";
-        badge.style.cssText = `position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);padding:1px 7px;border-radius:9999px;background:${theme};color:#06070a;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.14em;border:2px solid #06070a;white-space:nowrap;`;
+        badge.textContent = "AD";
+        badge.style.cssText = `position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);padding:0 5px;border-radius:9999px;background:${theme};color:#06070a;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:7px;letter-spacing:0.14em;border:1.5px solid #06070a;white-space:nowrap;line-height:11px;`;
         wrap.appendChild(badge);
+
+        // X dismiss button (top-right). Stops propagation so click doesn't
+        // open the campaign; persists in sessionStorage and removes marker.
+        const close = document.createElement("button");
+        close.type = "button";
+        close.setAttribute("aria-label", "Ascunde reclama");
+        close.textContent = "×";
+        close.style.cssText = `position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:9999px;background:#06070a;color:#fff;border:1.5px solid ${theme};font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;`;
+        close.onclick = (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          if (meta.campaignId) {
+            try {
+              const cur = new Set<string>(JSON.parse(sessionStorage.getItem("oxi_dismissed_promos") || "[]"));
+              cur.add(meta.campaignId);
+              sessionStorage.setItem("oxi_dismissed_promos", JSON.stringify([...cur]));
+            } catch {}
+          }
+          const m = promotedMarkers.current.get(v.id);
+          if (m) { m.remove(); promotedMarkers.current.delete(v.id); }
+        };
+        wrap.appendChild(close);
 
         wrap.onclick = (e) => {
           e.stopPropagation();
@@ -436,6 +465,7 @@ export function RomaniaMap3D({
     };
     if (loadedRef.current) build(); else map.once("load", build);
   }, [venues, promotedMeta, retryKey]);
+
 
   // CITIES → DOM markers (small count, re-render OK)
   useEffect(() => {
