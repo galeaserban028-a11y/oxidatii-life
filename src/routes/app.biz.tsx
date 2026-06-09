@@ -302,7 +302,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 
       {builderOpen && (
         <CampaignBuilder business={business} parties={parties} cities={cities} venues={venues}
-          onClose={() => setBuilderOpen(false)}
+          onClose={() => { setBuilderOpen(false); navigate({ to: "/app" }); }}
           onCreated={(c) => {
             setBuilderOpen(false);
             qc.invalidateQueries({ queryKey: ["biz"] });
