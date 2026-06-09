@@ -4,9 +4,10 @@ import { useMemo, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
-import { UserPlus, Users, MapPin, Clock, X, Beer, List, Navigation, Sparkles } from "lucide-react";
+import { UserPlus, Users, MapPin, Clock, X, Beer, List, Navigation, Sparkles, Settings, Ghost } from "lucide-react";
 import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilters";
 import { AddVenueSheet } from "@/components/app/AddVenueSheet";
+import { MapSettingsSheet } from "@/components/app/MapSettingsSheet";
 import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
 
 export const Route = createFileRoute("/app/map")({
