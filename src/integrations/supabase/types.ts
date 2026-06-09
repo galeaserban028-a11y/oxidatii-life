@@ -1743,6 +1743,17 @@ export type Database = {
           wallet_balance_cents: number
         }[]
       }
+      get_profile_card: {
+        Args: { _id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          display_name: string
+          handle: string
+          id: string
+          is_public: boolean
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
