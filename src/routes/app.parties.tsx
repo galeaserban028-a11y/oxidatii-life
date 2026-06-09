@@ -555,13 +555,22 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
           if (loc.trim().length < 2) missing.push("locație");
           if (spots < 1) missing.push("locuri");
           const isDisabled = !valid || create.isPending;
+          const handleClick = () => {
+            if (create.isPending) return;
+            if (!valid) {
+              toast.error(`mai trebuie: ${missing.join(" · ")}`);
+              return;
+            }
+            create.mutate();
+          };
           return (
             <div className="pt-1">
               <button
-                onClick={() => create.mutate()}
-                disabled={isDisabled}
+                type="button"
+                onClick={handleClick}
+                aria-disabled={isDisabled}
                 className={`group relative w-full overflow-hidden rounded-2xl p-[1.5px] transition-all duration-300 active:scale-[0.98] ${
-                  isDisabled ? "opacity-60" : "shadow-[0_10px_40px_-10px_var(--neon-crimson)] hover:shadow-[0_14px_50px_-8px_var(--neon-purple)]"
+                  isDisabled ? "opacity-70" : "shadow-[0_10px_40px_-10px_var(--neon-crimson)] hover:shadow-[0_14px_50px_-8px_var(--neon-purple)]"
                 }`}
               >
                 <span
@@ -571,15 +580,21 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
                   }`}
                   style={{ ["--a" as any]: "0deg" }}
                 />
-                <span className="relative flex items-center justify-center gap-2 rounded-[14px] bg-background/95 px-4 py-3.5">
+                <span className="relative flex flex-col items-center justify-center gap-1 rounded-[14px] bg-background/95 px-4 py-3 pointer-events-none">
                   {create.isPending ? (
                     <span className="font-mono text-xs uppercase tracking-[0.3em] text-foreground/80">se deschide…</span>
                   ) : (
                     <>
-                      <span className="font-display font-black uppercase tracking-[0.18em] text-base bg-gradient-to-r from-neon-crimson via-rose-400 to-neon-purple bg-clip-text text-transparent">
-                        dă drumu' la șpriț
+                      <span className="flex items-center gap-2">
+                        <span className="font-display font-black uppercase tracking-[0.18em] text-base bg-gradient-to-r from-neon-crimson via-rose-400 to-neon-purple bg-clip-text text-transparent">
+                          dă drumu' la șpriț
+                        </span>
+                        <span className="text-base translate-y-[-1px]">🥂</span>
                       </span>
-                      <span className="text-base translate-y-[-1px]">🥂</span>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-emerald-300/90 flex items-center gap-1.5">
+                        <span className="h-1 w-1 rounded-full bg-emerald-300 animate-pulse" />
+                        gratis · 0 șprițuri 🍺
+                      </span>
                     </>
                   )}
                 </span>
@@ -587,7 +602,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
               <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.25em] text-center text-muted-foreground">
                 {isDisabled && missing.length > 0 && !create.isPending
                   ? `lipsește: ${missing.join(" · ")}`
-                  : "dispare automat după 12h"}
+                  : "dispare automat după 12h · gratis din partea casei"}
               </p>
             </div>
           );
