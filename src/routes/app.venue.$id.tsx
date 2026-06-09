@@ -133,12 +133,14 @@ function VenuePage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
         {v.street?.id ? (
           <Link to="/app/street/$id" params={{ id: v.street.id }}
-            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-foreground shadow-md">
+            style={{ top: "calc(env(safe-area-inset-top) + 1rem)", left: "calc(env(safe-area-inset-left) + 1rem)" }}
+            className="absolute h-10 w-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-foreground shadow-md">
             <ArrowLeft size={18}/>
           </Link>
         ) : (
           <Link to="/app/map"
-            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-foreground shadow-md">
+            style={{ top: "calc(env(safe-area-inset-top) + 1rem)", left: "calc(env(safe-area-inset-left) + 1rem)" }}
+            className="absolute h-10 w-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-foreground shadow-md">
             <ArrowLeft size={18}/>
           </Link>
         )}

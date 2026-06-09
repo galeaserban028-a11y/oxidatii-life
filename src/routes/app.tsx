@@ -37,7 +37,10 @@ function AppLayout() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground pb-20">
+    <main
+      className="min-h-screen bg-background text-foreground"
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)" }}
+    >
       <InstallBanner />
       <AppHeader />
       <PageTransition>
