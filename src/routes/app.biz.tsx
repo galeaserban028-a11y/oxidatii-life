@@ -255,73 +255,49 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 
         {business.description && <p className="text-xs text-muted-foreground line-clamp-2">{business.description}</p>}
 
-        <SimpleBizMap
-          balanceCents={business.wallet_balance_cents ?? 0}
-          activeCount={activeCount}
-          totalSpent={totalSpent}
-          totalImpressions={totalImpressions}
-          totalClicks={totalClicks}
+        <BizCommandCenter
+          business={business}
+          campaigns={campaigns}
+          parties={parties}
           onTopup={onTopup}
-          onCampaign={() => hasCampaignFunds ? setBuilderOpen(true) : onTopup()}
+          onNewCampaign={() => setBuilderOpen(true)}
+          onEditCampaign={(c) => setEditCampaign(c)}
+          onToggleCampaign={toggleCampaign}
+          onDeleteCampaign={deleteCampaign}
+          onDuplicateCampaign={async (c) => {
+            const { data: copy, error } = await supabase.from("campaigns").insert({
+              business_id: c.business_id,
+              kind: c.kind,
+              party_id: c.party_id,
+              venue_id: c.venue_id,
+              city_id: c.city_id,
+              title: `${c.title} (copie)`,
+              subtitle: c.subtitle,
+              cta_text: c.cta_text,
+              cta_url: c.cta_url,
+              image_urls: c.image_urls,
+              theme_color: c.theme_color,
+              bid_cents: c.bid_cents,
+              budget_cents: c.budget_cents,
+              pricing_model: c.pricing_model,
+              daily_cap_cents: c.daily_cap_cents,
+              targeting: c.targeting,
+              schedule: c.schedule,
+              event_starts_at: c.event_starts_at,
+              entry_kind: c.entry_kind,
+              entry_price_text: c.entry_price_text,
+              street: c.street,
+              special_guest: c.special_guest,
+              video_url: c.video_url,
+              status: "draft",
+            }).select().single();
+            if (error) { alert(error.message); return; }
+            qc.invalidateQueries({ queryKey: ["biz"] });
+            if (copy) setEditCampaign(copy);
+          }}
         />
-
-        {/* Campaign list */}
-        {campaigns.length > 0 && (
-          <details className="rounded-xl bg-foreground/[0.03] border border-foreground/10 overflow-hidden">
-            <summary className="cursor-pointer list-none px-3 py-3 flex items-center justify-between gap-3">
-              <span className="text-sm font-medium">Campaniile tale</span>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{campaigns.length} total · {activeCount} active</span>
-            </summary>
-            <div className="space-y-1.5 px-3 pb-3">
-            {campaigns.map((c) => {
-              const placement = PLACEMENTS.find((p) => p.value === c.kind);
-              const Icon = placement?.icon ?? Rocket;
-              const pct = c.budget_cents ? Math.min(100, (c.spent_cents / c.budget_cents) * 100) : 0;
-              return (
-                <div key={c.id} className="rounded-md bg-foreground/[0.03] border border-foreground/10 overflow-hidden">
-                  <div className="flex items-center justify-between gap-2 p-2.5">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
-                        style={{ background: `${placement?.color ?? "#FF2D55"}22`, color: placement?.color ?? "#FF2D55" }}>
-                        <Icon size={13} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs truncate">{c.title}</div>
-                        <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground truncate">
-                          {placement?.label} · {c.impressions} · {ron(c.spent_cents)}/{ron(c.budget_cents)} RON
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button onClick={() => setEditCampaign(c)}
-                        className="p-1.5 rounded-md border border-foreground/10 hover:border-foreground/30 text-muted-foreground"
-                        aria-label="Editează">
-                        <Pencil size={11} />
-                      </button>
-                      <button onClick={() => toggleCampaign(c)}
-                        className={`text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded-md border ${
-                          c.status === "active" ? "border-neon-crimson text-neon-crimson" : "border-neon-green text-neon-green"}`}>
-                        {c.status === "active" ? "Pause" : "Start"}
-                      </button>
-                      <button onClick={() => deleteCampaign(c)}
-                        className="p-1.5 rounded-md border border-foreground/10 hover:border-neon-crimson hover:text-neon-crimson text-muted-foreground"
-                        aria-label="Șterge">
-                        <Trash2 size={11} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="h-1 bg-foreground/5">
-                    <div className="h-full" style={{ width: `${pct}%`, background: placement?.color ?? "#FF2D55" }} />
-                  </div>
-                </div>
-              );
-            })}
-            </div>
-          </details>
-        )}
-
-        <BizUniquePanel business={business} />
       </div>
+
 
       {builderOpen && (
         <CampaignBuilder business={business} parties={parties} cities={cities} venues={venues}
