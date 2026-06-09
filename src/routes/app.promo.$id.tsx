@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useEffect, useRef } from "react";
 import { ArrowLeft, Sparkles, MapPin, Calendar, ExternalLink, ChevronRight, Eye, MousePointerClick, Globe, Phone, Mail, Instagram, Music2, Clock, Users, Ticket, Star } from "lucide-react";
+import { BusinessReviewCard } from "@/components/biz/BusinessReviewCard";
 
 export const Route = createFileRoute("/app/promo/$id")({
   component: PromoPage,
