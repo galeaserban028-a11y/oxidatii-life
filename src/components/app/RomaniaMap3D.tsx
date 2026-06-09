@@ -343,6 +343,7 @@ export function RomaniaMap3D({
     return () => {
       cityMarkers.current.forEach(m => m.remove()); cityMarkers.current = [];
       friendMarkers.current.forEach(m => m.remove()); friendMarkers.current.clear();
+      promotedMarkers.current.forEach(m => m.remove()); promotedMarkers.current.clear();
       try { map.remove(); } catch {}
       mapRef.current = null; loadedRef.current = false;
     };
