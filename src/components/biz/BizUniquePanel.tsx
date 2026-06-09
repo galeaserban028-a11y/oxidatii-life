@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Star, Gift, Swords, Crown, Plus, Trash2, X, Check, Trophy,
-  ChevronDown, MapPin, MessageSquare, BarChart3, ShieldCheck, Wallet,
-} from "lucide-react";
+import { Star, Crown, X, MapPin, BarChart3, ShieldCheck, Wallet } from "lucide-react";
 import { BizProEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 
 const BATTLE_CATEGORIES = [
@@ -14,30 +11,8 @@ const BATTLE_CATEGORIES = [
 export function BizUniquePanel({ business }: { business: any }) {
   return (
     <div className="space-y-3 pt-4">
-      {/* PRO upsell on top — the most important decision */}
       <ProUpgradeCard business={business} />
-
-      {/* Reputation = quick glance */}
       <ReputationCard business={business} />
-
-      {/* Power tools — collapsed by default to reduce noise */}
-      <Section
-        icon={<Gift size={14} className="text-neon-crimson" />}
-        title="Oferte fizice"
-        subtitle="Userul scanează la fața locului, primește reward."
-        defaultOpen={false}
-      >
-        <OffersCard business={business} />
-      </Section>
-
-      <Section
-        icon={<Swords size={14} className="text-neon-purple" />}
-        title="Battle săptămânal"
-        subtitle="Câștigătorul = spotlight gratis 7 zile pe Discover."
-        defaultOpen={false}
-      >
-        <BattleCard business={business} />
-      </Section>
     </div>
   );
 }
@@ -143,10 +118,10 @@ function ProUpgradeCard({ business }: { business: any }) {
   }
 
   const benefits = [
-    { icon: Wallet, label: "primești 50 RON credite lunar" },
-    { icon: ShieldCheck, label: "badge Pro pe brand" },
-    { icon: MapPin, label: "mai multă încredere pe hartă" },
-    { icon: BarChart3, label: "vezi ce reclame merg" },
+    { icon: Wallet, label: "50 RON credit în wallet lunar" },
+    { icon: ShieldCheck, label: "status Pro în panoul business" },
+    { icon: MapPin, label: "brand complet: cover, logo, contact" },
+    { icon: BarChart3, label: "views și click-uri pe campanii" },
   ];
 
   return (

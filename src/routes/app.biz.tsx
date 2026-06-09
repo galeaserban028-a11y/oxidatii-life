@@ -12,6 +12,7 @@ import {
   Users, Heart, Flame, ChevronDown, Check, Zap, Trash2, Ticket, Video, Clock,
 } from "lucide-react";
 import { BizUniquePanel } from "@/components/biz/BizUniquePanel";
+import { launchBusinessCampaign } from "@/lib/business-promotion.functions";
 
 export const Route = createFileRoute("/app/biz")({
   head: () => ({ meta: [{ title: "Business · OXIDAȚII" }] }),
@@ -28,12 +29,9 @@ const BUSINESS_TYPES = [
 ] as const;
 
 const PLACEMENTS = [
-  { value: "boost_feed",     label: "Feed Boost",     icon: TrendingUp, desc: "Apare sus în feed-ul orașului", min: 50, color: "#FF2D55" },
-  { value: "boost_map",      label: "Pin pe Hartă",   icon: MapPin,     desc: "Locație evidențiată cu animație pe hartă", min: 80, color: "#FF6B00" },
-  { value: "boost_discover", label: "Discover",       icon: Compass,    desc: "Top în pagina Descoperă", min: 100, color: "#9D4EDD" },
-  { value: "boost_story",    label: "Story Banner",   icon: Sparkles,   desc: "Banner full-screen între story-uri", min: 120, color: "#00D4FF" },
-  { value: "boost_push",     label: "Push Notif",     icon: Bell,       desc: "Notificare targetată (1/zi/user)", min: 200, color: "#FFD60A" },
-  { value: "boost_brand",    label: "Spotlight Brand", icon: Star,      desc: "Profil brand promovat în secțiunea VIP", min: 150, color: "#39FF14" },
+  { value: "boost_feed",     label: "Feed Boost",      icon: TrendingUp, desc: "Card promovat în feed, cu views și click-uri", min: 50, color: "#FF2D55" },
+  { value: "boost_story",    label: "Full-screen Ad",  icon: Sparkles,   desc: "Reclamă full-screen + banner sticky în aplicație", min: 120, color: "#00D4FF" },
+  { value: "boost_discover", label: "Banner App",      icon: Compass,    desc: "Banner promovat rotit în aplicație", min: 100, color: "#9D4EDD" },
 ] as const;
 
 const VIBES = ["techno", "house", "hip-hop", "manele", "rock", "latino", "comercial", "underground", "live"] as const;
