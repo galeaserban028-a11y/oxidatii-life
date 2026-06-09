@@ -703,28 +703,28 @@ function PromoBanner({ promotedMeta }: { promotedMeta: Record<string, PromoMeta>
 function BusinessVisibilityCTA() {
   const [hidden, setHidden] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
-    try { return sessionStorage.getItem("oxi_hide_biz_cta") === "1"; } catch { return false; }
+    try { return sessionStorage.getItem("oxi_hide_biz_cta_v2") === "1"; } catch { return false; }
   });
   if (hidden) return null;
   const dismiss = () => {
     setHidden(true);
-    try { sessionStorage.setItem("oxi_hide_biz_cta", "1"); } catch {}
+    try { sessionStorage.setItem("oxi_hide_biz_cta_v2", "1"); } catch {}
   };
   return (
-    <div className="absolute top-3 left-3 z-10 flex items-center gap-1 rounded-full bg-card/90 backdrop-blur-sm border border-sunset-amber/30 pl-3 pr-1 py-1 shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
+    <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded-full bg-sunset-amber text-black pl-2.5 pr-1 py-1 shadow-[0_4px_14px_rgba(0,0,0,0.35)] border border-black/10">
       <Link
         to="/app/biz"
         className="flex items-center gap-1.5 active:scale-[0.97] transition-transform"
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-sunset-amber shrink-0" />
-        <span className="font-display text-[11px] font-medium text-foreground leading-none">
+        <span className="text-[12px] leading-none">✨</span>
+        <span className="font-display text-[11px] font-semibold leading-none">
           Fă-ți localul vizibil
         </span>
       </Link>
       <button
         onClick={dismiss}
         aria-label="Ascunde"
-        className="h-5 w-5 grid place-items-center rounded-full hover:bg-muted/60 transition-colors text-muted-foreground"
+        className="h-5 w-5 grid place-items-center rounded-full hover:bg-black/10 transition-colors text-black/70"
       >
         <X size={10} />
       </button>
