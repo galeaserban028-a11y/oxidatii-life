@@ -127,6 +127,7 @@ export function RomaniaMap3D({
   onCityClick,
   focusCity,
   fitBounds,
+  promotedMeta = {},
 }: {
   cities: City[];
   venues?: Venue[];
@@ -134,11 +135,13 @@ export function RomaniaMap3D({
   onCityClick?: (city: City) => void;
   focusCity?: { lat: number; lng: number; zoom?: number } | null;
   fitBounds?: [[number, number], [number, number]] | null;
+  promotedMeta?: Record<string, { theme: string; cover: string | null }>;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
   const cityMarkers = useRef<Marker[]>([]);
   const friendMarkers = useRef<Map<string, Marker>>(new Map());
+  const promotedMarkers = useRef<Map<string, Marker>>(new Map());
   const loadedRef = useRef(false);
   const onCityClickRef = useRef<typeof onCityClick>(onCityClick);
   const nav = useNavigate();
@@ -340,6 +343,7 @@ export function RomaniaMap3D({
     return () => {
       cityMarkers.current.forEach(m => m.remove()); cityMarkers.current = [];
       friendMarkers.current.forEach(m => m.remove()); friendMarkers.current.clear();
+      promotedMarkers.current.forEach(m => m.remove()); promotedMarkers.current.clear();
       try { map.remove(); } catch {}
       mapRef.current = null; loadedRef.current = false;
     };
@@ -354,7 +358,7 @@ export function RomaniaMap3D({
       src.setData({
         type: "FeatureCollection",
         features: venues
-          .filter(v => isValidLngLat(v.lng, v.lat))
+          .filter(v => isValidLngLat(v.lng, v.lat) && !promotedMeta[v.id])
           .map(v => ({
             type: "Feature",
             geometry: { type: "Point", coordinates: [Number(v.lng), Number(v.lat)] },
@@ -363,7 +367,71 @@ export function RomaniaMap3D({
       });
     };
     if (loadedRef.current) apply(); else map.once("load", apply);
-  }, [venues, retryKey]);
+  }, [venues, promotedMeta, retryKey]);
+
+  // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
+  // halo. Replaces the bottle silhouette so paying businesses are instantly
+  // recognizable on the map. Diff-only: only re-creates markers when the set
+  // of promoted venues or their coordinates change.
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return;
+    const build = () => {
+      const seen = new Set<string>();
+      for (const v of venues) {
+        const meta = promotedMeta[v.id];
+        if (!meta) continue;
+        if (!isValidLngLat(v.lng, v.lat)) continue;
+        seen.add(v.id);
+        const existing = promotedMarkers.current.get(v.id);
+        if (existing) {
+          existing.setLngLat([Number(v.lng), Number(v.lat)]);
+          continue;
+        }
+        const theme = meta.theme || "#ff3158";
+        const wrap = document.createElement("div");
+        wrap.style.cssText = "position:relative;width:54px;height:54px;cursor:pointer;transform:translateY(-50%);z-index:5;";
+
+        const pulse = document.createElement("div");
+        pulse.style.cssText = `position:absolute;inset:-6px;border-radius:9999px;background:${theme};opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;`;
+        wrap.appendChild(pulse);
+
+        const ring = document.createElement("div");
+        ring.style.cssText = `position:relative;width:54px;height:54px;border-radius:9999px;border:3px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 24px ${theme},0 6px 18px rgba(0,0,0,0.7);`;
+        if (meta.cover) {
+          const img = document.createElement("img");
+          img.src = meta.cover; img.alt = "";
+          img.loading = "lazy";
+          img.style.cssText = "width:100%;height:100%;object-fit:cover;";
+          ring.appendChild(img);
+        } else {
+          const ini = document.createElement("div");
+          ini.textContent = (v.name?.[0] ?? "?").toUpperCase();
+          ini.style.cssText = `width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${theme};font-weight:900;font-family:'Space Grotesk',sans-serif;font-size:22px;`;
+          ring.appendChild(ini);
+        }
+        wrap.appendChild(ring);
+
+        const badge = document.createElement("div");
+        badge.textContent = "PROMO";
+        badge.style.cssText = `position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);padding:1px 7px;border-radius:9999px;background:${theme};color:#06070a;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.14em;border:2px solid #06070a;white-space:nowrap;`;
+        wrap.appendChild(badge);
+
+        wrap.onclick = (e) => {
+          e.stopPropagation();
+          navRef.current({ to: "/app/venue/$id", params: { id: v.id } });
+        };
+
+        const marker = new maplibregl.Marker({ element: wrap, anchor: "bottom" })
+          .setLngLat([Number(v.lng), Number(v.lat)])
+          .addTo(map);
+        promotedMarkers.current.set(v.id, marker);
+      }
+      for (const [id, marker] of promotedMarkers.current) {
+        if (!seen.has(id)) { marker.remove(); promotedMarkers.current.delete(id); }
+      }
+    };
+    if (loadedRef.current) build(); else map.once("load", build);
+  }, [venues, promotedMeta, retryKey]);
 
   // CITIES → DOM markers (small count, re-render OK)
   useEffect(() => {

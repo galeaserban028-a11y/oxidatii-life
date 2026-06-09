@@ -198,6 +198,36 @@ function MapPage() {
     },
   });
 
+  // Active venue-linked promo campaigns → "shining" pins on the map.
+  // Pulls only the data needed to recognize a promoted venue + tint its halo
+  // and show the brand logo in place of the bottle silhouette.
+  const { data: promotedMeta = {} } = useQuery({
+    queryKey: ["promoted-venues"],
+    queryFn: async () => {
+      const nowIso = new Date().toISOString();
+      const { data, error } = await supabase
+        .from("campaigns")
+        .select("venue_id, theme_color, image_urls, business_id, business_accounts!inner(venue_id, logo_url, cover_url)")
+        .eq("status", "active")
+        .lte("starts_at", nowIso)
+        .or(`ends_at.is.null,ends_at.gt.${nowIso}`);
+      if (error) throw error;
+      const map: Record<string, { theme: string; cover: string | null }> = {};
+      for (const c of (data ?? []) as any[]) {
+        const vid = c.venue_id ?? c.business_accounts?.venue_id;
+        if (!vid) continue;
+        if (map[vid]) continue;
+        const cover = (c.image_urls?.[0] as string | undefined)
+          ?? c.business_accounts?.logo_url
+          ?? c.business_accounts?.cover_url
+          ?? null;
+        map[vid] = { theme: c.theme_color ?? "#ff3158", cover };
+      }
+      return map;
+    },
+    refetchInterval: 60_000,
+  });
+
   const { data: friendPins = [] } = useQuery({
     queryKey: ["friend-pins", user?.id],
     queryFn: () => loadFriendPins(user!.id),
@@ -399,6 +429,7 @@ function MapPage() {
             <RomaniaMap3D
               cities={citiesScoped}
               venues={filtered}
+              promotedMeta={promotedMeta}
               friends={friendPins}
               focusCity={focusCity}
               fitBounds={fitBounds}
