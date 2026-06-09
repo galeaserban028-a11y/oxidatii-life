@@ -44,9 +44,9 @@ import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
 import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
 import { Route as AppPromoIdRouteImport } from './routes/app.promo.$id'
-import { Route as AppMeReputationRouteImport } from './routes/app.me.reputation'
-import { Route as AppMeRatersRouteImport } from './routes/app.me.raters'
-import { Route as AppMeArchiveRouteImport } from './routes/app.me.archive'
+import { Route as AppMeReputationRouteImport } from './routes/app.me_.reputation'
+import { Route as AppMeRatersRouteImport } from './routes/app.me_.raters'
+import { Route as AppMeArchiveRouteImport } from './routes/app.me_.archive'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminUsersRouteImport } from './routes/app.admin.users'
@@ -234,19 +234,19 @@ const AppPromoIdRoute = AppPromoIdRouteImport.update({
   getParentRoute: () => AppRoute,
 } as any)
 const AppMeReputationRoute = AppMeReputationRouteImport.update({
-  id: '/reputation',
-  path: '/reputation',
-  getParentRoute: () => AppMeRoute,
+  id: '/me_/reputation',
+  path: '/me/reputation',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppMeRatersRoute = AppMeRatersRouteImport.update({
-  id: '/raters',
-  path: '/raters',
-  getParentRoute: () => AppMeRoute,
+  id: '/me_/raters',
+  path: '/me/raters',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppMeArchiveRoute = AppMeArchiveRouteImport.update({
-  id: '/archive',
-  path: '/archive',
-  getParentRoute: () => AppMeRoute,
+  id: '/me_/archive',
+  path: '/me/archive',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppCitySlugRoute = AppCitySlugRouteImport.update({
   id: '/city/$slug',
@@ -320,7 +320,7 @@ export interface FileRoutesByFullPath {
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/map': typeof AppMapRoute
-  '/app/me': typeof AppMeRouteWithChildren
+  '/app/me': typeof AppMeRoute
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
@@ -368,7 +368,7 @@ export interface FileRoutesByTo {
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/map': typeof AppMapRoute
-  '/app/me': typeof AppMeRouteWithChildren
+  '/app/me': typeof AppMeRoute
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
@@ -419,7 +419,7 @@ export interface FileRoutesById {
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
   '/app/map': typeof AppMapRoute
-  '/app/me': typeof AppMeRouteWithChildren
+  '/app/me': typeof AppMeRoute
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
@@ -439,9 +439,9 @@ export interface FileRoutesById {
   '/app/admin/users': typeof AppAdminUsersRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
-  '/app/me/archive': typeof AppMeArchiveRoute
-  '/app/me/raters': typeof AppMeRatersRoute
-  '/app/me/reputation': typeof AppMeReputationRoute
+  '/app/me_/archive': typeof AppMeArchiveRoute
+  '/app/me_/raters': typeof AppMeRatersRoute
+  '/app/me_/reputation': typeof AppMeReputationRoute
   '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
@@ -589,9 +589,9 @@ export interface FileRouteTypes {
     | '/app/admin/users'
     | '/app/chat/$id'
     | '/app/city/$slug'
-    | '/app/me/archive'
-    | '/app/me/raters'
-    | '/app/me/reputation'
+    | '/app/me_/archive'
+    | '/app/me_/raters'
+    | '/app/me_/reputation'
     | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
@@ -860,26 +860,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPromoIdRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/me/reputation': {
-      id: '/app/me/reputation'
-      path: '/reputation'
+    '/app/me_/reputation': {
+      id: '/app/me_/reputation'
+      path: '/me/reputation'
       fullPath: '/app/me/reputation'
       preLoaderRoute: typeof AppMeReputationRouteImport
-      parentRoute: typeof AppMeRoute
+      parentRoute: typeof AppRoute
     }
-    '/app/me/raters': {
-      id: '/app/me/raters'
-      path: '/raters'
+    '/app/me_/raters': {
+      id: '/app/me_/raters'
+      path: '/me/raters'
       fullPath: '/app/me/raters'
       preLoaderRoute: typeof AppMeRatersRouteImport
-      parentRoute: typeof AppMeRoute
+      parentRoute: typeof AppRoute
     }
-    '/app/me/archive': {
-      id: '/app/me/archive'
-      path: '/archive'
+    '/app/me_/archive': {
+      id: '/app/me_/archive'
+      path: '/me/archive'
       fullPath: '/app/me/archive'
       preLoaderRoute: typeof AppMeArchiveRouteImport
-      parentRoute: typeof AppMeRoute
+      parentRoute: typeof AppRoute
     }
     '/app/city/$slug': {
       id: '/app/city/$slug'
@@ -980,20 +980,6 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
   AppAdminRouteChildren,
 )
 
-interface AppMeRouteChildren {
-  AppMeArchiveRoute: typeof AppMeArchiveRoute
-  AppMeRatersRoute: typeof AppMeRatersRoute
-  AppMeReputationRoute: typeof AppMeReputationRoute
-}
-
-const AppMeRouteChildren: AppMeRouteChildren = {
-  AppMeArchiveRoute: AppMeArchiveRoute,
-  AppMeRatersRoute: AppMeRatersRoute,
-  AppMeReputationRoute: AppMeReputationRoute,
-}
-
-const AppMeRouteWithChildren = AppMeRoute._addFileChildren(AppMeRouteChildren)
-
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppBizRoute: typeof AppBizRoute
@@ -1005,7 +991,7 @@ interface AppRouteChildren {
   AppFriendsRoute: typeof AppFriendsRoute
   AppInboxRoute: typeof AppInboxRoute
   AppMapRoute: typeof AppMapRoute
-  AppMeRoute: typeof AppMeRouteWithChildren
+  AppMeRoute: typeof AppMeRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppPartiesRoute: typeof AppPartiesRoute
   AppPremiumRoute: typeof AppPremiumRoute
@@ -1018,6 +1004,9 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppChatIdRoute: typeof AppChatIdRoute
   AppCitySlugRoute: typeof AppCitySlugRoute
+  AppMeArchiveRoute: typeof AppMeArchiveRoute
+  AppMeRatersRoute: typeof AppMeRatersRoute
+  AppMeReputationRoute: typeof AppMeReputationRoute
   AppPromoIdRoute: typeof AppPromoIdRoute
   AppStreetIdRoute: typeof AppStreetIdRoute
   AppUserIdRoute: typeof AppUserIdRoute
@@ -1035,7 +1024,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFriendsRoute: AppFriendsRoute,
   AppInboxRoute: AppInboxRoute,
   AppMapRoute: AppMapRoute,
-  AppMeRoute: AppMeRouteWithChildren,
+  AppMeRoute: AppMeRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppPartiesRoute: AppPartiesRoute,
   AppPremiumRoute: AppPremiumRoute,
@@ -1048,6 +1037,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppChatIdRoute: AppChatIdRoute,
   AppCitySlugRoute: AppCitySlugRoute,
+  AppMeArchiveRoute: AppMeArchiveRoute,
+  AppMeRatersRoute: AppMeRatersRoute,
+  AppMeReputationRoute: AppMeReputationRoute,
   AppPromoIdRoute: AppPromoIdRoute,
   AppStreetIdRoute: AppStreetIdRoute,
   AppUserIdRoute: AppUserIdRoute,
@@ -1071,3 +1063,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

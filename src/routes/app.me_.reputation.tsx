@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, BarChart3, Lock } from "lucide-react";
 
-export const Route = createFileRoute("/app/me/reputation")({
+export const Route = createFileRoute("/app/me_/reputation")({
   head: () => ({ meta: [{ title: "Reputation analytics · OXIDAȚII" }] }),
   component: ReputationAnalyticsPage,
 });

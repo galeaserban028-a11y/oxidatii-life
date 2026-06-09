@@ -5,7 +5,7 @@ import { Camera, Flame, MapPin, Sparkles, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
-export const Route = createFileRoute("/app/me/archive")({
+export const Route = createFileRoute("/app/me_/archive")({
   head: () => ({ meta: [{ title: "Arhivă · OXIDAȚII" }] }),
   component: ArchivePage,
 });
