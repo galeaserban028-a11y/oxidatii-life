@@ -377,7 +377,7 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
   const [goalId, setGoalId] = useState<(typeof GOALS)[number]["id"]>("fill");
   const goal = useMemo(() => GOALS.find((g) => g.id === goalId)!, [goalId]);
 
-  const [targetType, setTargetType] = useState<"party" | "venue" | "brand">("party");
+  const [targetType, setTargetType] = useState<"party" | "venue" | "brand">("brand");
   const [partyId, setPartyId] = useState("");
   const [venueId, setVenueId] = useState("");
   const [title, setTitle] = useState("");
