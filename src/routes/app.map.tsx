@@ -207,12 +207,12 @@ function MapPage() {
       const nowIso = new Date().toISOString();
       const { data, error } = await supabase
         .from("campaigns")
-        .select("id, venue_id, theme_color, image_urls, business_id, business_accounts!inner(venue_id, logo_url, cover_url)")
+        .select("id, title, venue_id, theme_color, image_urls, business_id, business_accounts!inner(venue_id, logo_url, cover_url, brand_name), venues(name)")
         .eq("status", "active")
         .lte("starts_at", nowIso)
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`);
       if (error) throw error;
-      const map: Record<string, { theme: string; cover: string | null; campaignId: string }> = {};
+      const map: Record<string, { theme: string; cover: string | null; campaignId: string; title: string | null; venueName: string | null }> = {};
       for (const c of (data ?? []) as any[]) {
         const vid = c.venue_id ?? c.business_accounts?.venue_id;
         if (!vid) continue;
@@ -221,12 +221,19 @@ function MapPage() {
           ?? c.business_accounts?.logo_url
           ?? c.business_accounts?.cover_url
           ?? null;
-        map[vid] = { theme: c.theme_color ?? "#ff3158", cover, campaignId: c.id };
+        map[vid] = {
+          theme: c.theme_color ?? "#ff3158",
+          cover,
+          campaignId: c.id,
+          title: c.title ?? null,
+          venueName: c.venues?.name ?? c.business_accounts?.brand_name ?? null,
+        };
       }
       return map;
     },
     refetchInterval: 60_000,
   });
+
 
   const { data: friendPins = [] } = useQuery({
     queryKey: ["friend-pins", user?.id],
@@ -462,30 +469,33 @@ function MapPage() {
               </button>
             </div>
           )}
+
+          {/* Floating promo banner — bottom of map, dismissible */}
+          <PromoBanner promotedMeta={promotedMeta} />
         </div>
+
 
         <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
 
-        {/* Slim friends CTA — only when 0 friends live */}
-        {friendPins.length === 0 && (
-          <Link
-            to="/app/friends"
-            className="group block rounded-2xl p-[1.5px] bg-gradient-to-r from-neon-green via-neon-purple to-neon-crimson active:scale-[0.99] transition"
-          >
-            <div className="rounded-[14px] bg-background/95 px-3.5 py-3 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-neon-green/15 border border-neon-green/40 grid place-items-center shrink-0">
-                <UserPlus className="text-neon-green" size={18} strokeWidth={2.6} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-display font-black uppercase text-sm leading-tight">cheamă oxidații</div>
-                <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
-                  adaugă prieteni → vezi-i pe hartă
-                </div>
-              </div>
-              <span className="font-display text-neon-green text-xl">→</span>
+        {/* Friends CTA — always visible under "add venue" */}
+        <Link
+          to="/app/friends"
+          className="group block rounded-2xl p-[1.5px] bg-gradient-to-r from-neon-green via-neon-purple to-neon-crimson active:scale-[0.99] transition"
+        >
+          <div className="rounded-[14px] bg-background/95 px-3.5 py-3 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-neon-green/15 border border-neon-green/40 grid place-items-center shrink-0">
+              <UserPlus className="text-neon-green" size={18} strokeWidth={2.6} />
             </div>
-          </Link>
-        )}
+            <div className="flex-1 min-w-0">
+              <div className="font-display font-black uppercase text-sm leading-tight">cheamă oxidații</div>
+              <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
+                adaugă prieteni → vezi-i pe hartă
+              </div>
+            </div>
+            <span className="font-display text-neon-green text-xl">→</span>
+          </div>
+        </Link>
+
 
         {/* Tabs */}
         <div className="flex items-center gap-1 p-1 rounded-xl bg-foreground/5 border border-border">
@@ -596,6 +606,92 @@ function MapPage() {
             )}
           </section>
         )}
+      </div>
+    </div>
+  );
+}
+
+type PromoMeta = { theme: string; cover: string | null; campaignId: string; title: string | null; venueName: string | null };
+
+function PromoBanner({ promotedMeta }: { promotedMeta: Record<string, PromoMeta> }) {
+  const items = useMemo(() => Object.values(promotedMeta), [promotedMeta]);
+  const [dismissed, setDismissed] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try { return new Set(JSON.parse(sessionStorage.getItem("oxi_dismissed_promos") || "[]")); } catch { return new Set(); }
+  });
+  const [idx, setIdx] = useState(0);
+  const visible = items.filter(i => !dismissed.has(i.campaignId));
+  if (visible.length === 0) return null;
+  const cur = visible[idx % visible.length];
+
+  const dismiss = (id: string) => {
+    setDismissed(prev => {
+      const next = new Set(prev); next.add(id);
+      try { sessionStorage.setItem("oxi_dismissed_promos", JSON.stringify([...next])); } catch {}
+      return next;
+    });
+    setIdx(0);
+  };
+
+  return (
+    <div className="absolute bottom-2 left-2 right-2 z-20 pointer-events-none">
+      <div
+        className="pointer-events-auto flex items-center gap-2.5 rounded-xl bg-background/95 backdrop-blur border px-2 py-2 shadow-2xl"
+        style={{ borderColor: `${cur.theme}66`, boxShadow: `0 8px 28px ${cur.theme}44, 0 0 0 1px ${cur.theme}22` }}
+      >
+        <Link
+          to="/app/promo/$id"
+          params={{ id: cur.campaignId }}
+          className="flex-1 min-w-0 flex items-center gap-2.5 active:scale-[0.99] transition"
+        >
+          <div
+            className="h-11 w-11 rounded-lg overflow-hidden shrink-0 grid place-items-center"
+            style={{ background: "#06070a", border: `2px solid ${cur.theme}` }}
+          >
+            {cur.cover ? (
+              <img src={cur.cover} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="font-display font-black text-base" style={{ color: cur.theme }}>
+                {(cur.venueName ?? cur.title ?? "?")[0]?.toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="font-mono text-[8px] uppercase tracking-[0.18em] font-black px-1.5 py-0.5 rounded"
+                style={{ background: cur.theme, color: "#06070a" }}
+              >
+                AD
+              </span>
+              <span className="font-display font-black text-[13px] truncate">
+                {cur.venueName ?? "Local promovat"}
+              </span>
+            </div>
+            {cur.title && (
+              <div className="font-mono text-[10px] text-muted-foreground truncate mt-0.5">{cur.title}</div>
+            )}
+          </div>
+          <span className="font-display text-[11px] font-bold shrink-0 px-2 py-1 rounded-md" style={{ color: cur.theme, border: `1px solid ${cur.theme}88` }}>
+            vezi →
+          </span>
+        </Link>
+        {visible.length > 1 && (
+          <button
+            onClick={() => setIdx(i => (i + 1) % visible.length)}
+            aria-label="Următoarea reclamă"
+            className="h-7 w-7 grid place-items-center rounded-md border border-border text-muted-foreground shrink-0"
+          >
+            ›
+          </button>
+        )}
+        <button
+          onClick={() => dismiss(cur.campaignId)}
+          aria-label="Ascunde reclama"
+          className="h-7 w-7 grid place-items-center rounded-md border border-border text-muted-foreground shrink-0"
+        >
+          <X size={12} />
+        </button>
       </div>
     </div>
   );
