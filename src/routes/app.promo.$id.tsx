@@ -96,13 +96,17 @@ function PromoPage() {
 
         <button
           onClick={() => history.length > 1 ? history.back() : navigate({ to: "/app" })}
-          className="absolute top-4 left-4 p-2 rounded-full bg-black/50 backdrop-blur-sm border border-white/15 text-white"
+          style={{ top: "calc(env(safe-area-inset-top) + 1rem)", left: "calc(env(safe-area-inset-left) + 1rem)" }}
+          className="absolute p-2 rounded-full bg-black/50 backdrop-blur-sm border border-white/15 text-white"
           aria-label="Înapoi"
         >
           <ArrowLeft size={16} />
         </button>
 
-        <div className="absolute top-4 right-4 px-2.5 py-1 rounded-md bg-black/55 backdrop-blur-sm flex items-center gap-1.5">
+        <div
+          style={{ top: "calc(env(safe-area-inset-top) + 1rem)", right: "calc(env(safe-area-inset-right) + 1rem)" }}
+          className="absolute px-2.5 py-1 rounded-md bg-black/55 backdrop-blur-sm flex items-center gap-1.5"
+        >
           <Sparkles size={11} className="text-white" />
           <span className="font-mono text-[10px] uppercase tracking-widest text-white">Promovat</span>
         </div>

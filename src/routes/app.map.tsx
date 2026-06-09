@@ -528,12 +528,16 @@ function MapPage() {
           {/* Top CTA — "fă-ți localul vizibil", dismissible */}
           {!activeCity && <BusinessVisibilityCTA />}
 
-          {/* Map settings button — top-right */}
+          {/* Map settings button — top-right (safe-area aware) */}
           {user && (
             <button
               onClick={() => setSettingsOpen(true)}
               aria-label="Setări hartă"
-              className="absolute top-2 right-2 z-20 h-9 w-9 grid place-items-center rounded-full bg-black/70 backdrop-blur border border-foreground/15 text-foreground hover:bg-black/85 active:scale-95 transition"
+              style={{
+                top: "calc(env(safe-area-inset-top) + 0.5rem)",
+                right: "calc(env(safe-area-inset-right) + 0.5rem)",
+              }}
+              className="absolute z-20 h-9 w-9 grid place-items-center rounded-full bg-black/70 backdrop-blur border border-foreground/15 text-foreground hover:bg-black/85 active:scale-95 transition"
             >
               {privacyQ.data?.settings?.map_ghost ? (
                 <Ghost size={15} className="text-fuchsia-400" />
@@ -794,7 +798,10 @@ function BusinessVisibilityCTA() {
         .oxi-cta-wrap { animation: oxi-float 3.6s ease-in-out infinite; }
         .oxi-cta-pill { animation: oxi-glow 2.8s ease-in-out infinite; }
       `}</style>
-      <div className="oxi-cta-wrap absolute top-11 left-3 z-20 will-change-transform">
+      <div
+        className="oxi-cta-wrap absolute left-3 z-20 will-change-transform"
+        style={{ top: "calc(env(safe-area-inset-top) + 3rem)" }}
+      >
         <div className="oxi-cta-pill flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sunset-amber to-[#ffd66b] text-black pl-2.5 pr-1 py-1 border border-black/10">
           <Link
             to="/app/biz"

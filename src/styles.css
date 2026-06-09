@@ -335,4 +335,21 @@
   .smooth-scroll { -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
   .safe-top { padding-top: env(safe-area-inset-top); }
+  .safe-left { padding-left: env(safe-area-inset-left); }
+  .safe-right { padding-right: env(safe-area-inset-right); }
 }
+
+/* ── Mobile FPS / smoothness optimizations ── */
+@media (max-width: 768px) {
+  header[class*="sticky"],
+  nav.fixed,
+  .maplibregl-canvas-container {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  .backdrop-blur-2xl { backdrop-filter: blur(14px) saturate(130%); -webkit-backdrop-filter: blur(14px) saturate(130%); }
+  .backdrop-blur-xl  { backdrop-filter: blur(10px) saturate(125%); -webkit-backdrop-filter: blur(10px) saturate(125%); }
+}
+
+html, body { overscroll-behavior-x: none; }
+
