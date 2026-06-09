@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -191,6 +191,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
   onTopup: () => void;
 }) {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editCampaign, setEditCampaign] = useState<any | null>(null);
@@ -302,7 +303,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 
       {builderOpen && (
         <CampaignBuilder business={business} parties={parties} cities={cities} venues={venues}
-          onClose={() => setBuilderOpen(false)}
+          onClose={() => { setBuilderOpen(false); navigate({ to: "/app" }); }}
           onCreated={(c) => {
             setBuilderOpen(false);
             qc.invalidateQueries({ queryKey: ["biz"] });
