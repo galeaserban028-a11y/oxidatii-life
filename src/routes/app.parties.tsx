@@ -549,16 +549,49 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
           />
         </div>
 
-        <button
-          onClick={() => create.mutate()}
-          disabled={!valid || create.isPending}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-neon-crimson to-neon-purple text-white font-display font-black uppercase tracking-widest shadow-[0_0_20px_-4px_var(--neon-crimson)] disabled:opacity-40 active:scale-[0.98]"
-        >
-          {create.isPending ? "..." : "dă drumu' la șpriț"}
-        </button>
-        <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground text-center">
-          dispare automat după 12h
-        </p>
+        {(() => {
+          const missing: string[] = [];
+          if (title.trim().length < 2) missing.push("titlu");
+          if (loc.trim().length < 2) missing.push("locație");
+          if (spots < 1) missing.push("locuri");
+          const isDisabled = !valid || create.isPending;
+          return (
+            <div className="pt-1">
+              <button
+                onClick={() => create.mutate()}
+                disabled={isDisabled}
+                className={`group relative w-full overflow-hidden rounded-2xl p-[1.5px] transition-all duration-300 active:scale-[0.98] ${
+                  isDisabled ? "opacity-60" : "shadow-[0_10px_40px_-10px_var(--neon-crimson)] hover:shadow-[0_14px_50px_-8px_var(--neon-purple)]"
+                }`}
+              >
+                <span
+                  aria-hidden
+                  className={`absolute inset-0 rounded-2xl bg-[conic-gradient(from_var(--a),var(--neon-crimson),var(--neon-purple),var(--neon-crimson))] ${
+                    isDisabled ? "" : "animate-[spin_4s_linear_infinite]"
+                  }`}
+                  style={{ ["--a" as any]: "0deg" }}
+                />
+                <span className="relative flex items-center justify-center gap-2 rounded-[14px] bg-background/95 px-4 py-3.5">
+                  {create.isPending ? (
+                    <span className="font-mono text-xs uppercase tracking-[0.3em] text-foreground/80">se deschide…</span>
+                  ) : (
+                    <>
+                      <span className="font-display font-black uppercase tracking-[0.18em] text-base bg-gradient-to-r from-neon-crimson via-rose-400 to-neon-purple bg-clip-text text-transparent">
+                        dă drumu' la șpriț
+                      </span>
+                      <span className="text-base translate-y-[-1px]">🥂</span>
+                    </>
+                  )}
+                </span>
+              </button>
+              <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.25em] text-center text-muted-foreground">
+                {isDisabled && missing.length > 0 && !create.isPending
+                  ? `lipsește: ${missing.join(" · ")}`
+                  : "dispare automat după 12h"}
+              </p>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
