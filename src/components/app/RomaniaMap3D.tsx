@@ -191,14 +191,14 @@ export function RomaniaMap3D({
 
 
 
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "top-right");
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "bottom-right");
     map.addControl(
       new maplibregl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
         trackUserLocation: true,
         showUserLocation: true,
       }),
-      "top-right"
+      "bottom-right"
     );
     map.touchZoomRotate.enableRotation();
     map.dragRotate.enable();
