@@ -645,38 +645,16 @@ function CampaignBuilder({ business, parties, cities, venues, onClose, onCreated
       {step === 2 && (
         <>
           <div className="space-y-2">
-            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">link către</div>
-            <div className="grid grid-cols-3 gap-1.5">
-              {([
-                { v: "party", l: "Petrecere" },
-                { v: "venue", l: "Locație" },
-                { v: "brand", l: "Brand" },
-              ] as const).map((t) => (
-                <button key={t.v} onClick={() => setTargetType(t.v)}
-                  className={`px-2 py-2.5 rounded-xl text-[10px] font-mono uppercase tracking-widest border transition ${
-                    targetType === t.v ? "bg-foreground text-background border-foreground" : "border-foreground/10 text-muted-foreground"}`}>
-                  {t.l}
-                </button>
-              ))}
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">promovezi</div>
+            <div className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg flex items-center justify-center" style={{ background: `${themeColor}22`, color: themeColor }}>
+                <Building2 size={18} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="font-display uppercase text-sm leading-tight truncate">{business.brand_name}</div>
+                <div className="text-[11px] text-muted-foreground">Reclama duce către profilul brandului tău.</div>
+              </div>
             </div>
-            {targetType === "party" && (
-              parties.length === 0 ? (
-                <div className="text-[11px] text-muted-foreground p-2 rounded-md bg-foreground/[0.03]">
-                  Nu ai petreceri active. <Link to="/app/parties" className="underline">Creează una</Link>.
-                </div>
-              ) : (
-                <select value={partyId} onChange={(e) => setPartyId(e.target.value)} className={selectStyle}>
-                  <option value="">— alege petrecere —</option>
-                  {parties.map((p) => <option key={p.id} value={p.id}>{p.title} · {p.location_text}</option>)}
-                </select>
-              )
-            )}
-            {targetType === "venue" && (
-              <select value={venueId} onChange={(e) => setVenueId(e.target.value)} className={selectStyle}>
-                <option value="">— alege locație —</option>
-                {venues.map((v) => <option key={v.id} value={v.id}>{v.name}{v.address ? " · " + v.address : ""}</option>)}
-              </select>
-            )}
           </div>
 
           <div className="space-y-2">
