@@ -41,6 +41,13 @@ function AppLayout() {
       className="min-h-screen bg-background text-foreground"
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)" }}
     >
+      {/* iOS status-bar tint — solid background under the Dynamic Island / notch
+          so the area never shows transparent content. Sits behind the sticky header. */}
+      <div
+        aria-hidden
+        className="fixed top-0 inset-x-0 z-30 bg-background pointer-events-none"
+        style={{ height: "env(safe-area-inset-top)" }}
+      />
       <InstallBanner />
       <AppHeader />
       <PageTransition>
