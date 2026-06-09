@@ -1715,6 +1715,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_grant_coins: {
+        Args: { _amount: number; _user_id: string }
+        Returns: number
+      }
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       can_view_live_location: {
         Args: { _owner: string; _viewer: string }

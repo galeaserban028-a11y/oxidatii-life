@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Search, Shield, ShieldOff, Trash2, RotateCcw, Eye, EyeOff } from "lucide-react";
+import { Search, Shield, ShieldOff, Trash2, RotateCcw, Eye, EyeOff, Beer } from "lucide-react";
 
 export const Route = createFileRoute("/app/admin/users")({
   component: AdminUsers,
@@ -18,7 +18,7 @@ function AdminUsers() {
     queryFn: async () => {
       let query = supabase
         .from("profiles")
-        .select("id, handle, display_name, avatar_url, aura, lifetime_sprits, current_streak, is_public, onboarded, rank, created_at")
+        .select("id, handle, display_name, avatar_url, aura, lifetime_sprits, current_streak, is_public, onboarded, rank, coin_balance, created_at")
         .order("created_at", { ascending: false })
         .limit(100);
       if (q.trim()) {
@@ -77,6 +77,17 @@ function AdminUsers() {
     qc.invalidateQueries({ queryKey: ["admin-users"] });
   };
 
+  const grantCoins = async (uid: string, label: string) => {
+    const raw = prompt(`Câte coins adaugi lui ${label}? (folosește număr negativ ca să scazi)`, "10");
+    if (raw === null) return;
+    const amount = parseInt(raw, 10);
+    if (!Number.isFinite(amount) || amount === 0) return toast.error("Sumă invalidă");
+    const { data, error } = await supabase.rpc("admin_grant_coins" as any, { _user_id: uid, _amount: amount });
+    if (error) return toast.error(error.message);
+    toast.success(`Balanță nouă: ${data} șprițuri`);
+    qc.invalidateQueries({ queryKey: ["admin-users"] });
+  };
+
   return (
     <div className="space-y-3">
       <div className="relative">
@@ -108,10 +119,13 @@ function AdminUsers() {
                   {!u.is_public && <EyeOff size={11} className="text-muted-foreground" />}
                 </div>
                 <div className="font-mono text-[10px] text-muted-foreground truncate">
-                  @{u.handle || "—"} · {u.rank} · aura {u.aura} · {u.lifetime_sprits} sprits · streak {u.current_streak}
+                  @{u.handle || "—"} · {u.rank} · aura {u.aura} · 🍺 {u.coin_balance ?? 0} · streak {u.current_streak}
                 </div>
               </div>
               <div className="flex items-center gap-1">
+                <IconBtn title="Adaugă/scade șprițuri" onClick={() => grantCoins(u.id, u.display_name || u.handle || "user")}>
+                  <Beer size={13} />
+                </IconBtn>
                 <IconBtn title={admin ? "Retrage admin" : "Fă admin"} onClick={() => toggleAdmin(u.id)}>
                   {admin ? <ShieldOff size={13} /> : <Shield size={13} />}
                 </IconBtn>
