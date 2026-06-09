@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Plus, Users, MapPin, Clock, X, Flame, Trash2, Check, UserX, ChevronDown, ChevronUp } from "lucide-react";
@@ -482,10 +483,10 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
     create.mutate();
   };
 
-  return (
-    <div className="fixed inset-0 z-[999] bg-background/90 backdrop-blur-xl flex items-end justify-center sm:items-center sm:p-4" onClick={onClose}>
+  const sheet = (
+    <div className="fixed inset-0 z-[9999] bg-background/90 backdrop-blur-xl flex items-start justify-center px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:items-center" onClick={onClose}>
       <div
-        className="w-full max-w-md bg-background border border-foreground/10 rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[88dvh] overflow-y-auto overscroll-contain shadow-[0_-24px_80px_-30px_var(--neon-crimson)]"
+        className="w-full max-w-md bg-background border border-foreground/10 rounded-3xl p-5 space-y-4 max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] overflow-y-auto overscroll-contain shadow-[0_24px_100px_-35px_var(--neon-crimson)]"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -616,4 +617,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   );
+
+  if (typeof document === "undefined") return null;
+  return createPortal(sheet, document.body);
 }
