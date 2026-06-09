@@ -11,7 +11,7 @@ import {
   Settings2, X, Calendar, Target, Palette, Upload, ChevronRight, Pencil,
   Users, Heart, Flame, ChevronDown, Check, Zap, Trash2, Ticket, Video, Clock,
 } from "lucide-react";
-import { BizUniquePanel } from "@/components/biz/BizUniquePanel";
+import { BizCommandCenter } from "@/components/biz/BizCommandCenter";
 import { launchBusinessCampaign } from "@/lib/business-promotion.functions";
 
 export const Route = createFileRoute("/app/biz")({
@@ -117,16 +117,17 @@ function BizPage() {
       />
       <header className="space-y-2">
         <div className="flex items-center gap-2">
-          <Building2 size={11} className="text-neon-purple" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Business · Promovare</span>
+          <Building2 size={11} className="text-sunset-amber" />
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Business · Command Center</span>
         </div>
         <h1 className="font-display uppercase text-3xl leading-[0.95] tracking-tight">
-          Alege simplu <span className="text-gradient-chaos">ce vrei azi.</span>
+          Gestionează și crește <span className="text-gradient-chaos">localul tău.</span>
         </h1>
         <p className="text-xs text-zinc-400">
-          Încarci bani, pornești reclama, vezi rezultatul. Fără panou complicat.
+          Date reale, măsurabile. Fără promisiuni, fără estimări inventate.
         </p>
       </header>
+
 
       {isLoading ? (
         <div className="h-40 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur animate-pulse" />
@@ -255,73 +256,49 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 
         {business.description && <p className="text-xs text-muted-foreground line-clamp-2">{business.description}</p>}
 
-        <SimpleBizMap
-          balanceCents={business.wallet_balance_cents ?? 0}
-          activeCount={activeCount}
-          totalSpent={totalSpent}
-          totalImpressions={totalImpressions}
-          totalClicks={totalClicks}
+        <BizCommandCenter
+          business={business}
+          campaigns={campaigns}
+          parties={parties}
           onTopup={onTopup}
-          onCampaign={() => hasCampaignFunds ? setBuilderOpen(true) : onTopup()}
+          onNewCampaign={() => setBuilderOpen(true)}
+          onEditCampaign={(c) => setEditCampaign(c)}
+          onToggleCampaign={toggleCampaign}
+          onDeleteCampaign={deleteCampaign}
+          onDuplicateCampaign={async (c) => {
+            const { data: copy, error } = await supabase.from("campaigns").insert({
+              business_id: c.business_id,
+              kind: c.kind,
+              party_id: c.party_id,
+              venue_id: c.venue_id,
+              city_id: c.city_id,
+              title: `${c.title} (copie)`,
+              subtitle: c.subtitle,
+              cta_text: c.cta_text,
+              cta_url: c.cta_url,
+              image_urls: c.image_urls,
+              theme_color: c.theme_color,
+              bid_cents: c.bid_cents,
+              budget_cents: c.budget_cents,
+              pricing_model: c.pricing_model,
+              daily_cap_cents: c.daily_cap_cents,
+              targeting: c.targeting,
+              schedule: c.schedule,
+              event_starts_at: c.event_starts_at,
+              entry_kind: c.entry_kind,
+              entry_price_text: c.entry_price_text,
+              street: c.street,
+              special_guest: c.special_guest,
+              video_url: c.video_url,
+              status: "draft",
+            }).select().single();
+            if (error) { alert(error.message); return; }
+            qc.invalidateQueries({ queryKey: ["biz"] });
+            if (copy) setEditCampaign(copy);
+          }}
         />
-
-        {/* Campaign list */}
-        {campaigns.length > 0 && (
-          <details className="rounded-xl bg-foreground/[0.03] border border-foreground/10 overflow-hidden">
-            <summary className="cursor-pointer list-none px-3 py-3 flex items-center justify-between gap-3">
-              <span className="text-sm font-medium">Campaniile tale</span>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{campaigns.length} total · {activeCount} active</span>
-            </summary>
-            <div className="space-y-1.5 px-3 pb-3">
-            {campaigns.map((c) => {
-              const placement = PLACEMENTS.find((p) => p.value === c.kind);
-              const Icon = placement?.icon ?? Rocket;
-              const pct = c.budget_cents ? Math.min(100, (c.spent_cents / c.budget_cents) * 100) : 0;
-              return (
-                <div key={c.id} className="rounded-md bg-foreground/[0.03] border border-foreground/10 overflow-hidden">
-                  <div className="flex items-center justify-between gap-2 p-2.5">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <div className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
-                        style={{ background: `${placement?.color ?? "#FF2D55"}22`, color: placement?.color ?? "#FF2D55" }}>
-                        <Icon size={13} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs truncate">{c.title}</div>
-                        <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground truncate">
-                          {placement?.label} · {c.impressions} · {ron(c.spent_cents)}/{ron(c.budget_cents)} RON
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button onClick={() => setEditCampaign(c)}
-                        className="p-1.5 rounded-md border border-foreground/10 hover:border-foreground/30 text-muted-foreground"
-                        aria-label="Editează">
-                        <Pencil size={11} />
-                      </button>
-                      <button onClick={() => toggleCampaign(c)}
-                        className={`text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded-md border ${
-                          c.status === "active" ? "border-neon-crimson text-neon-crimson" : "border-neon-green text-neon-green"}`}>
-                        {c.status === "active" ? "Pause" : "Start"}
-                      </button>
-                      <button onClick={() => deleteCampaign(c)}
-                        className="p-1.5 rounded-md border border-foreground/10 hover:border-neon-crimson hover:text-neon-crimson text-muted-foreground"
-                        aria-label="Șterge">
-                        <Trash2 size={11} />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="h-1 bg-foreground/5">
-                    <div className="h-full" style={{ width: `${pct}%`, background: placement?.color ?? "#FF2D55" }} />
-                  </div>
-                </div>
-              );
-            })}
-            </div>
-          </details>
-        )}
-
-        <BizUniquePanel business={business} />
       </div>
+
 
       {builderOpen && (
         <CampaignBuilder business={business} parties={parties} cities={cities} venues={venues}
@@ -345,93 +322,6 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
   );
 }
 
-function SimpleBizMap({ balanceCents, activeCount, totalSpent, totalImpressions, totalClicks, onTopup, onCampaign }: {
-  balanceCents: number;
-  activeCount: number;
-  totalSpent: number;
-  totalImpressions: number;
-  totalClicks: number;
-  onTopup: () => void;
-  onCampaign: () => void;
-}) {
-  const hasFunds = balanceCents >= 5000;
-  const steps = [
-    {
-      n: "1",
-      title: "Încarcă buget",
-      text: `${ron(balanceCents)} RON disponibili`,
-      action: "Top-up",
-      icon: Wallet,
-      onClick: onTopup,
-      active: !hasFunds,
-    },
-    {
-      n: "2",
-      title: "Pornește reclama",
-      text: hasFunds ? "Ai minimul necesar pentru start" : "Minim 50 RON pentru prima campanie",
-      action: hasFunds ? "Creează" : "Adaugă 50 RON",
-      icon: Megaphone,
-      onClick: onCampaign,
-      active: hasFunds,
-    },
-    {
-      n: "3",
-      title: "Urmărește rezultatul",
-      text: `${activeCount} active · ${totalImpressions.toLocaleString()} views · ${totalClicks.toLocaleString()} click-uri`,
-      action: null,
-      icon: TrendingUp,
-      onClick: undefined,
-      active: activeCount > 0,
-    },
-  ];
-
-  return (
-    <div className="rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/[0.025]">
-      <div className="p-4 border-b border-foreground/10 flex items-start justify-between gap-3">
-        <div>
-          <div className="font-display uppercase text-xl leading-none">Planul tău</div>
-          <p className="text-xs text-muted-foreground mt-1">3 pași clari. Nu trebuie să alegi din zeci de opțiuni.</p>
-        </div>
-        <div className="text-right flex-shrink-0">
-          <div className="font-display text-2xl leading-none">{ron(balanceCents)}</div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">RON wallet</div>
-        </div>
-      </div>
-
-      <div className="divide-y divide-foreground/10">
-        {steps.map((s) => {
-          const Icon = s.icon;
-          return (
-            <div key={s.n} className={`p-3 flex items-center gap-3 ${s.active ? "bg-primary/5" : ""}`}>
-              <div className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 ${s.active ? "bg-primary text-primary-foreground" : "bg-foreground/5 text-muted-foreground"}`}>
-                <Icon size={16} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] text-muted-foreground">{s.n}</span>
-                  <span className="text-sm font-medium truncate">{s.title}</span>
-                </div>
-                <div className="text-[11px] text-muted-foreground truncate">{s.text}</div>
-              </div>
-              {s.action && s.onClick && (
-                <button onClick={s.onClick} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium flex-shrink-0">
-                  {s.action}
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {totalSpent > 0 && (
-        <div className="px-4 py-2.5 bg-background/40 text-[11px] text-muted-foreground flex items-center justify-between">
-          <span>Cheltuit până acum</span>
-          <span className="font-medium text-foreground">{ron(totalSpent)} RON</span>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /* ============================ Campaign Builder ============================ */
 /* Psychologically-tuned 3-step flow: GOAL → STORY → BOOST.
