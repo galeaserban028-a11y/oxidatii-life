@@ -140,7 +140,11 @@ function PromoPage() {
           </div>
         </div>
 
+        {/* Rating real pentru club / brand */}
+        <BusinessReviewCard businessId={campaign.business_id} brandName={biz?.brand_name} />
+
         {/* Event facts */}
+
         {(campaign.event_starts_at || campaign.entry_kind || campaign.street || campaign.special_guest) && (
           <div className="rounded-2xl bg-foreground/[0.03] border border-foreground/10 p-4 space-y-2.5">
             {campaign.event_starts_at && (
