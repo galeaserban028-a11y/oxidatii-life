@@ -5,6 +5,7 @@ import { ArrowLeft, Camera, MapPin, Instagram, Upload, Clock } from "lucide-reac
 import { useAuth } from "@/lib/auth";
 import { useEffect, useRef, useState } from "react";
 import { BusinessReviewCard } from "@/components/biz/BusinessReviewCard";
+import { ReportDialog } from "@/components/app/ReportDialog";
 import { toast } from "sonner";
 import { evalOpenNow, normalizeHours, formatSlot, DAY_KEYS, DAY_LABELS } from "@/lib/openingHours";
 
