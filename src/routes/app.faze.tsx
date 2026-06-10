@@ -324,7 +324,7 @@ function FazePage() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Postează o fază"
-          className="fixed bottom-24 right-4 z-40 inline-flex items-center gap-2 font-display uppercase text-[11px] tracking-[0.18em] pl-3 pr-4 py-3 rounded-full text-white shadow-[0_10px_30px_-8px_rgba(244,114,82,0.6)] active:scale-95 transition"
+          className="fixed bottom-24 right-4 z-[55] inline-flex items-center gap-2 font-display uppercase text-[11px] tracking-[0.18em] pl-3 pr-4 py-3 rounded-full text-white shadow-[0_10px_30px_-8px_rgba(244,114,82,0.6)] active:scale-95 transition"
           style={{ background: "var(--gradient-chaos)", bottom: "calc(env(safe-area-inset-bottom) + 6rem)" }}
         >
           <span className="grid place-items-center size-6 rounded-full bg-white/20 text-base leading-none">+</span>
@@ -394,7 +394,7 @@ function UploadSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose}>
       <div className="w-full bg-background border-t border-foreground/10 rounded-t-2xl p-4 space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <div className="font-display uppercase text-lg">Postează o fază</div>
@@ -578,7 +578,7 @@ function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () => void 
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose}>
       <div className="w-full bg-background border-t border-foreground/10 rounded-t-2xl flex flex-col max-h-[85vh]" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-foreground/10">
           <div className="font-display uppercase text-sm tracking-widest">Comentarii</div>
