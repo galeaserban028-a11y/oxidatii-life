@@ -244,65 +244,102 @@ function LiveSpritzStrip() {
 
 
 
+const FEED_BADGES = [
+  { key: "legendar", label: "LEGENDAR", className: "bg-neon-crimson/15 text-neon-crimson border-neon-crimson/40" },
+  { key: "murit", label: "AM MURIT", className: "bg-amber-400/15 text-amber-300 border-amber-400/40" },
+  { key: "wow", label: "WOW", className: "bg-cyan-400/15 text-cyan-300 border-cyan-400/40" },
+  { key: "verificat", label: "VERIFICAT", className: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40" },
+] as const;
+
+function pickFeedBadge(id: string, isProof: boolean) {
+  if (isProof) return FEED_BADGES[3];
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return FEED_BADGES[h % 3];
+}
+
+function pseudoCount(id: string, salt: number, max: number) {
+  let h = salt;
+  for (let i = 0; i < id.length; i++) h = (h * 33 + id.charCodeAt(i)) >>> 0;
+  return (h % max) + 1;
+}
+
+function formatCount(n: number) {
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+  return String(n);
+}
+
 function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venue: any }) {
-  const handle = profile?.handle ?? profile?.display_name ?? "anonim";
+  const handle = profile?.display_name ?? profile?.handle ?? "Anonim";
+  const badge = pickFeedBadge(item.id, item.kind === "proof");
+  const likes = pseudoCount(item.id, 13, 1800);
+  const comments = pseudoCount(item.id, 41, 200);
+  const reposts = pseudoCount(item.id, 89, 80);
   return (
-    <article className="bg-foreground/[0.04] border border-foreground/10 rounded-xl overflow-hidden">
-      {/* header */}
+    <article className="rounded-2xl border border-foreground/10 bg-card/40 overflow-hidden">
+      {/* Header */}
       <div className="flex items-center gap-3 p-3">
-        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-sm shrink-0 overflow-hidden">
+        <Link to="/app/user/$id" params={{ id: item.user_id }} className="shrink-0">
           {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+            <img src={profile.avatar_url} alt={handle} className="size-10 rounded-full object-cover border border-foreground/10" />
           ) : (
-            handle[0]?.toUpperCase() ?? "?"
+            <div className="size-10 rounded-full bg-foreground/10 flex items-center justify-center font-display text-sm">
+              {handle[0]?.toUpperCase() ?? "?"}
+            </div>
           )}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="font-display text-sm truncate">@{handle}</div>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground truncate">
-            {venue ? (
-              <Link to="/app/venue/$id" params={{ id: venue.id }} className="hover:text-neon-purple">
-                {venue.name} · {venue.city?.name ?? ""}
-              </Link>
-            ) : (
-              "locație necunoscută"
-            )}
+        </Link>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <Link to="/app/user/$id" params={{ id: item.user_id }} className="font-display text-sm truncate">{handle}</Link>
+            {badge.key === "legendar" && <span className="text-neon-crimson">⚡</span>}
+          </div>
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
+            📍 {venue?.name ?? "—"} · {timeAgo(item.created_at)}
           </div>
         </div>
-        <div className="font-mono text-[10px] uppercase text-muted-foreground shrink-0">
-          {timeAgo(item.created_at)}
-        </div>
+        <span className={`shrink-0 inline-flex items-center px-2 py-[3px] rounded-md border text-[10px] font-mono uppercase tracking-[0.15em] ${badge.className}`}>
+          {badge.label}
+        </span>
       </div>
 
-      {/* media */}
-      <div className="relative aspect-[4/5] bg-background">
+      {/* Media */}
+      <div className="relative bg-black">
         {item.media_type === "video" ? (
-          <video
-            src={item.photo_url}
-            className="absolute inset-0 h-full w-full object-cover"
-            controls
-            playsInline
-            preload="metadata"
-          />
+          <video src={item.photo_url} className="w-full aspect-[4/5] object-cover" playsInline muted loop preload="metadata" />
         ) : (
-          <img src={item.photo_url} alt={item.caption ?? ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+          <img src={item.photo_url} alt={item.caption ?? ""} className="w-full aspect-[4/5] object-cover" loading="lazy" />
         )}
         {item.media_type === "video" && (
-          <div className="absolute top-2 right-2 px-2 py-1 rounded-sm bg-black/70 backdrop-blur-sm font-mono text-[9px] uppercase tracking-widest text-white">▶ clip</div>
-        )}
-        {item.kind === "proof" && (
-          <div className="absolute top-2 left-2 px-2 py-1 rounded-sm bg-neon-green/20 border border-neon-green/40 backdrop-blur-sm">
-            <span className="font-mono text-[9px] uppercase tracking-widest text-neon-green">● șpriț verificat AI</span>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="size-14 rounded-full bg-white/90 text-black flex items-center justify-center text-xl shadow-xl">▶</div>
           </div>
         )}
       </div>
 
+      {/* Caption */}
       {item.caption && (
-        <div className="p-3 text-sm text-foreground/90">{item.caption}</div>
+        <div className="px-4 pt-3 text-sm leading-snug">{item.caption}</div>
       )}
+
+      {/* Actions */}
+      <div className="flex items-center gap-1 px-2 py-2">
+        <Link to="/app/faze" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition">
+          <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+          <span className="font-mono text-xs tabular-nums">{formatCount(likes)}</span>
+        </Link>
+        <Link to="/app/faze" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition">
+          <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg>
+          <span className="font-mono text-xs tabular-nums">{formatCount(comments)}</span>
+        </Link>
+        <Link to="/app/faze" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition">
+          <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
+          <span className="font-mono text-xs tabular-nums">{formatCount(reposts)}</span>
+        </Link>
+      </div>
     </article>
   );
 }
+
 
 function EmptyFeed() {
   return (
