@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/app/AppHeader";
 import { InstallBanner } from "@/components/app/InstallBanner";
 import { PageTransition } from "@/components/app/PageTransition";
 import { useLiveLocation } from "@/hooks/useLiveLocation";
+import { TutorialOverlay } from "@/components/app/TutorialOverlay";
 import logoSticker from "@/assets/logo-oxidatii.png";
 
 export const Route = createFileRoute("/app")({
@@ -54,6 +55,7 @@ function AppLayout() {
         <Outlet />
       </PageTransition>
       <BottomTabBar />
+      <TutorialOverlay />
     </main>
   );
 }

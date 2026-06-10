@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { ReportDialog } from "@/components/app/ReportDialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/faze")({
@@ -89,8 +90,11 @@ function FazePage() {
             const venue = data.venuesMap.get(it.venue_id);
             const handle = profile?.handle ?? profile?.display_name ?? "anonim";
             return (
-              <div key={it.id} className="relative aspect-[4/5] rounded-lg overflow-hidden bg-foreground/[0.04] border border-foreground/10">
+              <div key={it.id} className="relative aspect-[4/5] rounded-lg overflow-hidden bg-foreground/[0.04] border border-foreground/10 group">
                 <img src={it.photo_url} alt={it.caption ?? ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                <div className="absolute top-1.5 right-1.5">
+                  <ReportDialog targetType="photo" targetId={it.id} className="h-7 w-7 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-white/90 active:scale-95 transition" />
+                </div>
                 <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
                   <div className="font-display text-xs text-white truncate">@{handle}</div>
                   <div className="font-mono text-[9px] uppercase tracking-widest text-white/70 truncate">

@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner";
 import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
+import { ReportDialog } from "@/components/app/ReportDialog";
 import { getTheme } from "@/lib/premium-themes";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -272,6 +273,7 @@ function UserPage() {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <ReportDialog targetType="user" targetId={profile.id} variant="menu-item" label={`Raportează @${handle}`} />
                       <DropdownMenuItem
                         onClick={() => setConfirmBlock("block")}
                         className="text-neon-crimson focus:text-neon-crimson"

@@ -4,7 +4,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { ArrowLeft, Send, Smile, Image as ImageIcon, Users, Gift, X, Loader2, Mic, Palette, Play, Pause } from "lucide-react";
+import { ArrowLeft, Send, Smile, Image as ImageIcon, Users, Gift, X, Loader2, Mic, Palette, Play, Pause, MoreVertical } from "lucide-react";
+import { notifyChatMessage } from "@/lib/notifications-extra.functions";
+import { ReportDialog } from "@/components/app/ReportDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/app/chat/$id")({
   head: () => ({ meta: [{ title: "Chat · OXIDAȚII" }] }),
@@ -136,7 +144,8 @@ function ChatPage() {
     setSending(true);
     const { error } = await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, body });
     setSending(false);
-    if (error) { alert(error.message); if (!override) setText(body); }
+    if (error) { alert(error.message); if (!override) setText(body); return; }
+    notifyChatMessage({ data: { conversationId: id, preview: body } }).catch(() => {});
   };
 
   const insertEmoji = (e: string) => {
@@ -169,6 +178,7 @@ function ChatPage() {
         : `${prefix} ${url}`;
       const { error } = await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, body });
       if (error) throw error;
+      notifyChatMessage({ data: { conversationId: id, preview: body.slice(0, 80) } }).catch(() => {});
     } catch (e: any) {
       alert(e.message ?? "nu am putut trimite");
     } finally {
@@ -247,6 +257,24 @@ function ChatPage() {
           className={`h-10 w-10 rounded-full flex items-center justify-center active:bg-foreground/10 transition ${showThemes ? "text-neon-purple bg-foreground/10" : "text-muted-foreground"}`}>
           <Palette size={20} />
         </button>
+
+        {peer && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button aria-label="mai multe"
+                className="h-10 w-10 rounded-full flex items-center justify-center active:bg-foreground/10 transition text-muted-foreground">
+                <MoreVertical size={20} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <ReportDialog targetType="user" targetId={peer.id} variant="menu-item" label={`Raportează @${peer.handle ?? "user"}`} />
+              <DropdownMenuItem
+                onClick={() => nav({ to: "/app/user/$id", params: { id: peer.id } })}>
+                Deschide profilul
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </header>
 
       {/* Theme strip */}

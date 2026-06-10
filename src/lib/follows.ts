@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { notifyFollow } from "@/lib/notifications-extra.functions";
 
 export type FollowStatus = "none" | "pending" | "accepted";
 
@@ -84,6 +85,8 @@ export function useFollowMutations(viewerId: string | null | undefined, targetId
         .from("follows")
         .insert({ follower_id: viewerId, following_id: targetId });
       if (error) throw error;
+      // Fire-and-forget push notification
+      notifyFollow({ data: { targetId } }).catch(() => {});
     },
     onSuccess: invalidate,
   });

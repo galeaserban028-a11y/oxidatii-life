@@ -79,6 +79,12 @@ function LoginPage() {
             </button>
           </form>
 
+          <p className="text-center text-xs">
+            <Link to="/forgot-password" className="text-muted-foreground hover:text-foreground">
+              Ți-ai uitat parola?
+            </Link>
+          </p>
+
           <p className="text-center text-sm text-muted-foreground">
             N-ai cont? <Link to="/signup" className="text-neon-purple font-medium">Fă-ți unul</Link>
           </p>
