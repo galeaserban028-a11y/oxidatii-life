@@ -19,7 +19,7 @@ const STEPS: Step[] = [
       "Vezi în timp real cluburi, terase și prieteni. Apasă pe un pin ca să afli cine bea, unde și ce se întâmplă.",
   },
   {
-    icon: <BeerIcon size={28} className="text-sunset-amber" />,
+    icon: <Beer size={28} className="text-sunset-amber" />,
     title: "Dă check-in la șpriț",
     body:
       "Când ești într-o locație, dă check-in. Îți crește streak-ul, primești coins și apari în topul ZEII zilei.",
