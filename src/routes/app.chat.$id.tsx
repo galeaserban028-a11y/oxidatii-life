@@ -178,6 +178,7 @@ function ChatPage() {
         : `${prefix} ${url}`;
       const { error } = await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, body });
       if (error) throw error;
+      notifyChatMessage({ data: { conversationId: id, preview: body.slice(0, 80) } }).catch(() => {});
     } catch (e: any) {
       alert(e.message ?? "nu am putut trimite");
     } finally {
