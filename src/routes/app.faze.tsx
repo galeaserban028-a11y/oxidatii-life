@@ -62,10 +62,10 @@ function timeAgo(iso: string) {
 type TabKey = "foryou" | "recent" | "top" | "legendare";
 
 const BADGES = [
-  { key: "legendar", label: "ȘPRIȚ LEGENDAR", icon: "🔥", className: "bg-neon-crimson/15 text-neon-crimson border-neon-crimson/40" },
-  { key: "murit", label: "AM MURIT DE RÂS", icon: "😂", className: "bg-yellow-400/15 text-yellow-400 border-yellow-400/40" },
-  { key: "fail", label: "FAIL", icon: "💀", className: "bg-foreground/10 text-foreground/80 border-foreground/20" },
-  { key: "wow", label: "WOW MOMENT", icon: "⚡", className: "bg-cyan-400/15 text-cyan-400 border-cyan-400/40" },
+  { key: "legendar", label: "LEGENDAR", className: "bg-neon-crimson/15 text-neon-crimson border-neon-crimson/40" },
+  { key: "murit", label: "AM MURIT", className: "bg-amber-400/15 text-amber-300 border-amber-400/40" },
+  { key: "fail", label: "FAIL", className: "bg-foreground/10 text-foreground/80 border-foreground/20" },
+  { key: "wow", label: "WOW", className: "bg-cyan-400/15 text-cyan-300 border-cyan-400/40" },
 ] as const;
 
 function pickBadge(id: string) {
