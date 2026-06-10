@@ -394,35 +394,34 @@ function UploadSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose}>
-      <div className="w-full bg-background border-t border-foreground/10 rounded-t-2xl p-4 space-y-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center" onClick={onClose}>
+      <div className="w-full sm:max-w-sm max-w-md mx-auto bg-background border border-foreground/10 rounded-t-2xl sm:rounded-2xl p-3 space-y-3 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
-          <div className="font-display uppercase text-lg">Postează o fază</div>
-          <button onClick={onClose} className="text-muted-foreground text-2xl leading-none">×</button>
+          <div className="font-display uppercase text-sm tracking-wider">Postează o fază</div>
+          <button onClick={onClose} className="text-muted-foreground text-xl leading-none">×</button>
         </div>
 
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         <button
           onClick={() => fileRef.current?.click()}
-          className="w-full aspect-[4/5] rounded-lg border-2 border-dashed border-foreground/20 flex items-center justify-center overflow-hidden bg-foreground/[0.04]"
+          className="w-full aspect-[4/3] rounded-lg border border-dashed border-foreground/20 flex items-center justify-center overflow-hidden bg-foreground/[0.04]"
         >
           {file ? (
             <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
           ) : (
-            <div className="text-center space-y-1 text-muted-foreground">
-              <div className="text-4xl">📸</div>
-              <div className="font-mono text-[10px] uppercase tracking-widest">apasă să alegi poza</div>
-              <div className="text-[10px]">(din galerie sau cameră)</div>
+            <div className="text-center space-y-0.5 text-muted-foreground">
+              <div className="text-2xl">📸</div>
+              <div className="font-mono text-[9px] uppercase tracking-widest">alege poza</div>
             </div>
           )}
         </button>
 
         <div className="space-y-1">
-          <label className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Locația</label>
+          <label className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Locația</label>
           {selectedVenue ? (
-            <div className="flex items-center justify-between p-3 rounded-lg bg-foreground/[0.06] border border-foreground/10">
-              <div className="font-display text-sm">{selectedVenue.name} · {selectedVenue.city?.name ?? ""}</div>
-              <button onClick={() => setSelectedVenue(null)} className="text-xs text-neon-crimson font-mono uppercase">schimbă</button>
+            <div className="flex items-center justify-between p-2 rounded-md bg-foreground/[0.06] border border-foreground/10">
+              <div className="font-display text-xs truncate">{selectedVenue.name} · {selectedVenue.city?.name ?? ""}</div>
+              <button onClick={() => setSelectedVenue(null)} className="text-[10px] text-neon-crimson font-mono uppercase ml-2 shrink-0">schimbă</button>
             </div>
           ) : (
             <>
@@ -430,21 +429,21 @@ function UploadSheet({ onClose }: { onClose: () => void }) {
                 value={venueQuery}
                 onChange={(e) => setVenueQuery(e.target.value)}
                 placeholder="caută un club, bar, terasă..."
-                className="w-full p-3 rounded-lg bg-foreground/[0.04] border border-foreground/10 text-sm"
+                className="w-full p-2 rounded-md bg-foreground/[0.04] border border-foreground/10 text-xs"
               />
-              <div className="max-h-48 overflow-y-auto space-y-1 mt-1">
+              <div className="max-h-32 overflow-y-auto space-y-0.5 mt-1">
                 {(venues ?? []).map((v: any) => (
                   <button
                     key={v.id}
                     onClick={() => setSelectedVenue(v)}
-                    className="w-full text-left p-2 rounded-md hover:bg-foreground/[0.06] text-sm"
+                    className="w-full text-left p-1.5 rounded-md hover:bg-foreground/[0.06] text-xs"
                   >
                     <div className="font-display">{v.name}</div>
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{v.city?.name ?? ""}</div>
+                    <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{v.city?.name ?? ""}</div>
                   </button>
                 ))}
                 {venues && venues.length === 0 && (
-                  <div className="text-xs text-muted-foreground p-2">Nicio locație găsită.</div>
+                  <div className="text-[10px] text-muted-foreground p-2">Nicio locație găsită.</div>
                 )}
               </div>
             </>
@@ -456,13 +455,13 @@ function UploadSheet({ onClose }: { onClose: () => void }) {
           onChange={(e) => setCaption(e.target.value)}
           placeholder="Spune ceva despre fază... (opțional)"
           rows={2}
-          className="w-full p-3 rounded-lg bg-foreground/[0.04] border border-foreground/10 text-sm resize-none"
+          className="w-full p-2 rounded-md bg-foreground/[0.04] border border-foreground/10 text-xs resize-none"
         />
 
         <button
           onClick={submit}
           disabled={uploading || !file || !selectedVenue}
-          className="w-full font-display uppercase text-sm tracking-[0.18em] py-4 rounded-md text-white disabled:opacity-40"
+          className="w-full font-display uppercase text-xs tracking-[0.18em] py-2.5 rounded-md text-white disabled:opacity-40"
           style={{ background: "var(--gradient-chaos)" }}
         >
           {uploading ? "Se postează..." : "Postează"}
