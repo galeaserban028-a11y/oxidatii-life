@@ -254,10 +254,12 @@ function FazePage() {
       {/* Floating CTA */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-24 right-4 z-40 font-display uppercase text-xs tracking-[0.18em] px-5 py-4 rounded-full text-white shadow-xl"
+        aria-label="Postează o fază"
+        className="fixed bottom-24 right-4 z-40 inline-flex items-center gap-2 font-display uppercase text-[11px] tracking-[0.18em] pl-3 pr-4 py-3 rounded-full text-white shadow-[0_10px_30px_-8px_rgba(244,114,82,0.6)] active:scale-95 transition"
         style={{ background: "var(--gradient-chaos)" }}
       >
-        + Postează o fază
+        <span className="grid place-items-center size-6 rounded-full bg-white/20 text-base leading-none">+</span>
+        Postează
       </button>
 
       <Link to="/app" className="block text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground pt-4">
