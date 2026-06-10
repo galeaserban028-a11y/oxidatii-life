@@ -85,6 +85,8 @@ export function useFollowMutations(viewerId: string | null | undefined, targetId
         .from("follows")
         .insert({ follower_id: viewerId, following_id: targetId });
       if (error) throw error;
+      // Fire-and-forget push notification
+      notifyFollow({ data: { targetId } }).catch(() => {});
     },
     onSuccess: invalidate,
   });
