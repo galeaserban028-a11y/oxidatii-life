@@ -158,6 +158,12 @@ function VenuePage() {
             </div>
           )}
         </div>
+        <div
+          style={{ top: "calc(env(safe-area-inset-top) + 1rem)", right: "calc(env(safe-area-inset-right) + 1rem)" }}
+          className="absolute"
+        >
+          <ReportDialog targetType="venue" targetId={v.id} />
+        </div>
       </div>
 
       <div className="px-5 pt-5 space-y-5 max-w-xl mx-auto">
