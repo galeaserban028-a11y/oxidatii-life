@@ -11,11 +11,19 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
+function ageFromDOB(dob: string): number {
+  const d = new Date(dob);
+  if (isNaN(d.getTime())) return -1;
+  const diff = Date.now() - d.getTime();
+  return Math.floor(diff / (365.25 * 24 * 3600 * 1000));
+}
+
 function SignupPage() {
   const nav = useNavigate();
   const { user, profile, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
+  const [dob, setDob] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -24,20 +32,49 @@ function SignupPage() {
     }
   }, [user, profile, loading, nav]);
 
+  // Max date = 18 years ago today
+  const maxDob = (() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 18);
+    return d.toISOString().slice(0, 10);
+  })();
+
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
+    if (!dob) return toast.error("Pune data nașterii");
+    const age = ageFromDOB(dob);
+    if (age < 18) return toast.error("Trebuie să ai cel puțin 18 ani.");
+
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password: pwd,
-      options: { emailRedirectTo: window.location.origin + "/onboarding" },
+      options: {
+        emailRedirectTo: window.location.origin + "/onboarding",
+        data: { birthdate: dob },
+      },
     });
+    if (error) {
+      setBusy(false);
+      return toast.error(error.message);
+    }
+    // Save birthdate on profile immediately if session was created
+    if (data.user) {
+      await supabase.from("profiles").update({ birthdate: dob } as any).eq("id", data.user.id);
+    }
     setBusy(false);
-    if (error) toast.error(error.message);
   }
 
   async function handleGoogle() {
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/onboarding" });
+    if (!dob) return toast.error("Pune data nașterii înainte de Google");
+    const age = ageFromDOB(dob);
+    if (age < 18) return toast.error("Trebuie să ai cel puțin 18 ani.");
+    try {
+      sessionStorage.setItem("pending_birthdate", dob);
+    } catch {}
+    const r = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + "/onboarding",
+    });
     if (r.error) toast.error(r.error.message ?? "Google a picat");
   }
 
@@ -53,8 +90,24 @@ function SignupPage() {
         <div className="w-full max-w-sm mx-auto space-y-6">
           <div>
             <h1 className="font-display font-black text-3xl">Fă-ți cont.</h1>
-            <p className="text-sm text-muted-foreground mt-1">Și intri în topul nopții.</p>
+            <p className="text-sm text-muted-foreground mt-1">Și intri în topul nopții. Doar 18+.</p>
           </div>
+
+          <div>
+            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">data nașterii</label>
+            <input
+              type="date"
+              required
+              max={maxDob}
+              value={dob}
+              onChange={(e) => setDob(e.target.value)}
+              className="mt-1 w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm focus:outline-none focus:border-neon-purple"
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Aplicația e doar pentru +18. Vârsta e verificată.
+            </p>
+          </div>
+
           <button onClick={handleGoogle}
             className="w-full rounded-xl border border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition py-3 font-medium">
             Continuă cu Google
