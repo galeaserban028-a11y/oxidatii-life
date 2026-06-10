@@ -272,6 +272,7 @@ function UserPage() {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      <ReportDialog targetType="user" targetId={profile.id} variant="menu-item" label={`Raportează @${handle}`} />
                       <DropdownMenuItem
                         onClick={() => setConfirmBlock("block")}
                         className="text-neon-crimson focus:text-neon-crimson"
