@@ -337,7 +337,10 @@ function FazePage() {
         ← înapoi la live
       </Link>
 
-      {open && <UploadSheet onClose={() => setOpen(false)} />}
+      {open && typeof document !== "undefined" && createPortal(
+        <UploadSheet onClose={() => setOpen(false)} />,
+        document.body
+      )}
       {commentsFor && <CommentsSheet photo={commentsFor} onClose={() => { setCommentsFor(null); qc.invalidateQueries({ queryKey: ["faze"] }); }} />}
     </div>
   );
