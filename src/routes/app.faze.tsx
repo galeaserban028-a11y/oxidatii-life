@@ -20,7 +20,7 @@ type Moment = {
   venue_id: string;
 };
 
-async function loadMoments() {
+async function loadMoments(currentUserId: string | null) {
   const { data: photos } = await supabase
     .from("venue_photos")
     .select("id, photo_url, caption, taken_at, user_id, venue_id")
@@ -35,20 +35,56 @@ async function loadMoments() {
     user_id: p.user_id,
     venue_id: p.venue_id,
   }));
+  const photoIds = items.map((i) => i.id);
 
   const userIds = Array.from(new Set(items.map((i) => i.user_id)));
   const venueIds = Array.from(new Set(items.map((i) => i.venue_id)));
-  const [{ data: profilesData }, { data: venuesData }] = await Promise.all([
+  const [
+    { data: profilesData },
+    { data: venuesData },
+    { data: likesData },
+    { data: commentsData },
+    { data: repostsData },
+    { data: myLikes },
+    { data: myReposts },
+  ] = await Promise.all([
     userIds.length
       ? supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", userIds)
       : Promise.resolve({ data: [] as any[] }),
     venueIds.length
       ? supabase.from("venues").select("id, name, slug, city:cities(name)").in("id", venueIds)
       : Promise.resolve({ data: [] as any[] }),
+    photoIds.length
+      ? supabase.from("photo_likes").select("photo_id").in("photo_id", photoIds)
+      : Promise.resolve({ data: [] as any[] }),
+    photoIds.length
+      ? supabase.from("photo_comments").select("photo_id").in("photo_id", photoIds)
+      : Promise.resolve({ data: [] as any[] }),
+    photoIds.length
+      ? supabase.from("photo_reposts").select("photo_id").in("photo_id", photoIds)
+      : Promise.resolve({ data: [] as any[] }),
+    currentUserId && photoIds.length
+      ? supabase.from("photo_likes").select("photo_id").eq("user_id", currentUserId).in("photo_id", photoIds)
+      : Promise.resolve({ data: [] as any[] }),
+    currentUserId && photoIds.length
+      ? supabase.from("photo_reposts").select("photo_id").eq("user_id", currentUserId).in("photo_id", photoIds)
+      : Promise.resolve({ data: [] as any[] }),
   ]);
   const profilesMap = new Map((profilesData ?? []).map((p: any) => [p.id, p]));
   const venuesMap = new Map((venuesData ?? []).map((v: any) => [v.id, v]));
-  return { items, profilesMap, venuesMap };
+
+  const tally = (rows: any[] | null) => {
+    const m = new Map<string, number>();
+    (rows ?? []).forEach((r) => m.set(r.photo_id, (m.get(r.photo_id) ?? 0) + 1));
+    return m;
+  };
+  const likesMap = tally(likesData);
+  const commentsMap = tally(commentsData);
+  const repostsMap = tally(repostsData);
+  const likedSet = new Set((myLikes ?? []).map((r: any) => r.photo_id));
+  const repostedSet = new Set((myReposts ?? []).map((r: any) => r.photo_id));
+
+  return { items, profilesMap, venuesMap, likesMap, commentsMap, repostsMap, likedSet, repostedSet };
 }
 
 function timeAgo(iso: string) {
