@@ -20,7 +20,7 @@ type Moment = {
   venue_id: string;
 };
 
-async function loadMoments() {
+async function loadMoments(currentUserId: string | null) {
   const { data: photos } = await supabase
     .from("venue_photos")
     .select("id, photo_url, caption, taken_at, user_id, venue_id")
@@ -35,20 +35,56 @@ async function loadMoments() {
     user_id: p.user_id,
     venue_id: p.venue_id,
   }));
+  const photoIds = items.map((i) => i.id);
 
   const userIds = Array.from(new Set(items.map((i) => i.user_id)));
   const venueIds = Array.from(new Set(items.map((i) => i.venue_id)));
-  const [{ data: profilesData }, { data: venuesData }] = await Promise.all([
+  const [
+    { data: profilesData },
+    { data: venuesData },
+    { data: likesData },
+    { data: commentsData },
+    { data: repostsData },
+    { data: myLikes },
+    { data: myReposts },
+  ] = await Promise.all([
     userIds.length
       ? supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", userIds)
       : Promise.resolve({ data: [] as any[] }),
     venueIds.length
       ? supabase.from("venues").select("id, name, slug, city:cities(name)").in("id", venueIds)
       : Promise.resolve({ data: [] as any[] }),
+    photoIds.length
+      ? supabase.from("photo_likes").select("photo_id").in("photo_id", photoIds)
+      : Promise.resolve({ data: [] as any[] }),
+    photoIds.length
+      ? supabase.from("photo_comments").select("photo_id").in("photo_id", photoIds)
+      : Promise.resolve({ data: [] as any[] }),
+    photoIds.length
+      ? supabase.from("photo_reposts").select("photo_id").in("photo_id", photoIds)
+      : Promise.resolve({ data: [] as any[] }),
+    currentUserId && photoIds.length
+      ? supabase.from("photo_likes").select("photo_id").eq("user_id", currentUserId).in("photo_id", photoIds)
+      : Promise.resolve({ data: [] as any[] }),
+    currentUserId && photoIds.length
+      ? supabase.from("photo_reposts").select("photo_id").eq("user_id", currentUserId).in("photo_id", photoIds)
+      : Promise.resolve({ data: [] as any[] }),
   ]);
   const profilesMap = new Map((profilesData ?? []).map((p: any) => [p.id, p]));
   const venuesMap = new Map((venuesData ?? []).map((v: any) => [v.id, v]));
-  return { items, profilesMap, venuesMap };
+
+  const tally = (rows: any[] | null) => {
+    const m = new Map<string, number>();
+    (rows ?? []).forEach((r) => m.set(r.photo_id, (m.get(r.photo_id) ?? 0) + 1));
+    return m;
+  };
+  const likesMap = tally(likesData);
+  const commentsMap = tally(commentsData);
+  const repostsMap = tally(repostsData);
+  const likedSet = new Set((myLikes ?? []).map((r: any) => r.photo_id));
+  const repostedSet = new Set((myReposts ?? []).map((r: any) => r.photo_id));
+
+  return { items, profilesMap, venuesMap, likesMap, commentsMap, repostsMap, likedSet, repostedSet };
 }
 
 function timeAgo(iso: string) {
@@ -86,10 +122,42 @@ function formatCount(n: number) {
 }
 
 function FazePage() {
-  const { data, isLoading } = useQuery({ queryKey: ["faze"], queryFn: loadMoments, refetchInterval: 60_000 });
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: ["faze", user?.id ?? null],
+    queryFn: () => loadMoments(user?.id ?? null),
+    refetchInterval: 60_000,
+  });
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<TabKey>("foryou");
-  const [liked, setLiked] = useState<Record<string, boolean>>({});
+  const [commentsFor, setCommentsFor] = useState<Moment | null>(null);
+
+  async function toggleLike(it: Moment) {
+    if (!user) { toast.error("Trebuie să fii logat."); return; }
+    const isLiked = data?.likedSet.has(it.id);
+    if (isLiked) {
+      await supabase.from("photo_likes").delete().eq("photo_id", it.id).eq("user_id", user.id);
+    } else {
+      await supabase.from("photo_likes").insert({ photo_id: it.id, user_id: user.id });
+    }
+    qc.invalidateQueries({ queryKey: ["faze"] });
+  }
+
+  async function toggleRepost(it: Moment) {
+    if (!user) { toast.error("Trebuie să fii logat."); return; }
+    const isReposted = data?.repostedSet.has(it.id);
+    if (isReposted) {
+      await supabase.from("photo_reposts").delete().eq("photo_id", it.id).eq("user_id", user.id);
+      toast.success("Repost retras.");
+    } else {
+      await supabase.from("photo_reposts").insert({ photo_id: it.id, user_id: user.id });
+      toast.success("Repostat pe contul tău.");
+    }
+    qc.invalidateQueries({ queryKey: ["faze"] });
+    qc.invalidateQueries({ queryKey: ["user-reposts", user.id] });
+  }
+
 
   const sortedItems = (() => {
     if (!data) return [];
@@ -163,12 +231,13 @@ function FazePage() {
             const venue = data.venuesMap.get(it.venue_id);
             const handle = profile?.display_name ?? profile?.handle ?? "Anonim";
             const badge = pickBadge(it.id);
-            const likes = pseudoCount(it.id, 11, 1800);
-            const comments = pseudoCount(it.id, 23, 200);
-            const reshares = pseudoCount(it.id, 41, 90);
+            const likes = data.likesMap.get(it.id) ?? 0;
+            const comments = data.commentsMap.get(it.id) ?? 0;
+            const reposts = data.repostsMap.get(it.id) ?? 0;
             const confirms = pseudoCount(it.id, 67, 250);
             const isVideo = /\.(mp4|webm|mov)$/i.test(it.photo_url);
-            const isLiked = !!liked[it.id];
+            const isLiked = data.likedSet.has(it.id);
+            const isReposted = data.repostedSet.has(it.id);
             return (
               <article key={it.id} className="rounded-2xl border border-foreground/10 bg-card/40 overflow-hidden">
                 {/* Header */}
@@ -221,19 +290,25 @@ function FazePage() {
                 {/* Actions */}
                 <div className="flex items-center gap-1 px-2 py-2">
                   <button
-                    onClick={() => setLiked((m) => ({ ...m, [it.id]: !m[it.id] }))}
+                    onClick={() => toggleLike(it)}
                     className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition"
                   >
                     <svg viewBox="0 0 24 24" className={`size-[18px] ${isLiked ? "fill-neon-crimson stroke-neon-crimson" : "fill-none stroke-foreground/80"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
-                    <span className="font-mono text-xs tabular-nums">{formatCount(likes + (isLiked ? 1 : 0))}</span>
+                    <span className="font-mono text-xs tabular-nums">{formatCount(likes)}</span>
                   </button>
-                  <button className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05]">
+                  <button
+                    onClick={() => setCommentsFor(it)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition"
+                  >
                     <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg>
                     <span className="font-mono text-xs tabular-nums">{formatCount(comments)}</span>
                   </button>
-                  <button className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05]">
-                    <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
-                    <span className="font-mono text-xs tabular-nums">{formatCount(reshares)}</span>
+                  <button
+                    onClick={() => toggleRepost(it)}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition ${isReposted ? "text-emerald-400" : ""}`}
+                  >
+                    <svg viewBox="0 0 24 24" className={`size-[18px] fill-none ${isReposted ? "stroke-emerald-400" : "stroke-foreground/80"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
+                    <span className="font-mono text-xs tabular-nums">{formatCount(reposts)}</span>
                   </button>
                 </div>
 
@@ -267,6 +342,7 @@ function FazePage() {
       </Link>
 
       {open && <UploadSheet onClose={() => setOpen(false)} />}
+      {commentsFor && <CommentsSheet photo={commentsFor} onClose={() => { setCommentsFor(null); qc.invalidateQueries({ queryKey: ["faze"] }); }} />}
     </div>
   );
 }
@@ -461,6 +537,105 @@ function PrizeBanner() {
           <div className="font-mono text-sm tabular-nums text-foreground leading-tight">
             {d}<span className="text-muted-foreground">z</span> {pad(h)}<span className="text-muted-foreground">h</span> {pad(m)}<span className="text-muted-foreground">m</span>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () => void }) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const [body, setBody] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const { data: comments } = useQuery({
+    queryKey: ["photo-comments", photo.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("photo_comments")
+        .select("id, body, created_at, user_id")
+        .eq("photo_id", photo.id)
+        .order("created_at", { ascending: true });
+      const ids = Array.from(new Set((data ?? []).map((c) => c.user_id)));
+      const { data: profs } = ids.length
+        ? await supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", ids)
+        : { data: [] as any[] };
+      const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
+      return (data ?? []).map((c) => ({ ...c, profile: map.get(c.user_id) }));
+    },
+  });
+
+  async function submit() {
+    if (!user) { toast.error("Trebuie să fii logat."); return; }
+    const text = body.trim();
+    if (!text) return;
+    setSending(true);
+    const { error } = await supabase.from("photo_comments").insert({
+      photo_id: photo.id, user_id: user.id, body: text,
+    });
+    setSending(false);
+    if (error) { toast.error(error.message); return; }
+    setBody("");
+    qc.invalidateQueries({ queryKey: ["photo-comments", photo.id] });
+    qc.invalidateQueries({ queryKey: ["faze"] });
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose}>
+      <div className="w-full bg-background border-t border-foreground/10 rounded-t-2xl flex flex-col max-h-[85vh]" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-foreground/10">
+          <div className="font-display uppercase text-sm tracking-widest">Comentarii</div>
+          <button onClick={onClose} className="text-muted-foreground text-2xl leading-none">×</button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          {!comments ? (
+            <div className="text-xs text-muted-foreground">Se încarcă…</div>
+          ) : comments.length === 0 ? (
+            <div className="text-center py-10 text-sm text-muted-foreground">
+              <div className="text-3xl mb-1">💬</div>
+              Niciun comentariu. Fii primul.
+            </div>
+          ) : (
+            comments.map((c: any) => (
+              <div key={c.id} className="flex items-start gap-3">
+                {c.profile?.avatar_url ? (
+                  <img src={c.profile.avatar_url} alt="" className="size-8 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className="size-8 rounded-full bg-foreground/10 shrink-0 grid place-items-center text-xs font-display">
+                    {(c.profile?.display_name ?? "?")[0]?.toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-display text-xs truncate">{c.profile?.display_name ?? c.profile?.handle ?? "Anonim"}</span>
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{timeAgo(c.created_at)}</span>
+                  </div>
+                  <p className="text-sm leading-snug whitespace-pre-wrap break-words">{c.body}</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="border-t border-foreground/10 p-3 flex items-end gap-2">
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            placeholder="Scrie un comentariu…"
+            rows={1}
+            maxLength={500}
+            className="flex-1 resize-none p-2.5 rounded-lg bg-foreground/[0.05] border border-foreground/10 text-sm"
+          />
+          <button
+            onClick={submit}
+            disabled={sending || !body.trim()}
+            className="shrink-0 font-display uppercase text-[11px] tracking-widest px-4 py-2.5 rounded-lg text-white disabled:opacity-40"
+            style={{ background: "var(--gradient-chaos)" }}
+          >
+            Trimite
+          </button>
         </div>
       </div>
     </div>

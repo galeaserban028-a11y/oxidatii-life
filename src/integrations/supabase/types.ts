@@ -1107,6 +1107,90 @@ export type Database = {
           },
         ]
       }
+      photo_comments: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          photo_id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          photo_id: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          photo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_comments_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "venue_photos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photo_likes: {
+        Row: {
+          created_at: string
+          photo_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          photo_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          photo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_likes_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "venue_photos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      photo_reposts: {
+        Row: {
+          created_at: string
+          photo_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          photo_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          photo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_reposts_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "venue_photos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       private_locations: {
         Row: {
           created_at: string
