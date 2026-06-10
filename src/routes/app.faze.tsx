@@ -419,78 +419,40 @@ function useCountdown(target: Date) {
 
 function PrizeBanner() {
   const target = nextMondayMorning();
-  const { d, h, m, s } = useCountdown(target);
+  const { d, h, m } = useCountdown(target);
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
-    <div className="relative">
-      {/* Outer glow */}
-      <div aria-hidden className="absolute -inset-1 rounded-[22px] bg-[conic-gradient(from_120deg,hsl(var(--neon-crimson)/0.6),transparent_30%,#f59e0b_55%,transparent_75%,hsl(var(--neon-crimson)/0.6))] opacity-40 blur-xl" />
+    <div className="relative overflow-hidden rounded-xl border border-amber-400/25 bg-gradient-to-r from-neon-crimson/10 via-orange-500/[0.06] to-amber-400/10">
+      <div aria-hidden className="absolute -top-10 -right-10 size-24 rounded-full bg-amber-400/20 blur-2xl" />
+      <div aria-hidden className="absolute -bottom-10 -left-10 size-24 rounded-full bg-neon-crimson/20 blur-2xl" />
 
-      <div className="relative rounded-2xl border border-white/10 bg-[#0b0608] overflow-hidden">
-        {/* Texture: subtle grid + radial highlight */}
-        <div aria-hidden className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] [background-size:18px_18px]" />
-        <div aria-hidden className="absolute -top-24 -right-16 size-72 rounded-full bg-neon-crimson/30 blur-3xl" />
-        <div aria-hidden className="absolute -bottom-24 -left-16 size-72 rounded-full bg-amber-500/20 blur-3xl" />
+      <div className="relative flex items-center gap-3 px-3.5 py-3">
+        {/* Prize chip */}
+        <div className="shrink-0 flex flex-col items-center justify-center rounded-lg bg-gradient-to-br from-amber-300 to-orange-500 px-2.5 py-1.5 text-black shadow-[0_4px_14px_-4px_rgba(245,158,11,0.6)]">
+          <div className="font-display text-lg leading-none font-black tabular-nums">100</div>
+          <div className="font-mono text-[8px] uppercase tracking-widest leading-none mt-0.5">lei</div>
+        </div>
 
-        {/* Notch — bilet de tombolă */}
-        <div aria-hidden className="absolute left-1/2 -translate-x-1/2 -top-3 size-6 rounded-full bg-background border border-white/10" />
-        <div aria-hidden className="absolute left-1/2 -translate-x-1/2 -bottom-3 size-6 rounded-full bg-background border border-white/10" />
-
-        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] gap-4 p-4 sm:p-5">
-          {/* LEFT */}
-          <div className="min-w-0 space-y-2">
-            <div className="inline-flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-crimson">Premiul săptămânii</span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-2 py-[2px] text-[9px] font-mono uppercase tracking-widest text-emerald-400">
-                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
-              </span>
-            </div>
-
-            <div className="font-display uppercase leading-[0.95] tracking-tight">
-              <div className="text-xl sm:text-2xl text-foreground/90">Cea mai tare fază ia</div>
-              <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-[44px] sm:text-[56px] font-black bg-gradient-to-br from-amber-300 via-orange-400 to-neon-crimson bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(244,114,82,0.35)]">100</span>
-                <span className="text-xl sm:text-2xl text-amber-300">LEI</span>
-                <span className="ml-2 text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground self-center">pe Revolut</span>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              <span className="inline-flex items-center gap-1"><span className="text-amber-300">●</span> Vineri → Duminică</span>
-              <span className="inline-flex items-center gap-1"><span className="text-neon-crimson">●</span> Cele mai multe ❤️</span>
-              <span className="inline-flex items-center gap-1"><span className="text-emerald-400">●</span> Plată luni 09:00</span>
-            </div>
+        {/* Copy */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-amber-300">Premiul săptămânii</span>
+            <span className="size-1 rounded-full bg-emerald-400 animate-pulse" />
           </div>
-
-          {/* RIGHT — countdown */}
-          <div className="shrink-0 flex flex-col items-end justify-between gap-2">
-            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground">Se închide în</div>
-            <div className="flex items-center gap-1">
-              {[
-                { v: d, l: "z" },
-                { v: h, l: "h" },
-                { v: m, l: "m" },
-                { v: s, l: "s" },
-              ].map((u, i) => (
-                <div key={i} className="flex flex-col items-center">
-                  <div className="min-w-[34px] rounded-md bg-white/[0.04] border border-white/10 px-1.5 py-1 font-mono text-base tabular-nums text-foreground text-center">
-                    {pad(u.v)}
-                  </div>
-                  <div className="text-[8px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">{u.l}</div>
-                </div>
-              ))}
-            </div>
+          <div className="font-display text-[13px] leading-tight mt-0.5 truncate">
+            Cea mai tare fază ia <span className="text-amber-300">100 lei pe Revolut</span>
+          </div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5 truncate">
+            Vineri → Duminică · plată luni
           </div>
         </div>
 
-        {/* Footer strip — perforation + rule */}
-        <div className="relative border-t border-dashed border-white/10">
-          <div className="flex items-center justify-between px-4 py-2 text-[10px] font-mono uppercase tracking-widest">
-            <span className="text-muted-foreground">#PremiulOxidaților · ediția #{Math.floor((Date.now() - +new Date("2026-01-01")) / 604_800_000) + 1}</span>
-            <span className="inline-flex items-center gap-1 text-amber-300">
-              Vezi regulament <span aria-hidden>→</span>
-            </span>
+        {/* Countdown */}
+        <div className="shrink-0 text-right">
+          <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground">Se închide</div>
+          <div className="font-mono text-sm tabular-nums text-foreground leading-tight">
+            {d}<span className="text-muted-foreground">z</span> {pad(h)}<span className="text-muted-foreground">h</span> {pad(m)}<span className="text-muted-foreground">m</span>
           </div>
         </div>
       </div>
