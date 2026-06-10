@@ -59,18 +59,61 @@ function timeAgo(iso: string) {
   return `${Math.floor(s / 86400)}z`;
 }
 
+type TabKey = "foryou" | "recent" | "top" | "legendare";
+
+const BADGES = [
+  { key: "legendar", label: "ȘPRIȚ LEGENDAR", icon: "🔥", className: "bg-neon-crimson/15 text-neon-crimson border-neon-crimson/40" },
+  { key: "murit", label: "AM MURIT DE RÂS", icon: "😂", className: "bg-yellow-400/15 text-yellow-400 border-yellow-400/40" },
+  { key: "fail", label: "FAIL", icon: "💀", className: "bg-foreground/10 text-foreground/80 border-foreground/20" },
+  { key: "wow", label: "WOW MOMENT", icon: "⚡", className: "bg-cyan-400/15 text-cyan-400 border-cyan-400/40" },
+] as const;
+
+function pickBadge(id: string) {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return BADGES[h % BADGES.length];
+}
+
+function pseudoCount(id: string, salt: number, max: number) {
+  let h = salt;
+  for (let i = 0; i < id.length; i++) h = (h * 33 + id.charCodeAt(i)) >>> 0;
+  return (h % max) + 1;
+}
+
+function formatCount(n: number) {
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+  return String(n);
+}
+
 function FazePage() {
   const { data, isLoading } = useQuery({ queryKey: ["faze"], queryFn: loadMoments, refetchInterval: 60_000 });
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<TabKey>("foryou");
+  const [liked, setLiked] = useState<Record<string, boolean>>({});
+
+  const sortedItems = (() => {
+    if (!data) return [];
+    const arr = [...data.items];
+    if (tab === "recent") arr.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+    else if (tab === "top") arr.sort((a, b) => pseudoCount(b.id, 7, 2000) - pseudoCount(a.id, 7, 2000));
+    else if (tab === "legendare") return arr.filter((it) => pickBadge(it.id).key === "legendar");
+    return arr;
+  })();
 
   return (
     <div className="px-4 pt-5 pb-24 space-y-4">
-      <header className="space-y-1">
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-crimson">// CELE MAI TARI FAZE</div>
-        <h1 className="font-display uppercase text-2xl leading-none tracking-tight">
-          Faze <span className="text-gradient-chaos">din teren</span>
-        </h1>
-        <p className="text-xs text-muted-foreground">Postează ce-ai prins în club, la șpriț, pe stradă. Real, brut, fără filtre.</p>
+      <header className="space-y-1 flex items-start justify-between gap-2">
+        <div className="space-y-1">
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-crimson">// CELE MAI TARI FAZE</div>
+          <h1 className="font-display uppercase text-2xl leading-none tracking-tight">
+            Faze <span className="text-gradient-chaos">din teren</span>
+          </h1>
+          <p className="text-xs text-muted-foreground">Postează ce-ai prins în club, la șpriț, pe stradă. Real, brut, fără filtre.</p>
+        </div>
+        <Link to="/app/notifications" className="size-9 rounded-full border border-foreground/15 flex items-center justify-center relative shrink-0">
+          <span className="text-base">🔔</span>
+          <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-neon-crimson animate-pulse" />
+        </Link>
       </header>
 
       {/* Weekend prize banner */}
@@ -90,35 +133,127 @@ function FazePage() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto -mx-4 px-4 pb-1 no-scrollbar">
+        {([
+          { k: "foryou", label: "Pentru tine", icon: "🔥" },
+          { k: "recent", label: "Recent", icon: "🕐" },
+          { k: "top", label: "Top faze", icon: "🏆" },
+          { k: "legendare", label: "Legendare", icon: "👑" },
+        ] as { k: TabKey; label: string; icon: string }[]).map((t) => {
+          const active = tab === t.k;
+          return (
+            <button
+              key={t.k}
+              onClick={() => setTab(t.k)}
+              className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-mono uppercase tracking-widest border transition ${
+                active
+                  ? "border-neon-crimson/60 text-neon-crimson bg-neon-crimson/10"
+                  : "border-foreground/15 text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span>{t.icon}</span>
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-2">
-          {[0,1,2,3].map(i => <div key={i} className="aspect-[4/5] rounded-lg bg-foreground/[0.04] animate-pulse" />)}
+        <div className="space-y-4">
+          {[0,1].map(i => <div key={i} className="aspect-[4/5] rounded-2xl bg-foreground/[0.04] animate-pulse" />)}
         </div>
-      ) : !data || data.items.length === 0 ? (
+      ) : !data || sortedItems.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-3">
           <div className="text-5xl">🎬</div>
           <div className="font-display uppercase text-lg">Nicio fază încă.</div>
           <p className="text-sm text-muted-foreground">Fii primul care pune o fază reală din teren.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2">
-          {data.items.map((it) => {
+        <div className="space-y-4">
+          {sortedItems.map((it) => {
             const profile = data.profilesMap.get(it.user_id);
             const venue = data.venuesMap.get(it.venue_id);
-            const handle = profile?.handle ?? profile?.display_name ?? "anonim";
+            const handle = profile?.display_name ?? profile?.handle ?? "Anonim";
+            const badge = pickBadge(it.id);
+            const likes = pseudoCount(it.id, 11, 1800);
+            const comments = pseudoCount(it.id, 23, 200);
+            const reshares = pseudoCount(it.id, 41, 90);
+            const confirms = pseudoCount(it.id, 67, 250);
+            const isVideo = /\.(mp4|webm|mov)$/i.test(it.photo_url);
+            const isLiked = !!liked[it.id];
             return (
-              <div key={it.id} className="relative aspect-[4/5] rounded-lg overflow-hidden bg-foreground/[0.04] border border-foreground/10 group">
-                <img src={it.photo_url} alt={it.caption ?? ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-                <div className="absolute top-1.5 right-1.5">
-                  <ReportDialog targetType="photo" targetId={it.id} className="h-7 w-7 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-white/90 active:scale-95 transition" />
+              <article key={it.id} className="rounded-2xl border border-foreground/10 bg-card/40 overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center gap-3 p-3">
+                  <Link to="/app/user/$id" params={{ id: it.user_id }} className="shrink-0">
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt={handle} className="size-10 rounded-full object-cover border border-foreground/10" />
+                    ) : (
+                      <div className="size-10 rounded-full bg-foreground/10 flex items-center justify-center font-display text-sm">
+                        {handle[0]?.toUpperCase()}
+                      </div>
+                    )}
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <Link to="/app/user/$id" params={{ id: it.user_id }} className="font-display text-sm truncate">{handle}</Link>
+                      {badge.key === "legendar" && <span className="text-neon-crimson">⚡</span>}
+                    </div>
+                    <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
+                      📍 {venue?.name ?? "—"} · acum {timeAgo(it.created_at)}
+                    </div>
+                  </div>
+                  <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-mono uppercase tracking-widest ${badge.className}`}>
+                    <span>{badge.icon}</span>{badge.label}
+                  </span>
                 </div>
-                <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                  <div className="font-display text-xs text-white truncate">@{handle}</div>
-                  <div className="font-mono text-[9px] uppercase tracking-widest text-white/70 truncate">
-                    {venue ? `${venue.name} · ${venue.city?.name ?? ""}` : "—"} · {timeAgo(it.created_at)}
+
+                {/* Media */}
+                <div className="relative bg-black">
+                  {isVideo ? (
+                    <video src={it.photo_url} className="w-full aspect-[4/5] object-cover" playsInline muted loop preload="metadata" />
+                  ) : (
+                    <img src={it.photo_url} alt={it.caption ?? ""} className="w-full aspect-[4/5] object-cover" loading="lazy" />
+                  )}
+                  {isVideo && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="size-14 rounded-full bg-white/90 text-black flex items-center justify-center text-xl shadow-xl">▶</div>
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2">
+                    <ReportDialog targetType="photo" targetId={it.id} className="h-8 w-8 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-white/90 active:scale-95 transition" />
                   </div>
                 </div>
-              </div>
+
+                {/* Caption */}
+                {it.caption && (
+                  <div className="px-4 pt-3 text-sm leading-snug">{it.caption}</div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-5 px-4 py-3 text-sm">
+                  <button
+                    onClick={() => setLiked((m) => ({ ...m, [it.id]: !m[it.id] }))}
+                    className="inline-flex items-center gap-1.5 active:scale-95 transition"
+                  >
+                    <span className={isLiked ? "text-neon-crimson" : "text-foreground/80"}>{isLiked ? "❤️" : "🤍"}</span>
+                    <span className="font-mono text-xs tabular-nums">{formatCount(likes + (isLiked ? 1 : 0))}</span>
+                  </button>
+                  <button className="inline-flex items-center gap-1.5 text-foreground/80">
+                    <span>💬</span>
+                    <span className="font-mono text-xs tabular-nums">{formatCount(comments)}</span>
+                  </button>
+                  <button className="inline-flex items-center gap-1.5 text-foreground/80">
+                    <span>🔁</span>
+                    <span className="font-mono text-xs tabular-nums">{formatCount(reshares)}</span>
+                  </button>
+                  <div className="ml-auto inline-flex items-center gap-1.5 text-neon-crimson">
+                    <span>🔥</span>
+                    <span className="font-mono text-xs tabular-nums">Confirmări: {formatCount(confirms)}</span>
+                  </div>
+                </div>
+              </article>
             );
           })}
         </div>
