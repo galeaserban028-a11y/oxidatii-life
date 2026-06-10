@@ -312,14 +312,6 @@ function FazePage() {
                   </button>
                 </div>
 
-                {/* Confirmari strip */}
-                <div className="flex items-center justify-between gap-3 px-4 py-2 border-t border-foreground/5 bg-foreground/[0.02]">
-                  <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest text-neon-crimson/90">
-                    <span className="text-sm leading-none">🔥</span>
-                    <span className="tabular-nums">{formatCount(confirms)}</span>
-                    <span className="text-muted-foreground">au confirmat că au fost acolo</span>
-                  </div>
-                </div>
               </article>
             );
           })}
