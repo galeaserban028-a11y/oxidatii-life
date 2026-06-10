@@ -392,3 +392,108 @@ function UploadSheet({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
+
+function nextMondayMorning() {
+  const now = new Date();
+  const d = new Date(now);
+  const day = d.getDay(); // 0 Sun ... 6 Sat
+  const daysUntilMon = (8 - day) % 7 || 7;
+  d.setDate(d.getDate() + daysUntilMon);
+  d.setHours(9, 0, 0, 0);
+  return d;
+}
+
+function useCountdown(target: Date) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const i = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(i);
+  }, []);
+  const ms = Math.max(0, +target - now);
+  const d = Math.floor(ms / 86_400_000);
+  const h = Math.floor((ms % 86_400_000) / 3_600_000);
+  const m = Math.floor((ms % 3_600_000) / 60_000);
+  const s = Math.floor((ms % 60_000) / 1000);
+  return { d, h, m, s };
+}
+
+function PrizeBanner() {
+  const target = nextMondayMorning();
+  const { d, h, m, s } = useCountdown(target);
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  return (
+    <div className="relative">
+      {/* Outer glow */}
+      <div aria-hidden className="absolute -inset-1 rounded-[22px] bg-[conic-gradient(from_120deg,hsl(var(--neon-crimson)/0.6),transparent_30%,#f59e0b_55%,transparent_75%,hsl(var(--neon-crimson)/0.6))] opacity-40 blur-xl" />
+
+      <div className="relative rounded-2xl border border-white/10 bg-[#0b0608] overflow-hidden">
+        {/* Texture: subtle grid + radial highlight */}
+        <div aria-hidden className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(to_right,#fff_1px,transparent_1px),linear-gradient(to_bottom,#fff_1px,transparent_1px)] [background-size:18px_18px]" />
+        <div aria-hidden className="absolute -top-24 -right-16 size-72 rounded-full bg-neon-crimson/30 blur-3xl" />
+        <div aria-hidden className="absolute -bottom-24 -left-16 size-72 rounded-full bg-amber-500/20 blur-3xl" />
+
+        {/* Notch — bilet de tombolă */}
+        <div aria-hidden className="absolute left-1/2 -translate-x-1/2 -top-3 size-6 rounded-full bg-background border border-white/10" />
+        <div aria-hidden className="absolute left-1/2 -translate-x-1/2 -bottom-3 size-6 rounded-full bg-background border border-white/10" />
+
+        <div className="relative grid grid-cols-[minmax(0,1fr)_auto] gap-4 p-4 sm:p-5">
+          {/* LEFT */}
+          <div className="min-w-0 space-y-2">
+            <div className="inline-flex items-center gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-crimson">Premiul săptămânii</span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-2 py-[2px] text-[9px] font-mono uppercase tracking-widest text-emerald-400">
+                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
+              </span>
+            </div>
+
+            <div className="font-display uppercase leading-[0.95] tracking-tight">
+              <div className="text-xl sm:text-2xl text-foreground/90">Cea mai tare fază ia</div>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-[44px] sm:text-[56px] font-black bg-gradient-to-br from-amber-300 via-orange-400 to-neon-crimson bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(244,114,82,0.35)]">100</span>
+                <span className="text-xl sm:text-2xl text-amber-300">LEI</span>
+                <span className="ml-2 text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground self-center">pe Revolut</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              <span className="inline-flex items-center gap-1"><span className="text-amber-300">●</span> Vineri → Duminică</span>
+              <span className="inline-flex items-center gap-1"><span className="text-neon-crimson">●</span> Cele mai multe ❤️</span>
+              <span className="inline-flex items-center gap-1"><span className="text-emerald-400">●</span> Plată luni 09:00</span>
+            </div>
+          </div>
+
+          {/* RIGHT — countdown */}
+          <div className="shrink-0 flex flex-col items-end justify-between gap-2">
+            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground">Se închide în</div>
+            <div className="flex items-center gap-1">
+              {[
+                { v: d, l: "z" },
+                { v: h, l: "h" },
+                { v: m, l: "m" },
+                { v: s, l: "s" },
+              ].map((u, i) => (
+                <div key={i} className="flex flex-col items-center">
+                  <div className="min-w-[34px] rounded-md bg-white/[0.04] border border-white/10 px-1.5 py-1 font-mono text-base tabular-nums text-foreground text-center">
+                    {pad(u.v)}
+                  </div>
+                  <div className="text-[8px] font-mono uppercase tracking-widest text-muted-foreground mt-0.5">{u.l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer strip — perforation + rule */}
+        <div className="relative border-t border-dashed border-white/10">
+          <div className="flex items-center justify-between px-4 py-2 text-[10px] font-mono uppercase tracking-widest">
+            <span className="text-muted-foreground">#PremiulOxidaților · ediția #{Math.floor((Date.now() - +new Date("2026-01-01")) / 604_800_000) + 1}</span>
+            <span className="inline-flex items-center gap-1 text-amber-300">
+              Vezi regulament <span aria-hidden>→</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
