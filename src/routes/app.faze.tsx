@@ -122,10 +122,42 @@ function formatCount(n: number) {
 }
 
 function FazePage() {
-  const { data, isLoading } = useQuery({ queryKey: ["faze"], queryFn: loadMoments, refetchInterval: 60_000 });
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const { data, isLoading } = useQuery({
+    queryKey: ["faze", user?.id ?? null],
+    queryFn: () => loadMoments(user?.id ?? null),
+    refetchInterval: 60_000,
+  });
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<TabKey>("foryou");
-  const [liked, setLiked] = useState<Record<string, boolean>>({});
+  const [commentsFor, setCommentsFor] = useState<Moment | null>(null);
+
+  async function toggleLike(it: Moment) {
+    if (!user) { toast.error("Trebuie să fii logat."); return; }
+    const isLiked = data?.likedSet.has(it.id);
+    if (isLiked) {
+      await supabase.from("photo_likes").delete().eq("photo_id", it.id).eq("user_id", user.id);
+    } else {
+      await supabase.from("photo_likes").insert({ photo_id: it.id, user_id: user.id });
+    }
+    qc.invalidateQueries({ queryKey: ["faze"] });
+  }
+
+  async function toggleRepost(it: Moment) {
+    if (!user) { toast.error("Trebuie să fii logat."); return; }
+    const isReposted = data?.repostedSet.has(it.id);
+    if (isReposted) {
+      await supabase.from("photo_reposts").delete().eq("photo_id", it.id).eq("user_id", user.id);
+      toast.success("Repost retras.");
+    } else {
+      await supabase.from("photo_reposts").insert({ photo_id: it.id, user_id: user.id });
+      toast.success("Repostat pe contul tău.");
+    }
+    qc.invalidateQueries({ queryKey: ["faze"] });
+    qc.invalidateQueries({ queryKey: ["user-reposts", user.id] });
+  }
+
 
   const sortedItems = (() => {
     if (!data) return [];
