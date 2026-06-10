@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { notifyFollow } from "@/lib/notifications-extra.functions";
 
 export type FollowStatus = "none" | "pending" | "accepted";
 
