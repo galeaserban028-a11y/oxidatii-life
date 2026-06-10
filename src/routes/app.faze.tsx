@@ -342,6 +342,7 @@ function FazePage() {
       </Link>
 
       {open && <UploadSheet onClose={() => setOpen(false)} />}
+      {commentsFor && <CommentsSheet photo={commentsFor} onClose={() => { setCommentsFor(null); qc.invalidateQueries({ queryKey: ["faze"] }); }} />}
     </div>
   );
 }
