@@ -290,19 +290,25 @@ function FazePage() {
                 {/* Actions */}
                 <div className="flex items-center gap-1 px-2 py-2">
                   <button
-                    onClick={() => setLiked((m) => ({ ...m, [it.id]: !m[it.id] }))}
+                    onClick={() => toggleLike(it)}
                     className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition"
                   >
                     <svg viewBox="0 0 24 24" className={`size-[18px] ${isLiked ? "fill-neon-crimson stroke-neon-crimson" : "fill-none stroke-foreground/80"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
-                    <span className="font-mono text-xs tabular-nums">{formatCount(likes + (isLiked ? 1 : 0))}</span>
+                    <span className="font-mono text-xs tabular-nums">{formatCount(likes)}</span>
                   </button>
-                  <button className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05]">
+                  <button
+                    onClick={() => setCommentsFor(it)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition"
+                  >
                     <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg>
                     <span className="font-mono text-xs tabular-nums">{formatCount(comments)}</span>
                   </button>
-                  <button className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05]">
-                    <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
-                    <span className="font-mono text-xs tabular-nums">{formatCount(reshares)}</span>
+                  <button
+                    onClick={() => toggleRepost(it)}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition ${isReposted ? "text-emerald-400" : ""}`}
+                  >
+                    <svg viewBox="0 0 24 24" className={`size-[18px] fill-none ${isReposted ? "stroke-emerald-400" : "stroke-foreground/80"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
+                    <span className="font-mono text-xs tabular-nums">{formatCount(reposts)}</span>
                   </button>
                 </div>
 
