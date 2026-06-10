@@ -231,12 +231,13 @@ function FazePage() {
             const venue = data.venuesMap.get(it.venue_id);
             const handle = profile?.display_name ?? profile?.handle ?? "Anonim";
             const badge = pickBadge(it.id);
-            const likes = pseudoCount(it.id, 11, 1800);
-            const comments = pseudoCount(it.id, 23, 200);
-            const reshares = pseudoCount(it.id, 41, 90);
+            const likes = data.likesMap.get(it.id) ?? 0;
+            const comments = data.commentsMap.get(it.id) ?? 0;
+            const reposts = data.repostsMap.get(it.id) ?? 0;
             const confirms = pseudoCount(it.id, 67, 250);
             const isVideo = /\.(mp4|webm|mov)$/i.test(it.photo_url);
-            const isLiked = !!liked[it.id];
+            const isLiked = data.likedSet.has(it.id);
+            const isReposted = data.repostedSet.has(it.id);
             return (
               <article key={it.id} className="rounded-2xl border border-foreground/10 bg-card/40 overflow-hidden">
                 {/* Header */}
