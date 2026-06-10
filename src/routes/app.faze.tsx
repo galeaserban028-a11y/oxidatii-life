@@ -191,8 +191,8 @@ function FazePage() {
                       📍 {venue?.name ?? "—"} · acum {timeAgo(it.created_at)}
                     </div>
                   </div>
-                  <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-mono uppercase tracking-widest ${badge.className}`}>
-                    <span>{badge.icon}</span>{badge.label}
+                  <span className={`shrink-0 inline-flex items-center px-2 py-[3px] rounded-md border text-[10px] font-mono uppercase tracking-[0.15em] ${badge.className}`}>
+                    {badge.label}
                   </span>
                 </div>
 
