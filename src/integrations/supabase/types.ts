@@ -1143,6 +1143,7 @@ export type Database = {
           aura: number
           avatar_url: string | null
           bio: string | null
+          birthdate: string | null
           city_id: string | null
           coin_balance: number
           created_at: string
@@ -1165,6 +1166,7 @@ export type Database = {
           premium_tier: Database["public"]["Enums"]["premium_tier"] | null
           premium_until: string | null
           rank: Database["public"]["Enums"]["balkan_rank"]
+          tutorial_seen: boolean
           updated_at: string
         }
         Insert: {
@@ -1172,6 +1174,7 @@ export type Database = {
           aura?: number
           avatar_url?: string | null
           bio?: string | null
+          birthdate?: string | null
           city_id?: string | null
           coin_balance?: number
           created_at?: string
@@ -1194,6 +1197,7 @@ export type Database = {
           premium_tier?: Database["public"]["Enums"]["premium_tier"] | null
           premium_until?: string | null
           rank?: Database["public"]["Enums"]["balkan_rank"]
+          tutorial_seen?: boolean
           updated_at?: string
         }
         Update: {
@@ -1201,6 +1205,7 @@ export type Database = {
           aura?: number
           avatar_url?: string | null
           bio?: string | null
+          birthdate?: string | null
           city_id?: string | null
           coin_balance?: number
           created_at?: string
@@ -1223,6 +1228,7 @@ export type Database = {
           premium_tier?: Database["public"]["Enums"]["premium_tier"] | null
           premium_until?: string | null
           rank?: Database["public"]["Enums"]["balkan_rank"]
+          tutorial_seen?: boolean
           updated_at?: string
         }
         Relationships: [
