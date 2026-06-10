@@ -30,7 +30,17 @@ function Onboarding() {
     supabase.from("cities").select("id,name,slug").order("name").then(({ data }) => {
       if (data) setCities(data);
     });
-  }, []);
+    // Persist birthdate captured at Google signup (sessionStorage)
+    (async () => {
+      try {
+        const dob = sessionStorage.getItem("pending_birthdate");
+        if (dob && user) {
+          await supabase.from("profiles").update({ birthdate: dob } as any).eq("id", user.id);
+          sessionStorage.removeItem("pending_birthdate");
+        }
+      } catch {}
+    })();
+  }, [user]);
 
   async function askLocation() {
     if (!("geolocation" in navigator)) return toast.error("Browser-ul tău n-are GPS");
