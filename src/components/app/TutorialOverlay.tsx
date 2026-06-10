@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { MapPin, BeerIcon, Users, Coins, X } from "lucide-react";
+import { MapPin, Beer, Users, Coins, X } from "lucide-react";
 
 const LS_KEY = "oxi-tutorial-seen-v1";
 
