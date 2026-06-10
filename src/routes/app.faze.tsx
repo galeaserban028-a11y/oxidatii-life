@@ -62,10 +62,10 @@ function timeAgo(iso: string) {
 type TabKey = "foryou" | "recent" | "top" | "legendare";
 
 const BADGES = [
-  { key: "legendar", label: "ȘPRIȚ LEGENDAR", icon: "🔥", className: "bg-neon-crimson/15 text-neon-crimson border-neon-crimson/40" },
-  { key: "murit", label: "AM MURIT DE RÂS", icon: "😂", className: "bg-yellow-400/15 text-yellow-400 border-yellow-400/40" },
-  { key: "fail", label: "FAIL", icon: "💀", className: "bg-foreground/10 text-foreground/80 border-foreground/20" },
-  { key: "wow", label: "WOW MOMENT", icon: "⚡", className: "bg-cyan-400/15 text-cyan-400 border-cyan-400/40" },
+  { key: "legendar", label: "LEGENDAR", className: "bg-neon-crimson/15 text-neon-crimson border-neon-crimson/40" },
+  { key: "murit", label: "AM MURIT", className: "bg-amber-400/15 text-amber-300 border-amber-400/40" },
+  { key: "fail", label: "FAIL", className: "bg-foreground/10 text-foreground/80 border-foreground/20" },
+  { key: "wow", label: "WOW", className: "bg-cyan-400/15 text-cyan-300 border-cyan-400/40" },
 ] as const;
 
 function pickBadge(id: string) {
@@ -191,8 +191,8 @@ function FazePage() {
                       📍 {venue?.name ?? "—"} · acum {timeAgo(it.created_at)}
                     </div>
                   </div>
-                  <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[10px] font-mono uppercase tracking-widest ${badge.className}`}>
-                    <span>{badge.icon}</span>{badge.label}
+                  <span className={`shrink-0 inline-flex items-center px-2 py-[3px] rounded-md border text-[10px] font-mono uppercase tracking-[0.15em] ${badge.className}`}>
+                    {badge.label}
                   </span>
                 </div>
 
@@ -219,25 +219,30 @@ function FazePage() {
                 )}
 
                 {/* Actions */}
-                <div className="flex items-center gap-5 px-4 py-3 text-sm">
+                <div className="flex items-center gap-1 px-2 py-2">
                   <button
                     onClick={() => setLiked((m) => ({ ...m, [it.id]: !m[it.id] }))}
-                    className="inline-flex items-center gap-1.5 active:scale-95 transition"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition"
                   >
-                    <span className={isLiked ? "text-neon-crimson" : "text-foreground/80"}>{isLiked ? "❤️" : "🤍"}</span>
+                    <svg viewBox="0 0 24 24" className={`size-[18px] ${isLiked ? "fill-neon-crimson stroke-neon-crimson" : "fill-none stroke-foreground/80"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
                     <span className="font-mono text-xs tabular-nums">{formatCount(likes + (isLiked ? 1 : 0))}</span>
                   </button>
-                  <button className="inline-flex items-center gap-1.5 text-foreground/80">
-                    <span>💬</span>
+                  <button className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05]">
+                    <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg>
                     <span className="font-mono text-xs tabular-nums">{formatCount(comments)}</span>
                   </button>
-                  <button className="inline-flex items-center gap-1.5 text-foreground/80">
-                    <span>🔁</span>
+                  <button className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05]">
+                    <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
                     <span className="font-mono text-xs tabular-nums">{formatCount(reshares)}</span>
                   </button>
-                  <div className="ml-auto inline-flex items-center gap-1.5 text-neon-crimson">
-                    <span>🔥</span>
-                    <span className="font-mono text-xs tabular-nums">Confirmări: {formatCount(confirms)}</span>
+                </div>
+
+                {/* Confirmari strip */}
+                <div className="flex items-center justify-between gap-3 px-4 py-2 border-t border-foreground/5 bg-foreground/[0.02]">
+                  <div className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest text-neon-crimson/90">
+                    <span className="text-sm leading-none">🔥</span>
+                    <span className="tabular-nums">{formatCount(confirms)}</span>
+                    <span className="text-muted-foreground">au confirmat că au fost acolo</span>
                   </div>
                 </div>
               </article>
@@ -249,10 +254,12 @@ function FazePage() {
       {/* Floating CTA */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-24 right-4 z-40 font-display uppercase text-xs tracking-[0.18em] px-5 py-4 rounded-full text-white shadow-xl"
+        aria-label="Postează o fază"
+        className="fixed bottom-24 right-4 z-40 inline-flex items-center gap-2 font-display uppercase text-[11px] tracking-[0.18em] pl-3 pr-4 py-3 rounded-full text-white shadow-[0_10px_30px_-8px_rgba(244,114,82,0.6)] active:scale-95 transition"
         style={{ background: "var(--gradient-chaos)" }}
       >
-        + Postează o fază
+        <span className="grid place-items-center size-6 rounded-full bg-white/20 text-base leading-none">+</span>
+        Postează
       </button>
 
       <Link to="/app" className="block text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground pt-4">
