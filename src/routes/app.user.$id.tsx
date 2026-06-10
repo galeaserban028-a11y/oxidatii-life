@@ -423,6 +423,35 @@ function UserPage() {
                   </div>
                 )}
               </section>
+
+              {/* Reposts (TikTok style) */}
+              {reposts.length > 0 && (
+                <section className="space-y-2">
+                  <h2 className="font-display font-semibold text-sm uppercase tracking-[0.18em] text-muted-foreground inline-flex items-center gap-2">
+                    <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-emerald-400" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
+                    Repostate
+                    <span className="text-foreground/60 font-mono text-[10px]">({reposts.length})</span>
+                  </h2>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {reposts.map((r: any) => (
+                      <div key={r.photo.id} className="relative aspect-square overflow-hidden rounded-lg bg-card border border-border">
+                        <img src={r.photo.photo_url} alt={r.photo.caption ?? ""} loading="lazy"
+                          className="absolute inset-0 h-full w-full object-cover" />
+                        <div className="absolute top-1 left-1 size-5 rounded-full bg-emerald-400/90 text-black flex items-center justify-center">
+                          <svg viewBox="0 0 24 24" className="size-3 fill-none stroke-black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
+                        </div>
+                        {r.photo.venue?.name && (
+                          <div className="absolute bottom-0 inset-x-0 p-1.5 bg-gradient-to-t from-black/85 to-transparent">
+                            <div className="text-[9px] uppercase tracking-wider text-white truncate font-medium">
+                              {r.photo.venue.name}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
             </>
           )}
         </>
