@@ -98,10 +98,10 @@ function timeAgo(iso: string) {
 type TabKey = "foryou" | "recent" | "top" | "legendare";
 
 const BADGES = [
-  { key: "legendar", label: "LEGENDAR", className: "bg-neon-crimson/15 text-neon-crimson border-neon-crimson/40" },
-  { key: "murit", label: "AM MURIT", className: "bg-amber-400/15 text-amber-300 border-amber-400/40" },
-  { key: "fail", label: "FAIL", className: "bg-foreground/10 text-foreground/80 border-foreground/20" },
-  { key: "wow", label: "WOW", className: "bg-cyan-400/15 text-cyan-300 border-cyan-400/40" },
+  { key: "legendar", label: "LEGENDAR", className: "bg-neon-crimson/8 text-neon-crimson/80 border-neon-crimson/25" },
+  { key: "murit", label: "AM MURIT", className: "bg-amber-400/8 text-amber-300/80 border-amber-400/25" },
+  { key: "fail", label: "FAIL", className: "bg-foreground/5 text-foreground/60 border-foreground/10" },
+  { key: "wow", label: "WOW", className: "bg-cyan-400/8 text-cyan-300/80 border-cyan-400/25" },
 ] as const;
 
 function pickBadge(id: string) {
@@ -169,10 +169,10 @@ function FazePage() {
   })();
 
   return (
-    <div className="px-4 pt-5 pb-24 space-y-4 max-w-xl mx-auto">
+    <div className="px-4 pt-5 pb-24 space-y-6 max-w-xl mx-auto">
       <header className="space-y-1 flex items-start justify-between gap-2">
         <div className="space-y-1">
-          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-crimson">// CELE MAI TARI FAZE</div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-neon-crimson/70">// CELE MAI TARI FAZE</div>
           <h1 className="font-display uppercase text-2xl leading-none tracking-tight">
             Faze <span className="text-gradient-chaos">din teren</span>
           </h1>
@@ -201,10 +201,10 @@ function FazePage() {
             <button
               key={t.k}
               onClick={() => setTab(t.k)}
-              className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-mono uppercase tracking-widest border transition ${
+              className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider border transition ${
                 active
-                  ? "border-neon-crimson/60 text-neon-crimson bg-neon-crimson/10"
-                  : "border-foreground/15 text-muted-foreground hover:text-foreground"
+                  ? "border-neon-crimson/40 text-neon-crimson bg-neon-crimson/5"
+                  : "border-foreground/10 text-muted-foreground hover:text-foreground"
               }`}
             >
               <span>{t.icon}</span>
@@ -225,7 +225,7 @@ function FazePage() {
           <p className="text-sm text-muted-foreground">Fii primul care pune o fază reală din teren.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {sortedItems.map((it) => {
             const profile = data.profilesMap.get(it.user_id);
             const venue = data.venuesMap.get(it.venue_id);
@@ -239,9 +239,9 @@ function FazePage() {
             const isLiked = data.likedSet.has(it.id);
             const isReposted = data.repostedSet.has(it.id);
             return (
-              <article key={it.id} className="rounded-2xl border border-foreground/10 bg-card/40 overflow-hidden">
+              <article key={it.id} className="rounded-3xl border border-foreground/5 bg-card/40 overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center gap-3 p-3">
+                <div className="flex items-center gap-3 p-4">
                   <Link to="/app/user/$id" params={{ id: it.user_id }} className="shrink-0">
                     {profile?.avatar_url ? (
                       <img src={profile.avatar_url} alt={handle} className="size-10 rounded-full object-cover border border-foreground/10" />
