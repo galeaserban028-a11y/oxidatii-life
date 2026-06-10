@@ -324,7 +324,7 @@ function FazePage() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Postează o fază"
-          className="fixed bottom-24 right-4 z-40 inline-flex items-center gap-2 font-display uppercase text-[11px] tracking-[0.18em] pl-3 pr-4 py-3 rounded-full text-white shadow-[0_10px_30px_-8px_rgba(244,114,82,0.6)] active:scale-95 transition"
+          className="fixed bottom-24 right-4 z-[55] inline-flex items-center gap-2 font-display uppercase text-[11px] tracking-[0.18em] pl-3 pr-4 py-3 rounded-full text-white shadow-[0_10px_30px_-8px_rgba(244,114,82,0.6)] active:scale-95 transition"
           style={{ background: "var(--gradient-chaos)", bottom: "calc(env(safe-area-inset-bottom) + 6rem)" }}
         >
           <span className="grid place-items-center size-6 rounded-full bg-white/20 text-base leading-none">+</span>
