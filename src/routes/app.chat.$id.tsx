@@ -144,7 +144,8 @@ function ChatPage() {
     setSending(true);
     const { error } = await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, body });
     setSending(false);
-    if (error) { alert(error.message); if (!override) setText(body); }
+    if (error) { alert(error.message); if (!override) setText(body); return; }
+    notifyChatMessage({ data: { conversationId: id, preview: body } }).catch(() => {});
   };
 
   const insertEmoji = (e: string) => {
