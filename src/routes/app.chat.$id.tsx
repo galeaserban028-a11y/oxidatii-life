@@ -257,6 +257,24 @@ function ChatPage() {
           className={`h-10 w-10 rounded-full flex items-center justify-center active:bg-foreground/10 transition ${showThemes ? "text-neon-purple bg-foreground/10" : "text-muted-foreground"}`}>
           <Palette size={20} />
         </button>
+
+        {peer && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button aria-label="mai multe"
+                className="h-10 w-10 rounded-full flex items-center justify-center active:bg-foreground/10 transition text-muted-foreground">
+                <MoreVertical size={20} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <ReportDialog targetType="user" targetId={peer.id} variant="menu-item" label={`Raportează @${peer.handle ?? "user"}`} />
+              <DropdownMenuItem
+                onClick={() => nav({ to: "/app/user/$id", params: { id: peer.id } })}>
+                Deschide profilul
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </header>
 
       {/* Theme strip */}
