@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner";
 import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
+import { ReportDialog } from "@/components/app/ReportDialog";
 import { getTheme } from "@/lib/premium-themes";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
