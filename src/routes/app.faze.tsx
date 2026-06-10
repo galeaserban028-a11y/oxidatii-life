@@ -73,6 +73,23 @@ function FazePage() {
         <p className="text-xs text-muted-foreground">Postează ce-ai prins în club, la șpriț, pe stradă. Real, brut, fără filtre.</p>
       </header>
 
+      {/* Weekend prize banner */}
+      <div className="relative overflow-hidden rounded-2xl border border-neon-crimson/40 bg-gradient-to-br from-neon-crimson/20 via-orange-500/15 to-yellow-400/10 p-4 shadow-[0_0_24px_-6px_hsl(var(--neon-crimson)/0.5)]">
+        <div className="absolute -top-8 -right-8 size-32 rounded-full bg-neon-crimson/30 blur-3xl" />
+        <div className="relative flex items-start gap-3">
+          <div className="text-3xl leading-none">💸</div>
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-neon-crimson">// PREMIUL SĂPTĂMÂNII</div>
+            <div className="font-display uppercase text-lg leading-tight mt-0.5">
+              Cea mai tare fază = <span className="text-gradient-chaos">100 LEI pe Revolut</span>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Postează vineri–duminică. Poza sau video cu cele mai multe aprecieri ia banii lunea dimineața. 🔥
+            </p>
+          </div>
+        </div>
+      </div>
+
       {isLoading ? (
         <div className="grid grid-cols-2 gap-2">
           {[0,1,2,3].map(i => <div key={i} className="aspect-[4/5] rounded-lg bg-foreground/[0.04] animate-pulse" />)}
