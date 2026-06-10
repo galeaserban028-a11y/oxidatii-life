@@ -55,6 +55,7 @@ function AppLayout() {
         <Outlet />
       </PageTransition>
       <BottomTabBar />
+      <TutorialOverlay />
     </main>
   );
 }
