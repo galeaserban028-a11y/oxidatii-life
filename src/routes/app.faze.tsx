@@ -394,8 +394,8 @@ function UploadSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center" onClick={onClose}>
-      <div className="w-full sm:max-w-sm max-w-md mx-auto bg-background border border-foreground/10 rounded-t-2xl sm:rounded-2xl p-3 space-y-3 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose} style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 9rem)" }}>
+      <div className="w-full max-w-sm mx-auto bg-background border border-foreground/10 rounded-2xl p-3 space-y-3 max-h-full overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <div className="font-display uppercase text-sm tracking-wider">Postează o fază</div>
           <button onClick={onClose} className="text-muted-foreground text-xl leading-none">×</button>
