@@ -23,32 +23,16 @@ export const Route = createFileRoute("/app/")({
 });
 
 async function loadFeed() {
-  const [{ data: photos }, { data: proofs }] = await Promise.all([
-    supabase
-      .from("venue_photos")
-      .select("id, photo_url, media_type, caption, taken_at, user_id, venue_id")
-      .order("taken_at", { ascending: false })
-      .limit(30),
-    supabase
-      .from("sprit_proofs")
-      .select("id, photo_url, media_type, created_at, user_id, venue_id, ai_verified")
-      .eq("ai_verified", true)
-      .order("created_at", { ascending: false })
-      .limit(30),
-  ]);
+  const { data: proofs } = await supabase
+    .from("sprit_proofs")
+    .select("id, photo_url, media_type, created_at, user_id, venue_id, ai_verified")
+    .eq("ai_verified", true)
+    .order("created_at", { ascending: false })
+    .limit(30);
 
   const items: FeedItem[] = [
-    ...(photos ?? []).map((p) => ({
-      id: `ph-${p.id}`,
-      kind: "photo" as const,
-      created_at: p.taken_at,
-      photo_url: p.photo_url,
-      media_type: (p.media_type ?? "image") as "image" | "video",
-      caption: p.caption,
-      user_id: p.user_id,
-      venue_id: p.venue_id,
-    })),
     ...(proofs ?? []).map((p) => ({
+
       id: `sp-${p.id}`,
       kind: "proof" as const,
       created_at: p.created_at,
