@@ -169,7 +169,7 @@ function FazePage() {
   })();
 
   return (
-    <div className="px-4 pt-5 pb-24 space-y-4">
+    <div className="px-4 pt-5 pb-24 space-y-4 max-w-md mx-auto">
       <header className="space-y-1 flex items-start justify-between gap-2">
         <div className="space-y-1">
           <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-crimson">// CELE MAI TARI FAZE</div>
