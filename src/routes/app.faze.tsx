@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { ReportDialog } from "@/components/app/ReportDialog";
@@ -318,16 +319,19 @@ function FazePage() {
         </div>
       )}
 
-      {/* Floating CTA */}
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="Postează o fază"
-        className="fixed bottom-24 right-4 z-40 inline-flex items-center gap-2 font-display uppercase text-[11px] tracking-[0.18em] pl-3 pr-4 py-3 rounded-full text-white shadow-[0_10px_30px_-8px_rgba(244,114,82,0.6)] active:scale-95 transition"
-        style={{ background: "var(--gradient-chaos)" }}
-      >
-        <span className="grid place-items-center size-6 rounded-full bg-white/20 text-base leading-none">+</span>
-        Postează
-      </button>
+      {/* Floating CTA — portaled to body so the page transition transform doesn't trap `fixed` */}
+      {typeof document !== "undefined" && createPortal(
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Postează o fază"
+          className="fixed bottom-24 right-4 z-40 inline-flex items-center gap-2 font-display uppercase text-[11px] tracking-[0.18em] pl-3 pr-4 py-3 rounded-full text-white shadow-[0_10px_30px_-8px_rgba(244,114,82,0.6)] active:scale-95 transition"
+          style={{ background: "var(--gradient-chaos)", bottom: "calc(env(safe-area-inset-bottom) + 6rem)" }}
+        >
+          <span className="grid place-items-center size-6 rounded-full bg-white/20 text-base leading-none">+</span>
+          Postează
+        </button>,
+        document.body
+      )}
 
       <Link to="/app" className="block text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground pt-4">
         ← înapoi la live
