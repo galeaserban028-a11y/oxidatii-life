@@ -578,7 +578,7 @@ function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () => void 
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose}>
       <div className="w-full bg-background border-t border-foreground/10 rounded-t-2xl flex flex-col max-h-[85vh]" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-foreground/10">
           <div className="font-display uppercase text-sm tracking-widest">Comentarii</div>
