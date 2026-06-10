@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { ReportDialog } from "@/components/app/ReportDialog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/faze")({
