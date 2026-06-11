@@ -171,18 +171,24 @@ function FazePage() {
 
   return (
     <div className="pb-24 max-w-[470px] mx-auto">
-      {/* Instagram-style header */}
+      {/* Header — IG familiar, OXI flavor */}
       <header className="flex items-center justify-between px-4 pt-4 pb-3">
-        <h1 className="font-display text-2xl tracking-tight">
-          Faze<span className="text-gradient-chaos">.</span>
-        </h1>
+        <div className="space-y-0.5">
+          <h1 className="font-display text-2xl leading-none tracking-tight">
+            Faze<span className="text-gradient-chaos">.</span>
+          </h1>
+          <div className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span className="size-1.5 rounded-full bg-neon-crimson animate-pulse" />
+            live din teren
+          </div>
+        </div>
         <Link to="/app/notifications" className="relative size-9 flex items-center justify-center active:scale-95 transition">
           <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-foreground" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
           <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-neon-crimson" />
         </Link>
       </header>
 
-      {/* Tabs — IG style, underlined */}
+      {/* Tabs — IG underline, sticky */}
       <div className="flex items-center justify-around border-y border-foreground/10 sticky top-0 z-20 bg-background/85 backdrop-blur">
         {([
           { k: "foryou", label: "Pentru tine" },
@@ -208,14 +214,14 @@ function FazePage() {
         })}
       </div>
 
-      {/* Prize banner under tabs */}
-      <div className="px-4 pt-4">
+      {/* Prize banner — sits under tabs as a wide chip */}
+      <div className="px-3 pt-3">
         <PrizeBanner />
       </div>
 
       {isLoading ? (
-        <div className="space-y-6 pt-4">
-          {[0,1].map(i => <div key={i} className="aspect-square bg-foreground/[0.04] animate-pulse" />)}
+        <div className="space-y-6 pt-4 px-3">
+          {[0,1].map(i => <div key={i} className="aspect-square rounded-2xl bg-foreground/[0.04] animate-pulse" />)}
         </div>
       ) : !data || sortedItems.length === 0 ? (
         <div className="mx-4 mt-6 rounded-2xl border border-dashed border-foreground/15 p-10 text-center space-y-3">
@@ -224,7 +230,7 @@ function FazePage() {
           <p className="text-sm text-muted-foreground">Fii primul care pune o fază reală din teren.</p>
         </div>
       ) : (
-        <div className="pt-2">
+        <div className="pt-3 space-y-4 px-3">
           {sortedItems.map((it) => {
             const profile = data.profilesMap.get(it.user_id);
             const venue = data.venuesMap.get(it.venue_id);
@@ -237,9 +243,9 @@ function FazePage() {
             const isLiked = data.likedSet.has(it.id);
             const isReposted = data.repostedSet.has(it.id);
             return (
-              <article key={it.id} className="mb-2">
-                {/* Header row — IG style */}
-                <div className="flex items-center gap-3 px-4 py-2.5">
+              <article key={it.id} className="rounded-2xl border border-foreground/10 bg-card/30 overflow-hidden">
+                {/* Header row — IG style with venue */}
+                <div className="flex items-center gap-3 px-3 py-2.5">
                   <Link to="/app/user/$id" params={{ id: it.user_id }} className="shrink-0">
                     <div className="p-[2px] rounded-full" style={{ background: "var(--gradient-chaos)" }}>
                       <div className="p-[2px] rounded-full bg-background">
@@ -261,21 +267,20 @@ function FazePage() {
                       <div className="text-[11px] text-muted-foreground truncate">📍 {venue.name}</div>
                     )}
                   </div>
-                  {badge.key === "legendar" && (
-                    <span className={`shrink-0 inline-flex items-center px-2 py-[3px] rounded-md border text-[10px] font-mono uppercase tracking-[0.12em] ${badge.className}`}>
-                      {badge.label}
-                    </span>
-                  )}
                   <ReportDialog targetType="photo" targetId={it.id} className="h-7 w-7 rounded-full flex items-center justify-center text-foreground/60 active:scale-95 transition" />
                 </div>
 
-                {/* Media — square, edge-to-edge */}
+                {/* Media — square with badge overlay */}
                 <div className="relative bg-black">
                   {isVideo ? (
                     <video src={it.photo_url} className="w-full aspect-square object-cover" playsInline muted loop preload="metadata" />
                   ) : (
                     <img src={it.photo_url} alt={it.caption ?? ""} className="w-full aspect-square object-cover" loading="lazy" />
                   )}
+                  {/* Floating OXI badge chip */}
+                  <span className={`absolute top-2.5 left-2.5 inline-flex items-center px-2 py-[3px] rounded-md border text-[10px] font-mono uppercase tracking-[0.12em] backdrop-blur-md ${badge.className}`}>
+                    {badge.label}
+                  </span>
                   {isVideo && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="size-14 rounded-full bg-white/90 text-black flex items-center justify-center text-xl shadow-xl">▶</div>
@@ -284,7 +289,7 @@ function FazePage() {
                 </div>
 
                 {/* Actions — IG icon row */}
-                <div className="flex items-center gap-1 px-3 pt-2.5">
+                <div className="flex items-center gap-1 px-2 pt-2">
                   <button onClick={() => toggleLike(it)} className="size-9 flex items-center justify-center active:scale-90 transition">
                     <svg viewBox="0 0 24 24" className={`size-7 ${isLiked ? "fill-neon-crimson stroke-neon-crimson" : "fill-none stroke-foreground"}`} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
                   </button>
@@ -298,14 +303,14 @@ function FazePage() {
 
                 {/* Likes count */}
                 {likes > 0 && (
-                  <div className="px-4 pt-1 text-[13px] font-semibold">
+                  <div className="px-3.5 pt-1 text-[13px] font-semibold">
                     {formatCount(likes)} aprecieri
                   </div>
                 )}
 
                 {/* Caption */}
                 {it.caption && (
-                  <div className="px-4 pt-1 text-[13px] leading-snug">
+                  <div className="px-3.5 pt-1 text-[13px] leading-snug">
                     <Link to="/app/user/$id" params={{ id: it.user_id }} className="font-semibold mr-1.5">{handle}</Link>
                     <span className="text-foreground/90">{it.caption}</span>
                   </div>
@@ -315,14 +320,14 @@ function FazePage() {
                 {comments > 0 && (
                   <button
                     onClick={() => setCommentsFor(it)}
-                    className="px-4 pt-1 text-[13px] text-muted-foreground block"
+                    className="px-3.5 pt-1 text-[13px] text-muted-foreground block"
                   >
                     Vezi toate cele {formatCount(comments)} comentarii
                   </button>
                 )}
 
                 {/* Timestamp */}
-                <div className="px-4 pt-1 pb-3 text-[10px] uppercase tracking-wider text-muted-foreground">
+                <div className="px-3.5 pt-1 pb-3 font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
                   acum {timeAgo(it.created_at)}
                   {reposts > 0 && <> · {formatCount(reposts)} repostări</>}
                 </div>
