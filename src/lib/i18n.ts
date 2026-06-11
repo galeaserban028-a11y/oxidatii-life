@@ -24,7 +24,7 @@ const ro = {
     map: "Hartă",
     top: "Top",
     post: "Postează",
-    sprits: "Șprițuri",
+    sprits: "Șpriț",
     messages: "Mesaje",
     me: "Eu",
   },
