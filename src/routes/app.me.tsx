@@ -57,7 +57,8 @@ function MePage() {
   });
 
   // tab state for the grid
-  const [tab, setTab] = useState<"all" | "verified" | "tagged">("all");
+  const [tab, setTab] = useState<"posts" | "reposts">("posts");
+
   // edit profile dialog state
   const [editOpen, setEditOpen] = useState(false);
   const [editHandle, setEditHandle] = useState(profile?.handle ?? "");
@@ -207,6 +208,34 @@ function MePage() {
     },
   });
 
+  const { data: reposts = [] } = useQuery({
+    queryKey: ["my-reposts", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data: rep } = await supabase
+        .from("photo_reposts")
+        .select("photo_id, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(40);
+      const ids = (rep ?? []).map((r) => r.photo_id);
+      if (!ids.length) return [];
+      const { data: pics } = await supabase
+        .from("venue_photos")
+        .select("id, photo_url, caption, taken_at, venue:venues(id, name, city:cities(name))")
+        .in("id", ids);
+      const map = new Map((pics ?? []).map((p: any) => [p.id, p]));
+      return (rep ?? [])
+        .map((r: any) => {
+          const photo = map.get(r.photo_id);
+          if (!photo) return null;
+          return { ...photo, _kind: "photo" as const, _date: r.created_at };
+        })
+        .filter(Boolean) as any[];
+    },
+  });
+
   if (!user || !profile) return null;
 
   const verifiedProofs = (moments?.proofs ?? []).filter((p: any) => p.ai_verified);
@@ -215,12 +244,10 @@ function MePage() {
     ...(moments?.photos ?? []).map((p: any) => ({ ...p, _kind: "photo" as const, _date: p.taken_at })),
   ].sort((a, b) => +new Date(b._date) - +new Date(a._date));
 
-  const tabMoments =
-    tab === "verified"
-      ? allMoments.filter((m) => m._kind === "proof")
-      : tab === "tagged"
-      ? allMoments.filter((m) => !!m.venue?.name)
-      : allMoments;
+  const tabMoments = tab === "reposts" ? reposts : allMoments;
+  const postsCount = allMoments.length;
+  const repostsCount = reposts.length;
+
 
   const handleDoSignOut = async () => {
     setMenuOpen(false);
@@ -563,20 +590,45 @@ function MePage() {
 
       <div className="mt-6 border-t border-foreground/5" />
 
+      {/* TikTok-style tabs */}
+      <div className="sticky top-12 z-20 bg-background/85 backdrop-blur-xl border-b border-foreground/10 grid grid-cols-2">
+        <button
+          onClick={() => setTab("posts")}
+          className={`h-11 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest border-b-2 transition ${
+            tab === "posts" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground"
+          }`}
+        >
+          <Grid3x3 size={14} />
+          Postări <span className="font-mono text-[10px] opacity-70">{postsCount}</span>
+        </button>
+        <button
+          onClick={() => setTab("reposts")}
+          className={`h-11 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest border-b-2 transition ${
+            tab === "reposts" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground"
+          }`}
+        >
+          <Share2 size={14} />
+          Reposturi <span className="font-mono text-[10px] opacity-70">{repostsCount}</span>
+        </button>
+      </div>
+
       {/* Grid moments */}
       {tabMoments.length === 0 ? (
         <div className="mx-4 mt-4 rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-2">
-          <div className="text-4xl">📸</div>
+          <div className="text-4xl">{tab === "reposts" ? "↻" : "📸"}</div>
           <div className="font-display uppercase">
-            {tab === "verified" ? "Niciun șpriț verificat" : tab === "tagged" ? "Nicio locație" : "Niciun moment încă."}
+            {tab === "reposts" ? "Niciun repost încă" : "Niciun moment încă."}
           </div>
           <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-            Nu inventăm istorii. Când postezi o poză sau scanezi un șpriț, apare aici.
+            {tab === "reposts"
+              ? "Când dai repost la o fază din feed, apare aici."
+              : "Nu inventăm istorii. Când postezi o poză sau scanezi un șpriț, apare aici."}
           </p>
-          <Link to="/app/scan" className="inline-flex mt-2 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-md border border-foreground/20 hover:border-neon-purple">
-            scanează primul șpriț →
+          <Link to={tab === "reposts" ? "/app/faze" : "/app/scan"} className="inline-flex mt-2 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-md border border-foreground/20 hover:border-neon-purple">
+            {tab === "reposts" ? "vezi fazele →" : "scanează primul șpriț →"}
           </Link>
         </div>
+
       ) : (
         <div className="grid grid-cols-3 gap-0.5">
           {tabMoments.map((m: any) => (
