@@ -41,7 +41,7 @@ export function AppHeader() {
       <div className="flex items-center gap-0.5">
         <GlobalSearch />
         <ThemeToggle />
-        <NotificationsBell />
+        
       </div>
     </header>
   );
