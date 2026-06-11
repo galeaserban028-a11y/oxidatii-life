@@ -748,7 +748,73 @@ function PrizeBanner() {
   );
 }
 
+function lastWeekendRange() {
+  // Returns the Fri 18:00 → Sun 23:59 window of the most recently completed weekend (Bucharest-ish, browser local).
+  const now = new Date();
+  const d = new Date(now);
+  const dow = d.getDay(); // 0=Sun..6=Sat
+  // days since last Sunday (the most recently passed Sunday). If today is Sun, use today.
+  const daysSinceSun = dow;
+  const lastSun = new Date(d);
+  lastSun.setDate(d.getDate() - daysSinceSun);
+  lastSun.setHours(23, 59, 59, 999);
+  // If we're mid-weekend (Fri/Sat/Sun), step back one full week so the "previous" weekend is shown.
+  if (dow === 5 || dow === 6 || dow === 0) {
+    lastSun.setDate(lastSun.getDate() - 7);
+  }
+  const lastFri = new Date(lastSun);
+  lastFri.setDate(lastSun.getDate() - 2);
+  lastFri.setHours(18, 0, 0, 0);
+  return { from: lastFri.toISOString(), to: lastSun.toISOString() };
+}
+
 function PrizeSheet({ onClose }: { onClose: () => void }) {
+  const { data: winner, isLoading } = useQuery({
+    queryKey: ["faze-winner"],
+    queryFn: async () => {
+      const { from, to } = lastWeekendRange();
+      const { data: photos } = await supabase
+        .from("venue_photos")
+        .select("id, photo_url, caption, taken_at, user_id, venue_id")
+        .gte("taken_at", from)
+        .lte("taken_at", to);
+      if (!photos || photos.length === 0) return null;
+      const ids = photos.map(p => p.id);
+      const [{ data: likes }, { data: comments }, { data: reposts }] = await Promise.all([
+        supabase.from("photo_likes").select("photo_id").in("photo_id", ids),
+        supabase.from("photo_comments").select("photo_id").in("photo_id", ids),
+        supabase.from("photo_reposts").select("photo_id").in("photo_id", ids),
+      ]);
+      const tally = (rows: any[] | null) => {
+        const m = new Map<string, number>();
+        (rows ?? []).forEach((r) => m.set(r.photo_id, (m.get(r.photo_id) ?? 0) + 1));
+        return m;
+      };
+      const lm = tally(likes), cm = tally(comments), rm = tally(reposts);
+      const scored = photos.map(p => ({
+        ...p,
+        likes: lm.get(p.id) ?? 0,
+        comments: cm.get(p.id) ?? 0,
+        reposts: rm.get(p.id) ?? 0,
+        score: (lm.get(p.id) ?? 0) + (cm.get(p.id) ?? 0),
+      }));
+      scored.sort((a, b) => b.score - a.score || b.reposts - a.reposts);
+      const top = scored[0];
+      if (!top || top.score === 0) return null;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, handle, display_name, avatar_url")
+        .eq("id", top.user_id)
+        .maybeSingle();
+      const { data: venue } = await supabase
+        .from("venues")
+        .select("id, name")
+        .eq("id", top.venue_id)
+        .maybeSingle();
+      return { ...top, profile, venue };
+    },
+  });
+
   return (
     <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose} style={hind}>
       <div
@@ -774,24 +840,78 @@ function PrizeSheet({ onClose }: { onClose: () => void }) {
 
         <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-5">
           {/* Current winner */}
-          <section className="rounded-2xl border border-foreground/10 bg-card/40 p-4">
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground" style={archivo}>Câștigător săptămâna trecută</div>
-            <div className="mt-3 flex items-center gap-3">
-              <div className="p-[2px] rounded-full" style={{ background: "var(--gradient-sunset)" }}>
-                <div className="p-[2px] rounded-full bg-background">
-                  <div className="size-12 rounded-full bg-foreground/10 grid place-items-center text-base uppercase" style={archivo}>?</div>
-                </div>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[15px] font-semibold">Se anunță luni</div>
-                <div className="text-[12px] text-muted-foreground">Câștigătorul apare aici după ce e validat.</div>
-              </div>
-              <div className="shrink-0 text-right">
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground" style={archivo}>Câștig</div>
-                <div className="text-sunset-amber text-base" style={archivo}>100 lei</div>
+          <section className="rounded-2xl border border-sunset-amber/30 bg-gradient-to-br from-sunset-amber/10 to-sunset-orange/5 overflow-hidden">
+            <div className="px-4 pt-3.5 pb-2 flex items-center justify-between">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-sunset-amber flex items-center gap-1.5" style={archivo}>
+                <span>🏆</span> Câștigător săptămâna trecută
               </div>
             </div>
+
+            {isLoading ? (
+              <div className="px-4 pb-4">
+                <div className="h-16 rounded-xl bg-foreground/[0.04] animate-pulse" />
+              </div>
+            ) : !winner ? (
+              <div className="px-4 pb-4 flex items-center gap-3">
+                <div className="size-12 rounded-full bg-foreground/10 grid place-items-center text-lg">🤷</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[14px] font-semibold">Niciun câștigător încă</div>
+                  <div className="text-[12px] text-muted-foreground">Nu s-au postat faze cu interacțiuni weekend-ul trecut.</div>
+                </div>
+              </div>
+            ) : (
+              <div className="px-4 pb-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Link to="/app/user/$id" params={{ id: winner.user_id }} onClick={onClose} className="shrink-0">
+                    <div className="p-[2px] rounded-full" style={{ background: "var(--gradient-sunset)" }}>
+                      <div className="p-[2px] rounded-full bg-background">
+                        {winner.profile?.avatar_url ? (
+                          <img src={winner.profile.avatar_url} alt="" className="size-14 rounded-full object-cover" />
+                        ) : (
+                          <div className="size-14 rounded-full bg-foreground/10 grid place-items-center text-lg uppercase" style={archivo}>
+                            {(winner.profile?.display_name ?? winner.profile?.handle ?? "?")[0]?.toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                  <div className="flex-1 min-w-0">
+                    <Link to="/app/user/$id" params={{ id: winner.user_id }} onClick={onClose} className="text-[16px] font-semibold truncate block">
+                      {winner.profile?.display_name ?? winner.profile?.handle ?? "Anonim"}
+                    </Link>
+                    {winner.profile?.handle && (
+                      <div className="text-[12px] text-muted-foreground truncate">@{winner.profile.handle}</div>
+                    )}
+                    {winner.venue?.name && (
+                      <div className="text-[11px] text-muted-foreground truncate mt-0.5">📍 {winner.venue.name}</div>
+                    )}
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <div className="text-sunset-amber text-base leading-none" style={archivo}>100 lei</div>
+                    <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-1" style={archivo}>câștig</div>
+                  </div>
+                </div>
+
+                {winner.photo_url && (
+                  <div className="relative rounded-xl overflow-hidden bg-black aspect-[4/3]">
+                    <img src={winner.photo_url} alt={winner.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
+                    <div className="absolute inset-x-0 bottom-0 p-2.5 bg-gradient-to-t from-black/80 to-transparent">
+                      <div className="flex items-center gap-3 text-[11px] text-white/95" style={archivo}>
+                        <span className="uppercase tracking-widest">❤ {winner.likes}</span>
+                        <span className="uppercase tracking-widest">💬 {winner.comments}</span>
+                        <span className="uppercase tracking-widest">↻ {winner.reposts}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {winner.caption && (
+                  <div className="text-[13px] text-foreground/90 leading-snug">"{winner.caption}"</div>
+                )}
+              </div>
+            )}
           </section>
+
+
 
           {/* Rules */}
           <section className="space-y-3">
