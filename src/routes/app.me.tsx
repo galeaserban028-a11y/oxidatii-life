@@ -57,7 +57,8 @@ function MePage() {
   });
 
   // tab state for the grid
-  const [tab, setTab] = useState<"all" | "verified" | "tagged">("all");
+  const [tab, setTab] = useState<"posts" | "reposts">("posts");
+
   // edit profile dialog state
   const [editOpen, setEditOpen] = useState(false);
   const [editHandle, setEditHandle] = useState(profile?.handle ?? "");
