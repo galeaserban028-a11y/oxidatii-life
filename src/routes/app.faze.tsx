@@ -400,18 +400,18 @@ function FazePage() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Postează o fază"
-          className="fixed right-5 z-[45] inline-flex items-center gap-3 uppercase text-[13px] tracking-[0.18em] pl-2.5 pr-7 py-2.5 rounded-full text-white shadow-[0_18px_40px_-10px_rgba(244,114,82,0.75)] active:scale-95"
+          className="fixed right-5 z-[45] inline-flex items-center gap-4 uppercase text-[14px] tracking-[0.22em] pl-3 pr-8 py-4 rounded-full text-white shadow-[0_22px_44px_-12px_rgba(244,114,82,0.8)] active:scale-95"
           style={{
             ...archivo,
             background: "var(--gradient-sunset)",
-            bottom: "calc(env(safe-area-inset-bottom) + 6.5rem)",
+            bottom: "calc(env(safe-area-inset-bottom) + 6.75rem)",
             transform: ctaHidden ? "translateY(160%) scale(0.9)" : "translateY(0) scale(1)",
             opacity: ctaHidden ? 0 : 1,
             transition: "transform 360ms cubic-bezier(.22,1,.36,1), opacity 220ms ease",
             animation: ctaHidden ? "none" : "faze-float 3.4s ease-in-out infinite",
           }}
         >
-          <span className="grid place-items-center size-9 rounded-full bg-white/25 text-xl leading-none font-light">+</span>
+          <span className="grid place-items-center size-10 rounded-full bg-white/25 text-2xl leading-none font-light">+</span>
           Postează
         </button>,
         document.body
