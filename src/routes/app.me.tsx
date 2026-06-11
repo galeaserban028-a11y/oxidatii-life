@@ -631,28 +631,38 @@ function MePage() {
 
       ) : (
         <div className="grid grid-cols-3 gap-0.5">
-          {tabMoments.map((m: any) => (
-            <Link
-              key={`${m._kind}-${m.id}`}
-              to={m.venue?.id ? "/app/venue/$id" : "/app/me"}
-              params={m.venue?.id ? { id: m.venue.id } : undefined as any}
-              className="relative aspect-square overflow-hidden bg-foreground/5 group"
-            >
-              <img src={m.photo_url} alt={m.caption ?? ""} className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition" loading="lazy" />
-              {m._kind === "proof" && (
-                <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-sm bg-neon-green/30 border border-neon-green/50 backdrop-blur-sm">
-                  <span className="font-mono text-[8px] uppercase text-neon-green">verificat</span>
-                </div>
-              )}
-              {m.venue?.name && (
-                <div className="absolute bottom-0 inset-x-0 p-1 bg-gradient-to-t from-black/80 to-transparent">
-                  <div className="font-mono text-[9px] uppercase tracking-wider text-white truncate">
-                    {m.venue.name}
+          {tabMoments.map((m: any) => {
+            // Proofs go to venue; photos (incl. reposts) open the post detail
+            const isProof = m._kind === "proof";
+            return (
+              <Link
+                key={`${m._kind}-${m.id}`}
+                to={isProof ? (m.venue?.id ? "/app/venue/$id" : "/app/me") : "/app/photo/$id"}
+                params={isProof ? (m.venue?.id ? { id: m.venue.id } : undefined as any) : { id: m.id }}
+                className="relative aspect-square overflow-hidden bg-foreground/5 group"
+              >
+                <img src={m.photo_url} alt={m.caption ?? ""} className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition" loading="lazy" />
+                {isProof && (
+                  <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-sm bg-neon-green/30 border border-neon-green/50 backdrop-blur-sm">
+                    <span className="font-mono text-[8px] uppercase text-neon-green">verificat</span>
                   </div>
-                </div>
-              )}
-            </Link>
-          ))}
+                )}
+                {tab === "reposts" && (
+                  <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-sm bg-sunset-amber/30 border border-sunset-amber/50 backdrop-blur-sm">
+                    <span className="font-mono text-[8px] uppercase text-sunset-amber">↻ repost</span>
+                  </div>
+                )}
+                {m.venue?.name && (
+                  <div className="absolute bottom-0 inset-x-0 p-1 bg-gradient-to-t from-black/80 to-transparent">
+                    <div className="font-mono text-[9px] uppercase tracking-wider text-white truncate">
+                      {m.venue.name}
+                    </div>
+                  </div>
+                )}
+              </Link>
+            );
+          })}
+
         </div>
       )}
 
