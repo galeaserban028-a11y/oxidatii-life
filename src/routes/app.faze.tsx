@@ -700,41 +700,138 @@ function PrizeBanner() {
   const target = nextMondayMorning();
   const { d, h, m } = useCountdown(target);
   const pad = (n: number) => String(n).padStart(2, "0");
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-sunset-amber/30 bg-gradient-to-r from-sunset-orange/15 via-sunset-amber/10 to-sunset-magenta/15">
-      <div aria-hidden className="absolute -top-10 -right-10 size-28 rounded-full bg-sunset-amber/25 blur-2xl" />
-      <div aria-hidden className="absolute -bottom-10 -left-10 size-28 rounded-full bg-sunset-magenta/25 blur-2xl" />
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        aria-label="Vezi premiul și regulile"
+        className="w-full text-left relative overflow-hidden rounded-2xl border border-sunset-amber/30 bg-gradient-to-r from-sunset-orange/15 via-sunset-amber/10 to-sunset-magenta/15 active:scale-[0.99] transition"
+      >
+        <div aria-hidden className="absolute -top-10 -right-10 size-28 rounded-full bg-sunset-amber/25 blur-2xl" />
+        <div aria-hidden className="absolute -bottom-10 -left-10 size-28 rounded-full bg-sunset-magenta/25 blur-2xl" />
 
-      <div className="relative flex items-center gap-3 px-4 py-3.5">
-        <div className="shrink-0 flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-sunset-amber to-sunset-orange px-3 py-2 text-black shadow-[0_6px_18px_-4px_rgba(245,158,11,0.6)]">
-          <div className="text-xl leading-none tabular-nums" style={archivo}>100</div>
-          <div className="text-[8px] uppercase tracking-widest leading-none mt-0.5" style={archivo}>lei</div>
+        <div className="relative flex items-center gap-3 px-4 py-3.5">
+          <div className="shrink-0 flex flex-col items-center justify-center rounded-xl bg-gradient-to-br from-sunset-amber to-sunset-orange px-3 py-2 text-black shadow-[0_6px_18px_-4px_rgba(245,158,11,0.6)]">
+            <div className="text-xl leading-none tabular-nums" style={archivo}>100</div>
+            <div className="text-[8px] uppercase tracking-widest leading-none mt-0.5" style={archivo}>lei</div>
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] uppercase tracking-[0.22em] text-sunset-amber" style={archivo}>Premiul săptămânii</span>
+              <span className="size-1 rounded-full bg-emerald-400 animate-pulse" />
+            </div>
+            <div className="text-[13px] leading-tight mt-1 truncate">
+              Cea mai tare fază ia <span className="text-sunset-amber font-semibold">100 lei pe Revolut</span>
+            </div>
+            <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5 truncate flex items-center gap-1.5" style={archivo}>
+              Vezi câștigător & reguli <span aria-hidden>→</span>
+            </div>
+          </div>
+
+          <div className="shrink-0 text-right">
+            <div className="text-[8px] uppercase tracking-widest text-muted-foreground" style={archivo}>Se închide</div>
+            <div className="text-sm tabular-nums text-foreground leading-tight" style={archivo}>
+              {d}<span className="text-muted-foreground">z</span> {pad(h)}<span className="text-muted-foreground">h</span> {pad(m)}<span className="text-muted-foreground">m</span>
+            </div>
+          </div>
+        </div>
+      </button>
+
+      {open && typeof document !== "undefined" && createPortal(
+        <PrizeSheet onClose={() => setOpen(false)} />,
+        document.body
+      )}
+    </>
+  );
+}
+
+function PrizeSheet({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose} style={hind}>
+      <div
+        className="w-full bg-background border-t border-foreground/10 rounded-t-3xl flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxHeight: `calc(90dvh - ${SHEET_BOTTOM})`, marginBottom: SHEET_BOTTOM }}
+      >
+        {/* Hero */}
+        <div className="relative overflow-hidden">
+          <div aria-hidden className="absolute -top-16 -right-16 size-56 rounded-full bg-sunset-amber/30 blur-3xl" />
+          <div aria-hidden className="absolute -bottom-20 -left-16 size-56 rounded-full bg-sunset-magenta/30 blur-3xl" />
+          <div className="relative px-5 pt-5 pb-4 flex items-start justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.22em] text-sunset-amber" style={archivo}>Premiul săptămânii</div>
+              <div className="mt-2 text-4xl leading-none" style={archivo}>
+                <span className="text-gradient-sunset">100 lei</span>
+              </div>
+              <div className="text-[12px] text-muted-foreground mt-1.5">pe Revolut · plătit luni dimineața</div>
+            </div>
+            <button onClick={onClose} aria-label="Închide" className="text-muted-foreground text-2xl leading-none w-9 h-9 grid place-items-center rounded-full hover:bg-foreground/10">×</button>
+          </div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[9px] uppercase tracking-[0.22em] text-sunset-amber" style={archivo}>Premiul săptămânii</span>
-            <span className="size-1 rounded-full bg-emerald-400 animate-pulse" />
-          </div>
-          <div className="text-[13px] leading-tight mt-1 truncate">
-            Cea mai tare fază ia <span className="text-sunset-amber font-semibold">100 lei pe Revolut</span>
-          </div>
-          <div className="text-[9px] uppercase tracking-widest text-muted-foreground mt-0.5 truncate" style={archivo}>
-            Vineri → Duminică · plată luni
-          </div>
-        </div>
+        <div className="flex-1 overflow-y-auto px-5 pb-5 space-y-5">
+          {/* Current winner */}
+          <section className="rounded-2xl border border-foreground/10 bg-card/40 p-4">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground" style={archivo}>Câștigător săptămâna trecută</div>
+            <div className="mt-3 flex items-center gap-3">
+              <div className="p-[2px] rounded-full" style={{ background: "var(--gradient-sunset)" }}>
+                <div className="p-[2px] rounded-full bg-background">
+                  <div className="size-12 rounded-full bg-foreground/10 grid place-items-center text-base uppercase" style={archivo}>?</div>
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[15px] font-semibold">Se anunță luni</div>
+                <div className="text-[12px] text-muted-foreground">Câștigătorul apare aici după ce e validat.</div>
+              </div>
+              <div className="shrink-0 text-right">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground" style={archivo}>Câștig</div>
+                <div className="text-sunset-amber text-base" style={archivo}>100 lei</div>
+              </div>
+            </div>
+          </section>
 
-        <div className="shrink-0 text-right">
-          <div className="text-[8px] uppercase tracking-widest text-muted-foreground" style={archivo}>Se închide</div>
-          <div className="text-sm tabular-nums text-foreground leading-tight" style={archivo}>
-            {d}<span className="text-muted-foreground">z</span> {pad(h)}<span className="text-muted-foreground">h</span> {pad(m)}<span className="text-muted-foreground">m</span>
+          {/* Rules */}
+          <section className="space-y-3">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground" style={archivo}>Cum câștigi</div>
+            <ol className="space-y-2.5">
+              {[
+                "Postează o fază reală dintr-un local între vineri 18:00 și duminică 23:59 (ora României).",
+                "Faza trebuie să aibă locația selectată și să respecte regulile comunității (fără violență, fără minori, fără conținut sexual).",
+                "Câștigă faza cu cele mai multe aprecieri + comentarii combinate. La egalitate, decide repostările.",
+                "Trebuie să ai cel puțin 18 ani și un cont OXIDAȚII verificat (handle + avatar).",
+                "Premiul se trimite pe Revolut luni până la ora 12:00, pe numărul confirmat prin DM.",
+              ].map((t, i) => (
+                <li key={i} className="flex gap-3 text-[13px] leading-relaxed">
+                  <span className="shrink-0 size-6 rounded-full bg-gradient-to-br from-sunset-amber to-sunset-orange text-black text-[11px] grid place-items-center" style={archivo}>{i + 1}</span>
+                  <span>{t}</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          {/* Disqualify */}
+          <section className="rounded-2xl border border-sunset-orange/25 bg-sunset-orange/5 p-4 space-y-2">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-sunset-orange" style={archivo}>Te descalifică</div>
+            <ul className="text-[12.5px] leading-relaxed space-y-1 text-foreground/85">
+              <li>· Aprecieri/comentarii cumpărate sau conturi false</li>
+              <li>· Conținut reupload care nu îți aparține</li>
+              <li>· Reclamații verificate de la local sau persoane</li>
+            </ul>
+          </section>
+
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground text-center pt-2" style={archivo}>
+            OXIDAȚII · concurs săptămânal · fără înscriere
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+
 
 function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () => void }) {
   const { user } = useAuth();
