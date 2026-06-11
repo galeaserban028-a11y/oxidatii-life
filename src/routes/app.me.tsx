@@ -590,20 +590,45 @@ function MePage() {
 
       <div className="mt-6 border-t border-foreground/5" />
 
+      {/* TikTok-style tabs */}
+      <div className="sticky top-12 z-20 bg-background/85 backdrop-blur-xl border-b border-foreground/10 grid grid-cols-2">
+        <button
+          onClick={() => setTab("posts")}
+          className={`h-11 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest border-b-2 transition ${
+            tab === "posts" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground"
+          }`}
+        >
+          <Grid3x3 size={14} />
+          Postări <span className="font-mono text-[10px] opacity-70">{postsCount}</span>
+        </button>
+        <button
+          onClick={() => setTab("reposts")}
+          className={`h-11 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest border-b-2 transition ${
+            tab === "reposts" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground"
+          }`}
+        >
+          <Share2 size={14} />
+          Reposturi <span className="font-mono text-[10px] opacity-70">{repostsCount}</span>
+        </button>
+      </div>
+
       {/* Grid moments */}
       {tabMoments.length === 0 ? (
         <div className="mx-4 mt-4 rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-2">
-          <div className="text-4xl">📸</div>
+          <div className="text-4xl">{tab === "reposts" ? "↻" : "📸"}</div>
           <div className="font-display uppercase">
-            {tab === "verified" ? "Niciun șpriț verificat" : tab === "tagged" ? "Nicio locație" : "Niciun moment încă."}
+            {tab === "reposts" ? "Niciun repost încă" : "Niciun moment încă."}
           </div>
           <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-            Nu inventăm istorii. Când postezi o poză sau scanezi un șpriț, apare aici.
+            {tab === "reposts"
+              ? "Când dai repost la o fază din feed, apare aici."
+              : "Nu inventăm istorii. Când postezi o poză sau scanezi un șpriț, apare aici."}
           </p>
-          <Link to="/app/scan" className="inline-flex mt-2 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-md border border-foreground/20 hover:border-neon-purple">
-            scanează primul șpriț →
+          <Link to={tab === "reposts" ? "/app/faze" : "/app/scan"} className="inline-flex mt-2 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-md border border-foreground/20 hover:border-neon-purple">
+            {tab === "reposts" ? "vezi fazele →" : "scanează primul șpriț →"}
           </Link>
         </div>
+
       ) : (
         <div className="grid grid-cols-3 gap-0.5">
           {tabMoments.map((m: any) => (
