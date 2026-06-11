@@ -2,7 +2,7 @@ import { useLocation } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import logoBanner from "@/assets/logo-oxidatii.png";
-import { NotificationsBell } from "./NotificationsBell";
+
 import { ThemeToggle } from "./ThemeToggle";
 import { GlobalSearch } from "./GlobalSearch";
 
