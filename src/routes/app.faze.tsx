@@ -143,6 +143,27 @@ function FazePage() {
   const [commentsFor, setCommentsFor] = useState<Moment | null>(null);
   const [shareFor, setShareFor] = useState<Moment | null>(null);
   const [menuFor, setMenuFor] = useState<Moment | null>(null);
+  const [ctaHidden, setCtaHidden] = useState(false);
+  useEffect(() => {
+    let lastY = typeof window !== "undefined" ? window.scrollY : 0;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const dy = y - lastY;
+        if (y < 80) setCtaHidden(false);
+        else if (dy > 6) setCtaHidden(true);
+        else if (dy < -6) setCtaHidden(false);
+        lastY = y;
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
 
   async function toggleLike(it: Moment) {
     if (!user) { toast.error("Trebuie să fii logat."); return; }
