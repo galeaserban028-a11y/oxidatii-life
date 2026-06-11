@@ -143,6 +143,27 @@ function FazePage() {
   const [commentsFor, setCommentsFor] = useState<Moment | null>(null);
   const [shareFor, setShareFor] = useState<Moment | null>(null);
   const [menuFor, setMenuFor] = useState<Moment | null>(null);
+  const [ctaHidden, setCtaHidden] = useState(false);
+  useEffect(() => {
+    let lastY = typeof window !== "undefined" ? window.scrollY : 0;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        const dy = y - lastY;
+        if (y < 80) setCtaHidden(false);
+        else if (dy > 6) setCtaHidden(true);
+        else if (dy < -6) setCtaHidden(false);
+        lastY = y;
+        ticking = false;
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
 
   async function toggleLike(it: Moment) {
     if (!user) { toast.error("Trebuie să fii logat."); return; }
@@ -374,19 +395,29 @@ function FazePage() {
         </div>
       )}
 
-      {/* Floating CTA */}
+      {/* Floating CTA — hides on scroll-down, returns on scroll-up, with idle float */}
       {typeof document !== "undefined" && createPortal(
         <button
           onClick={() => setOpen(true)}
           aria-label="Postează o fază"
-          className="fixed right-4 z-[45] inline-flex items-center gap-2.5 uppercase text-[12px] tracking-[0.16em] pl-3 pr-5 py-3.5 rounded-full text-white shadow-[0_14px_36px_-10px_rgba(244,114,82,0.7)] active:scale-95 transition"
-          style={{ ...archivo, background: "var(--gradient-sunset)", bottom: "calc(env(safe-area-inset-bottom) + 6.25rem)" }}
+          className="fixed right-4 z-[45] inline-flex items-center gap-2.5 uppercase text-[12px] tracking-[0.16em] pl-3 pr-5 py-3.5 rounded-full text-white shadow-[0_14px_36px_-10px_rgba(244,114,82,0.7)] active:scale-95"
+          style={{
+            ...archivo,
+            background: "var(--gradient-sunset)",
+            bottom: "calc(env(safe-area-inset-bottom) + 6.25rem)",
+            transform: ctaHidden ? "translateY(160%) scale(0.9)" : "translateY(0) scale(1)",
+            opacity: ctaHidden ? 0 : 1,
+            transition: "transform 360ms cubic-bezier(.22,1,.36,1), opacity 220ms ease",
+            animation: ctaHidden ? "none" : "faze-float 3.4s ease-in-out infinite",
+          }}
         >
           <span className="grid place-items-center size-7 rounded-full bg-white/25 text-lg leading-none font-light">+</span>
           Postează
         </button>,
         document.body
       )}
+      <style>{`@keyframes faze-float { 0%,100% { translate: 0 0 } 50% { translate: 0 -6px } }`}</style>
+
 
       <Link to="/app" className="block text-center text-[10px] uppercase tracking-widest text-muted-foreground pt-5" style={archivo}>
         ← înapoi la live
