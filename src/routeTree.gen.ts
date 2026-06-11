@@ -46,6 +46,7 @@ import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
 import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
 import { Route as AppPromoIdRouteImport } from './routes/app.promo.$id'
+import { Route as AppPhotoIdRouteImport } from './routes/app.photo.$id'
 import { Route as AppMeReputationRouteImport } from './routes/app.me_.reputation'
 import { Route as AppMeRatersRouteImport } from './routes/app.me_.raters'
 import { Route as AppMeArchiveRouteImport } from './routes/app.me_.archive'
@@ -245,6 +246,11 @@ const AppPromoIdRoute = AppPromoIdRouteImport.update({
   path: '/promo/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPhotoIdRoute = AppPhotoIdRouteImport.update({
+  id: '/photo/$id',
+  path: '/photo/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMeReputationRoute = AppMeReputationRouteImport.update({
   id: '/me_/reputation',
   path: '/me/reputation',
@@ -357,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/app/me/archive': typeof AppMeArchiveRoute
   '/app/me/raters': typeof AppMeRatersRoute
   '/app/me/reputation': typeof AppMeReputationRoute
+  '/app/photo/$id': typeof AppPhotoIdRoute
   '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
@@ -407,6 +414,7 @@ export interface FileRoutesByTo {
   '/app/me/archive': typeof AppMeArchiveRoute
   '/app/me/raters': typeof AppMeRatersRoute
   '/app/me/reputation': typeof AppMeReputationRoute
+  '/app/photo/$id': typeof AppPhotoIdRoute
   '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
@@ -460,6 +468,7 @@ export interface FileRoutesById {
   '/app/me_/archive': typeof AppMeArchiveRoute
   '/app/me_/raters': typeof AppMeRatersRoute
   '/app/me_/reputation': typeof AppMeReputationRoute
+  '/app/photo/$id': typeof AppPhotoIdRoute
   '/app/promo/$id': typeof AppPromoIdRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
@@ -514,6 +523,7 @@ export interface FileRouteTypes {
     | '/app/me/archive'
     | '/app/me/raters'
     | '/app/me/reputation'
+    | '/app/photo/$id'
     | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
@@ -564,6 +574,7 @@ export interface FileRouteTypes {
     | '/app/me/archive'
     | '/app/me/raters'
     | '/app/me/reputation'
+    | '/app/photo/$id'
     | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
@@ -616,6 +627,7 @@ export interface FileRouteTypes {
     | '/app/me_/archive'
     | '/app/me_/raters'
     | '/app/me_/reputation'
+    | '/app/photo/$id'
     | '/app/promo/$id'
     | '/app/street/$id'
     | '/app/user/$id'
@@ -900,6 +912,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPromoIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/photo/$id': {
+      id: '/app/photo/$id'
+      path: '/photo/$id'
+      fullPath: '/app/photo/$id'
+      preLoaderRoute: typeof AppPhotoIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/me_/reputation': {
       id: '/app/me_/reputation'
       path: '/me/reputation'
@@ -1047,6 +1066,7 @@ interface AppRouteChildren {
   AppMeArchiveRoute: typeof AppMeArchiveRoute
   AppMeRatersRoute: typeof AppMeRatersRoute
   AppMeReputationRoute: typeof AppMeReputationRoute
+  AppPhotoIdRoute: typeof AppPhotoIdRoute
   AppPromoIdRoute: typeof AppPromoIdRoute
   AppStreetIdRoute: typeof AppStreetIdRoute
   AppUserIdRoute: typeof AppUserIdRoute
@@ -1080,6 +1100,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMeArchiveRoute: AppMeArchiveRoute,
   AppMeRatersRoute: AppMeRatersRoute,
   AppMeReputationRoute: AppMeReputationRoute,
+  AppPhotoIdRoute: AppPhotoIdRoute,
   AppPromoIdRoute: AppPromoIdRoute,
   AppStreetIdRoute: AppStreetIdRoute,
   AppUserIdRoute: AppUserIdRoute,
