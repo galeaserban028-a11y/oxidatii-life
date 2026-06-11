@@ -132,7 +132,7 @@ export function BottomTabBar() {
                       <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#ff8a3d] shadow-[0_0_6px_#ff8a3d]" />
                     )}
                   </div>
-                  <span className={`font-mono text-[9px] uppercase tracking-[0.18em] truncate w-full text-center leading-none ${tint}`}>
+                  <span className={`font-mono text-[9px] uppercase tracking-[0.08em] truncate w-full text-center leading-none ${tint}`}>
                     {tt(t.labelKey)}
                   </span>
                 </Link>
