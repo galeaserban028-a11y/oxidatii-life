@@ -208,6 +208,34 @@ function MePage() {
     },
   });
 
+  const { data: reposts = [] } = useQuery({
+    queryKey: ["my-reposts", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data: rep } = await supabase
+        .from("photo_reposts")
+        .select("photo_id, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(40);
+      const ids = (rep ?? []).map((r) => r.photo_id);
+      if (!ids.length) return [];
+      const { data: pics } = await supabase
+        .from("venue_photos")
+        .select("id, photo_url, caption, taken_at, venue:venues(id, name, city:cities(name))")
+        .in("id", ids);
+      const map = new Map((pics ?? []).map((p: any) => [p.id, p]));
+      return (rep ?? [])
+        .map((r: any) => {
+          const photo = map.get(r.photo_id);
+          if (!photo) return null;
+          return { ...photo, _kind: "photo" as const, _date: r.created_at };
+        })
+        .filter(Boolean) as any[];
+    },
+  });
+
   if (!user || !profile) return null;
 
   const verifiedProofs = (moments?.proofs ?? []).filter((p: any) => p.ai_verified);
@@ -216,12 +244,10 @@ function MePage() {
     ...(moments?.photos ?? []).map((p: any) => ({ ...p, _kind: "photo" as const, _date: p.taken_at })),
   ].sort((a, b) => +new Date(b._date) - +new Date(a._date));
 
-  const tabMoments =
-    tab === "verified"
-      ? allMoments.filter((m) => m._kind === "proof")
-      : tab === "tagged"
-      ? allMoments.filter((m) => !!m.venue?.name)
-      : allMoments;
+  const tabMoments = tab === "reposts" ? reposts : allMoments;
+  const postsCount = allMoments.length;
+  const repostsCount = reposts.length;
+
 
   const handleDoSignOut = async () => {
     setMenuOpen(false);
