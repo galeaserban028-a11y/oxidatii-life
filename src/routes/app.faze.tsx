@@ -171,26 +171,47 @@ function FazePage() {
 
   return (
     <div className="px-4 pt-5 pb-24 space-y-6 max-w-xl mx-auto">
-      <header className="space-y-1 flex items-start justify-between gap-2">
-        <div className="space-y-1">
-          <div className="font-mono text-[10px] uppercase tracking-[0.15em] text-neon-crimson/70">// CELE MAI TARI FAZE</div>
-          <h1 className="font-display uppercase text-2xl leading-none tracking-tight">
-            Faze <span className="text-gradient-chaos">din teren</span>
-          </h1>
-          <p className="text-xs text-muted-foreground">Postează ce-ai prins în club, la șpriț, pe stradă. Real, brut, fără filtre.</p>
+      {/* Editorial header — big, layered, with subtle blur orb */}
+      <header className="relative overflow-hidden rounded-3xl border border-foreground/10 bg-gradient-to-br from-card/80 via-card/40 to-transparent p-5">
+        <div
+          aria-hidden
+          className="absolute -top-16 -right-10 size-48 rounded-full opacity-60 blur-3xl pointer-events-none"
+          style={{ background: "var(--gradient-chaos)" }}
+        />
+        <div
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 h-px"
+          style={{ background: "var(--gradient-edge)" }}
+        />
+        <div className="relative flex items-start justify-between gap-3">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-neon-crimson/90">
+              <span className="size-1.5 rounded-full bg-neon-crimson animate-pulse" />
+              LIVE · CELE MAI TARI FAZE
+            </div>
+            <h1 className="font-display uppercase text-[2rem] leading-[0.9] tracking-tight">
+              Faze<br/><span className="text-gradient-chaos">din teren</span>
+            </h1>
+            <p className="text-[11px] text-muted-foreground max-w-[22ch] leading-snug">
+              Real, brut, fără filtre. Club, șpriț, stradă.
+            </p>
+          </div>
+          <Link
+            to="/app/notifications"
+            className="size-10 rounded-2xl border border-foreground/15 bg-background/60 backdrop-blur flex items-center justify-center relative shrink-0 active:scale-95 transition"
+          >
+            <span className="text-base">🔔</span>
+            <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-neon-crimson animate-pulse" />
+          </Link>
         </div>
-        <Link to="/app/notifications" className="size-9 rounded-full border border-foreground/15 flex items-center justify-center relative shrink-0">
-          <span className="text-base">🔔</span>
-          <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-neon-crimson animate-pulse" />
-        </Link>
       </header>
 
       {/* Weekend prize — bancnotă / bilet de tombolă */}
       <PrizeBanner />
 
 
-      {/* Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto -mx-4 px-4 pb-1 no-scrollbar">
+      {/* Tabs — segmented control style */}
+      <div className="flex items-center gap-1.5 overflow-x-auto -mx-4 px-4 pb-1 no-scrollbar">
         {([
           { k: "foryou", label: "Pentru tine", icon: "🔥" },
           { k: "recent", label: "Recent", icon: "🕐" },
@@ -202,11 +223,12 @@ function FazePage() {
             <button
               key={t.k}
               onClick={() => setTab(t.k)}
-              className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider border transition ${
+              className={`shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-mono uppercase tracking-[0.12em] border transition ${
                 active
-                  ? "border-neon-crimson/40 text-neon-crimson bg-neon-crimson/5"
-                  : "border-foreground/10 text-muted-foreground hover:text-foreground"
+                  ? "border-transparent text-white shadow-[0_6px_18px_-6px_rgba(244,114,82,0.55)]"
+                  : "border-foreground/10 text-muted-foreground hover:text-foreground hover:border-foreground/25"
               }`}
+              style={active ? { background: "var(--gradient-chaos)" } : undefined}
             >
               <span>{t.icon}</span>
               {t.label}
@@ -217,17 +239,17 @@ function FazePage() {
 
       {isLoading ? (
         <div className="space-y-4">
-          {[0,1].map(i => <div key={i} className="aspect-[4/5] rounded-2xl bg-foreground/[0.04] animate-pulse" />)}
+          {[0,1].map(i => <div key={i} className="aspect-[4/5] rounded-3xl bg-foreground/[0.04] animate-pulse" />)}
         </div>
       ) : !data || sortedItems.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-3">
+        <div className="rounded-3xl border border-dashed border-foreground/15 p-10 text-center space-y-3">
           <div className="text-5xl">🎬</div>
           <div className="font-display uppercase text-lg">Nicio fază încă.</div>
           <p className="text-sm text-muted-foreground">Fii primul care pune o fază reală din teren.</p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {sortedItems.map((it) => {
+        <div className="space-y-7">
+          {sortedItems.map((it, idx) => {
             const profile = data.profilesMap.get(it.user_id);
             const venue = data.venuesMap.get(it.venue_id);
             const handle = profile?.display_name ?? profile?.handle ?? "Anonim";
@@ -239,78 +261,97 @@ function FazePage() {
             const isVideo = /\.(mp4|webm|mov)$/i.test(it.photo_url);
             const isLiked = data.likedSet.has(it.id);
             const isReposted = data.repostedSet.has(it.id);
+            const rank = idx + 1;
             return (
-              <article key={it.id} className="rounded-3xl border border-foreground/5 bg-card/40 overflow-hidden">
-                {/* Header */}
-                <div className="flex items-center gap-3 p-4">
-                  <Link to="/app/user/$id" params={{ id: it.user_id }} className="shrink-0">
-                    {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt={handle} className="size-10 rounded-full object-cover border border-foreground/10" />
-                    ) : (
-                      <div className="size-10 rounded-full bg-foreground/10 flex items-center justify-center font-display text-sm">
-                        {handle[0]?.toUpperCase()}
-                      </div>
-                    )}
-                  </Link>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <Link to="/app/user/$id" params={{ id: it.user_id }} className="font-display text-sm truncate">{handle}</Link>
-                      {badge.key === "legendar" && <span className="text-neon-crimson">⚡</span>}
-                    </div>
-                    <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
-                      📍 {venue?.name ?? "—"} · acum {timeAgo(it.created_at)}
-                    </div>
-                  </div>
-                  <span className={`shrink-0 inline-flex items-center px-2 py-[3px] rounded-md border text-[10px] font-mono uppercase tracking-[0.15em] ${badge.className}`}>
-                    {badge.label}
-                  </span>
-                </div>
-
-                {/* Media */}
+              <article
+                key={it.id}
+                className="group relative rounded-3xl border border-foreground/10 bg-card/40 overflow-hidden shadow-[0_8px_28px_-12px_rgba(0,0,0,0.55)]"
+              >
+                {/* Media — taller, edge-to-edge, with bottom gradient + overlay header */}
                 <div className="relative bg-black">
                   {isVideo ? (
                     <video src={it.photo_url} className="w-full aspect-[4/5] object-cover" playsInline muted loop preload="metadata" />
                   ) : (
                     <img src={it.photo_url} alt={it.caption ?? ""} className="w-full aspect-[4/5] object-cover" loading="lazy" />
                   )}
+
+                  {/* Top scrim + meta */}
+                  <div className="absolute inset-x-0 top-0 p-3 pb-10 bg-gradient-to-b from-black/70 via-black/30 to-transparent flex items-center gap-2.5">
+                    <Link to="/app/user/$id" params={{ id: it.user_id }} className="shrink-0">
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt={handle} className="size-9 rounded-full object-cover ring-2 ring-white/30" />
+                      ) : (
+                        <div className="size-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center font-display text-sm text-white ring-2 ring-white/30">
+                          {handle[0]?.toUpperCase()}
+                        </div>
+                      )}
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <Link to="/app/user/$id" params={{ id: it.user_id }} className="font-display text-[13px] text-white truncate drop-shadow">{handle}</Link>
+                        {badge.key === "legendar" && <span className="text-amber-300">⚡</span>}
+                      </div>
+                      <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-white/75 truncate">
+                        📍 {venue?.name ?? "—"} · {timeAgo(it.created_at)}
+                      </div>
+                    </div>
+                    <span className={`shrink-0 inline-flex items-center px-2 py-[3px] rounded-md border text-[10px] font-mono uppercase tracking-[0.15em] backdrop-blur-md ${badge.className}`}>
+                      {badge.label}
+                    </span>
+                  </div>
+
+                  {/* Rank badge */}
+                  {(tab === "top" || tab === "legendare") && rank <= 3 && (
+                    <div className="absolute top-16 left-3 size-9 rounded-full grid place-items-center font-display text-sm text-white shadow-lg" style={{ background: "var(--gradient-chaos)" }}>
+                      #{rank}
+                    </div>
+                  )}
+
+                  {/* Report */}
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition">
+                    <ReportDialog targetType="photo" targetId={it.id} className="h-8 w-8 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-white/90 active:scale-95 transition" />
+                  </div>
+
+                  {/* Bottom scrim with caption */}
+                  {it.caption && (
+                    <div className="absolute inset-x-0 bottom-0 p-4 pt-12 bg-gradient-to-t from-black/85 via-black/40 to-transparent">
+                      <p className="text-[13px] leading-snug text-white drop-shadow-md line-clamp-3">{it.caption}</p>
+                    </div>
+                  )}
+
                   {isVideo && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="size-14 rounded-full bg-white/90 text-black flex items-center justify-center text-xl shadow-xl">▶</div>
                     </div>
                   )}
-                  <div className="absolute top-2 right-2">
-                    <ReportDialog targetType="photo" targetId={it.id} className="h-8 w-8 rounded-full bg-black/50 backdrop-blur flex items-center justify-center text-white/90 active:scale-95 transition" />
-                  </div>
                 </div>
 
-                {/* Caption */}
-                {it.caption && (
-                  <div className="px-4 pt-3 text-sm leading-snug">{it.caption}</div>
-                )}
-
-                {/* Actions */}
-                <div className="flex items-center gap-1 px-2 py-2">
+                {/* Actions bar */}
+                <div className="flex items-center gap-1 px-2 py-2.5 border-t border-foreground/5">
                   <button
                     onClick={() => toggleLike(it)}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-foreground/[0.06] active:scale-95 transition"
                   >
-                    <svg viewBox="0 0 24 24" className={`size-[18px] ${isLiked ? "fill-neon-crimson stroke-neon-crimson" : "fill-none stroke-foreground/80"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+                    <svg viewBox="0 0 24 24" className={`size-[19px] ${isLiked ? "fill-neon-crimson stroke-neon-crimson" : "fill-none stroke-foreground/80"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
                     <span className="font-mono text-xs tabular-nums">{formatCount(likes)}</span>
                   </button>
                   <button
                     onClick={() => setCommentsFor(it)}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-foreground/[0.06] active:scale-95 transition"
                   >
-                    <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg>
+                    <svg viewBox="0 0 24 24" className="size-[19px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg>
                     <span className="font-mono text-xs tabular-nums">{formatCount(comments)}</span>
                   </button>
                   <button
                     onClick={() => toggleRepost(it)}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition ${isReposted ? "text-emerald-400" : ""}`}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-foreground/[0.06] active:scale-95 transition ${isReposted ? "text-emerald-400" : ""}`}
                   >
-                    <svg viewBox="0 0 24 24" className={`size-[18px] fill-none ${isReposted ? "stroke-emerald-400" : "stroke-foreground/80"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
+                    <svg viewBox="0 0 24 24" className={`size-[19px] fill-none ${isReposted ? "stroke-emerald-400" : "stroke-foreground/80"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
                     <span className="font-mono text-xs tabular-nums">{formatCount(reposts)}</span>
                   </button>
+                  <div className="ml-auto font-mono text-[10px] uppercase tracking-[0.15em] text-muted-foreground pr-2">
+                    {formatCount(confirms)} confirmări
+                  </div>
                 </div>
 
               </article>
