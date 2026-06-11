@@ -222,10 +222,21 @@ function FazePage() {
             live din teren
           </div>
         </div>
-        <Link to="/app/notifications" className="relative size-10 flex items-center justify-center active:scale-95 transition rounded-full hover:bg-foreground/5">
-          <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-foreground" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
-          <span className="absolute top-2 right-2 size-2 rounded-full bg-sunset-magenta shadow-[0_0_8px_var(--sunset-magenta)]" />
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setOpen(true)}
+            aria-label="Postează o fază"
+            className="inline-flex items-center gap-2.5 uppercase text-[12px] tracking-[0.18em] pl-2 pr-5 py-2 rounded-full text-white shadow-[0_10px_28px_-10px_rgba(244,114,82,0.65)] active:scale-95 transition"
+            style={{ ...archivo, background: "var(--gradient-sunset)" }}
+          >
+            <span className="grid place-items-center size-7 rounded-full bg-white/25 text-lg leading-none font-light">+</span>
+            Postează
+          </button>
+          <Link to="/app/notifications" className="relative size-10 flex items-center justify-center active:scale-95 transition rounded-full hover:bg-foreground/5">
+            <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-foreground" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            <span className="absolute top-2 right-2 size-2 rounded-full bg-sunset-magenta shadow-[0_0_8px_var(--sunset-magenta)]" />
+          </Link>
+        </div>
       </header>
 
       {/* Tabs */}
