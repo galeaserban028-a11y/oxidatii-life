@@ -23,6 +23,8 @@ type Props = {
   business: Business;
   campaigns: Campaign[];
   parties: Party[];
+  coverSlot?: React.ReactNode;
+  headerSlot?: React.ReactNode;
   onTopup: () => void;
   onNewCampaign: () => void;
   onEditCampaign: (c: Campaign) => void;
@@ -207,7 +209,7 @@ function ActionTile({ icon: Icon, title, hint, accent, onClick }: { icon: any; t
 /*  Main                                                              */
 /* ------------------------------------------------------------------ */
 export function BizCommandCenter({
-  business, campaigns, parties,
+  business, campaigns, parties, coverSlot, headerSlot,
   onTopup, onNewCampaign, onEditCampaign, onToggleCampaign, onDeleteCampaign, onDuplicateCampaign,
 }: Props) {
   const tier = tierConfig(business.tier);
@@ -415,55 +417,68 @@ export function BizCommandCenter({
   const totalClicks      = campaigns.reduce((s, c) => s + (c.clicks || 0), 0);
   const activeCount      = campaigns.filter((c) => c.status === "active").length;
 
-  /* ================================================================== */
+  const heroCards = (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <Card className="md:col-span-1 p-4 flex items-center gap-3">
+        <Star className="text-sunset-amber fill-current" size={22} />
+        <div>
+          <div className="font-display text-3xl tabular-nums leading-none">
+            {rating ? rating.toFixed(1) : "—"}
+          </div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500 mt-1">Rating mediu</div>
+          <div className="text-[10px] text-zinc-500">{reviewCount} review-uri</div>
+        </div>
+      </Card>
+
+      <Card className="md:col-span-1 p-4 relative overflow-hidden">
+        <div className="flex items-center gap-2">
+          <Flame size={14} style={{ color: `hsl(var(--tier-${tier.id}, var(--sunset-amber)))` }} />
+          <span className="font-display uppercase text-[13px] tracking-wide">Plan {tier.name}</span>
+        </div>
+        <div className="text-[10px] text-zinc-500 mt-1">
+          {business.tier_renews_at ? `Expiră în ${planDaysLeft} zile` : "Plan demo · 30 zile"}
+        </div>
+        <div className="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden">
+          <div className="h-full rounded-full" style={{ width: `${planPct}%`, background: "var(--gradient-sunset)" }} />
+        </div>
+      </Card>
+
+      {!upgradeDismissed && tier.id !== "exclusive" ? (
+        <Card className="md:col-span-1 p-4 relative bg-gradient-to-br from-sunset-magenta/20 via-violet-500/10 to-transparent border-sunset-magenta/30">
+          <button onClick={() => setUpgradeDismissed(true)} className="absolute top-2 right-2 p-1 text-zinc-400 hover:text-white" aria-label="Ascunde">
+            <X size={12} />
+          </button>
+          <div className="flex items-start gap-2">
+            <Crown size={18} className="text-sunset-magenta shrink-0 mt-0.5" />
+            <div>
+              <div className="font-display uppercase text-[13px] tracking-wide">Upgrade Plan</div>
+              <div className="text-[11px] text-zinc-400 mt-1">Crește vizibilitatea și adu mai mulți clienți.</div>
+              <Link to="/app/biz/plans" className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-widest font-bold text-white" style={{ background: "var(--gradient-sunset)" }}>
+                Upgrade acum <ArrowUpRight size={11} />
+              </Link>
+            </div>
+          </div>
+        </Card>
+      ) : <div className="hidden md:block" />}
+    </div>
+  );
+
   return (
     <div className="space-y-4">
-      {/* ============== HERO STRIP ============== */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Card className="md:col-span-1 p-4 flex items-center gap-3">
-          <Star className="text-sunset-amber fill-current" size={22} />
-          <div>
-            <div className="font-display text-3xl tabular-nums leading-none">
-              {rating ? rating.toFixed(1) : "—"}
-            </div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500 mt-1">Rating mediu</div>
-            <div className="text-[10px] text-zinc-500">{reviewCount} review-uri</div>
+      {/* ============== HERO: COVER + HEADER + 3 CARDS ============== */}
+      {coverSlot || headerSlot ? (
+        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-3">
+          {coverSlot}
+          <div className="flex flex-col gap-3 min-w-0">
+            {headerSlot}
+            {heroCards}
           </div>
-        </Card>
+        </div>
+      ) : heroCards}
 
-        <Card className="md:col-span-1 p-4 relative overflow-hidden">
-          <div className="flex items-center gap-2">
-            <Flame size={14} style={{ color: `hsl(var(--tier-${tier.id}, var(--sunset-amber)))` }} />
-            <span className="font-display uppercase text-[13px] tracking-wide">Plan {tier.name}</span>
-          </div>
-          <div className="text-[10px] text-zinc-500 mt-1">
-            {business.tier_renews_at ? `Se reînnoiește în ${planDaysLeft} zile` : "Plan demo · 30 zile"}
-          </div>
-          <div className="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: `${planPct}%`, background: "var(--gradient-sunset)" }} />
-          </div>
-        </Card>
-
-        {!upgradeDismissed && tier.id !== "exclusive" && (
-          <Card className="md:col-span-1 p-4 relative bg-gradient-to-br from-sunset-magenta/20 via-violet-500/10 to-transparent border-sunset-magenta/30">
-            <button onClick={() => setUpgradeDismissed(true)} className="absolute top-2 right-2 p-1 text-zinc-400 hover:text-white" aria-label="Ascunde">
-              <X size={12} />
-            </button>
-            <div className="flex items-start gap-2">
-              <Crown size={18} className="text-sunset-magenta shrink-0 mt-0.5" />
-              <div>
-                <div className="font-display uppercase text-[13px] tracking-wide">Upgrade Plan</div>
-                <div className="text-[11px] text-zinc-400 mt-1">Crește vizibilitatea și adu mai mulți clienți.</div>
-                <Link to="/app/biz/plans" className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-widest font-bold text-white" style={{ background: "var(--gradient-sunset)" }}>
-                  Upgrade acum <ArrowUpRight size={11} />
-                </Link>
-              </div>
-            </div>
-          </Card>
-        )}
-      </div>
 
       {/* ============== PERFORMANȚĂ GENERALĂ (KPIs) ============== */}
+      <div id="biz-stats">
       <Card title="Performanță generală" hint="Ultimele 7 zile" icon={TrendingUp}>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y sm:divide-y-0 divide-white/5">
           <KpiBlock icon={Eye}        label="Vizualizări"     value={views7}          delta={pct(views7, views14)}             color="violet" />
@@ -474,9 +489,10 @@ export function BizCommandCenter({
           <KpiBlock icon={Ticket}     label="Oferte claim"    value={offerClaims7}    delta={pct(offerClaims7, offerClaims14)} color="orange" />
         </div>
       </Card>
+      </div>
 
       {/* ============== QUICK ACTIONS ============== */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div id="biz-events" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <ActionTile icon={Calendar} title="Publică eveniment" hint="Atrage clienți diseară" accent="magenta" onClick={onNewCampaign} />
         <ActionTile icon={Rocket}   title="Lansează campanie" hint="Promovează localul"     accent="amber"   onClick={onNewCampaign} />
         <ActionTile icon={Ticket}   title="Creează ofertă"    hint="Happy Hour sau reducere"accent="violet"  onClick={onNewCampaign} />
@@ -484,6 +500,8 @@ export function BizCommandCenter({
       </div>
 
       {/* ============== CHART + LIVE FEED ============== */}
+      <div id="biz-live" />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <Card className="lg:col-span-2" title="Rezumat activitate · live" hint="Ultimele 7 zile" icon={Activity}>
           <div className="px-4 grid grid-cols-3 sm:grid-cols-6 gap-2 pb-3">
