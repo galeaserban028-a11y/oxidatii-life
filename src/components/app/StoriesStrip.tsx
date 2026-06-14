@@ -3,8 +3,38 @@ import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, X, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+
+type PromoTile = {
+  campaignId: string;
+  title: string | null;
+  brand: string | null;
+  cover: string | null;
+  theme: string;
+};
+
+async function loadPromoTiles(): Promise<PromoTile[]> {
+  const nowIso = new Date().toISOString();
+  const { data } = await supabase
+    .from("campaigns")
+    .select("id, title, theme_color, image_urls, business_accounts!inner(logo_url, cover_url, brand_name), venues(name)")
+    .eq("status", "active")
+    .lte("starts_at", nowIso)
+    .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
+    .limit(20);
+  return ((data ?? []) as any[]).map((c) => ({
+    campaignId: c.id,
+    title: c.title ?? null,
+    brand: c.venues?.name ?? c.business_accounts?.brand_name ?? null,
+    cover: (c.image_urls?.[0] as string | undefined)
+      ?? c.business_accounts?.cover_url
+      ?? c.business_accounts?.logo_url
+      ?? null,
+    theme: c.theme_color ?? "#ff8c31",
+  }));
+}
 
 type StoryRow = {
   id: string;
@@ -110,6 +140,58 @@ function Cover({ cover, avatar, fallback }: { cover: string | null; avatar: stri
   );
 }
 
+function SponsoredTile({ promo }: { promo: PromoTile }) {
+  const navigate = useNavigate();
+  const label = promo.brand ?? promo.title ?? "promovat";
+  return (
+    <button
+      onClick={() => navigate({ to: "/app/promo/$id", params: { id: promo.campaignId } })}
+      className="shrink-0 flex flex-col items-center gap-2 w-[72px] active:scale-95 transition-transform animate-fade-in"
+      aria-label={`Reclamă: ${label}`}
+    >
+      <div
+        className="relative p-[2.5px] rounded-full"
+        style={{
+          backgroundImage: `linear-gradient(135deg, #ffd166, ${promo.theme}, #ffd166)`,
+          boxShadow: `0 0 18px ${promo.theme}80, 0 0 6px rgba(255,209,102,0.6)`,
+        }}
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -inset-1 rounded-full animate-ping"
+          style={{ background: promo.theme, opacity: 0.25 }}
+        />
+
+        <div className="bg-background p-[2px] rounded-full">
+          <div className="w-[60px] h-[60px] rounded-full overflow-hidden bg-[#111]">
+            {promo.cover ? (
+              <img src={promo.cover} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div
+                className="h-full w-full grid place-items-center font-display font-black text-base"
+                style={{ color: promo.theme }}
+              >
+                {(label[0] ?? "?").toUpperCase()}
+              </div>
+            )}
+          </div>
+        </div>
+        <span
+          className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 rounded-full text-[8px] font-black tracking-[0.16em] leading-[12px] border-[1.5px] border-background"
+          style={{ background: promo.theme, color: "#06070a" }}
+        >
+          AD
+        </span>
+      </div>
+      <span className="text-[10px] font-bold tracking-wider uppercase truncate w-full text-center text-white">
+        {label}
+      </span>
+    </button>
+  );
+}
+
+
+
 export function StoriesStrip() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -120,11 +202,28 @@ export function StoriesStrip() {
     refetchInterval: 60_000,
   });
 
+  const { data: promoTiles = [] } = useQuery({
+    queryKey: ["stories-strip-promos"],
+    queryFn: loadPromoTiles,
+    refetchInterval: 120_000,
+  });
+
   const [viewerIdx, setViewerIdx] = useState<number | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [seenIds, setSeenIds] = useState<Set<string>>(() => new Set());
+  const [promoIdx, setPromoIdx] = useState(0);
   const groups = data?.groups ?? [];
   const myGroup = useMemo(() => groups.find((g) => g.user_id === user?.id) ?? null, [groups, user]);
+
+  // Rotate sponsored tile every 8s when multiple campaigns are active
+  useEffect(() => {
+    if (promoTiles.length < 2) return;
+    const id = window.setInterval(() => {
+      setPromoIdx((i) => (i + 1) % promoTiles.length);
+    }, 8000);
+    return () => window.clearInterval(id);
+  }, [promoTiles.length]);
+
 
   // Hydrate seen-set from localStorage (client only)
   useEffect(() => {
@@ -163,6 +262,13 @@ export function StoriesStrip() {
               story nou
             </span>
           </button>
+
+          {/* Sponsored tile (rotates) — opens campaign promo page */}
+          {promoTiles.length > 0 && (
+            <SponsoredTile promo={promoTiles[promoIdx % promoTiles.length]} />
+          )}
+
+
 
           {groups.map((g, i) => {
             const last = g.stories[g.stories.length - 1];
