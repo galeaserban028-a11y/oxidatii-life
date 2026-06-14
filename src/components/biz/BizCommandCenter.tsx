@@ -7,6 +7,7 @@ import {
   Clock, ShieldCheck, Info, Share2, Ticket, Rocket,
 } from "lucide-react";
 import { toast } from "sonner";
+import { BizTierHero } from "@/components/biz/BizTierHero";
 
 type Business = any;
 type Campaign = any;
@@ -264,6 +265,8 @@ export function BizCommandCenter({
 
   return (
     <div className="space-y-5">
+      <BizTierHero business={business} />
+
 
       {/* ============== QUICK ACTIONS ============== */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
