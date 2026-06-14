@@ -1884,7 +1884,13 @@ export type Database = {
         | "BOIERUL_NOPTII"
         | "REGELE_CENTRULUI"
         | "ZEU_BALCANIC"
-      business_tier: "starter" | "growth" | "pro" | "elite"
+      business_tier:
+        | "starter"
+        | "growth"
+        | "pro"
+        | "elite"
+        | "popular"
+        | "exclusive"
       business_type: "club" | "bar" | "festival" | "promoter" | "host" | "beach"
       campaign_kind:
         | "boost_feed"
@@ -2034,7 +2040,14 @@ export const Constants = {
         "REGELE_CENTRULUI",
         "ZEU_BALCANIC",
       ],
-      business_tier: ["starter", "growth", "pro", "elite"],
+      business_tier: [
+        "starter",
+        "growth",
+        "pro",
+        "elite",
+        "popular",
+        "exclusive",
+      ],
       business_type: ["club", "bar", "festival", "promoter", "host", "beach"],
       campaign_kind: [
         "boost_feed",
