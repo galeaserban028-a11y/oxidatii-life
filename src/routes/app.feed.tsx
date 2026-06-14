@@ -307,6 +307,7 @@ function FeedPage() {
                   )}
                 </div>
               </article>
+              </Fragment>
             );
           })}
         </div>
