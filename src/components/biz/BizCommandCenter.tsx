@@ -131,9 +131,9 @@ async function loadDashboard(business: Business) {
 /* ------------------------------------------------------------------ */
 /*  Primitive UI helpers                                              */
 /* ------------------------------------------------------------------ */
-function Card({ children, className = "", title, hint, icon: Icon }: { children: any; className?: string; title?: string; hint?: string; icon?: any }) {
+function Card({ children, className = "", title, hint, icon: Icon, id }: { children: any; className?: string; title?: string; hint?: string; icon?: any; id?: string }) {
   return (
-    <div className={`rounded-2xl border border-white/[0.06] bg-zinc-950/70 backdrop-blur-xl overflow-hidden ${className}`}>
+    <div id={id} className={`rounded-2xl border border-white/[0.06] bg-zinc-950/70 backdrop-blur-xl overflow-hidden ${className}`}>
       {(title || hint) && (
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <div className="flex items-center gap-2">
@@ -562,7 +562,7 @@ export function BizCommandCenter({
       </div>
 
       {/* ============== TRAFFIC + EVENT PERFORMANCE + REPUTATION ============== */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div id="biz-visibility" className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <Card title="Surse de trafic · 7 zile" icon={Eye}>
           <div className="h-56 px-2 pb-2">
             {trafficSources.length === 0 ? (
@@ -592,7 +592,7 @@ export function BizCommandCenter({
           </div>
         </Card>
 
-        <Card title="Performanță evenimente" hint="7 zile" icon={Calendar}>
+        <Card id="biz-events-perf" title="Performanță evenimente" hint="7 zile" icon={Calendar}>
           <div className="h-56 px-2 pb-2">
             {eventJoins7 === 0 && (data?.venueCheckins7?.length ?? 0) === 0 ? (
               <div className="h-full grid place-items-center text-[11px] text-zinc-500 text-center px-4">Încă nu sunt interacțiuni pe evenimente.</div>
@@ -612,7 +612,7 @@ export function BizCommandCenter({
           </div>
         </Card>
 
-        <Card title="Reputație" icon={ShieldCheck}>
+        <Card id="biz-reputation" title="Reputație" icon={ShieldCheck}>
           <div className="p-4 flex items-center gap-4">
             <ReputationGauge value={rating} />
             <div className="flex-1 space-y-2">
@@ -665,7 +665,7 @@ export function BizCommandCenter({
       </Card>
 
       {/* ============== RECOMANDĂRI INTELIGENTE ============== */}
-      <Card title="Recomandări inteligente" hint="bazat doar pe date reale" icon={Sparkles}>
+      <Card id="biz-recom" title="Recomandări inteligente" hint="bazat doar pe date reale" icon={Sparkles}>
         <div className="p-3 space-y-2">
           {recommendations.length === 0 ? (
             <div className="text-[11px] text-zinc-500 py-3 text-center">Toate semnalele sunt verzi. Continuă așa.</div>
@@ -696,7 +696,9 @@ export function BizCommandCenter({
       </Card>
 
       {/* ============== PROMOVARE (campaigns manager) ============== */}
-      <Card title="Promovare" hint="opțional" icon={Megaphone}>
+      <div id="biz-campaigns" />
+      <div id="biz-manager" />
+      <Card id="biz-promo" title="Promovare" hint="opțional" icon={Megaphone}>
         <div className="p-4 space-y-4">
           <p className="text-[11px] text-zinc-400 leading-relaxed">
             Promovarea crește vizibilitatea în aplicație. Rezultatele depind de comportamentul utilizatorilor. Nu garantăm vânzări sau clienți.
