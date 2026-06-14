@@ -207,13 +207,16 @@ function FeedPage() {
       ) : (
         <div className="space-y-3">
           {data.boosted && <BoostedCard boosted={data.boosted} userId={user.id} />}
-          {data.items.map((it) => {
+          {data.items.map((it, idx) => {
             const p = data.profMap.get(it.user_id);
             const v = it.venue_id ? data.venueMap.get(it.venue_id) : null;
             const handle = p?.handle ?? p?.display_name ?? "anonim";
+            const showAd = promoCards.length > 0 && idx > 0 && idx % 6 === 0;
+            const ad = showAd ? promoCards[(Math.floor(idx / 6) - 1) % promoCards.length] : null;
             return (
+              <Fragment key={`${it.kind}-${it.id}`}>
+                {ad && <SponsoredFazaCard ad={ad} />}
               <article
-                key={`${it.kind}-${it.id}`}
                 className="rounded-2xl overflow-hidden bg-foreground/[0.03] border border-foreground/10"
               >
                 <header className="flex items-center gap-2.5 p-3">
