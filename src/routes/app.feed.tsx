@@ -182,6 +182,7 @@ function FeedPage() {
       </header>
 
       <StoriesStrip />
+      <FeaturedTonightStrip cityId={null} />
 
       {isLoading ? (
         <div className="space-y-3">
