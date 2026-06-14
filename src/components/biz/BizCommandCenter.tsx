@@ -665,7 +665,7 @@ export function BizCommandCenter({
       </Card>
 
       {/* ============== RECOMANDĂRI INTELIGENTE ============== */}
-      <Card title="Recomandări inteligente" hint="bazat doar pe date reale" icon={Sparkles}>
+      <Card id="biz-recom" title="Recomandări inteligente" hint="bazat doar pe date reale" icon={Sparkles}>
         <div className="p-3 space-y-2">
           {recommendations.length === 0 ? (
             <div className="text-[11px] text-zinc-500 py-3 text-center">Toate semnalele sunt verzi. Continuă așa.</div>
