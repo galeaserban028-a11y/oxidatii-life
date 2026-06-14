@@ -7,12 +7,9 @@ import { useAuth } from "@/lib/auth";
 
 type Tab = { to: string; icon: typeof MapPin; labelKey: string; primary?: boolean; exact?: boolean; badgeKey?: "inbox" };
 const tabs: Tab[] = [
-  { to: "/app", icon: Radio, labelKey: "live", exact: true },
   { to: "/app/map", icon: MapPin, labelKey: "map" },
   { to: "/app/top", icon: Trophy, labelKey: "top" },
   { to: "/app/scan", icon: Camera, labelKey: "post", primary: true },
-  { to: "/app/squad", icon: Flame, labelKey: "sprits" },
-  { to: "/app/inbox", icon: MessageCircle, labelKey: "messages", badgeKey: "inbox" },
   { to: "/app/me", icon: User, labelKey: "me" },
 ];
 
