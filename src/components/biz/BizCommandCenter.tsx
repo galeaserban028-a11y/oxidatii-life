@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Eye, Users, Star, MessageSquare, Calendar, Activity, BarChart3, Sparkles,
   Megaphone, Wallet, Plus, Pencil, Trash2, Pause, Play, Copy, TrendingUp,
-  Clock, ShieldCheck, Info,
+  Clock, ShieldCheck, Info, Check, Share2, Ticket, Rocket,
 } from "lucide-react";
+import { toast } from "sonner";
 
 type Business = any;
 type Campaign = any;
@@ -128,6 +129,43 @@ function StatTile({
   );
 }
 
+function CompactStat({
+  label, value, sub, accent = "amber",
+}: { label: string; value: string | number; sub?: string; accent?: "amber" | "orange" | "magenta" }) {
+  const color =
+    accent === "orange"  ? "text-sunset-orange"  :
+    accent === "magenta" ? "text-sunset-magenta" :
+                           "text-sunset-amber";
+  return (
+    <div className="px-4 py-4 text-center">
+      <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-500">{label}</div>
+      <div className={`mt-1 font-display text-xl leading-none tabular-nums ${color}`}>{value}</div>
+      {sub && <div className="mt-1 text-[9px] text-zinc-500">{sub}</div>}
+    </div>
+  );
+}
+
+function ActionTile({
+  icon: Icon, title, hint, accent, onClick,
+}: { icon: any; title: string; hint: string; accent: "amber" | "magenta"; onClick: () => void }) {
+  const hover = accent === "magenta" ? "hover:border-sunset-magenta" : "hover:border-sunset-amber";
+  const iconBg = accent === "magenta" ? "bg-sunset-magenta/10 text-sunset-magenta" : "bg-sunset-amber/10 text-sunset-amber";
+  return (
+    <button
+      onClick={onClick}
+      className={`group flex flex-col items-start text-left p-4 rounded-2xl bg-zinc-900/40 border border-white/5 ${hover} transition-all`}
+    >
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${iconBg} group-hover:scale-110 transition-transform`}>
+        <Icon size={18} />
+      </div>
+      <span className="font-display uppercase text-[12px] tracking-wide mb-0.5">{title}</span>
+      <span className="text-[10px] text-zinc-500">{hint}</span>
+    </button>
+  );
+}
+
+
+
 /* ------------------------------------------------------------------ */
 /*  Main Command Center                                               */
 /* ------------------------------------------------------------------ */
@@ -208,21 +246,114 @@ export function BizCommandCenter({
   const totalClicks      = campaigns.reduce((s, c) => s + (c.clicks || 0), 0);
   const activeCount      = campaigns.filter((c) => c.status === "active").length;
 
+  // Onboarding checklist -------------------------------------------
+  const steps = [
+    { id: "account", label: "Creat cont", done: true },
+    { id: "profile", label: "Profil bază", done: completeness >= 40 },
+    { id: "verify",  label: "Verifică identitatea", done: !!business.verified },
+    { id: "event",   label: "Publică primul eveniment", done: upcomingEvents.length > 0 || (data?.offers?.length ?? 0) > 0 },
+  ];
+  const stepsDone = steps.filter((s) => s.done).length;
+  const allDone = stepsDone === steps.length;
+
+  const shareProfile = async () => {
+    const url = `${window.location.origin}/biz/${business.slug ?? business.id}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: business.brand_name, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copiat în clipboard");
+      }
+    } catch {
+      /* user cancelled */
+    }
+  };
+
   return (
     <div className="space-y-5">
-      {/* ============== 1. OVERVIEW ============== */}
-      <GlassCard className="p-4">
-        <SectionHeader icon={BarChart3} label="Privire de ansamblu" hint="Date reale, live" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <StatTile label="Vizualizări profil" value={fmt(profileViews)} accent="amber" />
-          <StatTile label="Recenzii (7z)"     value={fmt(newReviews7)}   sub="noi" accent="orange" />
-          <StatTile label="Recenzii total"    value={fmt(reviewCount)}   sub={rating ? `${rating.toFixed(2)}★` : "—"} accent="magenta" />
-          <StatTile label="Evenimente active" value={upcomingEvents.length} accent="amber" />
+      {/* ============== ONBOARDING CHECKLIST ============== */}
+      {!allDone && (
+        <GlassCard className="p-5 border-sunset-amber/20 bg-sunset-amber/[0.03]">
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="font-display uppercase text-[13px] tracking-wide text-sunset-amber">
+              Configurare local ({stepsDone}/{steps.length} pași gata)
+            </div>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-sunset-amber bg-sunset-amber/10 px-2 py-1 rounded">
+              Acțiune necesară
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {steps.map((s, idx) => (
+              <div key={s.id} className={`flex items-center gap-3 ${s.done ? "opacity-50" : ""}`}>
+                <div className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center ${
+                  s.done ? "bg-sunset-amber text-zinc-950" :
+                  idx === stepsDone ? "border-2 border-sunset-amber text-sunset-amber italic" :
+                  "border-2 border-white/15 text-zinc-500"
+                } text-[10px] font-bold`}>
+                  {s.done ? <Check size={13} strokeWidth={3} /> : idx + 1}
+                </div>
+                <span className={`text-[11px] ${s.done ? "font-semibold" : idx === stepsDone ? "font-bold" : "text-zinc-500"}`}>
+                  {s.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      )}
 
-          <StatTile label="Campanii active"   value={activeCount}        accent="orange" />
-          <StatTile label="Ofertă activă"     value={(data?.offers?.length ?? 0)} accent="magenta" />
+      {/* ============== QUICK ACTIONS ============== */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <ActionTile
+          icon={Calendar}
+          title="Publică eveniment"
+          hint="Atrage clienți diseară"
+          accent="magenta"
+          onClick={onNewCampaign}
+        />
+        <ActionTile
+          icon={Rocket}
+          title="Lansează campanie"
+          hint="Promovează localul"
+          accent="amber"
+          onClick={onNewCampaign}
+        />
+        <ActionTile
+          icon={Ticket}
+          title="Creează ofertă"
+          hint="Happy Hour sau reducere"
+          accent="magenta"
+          onClick={onNewCampaign}
+        />
+        <ActionTile
+          icon={Share2}
+          title="Distribuie profil"
+          hint="Social Media sau QR"
+          accent="amber"
+          onClick={shareProfile}
+        />
+      </div>
+
+      {/* ============== 1. COMPACT STATS STRIP ============== */}
+      <GlassCard>
+        <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-sunset-amber animate-pulse" />
+            <h4 className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400">
+              Rezumat activitate · live
+            </h4>
+          </div>
+          <span className="font-mono text-[9px] uppercase tracking-widest text-zinc-600">Ultimele 7 zile</span>
         </div>
-        <p className="mt-3 text-[10px] text-zinc-500 flex items-start gap-1.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y sm:divide-y-0 divide-white/5">
+          <CompactStat label="Vizualizări" value={fmt(profileViews)} />
+          <CompactStat label="Recenzii noi" value={fmt(newReviews7)} accent="orange" />
+          <CompactStat label="Recenzii total" value={fmt(reviewCount)} accent="magenta" sub={rating ? `${rating.toFixed(2)}★` : undefined} />
+          <CompactStat label="Evenimente" value={upcomingEvents.length} />
+          <CompactStat label="Campanii" value={activeCount} accent="orange" />
+          <CompactStat label="Oferte" value={data?.offers?.length ?? 0} accent="magenta" />
+        </div>
+        <p className="px-5 py-3 text-[10px] text-zinc-500 flex items-start gap-1.5 border-t border-white/5">
           <Info size={10} className="mt-[2px] flex-shrink-0" />
           Cifre exacte din baza de date. Nimic estimat, nimic promis.
         </p>
