@@ -478,6 +478,7 @@ export function BizCommandCenter({
 
 
       {/* ============== PERFORMANȚĂ GENERALĂ (KPIs) ============== */}
+      <div id="biz-stats">
       <Card title="Performanță generală" hint="Ultimele 7 zile" icon={TrendingUp}>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y sm:divide-y-0 divide-white/5">
           <KpiBlock icon={Eye}        label="Vizualizări"     value={views7}          delta={pct(views7, views14)}             color="violet" />
@@ -488,9 +489,10 @@ export function BizCommandCenter({
           <KpiBlock icon={Ticket}     label="Oferte claim"    value={offerClaims7}    delta={pct(offerClaims7, offerClaims14)} color="orange" />
         </div>
       </Card>
+      </div>
 
       {/* ============== QUICK ACTIONS ============== */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div id="biz-events" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <ActionTile icon={Calendar} title="Publică eveniment" hint="Atrage clienți diseară" accent="magenta" onClick={onNewCampaign} />
         <ActionTile icon={Rocket}   title="Lansează campanie" hint="Promovează localul"     accent="amber"   onClick={onNewCampaign} />
         <ActionTile icon={Ticket}   title="Creează ofertă"    hint="Happy Hour sau reducere"accent="violet"  onClick={onNewCampaign} />
@@ -498,6 +500,8 @@ export function BizCommandCenter({
       </div>
 
       {/* ============== CHART + LIVE FEED ============== */}
+      <div id="biz-live" />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <Card className="lg:col-span-2" title="Rezumat activitate · live" hint="Ultimele 7 zile" icon={Activity}>
           <div className="px-4 grid grid-cols-3 sm:grid-cols-6 gap-2 pb-3">
