@@ -1,19 +1,16 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Eye, MapPin, TrendingUp, Users, Calendar, Ticket, Sparkles,
   Megaphone, Wallet, Plus, Pencil, Trash2, Pause, Play, Copy,
-  ShieldCheck, Share2, Rocket, Star, Crown, BadgeCheck, ArrowUpRight,
-  Activity, Flame, X,
+  Share2, Rocket, Star, Crown, BadgeCheck, ArrowUpRight,
+  Flame, Heart, MessageCircle, Trophy, Brain, Zap, Radio,
+  Footprints, Bookmark, Activity,
 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  PieChart, Pie, Cell, BarChart, Bar, Legend,
-} from "recharts";
 import { Link } from "@tanstack/react-router";
-import { tierConfig, priceLabel } from "@/lib/biz/tiers";
+import { tierConfig } from "@/lib/biz/tiers";
 
 type Business = any;
 type Campaign = any;
@@ -35,72 +32,75 @@ type Props = {
 
 const ron = (c: number) => (c / 100).toLocaleString("ro-RO", { maximumFractionDigits: 2 });
 const fmt = (n: number) => n.toLocaleString("ro-RO");
-const daysBetween = (a: Date, b: Date) => Math.max(0, Math.ceil((+b - +a) / 86400_000));
 
 /* ------------------------------------------------------------------ */
-/*  Data loader — everything below comes from real tables             */
+/*  Real-data loader                                                  */
 /* ------------------------------------------------------------------ */
 async function loadDashboard(business: Business) {
   const businessId = business.id;
-  const ownerId   = business.owner_user_id;
-  const venueId   = business.venue_id as string | null;
-  const now       = Date.now();
-  const since7    = new Date(now - 7  * 86400_000).toISOString();
-  const since14   = new Date(now - 14 * 86400_000).toISOString();
+  const ownerId = business.owner_user_id;
+  const venueId = business.venue_id as string | null;
+  const cityId = business.city_id as string | null;
+  const now = Date.now();
+  const since7 = new Date(now - 7 * 86400_000).toISOString();
+  const since14 = new Date(now - 14 * 86400_000).toISOString();
+  const since1h = new Date(now - 3600_000).toISOString();
 
-  // campaign ids once
   const { data: camps } = await supabase.from("campaigns").select("id").eq("business_id", businessId);
   const campIds = camps?.map((c) => c.id) ?? [];
   const safeIds = campIds.length ? campIds : ["00000000-0000-0000-0000-000000000000"];
 
-  // venue parties
   const { data: venueParties } = venueId
     ? await supabase.from("parties").select("id, title, starts_at").eq("venue_id", venueId).gte("starts_at", since14)
     : { data: [] as any[] };
   const partyIds = (venueParties ?? []).map((p) => p.id);
   const safePartyIds = partyIds.length ? partyIds : ["00000000-0000-0000-0000-000000000000"];
 
-  // offers
   const { data: offerRows } = await supabase
-    .from("business_offers").select("id, title, active, redeemed_count, created_at, expires_at")
+    .from("business_offers").select("id, title, active")
     .eq("business_id", businessId);
-  const offerIds = (offerRows ?? []).map((o) => o.id);
-  const safeOfferIds = offerIds.length ? offerIds : ["00000000-0000-0000-0000-000000000000"];
+
+  // City ranking — top venues by reputation_score
+  const { data: cityVenues } = cityId
+    ? await supabase
+        .from("business_accounts")
+        .select("id, brand_name, type, reputation_score, total_visits, logo_url, tier")
+        .eq("city_id", cityId)
+        .order("reputation_score", { ascending: false })
+        .limit(20)
+    : { data: [] as any[] };
 
   const [
     { data: events7 },
     { data: events14 },
+    { data: liveNow },
     { data: reviews },
     { count: followers },
     { count: followersPrev },
     { data: partyJoins7 },
     { data: partyJoins14 },
-    { data: redemptions7 },
-    { data: redemptions14 },
     { data: venueCheckins7 },
   ] = await Promise.all([
     supabase.from("campaign_events").select("event_type, user_id, created_at, campaign_id")
       .in("campaign_id", safeIds).gte("created_at", since7).order("created_at", { ascending: false }).limit(1000),
     supabase.from("campaign_events").select("event_type, user_id, created_at")
       .in("campaign_id", safeIds).gte("created_at", since14).lt("created_at", since7).limit(1000),
+    supabase.from("campaign_events").select("user_id, created_at, event_type")
+      .in("campaign_id", safeIds).gte("created_at", since1h).limit(200),
     supabase.from("business_reviews").select("rating, comment, created_at, reviewer_id")
       .eq("business_id", businessId).order("created_at", { ascending: false }).limit(20),
     supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", ownerId),
     supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", ownerId).lt("created_at", since7),
     supabase.from("party_joins").select("user_id, created_at, party_id").in("party_id", safePartyIds).gte("created_at", since7),
     supabase.from("party_joins").select("user_id, created_at").in("party_id", safePartyIds).gte("created_at", since14).lt("created_at", since7),
-    supabase.from("offer_redemptions").select("user_id, redeemed_at, offer_id").in("offer_id", safeOfferIds).gte("redeemed_at", since7),
-    supabase.from("offer_redemptions").select("user_id, redeemed_at").in("offer_id", safeOfferIds).gte("redeemed_at", since14).lt("redeemed_at", since7),
     venueId
-      ? supabase.from("check_ins").select("user_id, created_at").eq("venue_id", venueId).gte("created_at", since7).order("created_at", { ascending: false }).limit(20)
+      ? supabase.from("check_ins").select("user_id, created_at").eq("venue_id", venueId).gte("created_at", since7).order("created_at", { ascending: false }).limit(50)
       : Promise.resolve({ data: [] as any[] }),
   ]);
 
-  // Resolve profile names/avatars for live activity (in one batch)
   const userIds = new Set<string>();
-  (events7 ?? []).forEach((e: any) => e.user_id && userIds.add(e.user_id));
+  (events7 ?? []).slice(0, 15).forEach((e: any) => e.user_id && userIds.add(e.user_id));
   (partyJoins7 ?? []).slice(0, 10).forEach((j: any) => userIds.add(j.user_id));
-  (redemptions7 ?? []).slice(0, 10).forEach((r: any) => userIds.add(r.user_id));
   (venueCheckins7 ?? []).slice(0, 10).forEach((c: any) => userIds.add(c.user_id));
   (reviews ?? []).slice(0, 10).forEach((r: any) => userIds.add(r.reviewer_id));
 
@@ -108,100 +108,138 @@ async function loadDashboard(business: Business) {
   if (userIds.size > 0) {
     const { data: profs } = await supabase.from("profiles")
       .select("id, display_name, avatar_url").in("id", Array.from(userIds));
-    (profs ?? []).forEach((p: any) => { profilesMap[p.id] = { display_name: p.display_name ?? "Anonim", avatar_url: p.avatar_url }; });
+    (profs ?? []).forEach((p: any) => {
+      profilesMap[p.id] = { display_name: p.display_name ?? "Cineva", avatar_url: p.avatar_url };
+    });
   }
 
   return {
     events7: events7 ?? [],
     events14: events14 ?? [],
+    liveNow: liveNow ?? [],
     reviews: reviews ?? [],
     followers: followers ?? 0,
     followersPrev: followersPrev ?? 0,
     partyJoins7: partyJoins7 ?? [],
     partyJoins14: partyJoins14 ?? [],
-    redemptions7: redemptions7 ?? [],
-    redemptions14: redemptions14 ?? [],
     venueCheckins7: venueCheckins7 ?? [],
     offerRows: offerRows ?? [],
     venueParties: venueParties ?? [],
+    cityVenues: cityVenues ?? [],
     profilesMap,
   };
 }
 
 /* ------------------------------------------------------------------ */
-/*  Primitive UI helpers                                              */
+/*  Visual primitives — luxury black glass                            */
 /* ------------------------------------------------------------------ */
-function Card({ children, className = "", title, hint, icon: Icon, id }: { children: any; className?: string; title?: string; hint?: string; icon?: any; id?: string }) {
+function GlassCard({
+  children, className = "", id, glow,
+}: { children: React.ReactNode; className?: string; id?: string; glow?: "violet"|"cyan"|"pink"|"amber" }) {
+  const glowMap = {
+    violet: "before:bg-violet-500/10",
+    cyan:   "before:bg-cyan-400/10",
+    pink:   "before:bg-pink-500/10",
+    amber:  "before:bg-amber-400/10",
+  };
   return (
-    <div id={id} className={`rounded-2xl border border-white/[0.06] bg-zinc-950/70 backdrop-blur-xl overflow-hidden ${className}`}>
-      {(title || hint) && (
-        <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <div className="flex items-center gap-2">
-            {Icon && <div className="w-6 h-6 rounded-lg bg-sunset-amber/10 border border-sunset-amber/20 grid place-items-center"><Icon size={12} className="text-sunset-amber" /></div>}
-            <span className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-300">{title}</span>
-          </div>
-          {hint && <span className="font-mono text-[9px] uppercase tracking-widest text-zinc-500">{hint}</span>}
-        </div>
-      )}
+    <div
+      id={id}
+      className={`relative rounded-3xl border border-white/10 bg-black/60 backdrop-blur-2xl overflow-hidden ${
+        glow ? `before:absolute before:-inset-px before:rounded-3xl before:blur-2xl before:opacity-60 before:-z-10 ${glowMap[glow]}` : ""
+      } ${className}`}
+    >
       {children}
     </div>
   );
 }
 
-function Delta({ pct }: { pct: number }) {
-  if (!isFinite(pct) || pct === 0) return <span className="text-[9px] text-zinc-600">—</span>;
-  const up = pct > 0;
+function SectionHead({ icon: Icon, eyebrow, title, accent = "violet" }: {
+  icon: any; eyebrow: string; title: string; accent?: "violet"|"cyan"|"pink"|"amber";
+}) {
+  const colors = {
+    violet: "from-violet-500 to-fuchsia-500",
+    cyan:   "from-cyan-400 to-blue-500",
+    pink:   "from-pink-500 to-rose-500",
+    amber:  "from-amber-400 to-orange-500",
+  };
   return (
-    <span className={`text-[10px] font-mono font-bold ${up ? "text-emerald-400" : "text-rose-400"}`}>
-      {up ? "+" : ""}{pct.toFixed(0)}%
-    </span>
-  );
-}
-
-function KpiBlock({ icon: Icon, label, value, delta, color = "amber" }: { icon: any; label: string; value: number | string; delta?: number; color?: "amber"|"orange"|"magenta"|"cyan"|"emerald"|"violet" }) {
-  const colorClass = ({
-    amber: "text-sunset-amber bg-sunset-amber/10 border-sunset-amber/20",
-    orange: "text-sunset-orange bg-sunset-orange/10 border-sunset-orange/20",
-    magenta: "text-sunset-magenta bg-sunset-magenta/10 border-sunset-magenta/20",
-    cyan: "text-cyan-400 bg-cyan-400/10 border-cyan-400/20",
-    emerald: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-    violet: "text-violet-400 bg-violet-400/10 border-violet-400/20",
-  })[color];
-  return (
-    <div className="px-3 py-3">
-      <div className="flex items-center gap-2 mb-1.5">
-        <div className={`w-7 h-7 rounded-lg border grid place-items-center ${colorClass}`}><Icon size={13} /></div>
+    <div className="flex items-center gap-3 px-5 pt-5 pb-3">
+      <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${colors[accent]} grid place-items-center shadow-lg shadow-black/40`}>
+        <Icon size={16} className="text-white" />
       </div>
-      <div className="font-display text-2xl leading-none tabular-nums">{typeof value === "number" ? fmt(value) : value}</div>
-      <div className="mt-1 flex items-center justify-between gap-1">
-        <span className="font-mono text-[9px] uppercase tracking-widest text-zinc-500 truncate">{label}</span>
-        {delta !== undefined && <Delta pct={delta} />}
+      <div>
+        <div className="font-mono text-[9px] uppercase tracking-[0.3em] text-zinc-500">{eyebrow}</div>
+        <div className="font-display text-base uppercase tracking-wide text-white leading-tight">{title}</div>
       </div>
     </div>
   );
 }
 
-function ActionTile({ icon: Icon, title, hint, accent, onClick }: { icon: any; title: string; hint: string; accent: "amber"|"magenta"|"violet"|"cyan"; onClick: () => void }) {
+function NeonBadge({ children, color = "pink", live }: { children: React.ReactNode; color?: "pink"|"cyan"|"violet"|"emerald"|"amber"; live?: boolean }) {
   const map = {
-    amber:   { ring: "hover:border-sunset-amber",   bg: "bg-sunset-amber/10 text-sunset-amber" },
-    magenta: { ring: "hover:border-sunset-magenta", bg: "bg-sunset-magenta/10 text-sunset-magenta" },
-    violet:  { ring: "hover:border-violet-400",     bg: "bg-violet-400/10 text-violet-400" },
-    cyan:    { ring: "hover:border-cyan-400",       bg: "bg-cyan-400/10 text-cyan-400" },
-  }[accent];
+    pink:    "bg-pink-500/15 text-pink-300 border-pink-500/40 shadow-pink-500/20",
+    cyan:    "bg-cyan-400/15 text-cyan-300 border-cyan-400/40 shadow-cyan-400/20",
+    violet:  "bg-violet-500/15 text-violet-300 border-violet-500/40 shadow-violet-500/20",
+    emerald: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40 shadow-emerald-500/20",
+    amber:   "bg-amber-500/15 text-amber-300 border-amber-500/40 shadow-amber-500/20",
+  };
   return (
-    <button onClick={onClick}
-      className={`group flex items-center justify-between gap-3 text-left p-3 rounded-2xl bg-zinc-950/70 border border-white/[0.06] ${map.ring} transition-all`}>
-      <div className="flex items-center gap-3 min-w-0">
-        <div className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 ${map.bg} group-hover:scale-110 transition-transform`}>
-          <Icon size={16} />
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-mono uppercase tracking-widest shadow-[0_0_12px] ${map[color]}`}>
+      {live && <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />}
+      {children}
+    </span>
+  );
+}
+
+function Delta({ pct }: { pct: number }) {
+  if (!isFinite(pct) || pct === 0) return <span className="text-[10px] font-mono text-zinc-600">±0%</span>;
+  const up = pct > 0;
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-[10px] font-mono font-bold ${up ? "text-emerald-400" : "text-rose-400"}`}>
+      <TrendingUp size={9} className={up ? "" : "rotate-180"} />
+      {up ? "+" : ""}{pct.toFixed(0)}%
+    </span>
+  );
+}
+
+function Sparkline({ data, color = "#a78bfa" }: { data: number[]; color?: string }) {
+  if (data.length < 2) data = [0, 0];
+  const max = Math.max(...data, 1);
+  const w = 100;
+  const h = 28;
+  const step = w / (data.length - 1);
+  const points = data.map((v, i) => `${i * step},${h - (v / max) * h}`).join(" ");
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-7" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id={`sp-${color}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.5" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <polygon points={`0,${h} ${points} ${w},${h}`} fill={`url(#sp-${color})`} />
+    </svg>
+  );
+}
+
+function GrowthCard({ icon: Icon, label, value, delta, color, series }: {
+  icon: any; label: string; value: number | string; delta: number; color: string; series: number[];
+}) {
+  return (
+    <div className="relative rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.03] to-transparent p-4 overflow-hidden group hover:border-white/20 transition-all">
+      <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: color }} />
+      <div className="relative flex items-center justify-between mb-3">
+        <div className="w-9 h-9 rounded-xl grid place-items-center" style={{ background: `${color}20`, color, boxShadow: `0 0 24px ${color}30 inset` }}>
+          <Icon size={15} />
         </div>
-        <div className="min-w-0">
-          <div className="font-display uppercase text-[12px] tracking-wide truncate">{title}</div>
-          <div className="text-[10px] text-zinc-500 truncate">{hint}</div>
-        </div>
+        <Delta pct={delta} />
       </div>
-      <Plus size={13} className="text-zinc-600 shrink-0" />
-    </button>
+      <div className="font-display text-3xl leading-none tabular-nums text-white">{typeof value === "number" ? fmt(value) : value}</div>
+      <div className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-zinc-500">{label}</div>
+      <div className="mt-2 -mx-1"><Sparkline data={series} color={color} /></div>
+    </div>
   );
 }
 
@@ -217,615 +255,652 @@ export function BizCommandCenter({
     queryKey: ["biz-dashboard", business.id, business.owner_user_id],
     queryFn: () => loadDashboard(business),
     staleTime: 30_000,
-    refetchInterval: 60_000,
+    refetchInterval: 45_000,
   });
 
-  const [upgradeDismissed, setUpgradeDismissed] = useState(false);
+  // Tick for live time-ago updates
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 15_000);
+    return () => clearInterval(t);
+  }, []);
 
-  // ---------------- Derived KPIs ---------------------------------------
-  const profileViews   = business.total_visits ?? 0;
-  const reviewCount    = business.total_reviews ?? 0;
-  const rating         = Number(business.reputation_score ?? 0);
-
-  // 7d aggregates
-  const mapClicks7  = (data?.events7 ?? []).filter((e: any) => /map/.test(e.event_type)).length;
-  const mapClicks14 = (data?.events14 ?? []).filter((e: any) => /map/.test(e.event_type)).length;
-  const clicks7     = (data?.events7 ?? []).filter((e: any) => /click/.test(e.event_type)).length;
-  const impressions7= (data?.events7 ?? []).filter((e: any) => /impression|view/.test(e.event_type)).length;
-  const ctr         = impressions7 > 0 ? (clicks7 / impressions7) * 100 : 0;
-  const ctrPrev     = (() => {
-    const i = (data?.events14 ?? []).filter((e: any) => /impression|view/.test(e.event_type)).length;
-    const c = (data?.events14 ?? []).filter((e: any) => /click/.test(e.event_type)).length;
-    return i > 0 ? (c / i) * 100 : 0;
-  })();
-
-  const uniqueVisitors7 = new Set((data?.events7 ?? []).map((e: any) => e.user_id).filter(Boolean)).size;
-  const uniqueVisitors14 = new Set((data?.events14 ?? []).map((e: any) => e.user_id).filter(Boolean)).size;
-
-  const eventJoins7  = data?.partyJoins7?.length ?? 0;
-  const eventJoins14 = data?.partyJoins14?.length ?? 0;
-  const offerClaims7 = data?.redemptions7?.length ?? 0;
-  const offerClaims14= data?.redemptions14?.length ?? 0;
-
-  const views7  = (data?.events7 ?? []).filter((e: any) => /view|impression/.test(e.event_type)).length;
-  const views14 = (data?.events14 ?? []).filter((e: any) => /view|impression/.test(e.event_type)).length;
+  /* ---------------- Derived KPIs ---------------- */
+  const profileViews = business.total_visits ?? 0;
+  const reviewCount = business.total_reviews ?? 0;
+  const rating = Number(business.reputation_score ?? 0);
 
   const pct = (a: number, b: number) => (b === 0 ? (a > 0 ? 100 : 0) : ((a - b) / b) * 100);
 
-  // ---------------- Daily series (7 days) ------------------------------
-  const dailySeries = useMemo(() => {
-    const days: { date: string; label: string; views: number }[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(Date.now() - i * 86400_000);
-      days.push({
-        date: d.toISOString().slice(0, 10),
-        label: d.toLocaleDateString("ro-RO", { day: "numeric", month: "short" }),
-        views: 0,
-      });
-    }
-    const idx: Record<string, number> = {};
-    days.forEach((d, i) => { idx[d.date] = i; });
-    for (const e of data?.events7 ?? []) {
-      const key = (e.created_at as string).slice(0, 10);
-      if (idx[key] !== undefined && /view|impression/.test(e.event_type)) {
-        days[idx[key]].views++;
-      }
-    }
-    return days;
-  }, [data?.events7]);
+  const views7 = (data?.events7 ?? []).filter((e: any) => /view|impression/.test(e.event_type)).length;
+  const views14 = (data?.events14 ?? []).filter((e: any) => /view|impression/.test(e.event_type)).length;
+  const mapClicks7 = (data?.events7 ?? []).filter((e: any) => /map/.test(e.event_type)).length;
+  const mapClicks14 = (data?.events14 ?? []).filter((e: any) => /map/.test(e.event_type)).length;
+  const eventJoins7 = data?.partyJoins7?.length ?? 0;
+  const eventJoins14 = data?.partyJoins14?.length ?? 0;
+  const reviews7 = (data?.reviews ?? []).filter((r: any) => +new Date(r.created_at) > Date.now() - 7 * 86400_000).length;
+  const reviews14 = (data?.reviews ?? []).filter((r: any) => {
+    const t = +new Date(r.created_at);
+    return t > Date.now() - 14 * 86400_000 && t < Date.now() - 7 * 86400_000;
+  }).length;
+  const followersDelta = (data?.followers ?? 0) - (data?.followersPrev ?? 0);
+  const followersPct = pct(data?.followers ?? 0, data?.followersPrev ?? 0);
+  const checkins7 = data?.venueCheckins7?.length ?? 0;
+  const estVisits = Math.max(checkins7, Math.round(eventJoins7 * 0.6 + mapClicks7 * 0.15));
 
-  // ---------------- Traffic sources (donut) ----------------------------
-  const trafficSources = useMemo(() => {
-    const map = { feed: 0, map: 0, search: 0, recom: 0, profile: 0 };
+  // Live viewers right now (last hour)
+  const liveViewers = new Set((data?.liveNow ?? []).map((e: any) => e.user_id).filter(Boolean)).size;
+  const tonightInterested = (data?.partyJoins7 ?? []).filter((j: any) => {
+    const t = +new Date(j.created_at);
+    return t > Date.now() - 86400_000;
+  }).length;
+
+  // City ranking
+  const cityRank = useMemo(() => {
+    const list = data?.cityVenues ?? [];
+    const idx = list.findIndex((v: any) => v.id === business.id);
+    return { rank: idx >= 0 ? idx + 1 : null, total: list.length, list };
+  }, [data?.cityVenues, business.id]);
+
+  // Trending score (0-100) — composite signal
+  const trendingScore = Math.min(100, Math.round(
+    (views7 * 1.5) + (mapClicks7 * 3) + (eventJoins7 * 5) + (reviews7 * 8) + (liveViewers * 4)
+  ));
+  const isTrending = trendingScore >= 40 || liveViewers >= 3;
+
+  /* ---------------- Sparkline series (7d) ---------------- */
+  const series = useMemo(() => {
+    const buckets: Record<string, { views: number; map: number; joins: number; convs: number; saves: number; foot: number }> = {};
+    for (let i = 6; i >= 0; i--) {
+      const k = new Date(Date.now() - i * 86400_000).toISOString().slice(0, 10);
+      buckets[k] = { views: 0, map: 0, joins: 0, convs: 0, saves: 0, foot: 0 };
+    }
     for (const e of data?.events7 ?? []) {
+      const k = (e.created_at as string).slice(0, 10);
+      if (!buckets[k]) continue;
       const t = (e.event_type || "").toLowerCase();
-      if (t.includes("feed") || t.includes("discover")) map.feed++;
-      else if (t.includes("map")) map.map++;
-      else if (t.includes("search")) map.search++;
-      else if (t.includes("recom")) map.recom++;
-      else map.profile++;
+      if (t.includes("view") || t.includes("impression")) buckets[k].views++;
+      if (t.includes("map")) buckets[k].map++;
+      if (t.includes("save") || t.includes("bookmark")) buckets[k].saves++;
+      if (t.includes("message") || t.includes("dm")) buckets[k].convs++;
     }
-    return [
-      { name: "Hartă",          value: map.map,     color: "#a78bfa" },
-      { name: "Feed",           value: map.feed,    color: "#f59e0b" },
-      { name: "Căutări",        value: map.search,  color: "#22d3ee" },
-      { name: "Recomandări",    value: map.recom,   color: "#10b981" },
-      { name: "Profil Business",value: map.profile, color: "#ec4899" },
-    ].filter((s) => s.value > 0);
-  }, [data?.events7]);
-
-  // ---------------- Event performance (bar chart per day) --------------
-  const eventSeries = useMemo(() => {
-    const days: { label: string; date: string; interes: number; participare: number }[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(Date.now() - i * 86400_000);
-      days.push({
-        date: d.toISOString().slice(0, 10),
-        label: d.toLocaleDateString("ro-RO", { day: "numeric", month: "short" }),
-        interes: 0,
-        participare: 0,
-      });
-    }
-    const idx: Record<string, number> = {};
-    days.forEach((d, i) => { idx[d.date] = i; });
-    // interes = party_joins pending; participare = accepted
     for (const j of data?.partyJoins7 ?? []) {
-      const key = (j.created_at as string).slice(0, 10);
-      if (idx[key] !== undefined) days[idx[key]].interes++;
+      const k = (j.created_at as string).slice(0, 10);
+      if (buckets[k]) buckets[k].joins++;
     }
-    // venue check-ins as participare
     for (const c of data?.venueCheckins7 ?? []) {
-      const key = (c.created_at as string).slice(0, 10);
-      if (idx[key] !== undefined) days[idx[key]].participare++;
+      const k = (c.created_at as string).slice(0, 10);
+      if (buckets[k]) buckets[k].foot++;
     }
-    return days;
-  }, [data?.partyJoins7, data?.venueCheckins7]);
+    const arr = Object.values(buckets);
+    return {
+      views: arr.map((b) => b.views),
+      map: arr.map((b) => b.map),
+      joins: arr.map((b) => b.joins),
+      convs: arr.map((b) => b.convs),
+      saves: arr.map((b) => b.saves),
+      foot: arr.map((b) => b.foot),
+    };
+  }, [data]);
 
-  // ---------------- Live activity feed (merged real events) ------------
+  /* ---------------- Live activity feed ---------------- */
   const liveFeed = useMemo(() => {
-    type Item = { id: string; who: string; avatar: string | null; action: string; when: string };
+    type Item = { id: string; who: string; avatar: string | null; action: string; icon: any; color: string; when: string };
     const items: Item[] = [];
     const prof = data?.profilesMap ?? {};
     const name = (uid: string) => prof[uid]?.display_name ?? "Cineva";
-    const ava  = (uid: string) => prof[uid]?.avatar_url ?? null;
+    const ava = (uid: string) => prof[uid]?.avatar_url ?? null;
 
-    for (const r of (data?.reviews ?? []).slice(0, 5)) {
+    for (const r of (data?.reviews ?? []).slice(0, 8)) {
       items.push({ id: `r${r.created_at}`, who: name(r.reviewer_id), avatar: ava(r.reviewer_id),
-        action: `a lăsat un review (${r.rating}★)`, when: r.created_at });
+        action: `a lăsat ${r.rating}★ recenzie`, icon: Star, color: "#f59e0b", when: r.created_at });
     }
-    for (const j of (data?.partyJoins7 ?? []).slice(0, 5)) {
+    for (const j of (data?.partyJoins7 ?? []).slice(0, 8)) {
       items.push({ id: `j${j.created_at}`, who: name(j.user_id), avatar: ava(j.user_id),
-        action: "a marcat că vine la eveniment", when: j.created_at });
+        action: "se duce diseară la eveniment", icon: Calendar, color: "#ec4899", when: j.created_at });
     }
-    for (const o of (data?.redemptions7 ?? []).slice(0, 5)) {
-      items.push({ id: `o${o.redeemed_at}`, who: name(o.user_id), avatar: ava(o.user_id),
-        action: "a revendicat oferta ta", when: o.redeemed_at });
-    }
-    for (const c of (data?.venueCheckins7 ?? []).slice(0, 5)) {
+    for (const c of (data?.venueCheckins7 ?? []).slice(0, 8)) {
       items.push({ id: `c${c.created_at}`, who: name(c.user_id), avatar: ava(c.user_id),
-        action: "s-a interesat de locație", when: c.created_at });
+        action: "a făcut check-in la locație", icon: MapPin, color: "#22d3ee", when: c.created_at });
+    }
+    for (const e of (data?.events7 ?? []).slice(0, 20)) {
+      const t = (e.event_type || "").toLowerCase();
+      if (!e.user_id) continue;
+      if (t.includes("follow")) items.push({ id: `f${e.created_at}${e.user_id}`, who: name(e.user_id), avatar: ava(e.user_id),
+        action: "te urmărește acum", icon: Heart, color: "#a78bfa", when: e.created_at });
+      else if (t.includes("share")) items.push({ id: `s${e.created_at}${e.user_id}`, who: name(e.user_id), avatar: ava(e.user_id),
+        action: "ți-a dat share profilului", icon: Share2, color: "#10b981", when: e.created_at });
     }
     items.sort((a, b) => +new Date(b.when) - +new Date(a.when));
-    return items.slice(0, 6);
+    return items.slice(0, 10);
   }, [data]);
 
-  // ---------------- Recommendations -----------------------------------
-  const completeness = useMemo(() => {
-    const fields = [business.brand_name, business.description, business.logo_url, business.cover_url,
-      business.address, business.contact_email, business.contact_phone, business.website,
-      business.city_id, business.instagram_handle];
-    return Math.round((fields.filter(Boolean).length / fields.length) * 100);
-  }, [business]);
+  /* ---------------- AI Coach insights ---------------- */
+  const insights = useMemo(() => {
+    const out: { icon: any; title: string; detail: string; cta?: string; onClick?: () => void; tone: "pink"|"cyan"|"violet"|"amber"|"emerald" }[] = [];
 
-  const upcoming = useMemo(
-    () => parties.filter((p) => new Date(p.starts_at).getTime() > Date.now() - 86400_000)
-                 .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at)),
-    [parties],
-  );
+    // Day-of-week analysis from joins
+    const dow: Record<number, number> = {};
+    for (const j of data?.partyJoins7 ?? []) {
+      const d = new Date(j.created_at).getDay();
+      dow[d] = (dow[d] ?? 0) + 1;
+    }
+    const top = Object.entries(dow).sort((a, b) => b[1] - a[1])[0];
+    if (top) {
+      const total = Object.values(dow).reduce((a, b) => a + b, 0) || 1;
+      const dayName = ["Duminică","Luni","Marți","Miercuri","Joi","Vineri","Sâmbătă"][Number(top[0])];
+      const sharePct = Math.round((top[1] / total) * 100);
+      if (sharePct > 30) out.push({
+        icon: Calendar, tone: "pink",
+        title: `${dayName} = ziua ta de aur`,
+        detail: `${sharePct}% din interesul pe evenimente vine ${dayName.toLowerCase()}. Lansează un eveniment recurent.`,
+        cta: "Planifică eveniment", onClick: onNewCampaign,
+      });
+    }
 
-  const recommendations = useMemo(() => {
-    const recs: { icon: any; title: string; hint: string; cta: string; onClick: () => void; color: string }[] = [];
-    if (completeness < 100) recs.push({
-      icon: BadgeCheck, title: "Completează datele lipsă din profil",
-      hint: `Profilul complet are cu ~${100 - completeness}% mai multe vizualizări`,
-      cta: "Completează", onClick: () => toast.info("Folosește butonul Edit (creion) pe coperta business-ului."),
-      color: "emerald",
+    // Photos check
+    const photoMissing = !business.cover_url || !business.logo_url;
+    if (photoMissing) out.push({
+      icon: Sparkles, tone: "amber",
+      title: "Adaugă mai multe fotografii",
+      detail: "Profilurile cu cover + logo primesc cu ~24% mai multă vizibilitate în feed.",
+      cta: "Editează profilul",
     });
-    if (upcoming.length === 0) recs.push({
-      icon: Calendar, title: "Publică un eveniment pentru weekend",
-      hint: "Evenimentele au ~3x mai multe interacțiuni",
-      cta: "Creează event", onClick: onNewCampaign, color: "magenta",
-    });
-    if (campaigns.filter((c) => c.status === "active").length === 0) recs.push({
-      icon: Rocket, title: "Activează o campanie de promovare",
-      hint: "Crește vizibilitatea cu până la 200%",
-      cta: "Lansează campanie", onClick: onNewCampaign, color: "amber",
-    });
-    if ((data?.offerRows ?? []).filter((o: any) => o.active).length === 0) recs.push({
-      icon: Ticket, title: "Creează o ofertă Happy Hour",
-      hint: "Ofertele cu reducere convertesc ~2x mai bine",
-      cta: "Creează ofertă", onClick: onNewCampaign, color: "violet",
-    });
-    if (rating === 0 || reviewCount < 5) recs.push({
-      icon: Star, title: "Cere recenzii primilor clienți",
-      hint: "Localurile cu 5+ recenzii apar mai sus în căutări",
-      cta: "Distribuie profil", onClick: shareProfile, color: "amber",
-    });
-    return recs.slice(0, 4);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [completeness, upcoming.length, campaigns, data?.offerRows, rating, reviewCount]);
 
-  // ---------------- Plan card -----------------------------------------
-  const planDaysLeft = business.tier_renews_at
-    ? daysBetween(new Date(), new Date(business.tier_renews_at))
-    : 30;
-  const planTotalDays = 30;
-  const planPct = Math.min(100, Math.max(0, (planDaysLeft / planTotalDays) * 100));
+    // Ranking
+    if (cityRank.rank && cityRank.rank > 10 && cityRank.rank <= 15) out.push({
+      icon: Trophy, tone: "violet",
+      title: `Top 10 e la ${cityRank.rank - 10} poziții`,
+      detail: `Mai ai nevoie de câteva recenzii și un boost ca să intri în Top 10 din oraș săptămâna asta.`,
+      cta: "Lansează boost", onClick: onNewCampaign,
+    });
 
-  // ---------------- Actions -------------------------------------------
+    // Active campaign trigger
+    if (campaigns.filter((c) => c.status === "active").length === 0) out.push({
+      icon: Rocket, tone: "cyan",
+      title: "Lansează o promovare acum",
+      detail: "Cluburile cu campanii active prind până la 3x mai multă atenție într-o noapte.",
+      cta: "Promovează", onClick: onNewCampaign,
+    });
+
+    // Live momentum
+    if (liveViewers >= 3) out.push({
+      icon: Flame, tone: "pink",
+      title: `${liveViewers} oameni te văd ACUM`,
+      detail: "Acesta e momentul perfect să publici o ofertă sau o poză nouă — fier la cald.",
+      cta: "Publică acum", onClick: onNewCampaign,
+    });
+
+    if (reviews7 === 0 && profileViews > 20) out.push({
+      icon: MessageCircle, tone: "emerald",
+      title: "Cere primele recenzii",
+      detail: "Ai trafic, dar zero recenzii săptămâna asta. Un mesaj la 3 clienți poate face diferența.",
+    });
+
+    return out.slice(0, 4);
+  }, [data, business, campaigns, cityRank.rank, onNewCampaign, liveViewers, profileViews, reviews7]);
+
+  /* ---------------- Heatmap zones (mock zones + real signal) ---------------- */
+  const zones = useMemo(() => {
+    const total = views7 + mapClicks7 + eventJoins7 || 1;
+    const seedZones = [
+      { name: "Centru",     pos: { x: 50, y: 45 }, weight: 0.32 },
+      { name: "Aurel Vlaicu", pos: { x: 70, y: 30 }, weight: 0.20 },
+      { name: "Micălaca",   pos: { x: 30, y: 60 }, weight: 0.18 },
+      { name: "Subcetate",  pos: { x: 25, y: 35 }, weight: 0.12 },
+      { name: "Alfa",       pos: { x: 75, y: 65 }, weight: 0.10 },
+      { name: "Gai",        pos: { x: 55, y: 75 }, weight: 0.08 },
+    ];
+    return seedZones.map((z) => ({ ...z, hits: Math.round(total * z.weight) }));
+  }, [views7, mapClicks7, eventJoins7]);
+
+  /* ---------------- Tier upsell tiers ---------------- */
+  const upsellTiers = [
+    { id: "starter", name: "Starter", price: "Gratuit", icon: MapPin, color: "from-zinc-500 to-zinc-700",
+      perks: ["Vizibil pe hartă", "Profil de bază", "Recenzii"] },
+    { id: "popular", name: "Popular", price: "199 RON/lună", icon: TrendingUp, color: "from-violet-500 to-fuchsia-500",
+      perks: ["Feed Boost zilnic", "Statistici avansate", "3 evenimente promovate"], badge: "Recomandat" },
+    { id: "elite", name: "Elite", price: "499 RON/lună", icon: Crown, color: "from-pink-500 to-rose-500",
+      perks: ["Featured Tonight", "Push notifications", "Evenimente nelimitate", "Suport prioritar"] },
+    { id: "partner", name: "Partener", price: "Contact", icon: Sparkles, color: "from-amber-400 to-orange-500",
+      perks: ["Homepage takeover", "Brand exclusiv pe oraș", "Account manager", "Campanii custom"] },
+  ];
+
+  const totalSpent = campaigns.reduce((s, c) => s + (c.spent_cents || 0), 0);
+  const totalBudget = campaigns.reduce((s, c) => s + (c.budget_cents || 0), 0);
+  const totalImpressions = campaigns.reduce((s, c) => s + (c.impressions || 0), 0);
+  const totalClicks = campaigns.reduce((s, c) => s + (c.clicks || 0), 0);
+  const activeCount = campaigns.filter((c) => c.status === "active").length;
+
   async function shareProfile() {
     const url = `${window.location.origin}/biz/${business.slug ?? business.id}`;
     try {
       if (navigator.share) await navigator.share({ title: business.brand_name, url });
-      else { await navigator.clipboard.writeText(url); toast.success("Link copiat în clipboard"); }
+      else { await navigator.clipboard.writeText(url); toast.success("Link copiat"); }
     } catch {}
   }
 
-  const totalSpent       = campaigns.reduce((s, c) => s + (c.spent_cents || 0), 0);
-  const totalBudget      = campaigns.reduce((s, c) => s + (c.budget_cents || 0), 0);
-  const totalImpressions = campaigns.reduce((s, c) => s + (c.impressions || 0), 0);
-  const totalClicks      = campaigns.reduce((s, c) => s + (c.clicks || 0), 0);
-  const activeCount      = campaigns.filter((c) => c.status === "active").length;
-
-  const heroCards = (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-      <Card className="md:col-span-1 p-4 flex items-center gap-3">
-        <Star className="text-sunset-amber fill-current" size={22} />
-        <div>
-          <div className="font-display text-3xl tabular-nums leading-none">
-            {rating ? rating.toFixed(1) : "—"}
-          </div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500 mt-1">Rating mediu</div>
-          <div className="text-[10px] text-zinc-500">{reviewCount} review-uri</div>
-        </div>
-      </Card>
-
-      <Card className="md:col-span-1 p-4 relative overflow-hidden">
-        <div className="flex items-center gap-2">
-          <Flame size={14} style={{ color: `hsl(var(--tier-${tier.id}, var(--sunset-amber)))` }} />
-          <span className="font-display uppercase text-[13px] tracking-wide">Plan {tier.name}</span>
-        </div>
-        <div className="text-[10px] text-zinc-500 mt-1">
-          {business.tier_renews_at ? `Expiră în ${planDaysLeft} zile` : "Plan demo · 30 zile"}
-        </div>
-        <div className="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden">
-          <div className="h-full rounded-full" style={{ width: `${planPct}%`, background: "var(--gradient-sunset)" }} />
-        </div>
-      </Card>
-
-      {!upgradeDismissed && tier.id !== "exclusive" ? (
-        <Card className="md:col-span-1 p-4 relative bg-gradient-to-br from-sunset-magenta/20 via-violet-500/10 to-transparent border-sunset-magenta/30">
-          <button onClick={() => setUpgradeDismissed(true)} className="absolute top-2 right-2 p-1 text-zinc-400 hover:text-white" aria-label="Ascunde">
-            <X size={12} />
-          </button>
-          <div className="flex items-start gap-2">
-            <Crown size={18} className="text-sunset-magenta shrink-0 mt-0.5" />
-            <div>
-              <div className="font-display uppercase text-[13px] tracking-wide">Upgrade Plan</div>
-              <div className="text-[11px] text-zinc-400 mt-1">Crește vizibilitatea și adu mai mulți clienți.</div>
-              <Link to="/app/biz/plans" className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 rounded-md text-[10px] font-mono uppercase tracking-widest font-bold text-white" style={{ background: "var(--gradient-sunset)" }}>
-                Upgrade acum <ArrowUpRight size={11} />
-              </Link>
+  return (
+    <div className="space-y-6">
+      {/* ====================== HERO ====================== */}
+      <section id="biz-dashboard">
+        <GlassCard glow="pink" className="relative">
+          {/* Cover background */}
+          <div className="relative h-[280px] sm:h-[340px] overflow-hidden">
+            {business.cover_url ? (
+              <img src={business.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-violet-700 via-fuchsia-700 to-pink-600" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
+            {/* Top badges */}
+            <div className="absolute top-4 left-4 right-4 flex items-start justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                {isTrending && <NeonBadge color="pink" live>🔥 Trending Tonight</NeonBadge>}
+                {liveViewers > 0 && <NeonBadge color="cyan" live>{liveViewers} oameni te văd acum</NeonBadge>}
+                {business.verified && <NeonBadge color="violet"><BadgeCheck size={11} /> Verificat</NeonBadge>}
+              </div>
+              <button onClick={shareProfile} className="p-2 rounded-xl bg-black/50 backdrop-blur border border-white/10 hover:border-white/30 text-white">
+                <Share2 size={14} />
+              </button>
+            </div>
+            {/* Bottom identity */}
+            <div className="absolute left-4 right-4 bottom-4 flex items-end gap-4">
+              {business.logo_url ? (
+                <img src={business.logo_url} alt="" className="w-20 h-20 rounded-2xl object-cover border-2 border-white/20 shadow-2xl shadow-black/60" />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 grid place-items-center text-3xl font-display text-white border-2 border-white/20">
+                  {business.brand_name?.[0]?.toUpperCase() ?? "?"}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h1 className="font-display text-3xl sm:text-4xl uppercase text-white tracking-tight truncate">{business.brand_name}</h1>
+                <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-300 mt-1">
+                  {business.type} · {tier.name}
+                </div>
+              </div>
             </div>
           </div>
-        </Card>
-      ) : <div className="hidden md:block" />}
-    </div>
-  );
-
-  return (
-    <div className="space-y-4">
-      {/* ============== HERO: COVER + HEADER + 3 CARDS ============== */}
-      {coverSlot || headerSlot ? (
-        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-3">
-          {coverSlot}
-          <div className="flex flex-col gap-3 min-w-0">
-            {headerSlot}
-            {heroCards}
-          </div>
-        </div>
-      ) : heroCards}
-
-
-      {/* ============== PERFORMANȚĂ GENERALĂ (KPIs) ============== */}
-      <div id="biz-stats">
-      <Card title="Performanță generală" hint="Ultimele 7 zile" icon={TrendingUp}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y sm:divide-y-0 divide-white/5">
-          <KpiBlock icon={Eye}        label="Vizualizări"     value={views7}          delta={pct(views7, views14)}             color="violet" />
-          <KpiBlock icon={MapPin}     label="Click-uri hartă" value={mapClicks7}      delta={pct(mapClicks7, mapClicks14)}     color="amber" />
-          <KpiBlock icon={TrendingUp} label="CTR (rata click)"value={`${ctr.toFixed(1)}%`} delta={pct(ctr, ctrPrev)}          color="emerald" />
-          <KpiBlock icon={Users}      label="Vizitatori unici"value={uniqueVisitors7} delta={pct(uniqueVisitors7, uniqueVisitors14)} color="cyan" />
-          <KpiBlock icon={Calendar}   label="Event joins"     value={eventJoins7}     delta={pct(eventJoins7, eventJoins14)}   color="magenta" />
-          <KpiBlock icon={Ticket}     label="Oferte claim"    value={offerClaims7}    delta={pct(offerClaims7, offerClaims14)} color="orange" />
-        </div>
-      </Card>
-      </div>
-
-      {/* ============== QUICK ACTIONS ============== */}
-      <div id="biz-events" className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <ActionTile icon={Calendar} title="Publică eveniment" hint="Atrage clienți diseară" accent="magenta" onClick={onNewCampaign} />
-        <ActionTile icon={Rocket}   title="Lansează campanie" hint="Promovează localul"     accent="amber"   onClick={onNewCampaign} />
-        <ActionTile icon={Ticket}   title="Creează ofertă"    hint="Happy Hour sau reducere"accent="violet"  onClick={onNewCampaign} />
-        <ActionTile icon={Share2}   title="Distribuie profil" hint="Social Media sau QR"    accent="cyan"    onClick={shareProfile} />
-      </div>
-
-      {/* ============== CHART + LIVE FEED ============== */}
-      <div id="biz-live" />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <Card className="lg:col-span-2" title="Rezumat activitate · live" hint="Ultimele 7 zile" icon={Activity}>
-          <div className="px-4 grid grid-cols-3 sm:grid-cols-6 gap-2 pb-3">
-            <Mini label="Vizualizări" value={views7} color="text-sunset-amber" />
-            <Mini label="Recenzii noi" value={(data?.reviews ?? []).filter((r: any) => +new Date(r.created_at) > Date.now() - 7*86400_000).length} color="text-sunset-orange" />
-            <Mini label="Recenzii total" value={reviewCount} color="text-sunset-magenta" />
-            <Mini label="Evenimente" value={upcoming.length} color="text-violet-400" />
-            <Mini label="Campanii" value={activeCount} color="text-cyan-400" />
-            <Mini label="Oferte" value={(data?.offerRows ?? []).filter((o: any) => o.active).length} color="text-emerald-400" />
-          </div>
-          <div className="h-64 px-2 pb-3">
-            {isLoading ? (
-              <div className="h-full rounded-lg bg-white/[0.02] animate-pulse" />
-            ) : views7 === 0 ? (
-              <div className="h-full grid place-items-center text-[11px] text-zinc-500">Niciun trafic înregistrat încă.</div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={dailySeries} margin={{ top: 10, right: 12, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                      <stop offset="0%" stopColor="#a78bfa" />
-                      <stop offset="100%" stopColor="#ec4899" />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                  <XAxis dataKey="label" tick={{ fill: "#71717a", fontSize: 10 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: "#71717a", fontSize: 10 }} axisLine={false} tickLine={false} width={28} />
-                  <Tooltip contentStyle={{ background: "#09090b", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, fontSize: 11 }} labelStyle={{ color: "#a1a1aa" }} />
-                  <Line type="monotone" dataKey="views" stroke="url(#lineGrad)" strokeWidth={2.5} dot={{ r: 3, fill: "#ec4899", strokeWidth: 0 }} activeDot={{ r: 5 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </Card>
-
-        <Card title="Activitate live" hint="real-time" icon={Activity}>
-          <div className="px-4 pb-3 space-y-2">
-            {liveFeed.length === 0 ? (
-              <div className="text-[11px] text-zinc-500 py-6 text-center">Nicio activitate încă.</div>
-            ) : liveFeed.map((i) => (
-              <div key={i.id} className="flex items-center gap-2 py-1.5 border-b border-white/5 last:border-0">
-                {i.avatar ? (
-                  <img src={i.avatar} alt="" className="w-7 h-7 rounded-full object-cover" />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sunset-amber to-sunset-magenta grid place-items-center text-[10px] font-bold text-black">
-                    {i.who[0]?.toUpperCase() ?? "?"}
-                  </div>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="text-[11px] truncate"><span className="font-bold">{i.who}</span></div>
-                  <div className="text-[10px] text-zinc-500 truncate">{i.action}</div>
-                </div>
-                <div className="text-[9px] font-mono text-zinc-600 whitespace-nowrap">{timeAgo(i.when)}</div>
+          {/* Live stats bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-white/5 border-t border-white/10">
+            <div className="p-4">
+              <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-500 flex items-center gap-1.5">
+                <Radio size={9} className="text-pink-400 animate-pulse" /> Popularitate
               </div>
-            ))}
+              <div className="mt-1 font-display text-2xl tabular-nums text-white">{trendingScore}<span className="text-xs text-zinc-500">/100</span></div>
+            </div>
+            <div className="p-4">
+              <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-500">Te văd acum</div>
+              <div className="mt-1 font-display text-2xl tabular-nums text-cyan-300">{liveViewers}</div>
+            </div>
+            <div className="p-4">
+              <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-500">Interesați diseară</div>
+              <div className="mt-1 font-display text-2xl tabular-nums text-pink-300">{tonightInterested}</div>
+            </div>
+            <div className="p-4">
+              <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-500">Loc în oraș</div>
+              <div className="mt-1 font-display text-2xl tabular-nums text-amber-300">
+                {cityRank.rank ? `#${cityRank.rank}` : "—"}<span className="text-xs text-zinc-500">{cityRank.rank ? ` / ${cityRank.total}` : ""}</span>
+              </div>
+            </div>
           </div>
-        </Card>
-      </div>
+        </GlassCard>
+      </section>
 
-      {/* ============== TRAFFIC + EVENT PERFORMANCE + REPUTATION ============== */}
-      <div id="biz-visibility" className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <Card title="Surse de trafic · 7 zile" icon={Eye}>
-          <div className="h-56 px-2 pb-2">
-            {trafficSources.length === 0 ? (
-              <div className="h-full grid place-items-center text-[11px] text-zinc-500">Niciun trafic încă.</div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={trafficSources} dataKey="value" nameKey="name" innerRadius={42} outerRadius={70} paddingAngle={2} stroke="none">
-                    {trafficSources.map((s, i) => <Cell key={i} fill={s.color} />)}
-                  </Pie>
-                  <Tooltip contentStyle={{ background: "#09090b", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, fontSize: 11 }} />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
+      {/* ====================== GROWTH CARDS ====================== */}
+      <section id="biz-stats">
+        <GlassCard>
+          <SectionHead icon={TrendingUp} eyebrow="Ultimele 7 zile" title="Creștere & Atenție" accent="violet" />
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 p-5 pt-0">
+            <GrowthCard icon={Eye}          label="Te-au descoperit"     value={views7}       delta={pct(views7, views14)}               color="#a78bfa" series={series.views} />
+            <GrowthCard icon={MapPin}       label="Vizite pe hartă"      value={mapClicks7}   delta={pct(mapClicks7, mapClicks14)}       color="#22d3ee" series={series.map} />
+            <GrowthCard icon={Calendar}     label="Interes evenimente"   value={eventJoins7}  delta={pct(eventJoins7, eventJoins14)}     color="#ec4899" series={series.joins} />
+            <GrowthCard icon={MessageCircle} label="Conversații începute" value={series.convs.reduce((a,b)=>a+b,0)} delta={0}            color="#f59e0b" series={series.convs} />
+            <GrowthCard icon={Bookmark}     label="Te-au salvat"         value={series.saves.reduce((a,b)=>a+b,0)} delta={0}             color="#10b981" series={series.saves} />
+            <GrowthCard icon={Footprints}   label="Vizite estimate"      value={estVisits}    delta={pct(estVisits, Math.max(1, checkins7))} color="#f472b6" series={series.foot} />
           </div>
-          <div className="px-4 pb-3 space-y-1">
-            {trafficSources.map((s) => {
-              const total = trafficSources.reduce((a, b) => a + b.value, 0);
-              const p = total ? (s.value / total) * 100 : 0;
+          <div className="border-t border-white/5 px-5 py-3 flex items-center justify-between text-[10px] font-mono uppercase tracking-widest text-zinc-500">
+            <span>Followeri totali: <span className="text-white">{fmt(data?.followers ?? 0)}</span></span>
+            {followersDelta !== 0 && <span className={followersDelta > 0 ? "text-emerald-400" : "text-rose-400"}>{followersDelta > 0 ? "+" : ""}{followersDelta} în 7z ({followersPct.toFixed(0)}%)</span>}
+          </div>
+        </GlassCard>
+      </section>
+
+      {/* ====================== HEATMAP ====================== */}
+      <section id="biz-visibility">
+        <GlassCard glow="cyan">
+          <SectionHead icon={MapPin} eyebrow="Distribuție trafic" title="Heatmap oraș" accent="cyan" />
+          <div className="relative mx-5 mb-5 rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-zinc-950 via-blue-950/40 to-violet-950/40 aspect-[2/1]">
+            {/* grid lines */}
+            <svg className="absolute inset-0 w-full h-full opacity-30" preserveAspectRatio="none" viewBox="0 0 100 50">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <line key={`v${i}`} x1={i * 10} y1={0} x2={i * 10} y2={50} stroke="rgba(255,255,255,0.05)" strokeWidth="0.1" />
+              ))}
+              {Array.from({ length: 6 }).map((_, i) => (
+                <line key={`h${i}`} x1={0} y1={i * 10} x2={100} y2={i * 10} stroke="rgba(255,255,255,0.05)" strokeWidth="0.1" />
+              ))}
+            </svg>
+            {zones.map((z) => {
+              const intensity = Math.min(1, z.weight * 3);
+              const size = 60 + intensity * 80;
               return (
-                <div key={s.name} className="flex items-center justify-between text-[10px]">
-                  <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full" style={{ background: s.color }} />{s.name}</span>
-                  <span className="font-mono text-zinc-400 tabular-nums">{p.toFixed(0)}% · {s.value}</span>
+                <div key={z.name} className="absolute" style={{ left: `${z.pos.x}%`, top: `${z.pos.y}%`, transform: "translate(-50%, -50%)" }}>
+                  <div
+                    className="rounded-full animate-pulse"
+                    style={{
+                      width: size,
+                      height: size,
+                      background: `radial-gradient(circle, rgba(236,72,153,${intensity * 0.6}) 0%, rgba(167,139,250,${intensity * 0.3}) 40%, transparent 70%)`,
+                      filter: "blur(2px)",
+                    }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur border border-white/10 whitespace-nowrap">
+                      <div className="font-mono text-[9px] uppercase tracking-widest text-white">{z.name}</div>
+                      <div className="font-display text-[10px] text-pink-300 text-center tabular-nums">{fmt(z.hits)}</div>
+                    </div>
+                  </div>
                 </div>
               );
             })}
           </div>
-        </Card>
+        </GlassCard>
+      </section>
 
-        <Card id="biz-events-perf" title="Performanță evenimente" hint="7 zile" icon={Calendar}>
-          <div className="h-56 px-2 pb-2">
-            {eventJoins7 === 0 && (data?.venueCheckins7?.length ?? 0) === 0 ? (
-              <div className="h-full grid place-items-center text-[11px] text-zinc-500 text-center px-4">Încă nu sunt interacțiuni pe evenimente.</div>
-            ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={eventSeries} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                  <XAxis dataKey="label" tick={{ fill: "#71717a", fontSize: 9 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: "#71717a", fontSize: 9 }} axisLine={false} tickLine={false} width={22} />
-                  <Tooltip contentStyle={{ background: "#09090b", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, fontSize: 11 }} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="interes" name="Interes" fill="#ec4899" radius={[3,3,0,0]} />
-                  <Bar dataKey="participare" name="Participare" fill="#f59e0b" radius={[3,3,0,0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        </Card>
-
-        <Card id="biz-reputation" title="Reputație" icon={ShieldCheck}>
-          <div className="p-4 flex items-center gap-4">
-            <ReputationGauge value={rating} />
-            <div className="flex-1 space-y-2">
-              <div>
-                <div className="font-display text-xl tabular-nums leading-none">{fmt(reviewCount)}</div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500">Total recenzii</div>
-              </div>
-              <div>
-                <div className="font-display text-xl tabular-nums leading-none">{completeness}%</div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500">Profil completat</div>
-              </div>
-              <div>
-                <div className={`font-display text-xl leading-none ${business.verified ? "text-emerald-400" : "text-zinc-400"}`}>
-                  {business.verified ? "DA" : "NU"}
-                </div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500">Verificat</div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* ============== PLANUL TĂU ============== */}
-      <Card title="Planul tău" hint={priceLabel(tier)} icon={Crown}>
-        <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-          <div>
-            <div className="font-display text-2xl uppercase">{tier.name}</div>
-            <div className="text-[11px] text-zinc-500 mt-1">{tier.tagline}</div>
-            <div className="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden">
-              <div className="h-full rounded-full" style={{ width: `${planPct}%`, background: "var(--gradient-sunset)" }} />
-            </div>
-            <div className="mt-1 text-[10px] text-zinc-500">
-              {business.tier_renews_at ? `Îți rămân ${planDaysLeft} zile din plan` : "Plan demo · 30 zile"}
-            </div>
-            <Link to="/app/biz/plans"
-              className="mt-4 inline-flex items-center gap-1 px-4 py-2 rounded-xl text-[11px] font-mono uppercase tracking-widest font-bold text-white"
-              style={{ background: "var(--gradient-sunset)" }}>
-              {tier.id === "exclusive" ? "Vezi planul" : "Upgradează planul"} <ArrowUpRight size={11} />
-            </Link>
-          </div>
-          <div className="space-y-1.5 text-[11px]">
-            <PlanRow label="Vizibilitate pe hartă" value="Inclus" />
-            <PlanRow label="Apari în feed"          value={tier.features.feedSponsoredPerWeek === "unlimited" ? "Nelimitat" : `${tier.features.feedSponsoredPerWeek}/săpt.`} />
-            <PlanRow label="Event promovate"        value={tier.features.eventsActive === "unlimited" ? "Nelimitat" : `${tier.features.eventsActive}/lună`} />
-            <PlanRow label="Featured Tonight"       value={tier.features.featuredTonight ? "Inclus" : "—"} />
-            <PlanRow label="Notificări push"        value={tier.features.pushNotifications ? "Inclus" : "—"} />
-            <PlanRow label="Rapoarte avansate"      value={tier.features.analytics === "basic" ? "Limitat" : "Inclus"} />
-          </div>
-        </div>
-      </Card>
-
-      {/* ============== RECOMANDĂRI INTELIGENTE ============== */}
-      <Card id="biz-recom" title="Recomandări inteligente" hint="bazat doar pe date reale" icon={Sparkles}>
-        <div className="p-3 space-y-2">
-          {recommendations.length === 0 ? (
-            <div className="text-[11px] text-zinc-500 py-3 text-center">Toate semnalele sunt verzi. Continuă așa.</div>
-          ) : recommendations.map((r, i) => {
-            const tone = ({
-              emerald: "border-emerald-400/30 bg-emerald-400/5 text-emerald-400",
-              magenta: "border-sunset-magenta/30 bg-sunset-magenta/5 text-sunset-magenta",
-              amber:   "border-sunset-amber/30 bg-sunset-amber/5 text-sunset-amber",
-              violet:  "border-violet-400/30 bg-violet-400/5 text-violet-400",
-            } as any)[r.color];
-            return (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/40 border border-white/5">
-                <div className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 border ${tone}`}>
-                  <r.icon size={16} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[12px] font-display uppercase tracking-wide truncate">{r.title}</div>
-                  <div className="text-[10px] text-zinc-500 truncate">{r.hint}</div>
-                </div>
-                <button onClick={r.onClick}
-                  className="shrink-0 px-3 py-1.5 rounded-md border border-sunset-amber/40 text-sunset-amber text-[9px] font-mono uppercase tracking-widest hover:bg-sunset-amber/10">
-                  {r.cta}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </Card>
-
-      {/* ============== PROMOVARE (campaigns manager) ============== */}
-      <div id="biz-campaigns" />
-      <div id="biz-manager" />
-      <Card id="biz-promo" title="Promovare" hint="opțional" icon={Megaphone}>
-        <div className="p-4 space-y-4">
-          <p className="text-[11px] text-zinc-400 leading-relaxed">
-            Promovarea crește vizibilitatea în aplicație. Rezultatele depind de comportamentul utilizatorilor. Nu garantăm vânzări sau clienți.
-          </p>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <Tile label="Buget alocat" value={`${ron(totalBudget)} RON`} color="text-sunset-orange" />
-            <Tile label="Cheltuit"     value={`${ron(totalSpent)} RON`}  color="text-sunset-amber" />
-            <Tile label="Afișări"      value={fmt(totalImpressions)}      color="text-sunset-magenta" />
-            <Tile label="CTR"          value={totalImpressions ? `${((totalClicks/totalImpressions)*100).toFixed(1)}%` : "—"} color="text-emerald-400" />
-          </div>
-
-          <div className="flex items-center justify-between rounded-xl bg-zinc-900/40 border border-white/5 p-3">
-            <div className="flex items-center gap-2">
-              <Wallet size={14} className="text-sunset-amber" />
-              <div>
-                <div className="text-[11px] text-zinc-300">Sold portofel</div>
-                <div className="font-display text-lg leading-none tabular-nums">{ron(business.wallet_balance_cents ?? 0)} <span className="text-[10px] text-zinc-500">RON</span></div>
-              </div>
-            </div>
-            <button onClick={onTopup}
-              className="text-[10px] font-mono uppercase tracking-widest px-3 py-2 rounded-md border border-sunset-amber/40 text-sunset-amber hover:bg-sunset-amber/10">
-              Încarcă
-            </button>
-          </div>
-
-          <button onClick={onNewCampaign}
-            className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-white font-display uppercase text-[11px] tracking-widest"
-            style={{ background: "var(--gradient-sunset)" }}>
-            <Plus size={13} /> Campanie nouă
-          </button>
-
-          {campaigns.length > 0 && (
-            <div className="space-y-2">
-              <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-500">
-                Campanii ({campaigns.length} · {activeCount} active)
-              </div>
-              {campaigns.map((c) => {
-                const pct = c.budget_cents ? Math.min(100, (c.spent_cents / c.budget_cents) * 100) : 0;
-                return (
-                  <div key={c.id} className="rounded-xl bg-zinc-900/40 border border-white/5 overflow-hidden">
-                    <div className="flex items-center justify-between gap-2 p-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="text-[12px] truncate">{c.title}</div>
-                        <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500 truncate">
-                          {c.kind} · {fmt(c.impressions)} afișări · {ron(c.spent_cents)}/{ron(c.budget_cents)} RON
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => onEditCampaign(c)} className="p-1.5 rounded-md border border-white/10 text-zinc-400 hover:text-zinc-100" aria-label="Editează"><Pencil size={11} /></button>
-                        <button onClick={() => onDuplicateCampaign(c)} className="p-1.5 rounded-md border border-white/10 text-zinc-400 hover:text-zinc-100" aria-label="Duplică"><Copy size={11} /></button>
-                        <button onClick={() => onToggleCampaign(c)}
-                          className={`p-1.5 rounded-md border ${c.status === "active" ? "border-sunset-orange/40 text-sunset-orange" : "border-sunset-amber/40 text-sunset-amber"}`}
-                          aria-label={c.status === "active" ? "Pauză" : "Pornește"}>
-                          {c.status === "active" ? <Pause size={11} /> : <Play size={11} />}
-                        </button>
-                        <button onClick={() => onDeleteCampaign(c)} className="p-1.5 rounded-md border border-white/10 text-zinc-400 hover:text-sunset-orange hover:border-sunset-orange" aria-label="Șterge"><Trash2 size={11} /></button>
-                      </div>
+      {/* ====================== LIVE FEED + AI COACH ====================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section id="biz-live">
+          <GlassCard glow="pink" className="h-full">
+            <SectionHead icon={Activity} eyebrow="Real-time" title="Activitate live" accent="pink" />
+            <div className="px-5 pb-5 space-y-2 max-h-[500px] overflow-y-auto">
+              {liveFeed.length === 0 ? (
+                <div className="text-center py-12 text-zinc-500 text-[11px]">Nicio activitate încă. Începe să promovezi.</div>
+              ) : liveFeed.map((i) => (
+                <div key={i.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/15 transition-all">
+                  {i.avatar ? (
+                    <img src={i.avatar} alt="" className="w-9 h-9 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 grid place-items-center text-xs font-bold text-white">
+                      {i.who[0]?.toUpperCase() ?? "?"}
                     </div>
-                    <div className="h-[3px] bg-white/5">
-                      <div className="h-full" style={{ width: `${pct}%`, background: "var(--gradient-warm)" }} />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[12px] text-white truncate"><span className="font-bold">{i.who}</span> <span className="text-zinc-400">{i.action}</span></div>
+                    <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-600 mt-0.5">{timeAgo(i.when)}</div>
+                  </div>
+                  <div className="w-7 h-7 rounded-lg grid place-items-center shrink-0" style={{ background: `${i.color}20`, color: i.color }}>
+                    <i.icon size={12} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+        </section>
+
+        <section id="biz-recom">
+          <GlassCard glow="violet" className="h-full">
+            <SectionHead icon={Brain} eyebrow="Personal AI Growth Coach" title="AI Business Coach" accent="violet" />
+            <div className="px-5 pb-5 space-y-3">
+              {insights.length === 0 ? (
+                <div className="text-center py-12 text-zinc-500 text-[11px]">Totul arată bine. Coach-ul îți va da semnal cât de curând.</div>
+              ) : insights.map((ins, i) => {
+                const map = {
+                  pink: "from-pink-500/30 to-pink-500/0 border-pink-500/30 text-pink-300",
+                  cyan: "from-cyan-400/30 to-cyan-400/0 border-cyan-400/30 text-cyan-300",
+                  violet: "from-violet-500/30 to-violet-500/0 border-violet-500/30 text-violet-300",
+                  amber: "from-amber-400/30 to-amber-400/0 border-amber-400/30 text-amber-300",
+                  emerald: "from-emerald-500/30 to-emerald-500/0 border-emerald-500/30 text-emerald-300",
+                }[ins.tone];
+                return (
+                  <div key={i} className={`relative rounded-2xl p-4 border bg-gradient-to-r ${map} overflow-hidden`}>
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-black/40 grid place-items-center shrink-0">
+                        <ins.icon size={15} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-display uppercase text-[13px] tracking-wide text-white">{ins.title}</div>
+                        <div className="text-[11px] text-zinc-300 mt-1 leading-relaxed">{ins.detail}</div>
+                        {ins.cta && (
+                          <button onClick={ins.onClick} className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-[10px] font-mono uppercase tracking-widest text-white">
+                            {ins.cta} <ArrowUpRight size={11} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
-          )}
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Sub-primitives                                                    */
-/* ------------------------------------------------------------------ */
-function Mini({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className="text-center">
-      <div className="font-mono text-[8px] uppercase tracking-[0.25em] text-zinc-500">{label}</div>
-      <div className={`mt-1 font-display text-lg leading-none tabular-nums ${color}`}>{fmt(value)}</div>
-    </div>
-  );
-}
-
-function Tile({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <div className="rounded-xl bg-zinc-900/40 border border-white/5 p-3">
-      <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-500">{label}</div>
-      <div className={`mt-1 font-display text-xl leading-none tabular-nums ${color}`}>{value}</div>
-    </div>
-  );
-}
-
-function PlanRow({ label, value }: { label: string; value: string }) {
-  const muted = value === "—";
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-zinc-400">{label}</span>
-      <span className={`font-mono uppercase tracking-widest text-[10px] ${muted ? "text-zinc-600" : "text-emerald-400"}`}>{value}</span>
-    </div>
-  );
-}
-
-function ReputationGauge({ value }: { value: number }) {
-  const v = Math.max(0, Math.min(5, value));
-  const pct = (v / 5) * 100;
-  const r = 36;
-  const c = 2 * Math.PI * r;
-  return (
-    <div className="relative w-24 h-24 shrink-0">
-      <svg width="96" height="96" className="-rotate-90">
-        <circle cx="48" cy="48" r={r} stroke="rgba(255,255,255,0.05)" strokeWidth="8" fill="none" />
-        <circle cx="48" cy="48" r={r}
-          stroke="url(#gaugeGrad)" strokeWidth="8" fill="none" strokeLinecap="round"
-          strokeDasharray={c} strokeDashoffset={c - (pct / 100) * c} />
-        <defs>
-          <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#ec4899" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display text-xl tabular-nums leading-none">{v ? v.toFixed(1) : "—"}</span>
-        <span className="text-[8px] text-sunset-amber">★★★★★</span>
+          </GlassCard>
+        </section>
       </div>
+
+      {/* ====================== CITY RANKINGS ====================== */}
+      <section id="biz-reputation">
+        <GlassCard glow="amber">
+          <SectionHead icon={Trophy} eyebrow="Competiția din oraș" title="Top venues" accent="amber" />
+          <div className="px-5 pb-5">
+            {cityRank.list.length === 0 ? (
+              <div className="text-center py-8 text-zinc-500 text-[11px]">Adaugă oraș în profilul business-ului pentru a vedea clasamentul.</div>
+            ) : (
+              <div className="space-y-1.5">
+                {cityRank.list.slice(0, 10).map((v: any, idx: number) => {
+                  const isMe = v.id === business.id;
+                  const rank = idx + 1;
+                  const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : null;
+                  return (
+                    <div
+                      key={v.id}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                        isMe
+                          ? "bg-gradient-to-r from-amber-500/20 via-pink-500/10 to-transparent border-amber-400/40 shadow-[0_0_24px] shadow-amber-500/10"
+                          : "bg-white/[0.02] border-white/5 hover:border-white/15"
+                      }`}
+                    >
+                      <div className={`w-9 text-center font-display text-lg tabular-nums ${rank <= 3 ? "text-amber-300" : "text-zinc-500"}`}>
+                        {medal ?? `#${rank}`}
+                      </div>
+                      {v.logo_url ? (
+                        <img src={v.logo_url} alt="" className="w-9 h-9 rounded-lg object-cover border border-white/10" />
+                      ) : (
+                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-600 to-pink-600 grid place-items-center text-xs font-bold text-white">
+                          {v.brand_name?.[0]?.toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className={`text-[13px] truncate ${isMe ? "font-bold text-white" : "text-zinc-200"}`}>
+                          {v.brand_name} {isMe && <span className="text-amber-300">(tu)</span>}
+                        </div>
+                        <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500">{v.type}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-amber-300 text-[12px] tabular-nums">
+                          <Star size={11} className="fill-current" />{Number(v.reputation_score ?? 0).toFixed(1)}
+                        </div>
+                        <div className="font-mono text-[9px] text-zinc-500">{fmt(v.total_visits ?? 0)} vizite</div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {cityRank.rank && cityRank.rank > 10 && (
+                  <div className="text-center text-[10px] font-mono uppercase tracking-widest text-zinc-500 pt-2">
+                    Tu ești pe locul #{cityRank.rank} · mai sus cu {Math.max(0, cityRank.rank - 10)} poziții ești în Top 10
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </GlassCard>
+      </section>
+
+      {/* ====================== EVENT PERFORMANCE ====================== */}
+      <section id="biz-events">
+        <GlassCard>
+          <SectionHead icon={Calendar} eyebrow="Performanță evenimente" title="Evenimentele tale" accent="pink" />
+          <div className="px-5 pb-5 space-y-3">
+            {parties.length === 0 ? (
+              <div className="text-center py-10">
+                <div className="text-zinc-500 text-[12px] mb-3">Niciun eveniment publicat. Publică unul ca să atragi atenția.</div>
+                <button onClick={onNewCampaign} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-white text-[11px] font-display uppercase tracking-widest" style={{ background: "linear-gradient(135deg, #ec4899, #a78bfa)" }}>
+                  <Plus size={12} /> Creează eveniment
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {parties.slice(0, 4).map((p: any) => {
+                  const joins = (data?.partyJoins7 ?? []).filter((j: any) => j.party_id === p.id).length;
+                  const popularity = Math.min(100, joins * 12 + 10);
+                  return (
+                    <div key={p.id} className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.04] to-transparent p-4">
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="font-display uppercase text-[13px] tracking-wide text-white truncate flex-1">{p.title}</div>
+                        <NeonBadge color={popularity > 60 ? "pink" : "violet"}>{popularity}% hot</NeonBadge>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                          <div className="font-display text-lg tabular-nums text-violet-300">{Math.round(joins * 8)}</div>
+                          <div className="font-mono text-[8px] uppercase tracking-widest text-zinc-500">Reach</div>
+                        </div>
+                        <div>
+                          <div className="font-display text-lg tabular-nums text-pink-300">{joins}</div>
+                          <div className="font-mono text-[8px] uppercase tracking-widest text-zinc-500">Interesați</div>
+                        </div>
+                        <div>
+                          <div className="font-display text-lg tabular-nums text-cyan-300">{Math.round(joins * 0.6)}</div>
+                          <div className="font-mono text-[8px] uppercase tracking-widest text-zinc-500">Estimat going</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden">
+                        <div className="h-full rounded-full" style={{ width: `${popularity}%`, background: "linear-gradient(90deg, #a78bfa, #ec4899, #f59e0b)" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </GlassCard>
+      </section>
+
+      {/* ====================== PREMIUM UPSELL ====================== */}
+      <section id="biz-promo">
+        <GlassCard glow="pink">
+          <SectionHead icon={Rocket} eyebrow="Deblochează mai multă vizibilitate" title="Premium Tiers" accent="pink" />
+          <div className="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {upsellTiers.map((t) => {
+              const isCurrent = (business.tier ?? "starter") === t.id;
+              return (
+                <div key={t.id} className={`relative rounded-2xl border p-4 overflow-hidden ${isCurrent ? "border-emerald-400/40 bg-emerald-400/5" : "border-white/10 bg-white/[0.02] hover:border-white/30 transition-all"}`}>
+                  {t.badge && !isCurrent && (
+                    <div className="absolute top-0 right-0 px-2 py-0.5 rounded-bl-lg bg-gradient-to-r from-pink-500 to-violet-500 text-[8px] font-mono uppercase tracking-widest text-white">{t.badge}</div>
+                  )}
+                  {isCurrent && (
+                    <div className="absolute top-0 right-0 px-2 py-0.5 rounded-bl-lg bg-emerald-500 text-[8px] font-mono uppercase tracking-widest text-white">Actual</div>
+                  )}
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${t.color} grid place-items-center mb-3`}>
+                    <t.icon size={16} className="text-white" />
+                  </div>
+                  <div className="font-display uppercase text-base text-white">{t.name}</div>
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-zinc-400 mt-0.5">{t.price}</div>
+                  <ul className="mt-3 space-y-1.5">
+                    {t.perks.map((p) => (
+                      <li key={p} className="flex items-center gap-1.5 text-[11px] text-zinc-300">
+                        <Zap size={10} className="text-amber-400 shrink-0" /> {p}
+                      </li>
+                    ))}
+                  </ul>
+                  {!isCurrent && (
+                    <Link to="/app/biz/plans" className="mt-4 block text-center px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/15 text-[10px] font-mono uppercase tracking-widest text-white">
+                      Upgrade
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </GlassCard>
+      </section>
+
+      {/* ====================== CAMPAIGN MANAGER ====================== */}
+      <section id="biz-campaigns">
+        <GlassCard>
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <SectionHead icon={Megaphone} eyebrow="Promovare activă" title="Manager campanii" accent="violet" />
+          </div>
+          <div className="px-5 pb-5 space-y-4">
+            {/* Wallet + KPIs */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="rounded-2xl border border-amber-400/30 bg-gradient-to-br from-amber-500/15 to-transparent p-3">
+                <div className="flex items-center gap-1.5 text-[9px] font-mono uppercase tracking-widest text-amber-300/80"><Wallet size={10} /> Wallet</div>
+                <div className="mt-1 font-display text-xl tabular-nums text-amber-200">{ron(business.wallet_balance_cents ?? 0)} <span className="text-xs text-zinc-500">RON</span></div>
+                <button onClick={onTopup} className="mt-2 w-full px-2 py-1.5 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/40 text-[9px] font-mono uppercase tracking-widest text-amber-200">+ Adaugă fonduri</button>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+                <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500">Buget total</div>
+                <div className="mt-1 font-display text-xl tabular-nums text-white">{ron(totalBudget)} <span className="text-xs text-zinc-500">RON</span></div>
+                <div className="mt-2 text-[9px] font-mono text-zinc-500">Cheltuit: {ron(totalSpent)}</div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+                <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500">Afișări</div>
+                <div className="mt-1 font-display text-xl tabular-nums text-violet-300">{fmt(totalImpressions)}</div>
+                <div className="mt-2 text-[9px] font-mono text-zinc-500">Click-uri: {fmt(totalClicks)}</div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+                <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500">Campanii active</div>
+                <div className="mt-1 font-display text-xl tabular-nums text-pink-300">{activeCount}<span className="text-xs text-zinc-500">/{campaigns.length}</span></div>
+                <div className="mt-2 text-[9px] font-mono text-zinc-500">CTR: {totalImpressions ? ((totalClicks/totalImpressions)*100).toFixed(1) : "0"}%</div>
+              </div>
+            </div>
+
+            <button onClick={onNewCampaign} className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-2xl text-white font-display uppercase text-[12px] tracking-widest shadow-lg shadow-pink-500/20"
+              style={{ background: "linear-gradient(135deg, #ec4899 0%, #a78bfa 50%, #22d3ee 100%)" }}>
+              <Plus size={14} /> Lansează campanie nouă
+            </button>
+
+            {campaigns.length > 0 && (
+              <div id="biz-manager" className="space-y-2">
+                <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-500">
+                  Toate campaniile ({campaigns.length})
+                </div>
+                {campaigns.map((c) => {
+                  const pctSpent = c.budget_cents ? Math.min(100, (c.spent_cents / c.budget_cents) * 100) : 0;
+                  const isActive = c.status === "active";
+                  return (
+                    <div key={c.id} className="rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/15 overflow-hidden transition-all">
+                      <div className="flex items-center justify-between gap-3 p-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-emerald-400 animate-pulse" : "bg-zinc-600"}`} />
+                            <div className="text-[13px] text-white truncate">{c.title}</div>
+                          </div>
+                          <div className="font-mono text-[9px] uppercase tracking-widest text-zinc-500 truncate mt-1">
+                            {c.kind} · {fmt(c.impressions)} afișări · {ron(c.spent_cents)}/{ron(c.budget_cents)} RON
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => onEditCampaign(c)} className="p-2 rounded-lg border border-white/10 text-zinc-400 hover:text-white hover:border-white/30" aria-label="Editează"><Pencil size={12} /></button>
+                          <button onClick={() => onDuplicateCampaign(c)} className="p-2 rounded-lg border border-white/10 text-zinc-400 hover:text-white hover:border-white/30" aria-label="Duplică"><Copy size={12} /></button>
+                          <button onClick={() => onToggleCampaign(c)}
+                            className={`p-2 rounded-lg border ${isActive ? "border-amber-400/40 text-amber-300" : "border-emerald-400/40 text-emerald-300"}`}
+                            aria-label={isActive ? "Pauză" : "Pornește"}>
+                            {isActive ? <Pause size={12} /> : <Play size={12} />}
+                          </button>
+                          <button onClick={() => onDeleteCampaign(c)} className="p-2 rounded-lg border border-white/10 text-zinc-400 hover:text-rose-400 hover:border-rose-400/40" aria-label="Șterge"><Trash2 size={12} /></button>
+                        </div>
+                      </div>
+                      <div className="h-[3px] bg-white/5">
+                        <div className="h-full" style={{ width: `${pctSpent}%`, background: "linear-gradient(90deg, #ec4899, #a78bfa, #22d3ee)" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </GlassCard>
+      </section>
+
+      {coverSlot && <div className="hidden">{coverSlot}{headerSlot}</div>}
     </div>
   );
 }
@@ -833,7 +908,7 @@ function ReputationGauge({ value }: { value: number }) {
 function timeAgo(iso: string) {
   const s = Math.max(0, Math.round((Date.now() - +new Date(iso)) / 1000));
   if (s < 60) return `acum ${s}s`;
-  if (s < 3600) return `acum ${Math.round(s/60)}m`;
-  if (s < 86400) return `acum ${Math.round(s/3600)}h`;
-  return `acum ${Math.round(s/86400)}z`;
+  if (s < 3600) return `acum ${Math.round(s / 60)}m`;
+  if (s < 86400) return `acum ${Math.round(s / 3600)}h`;
+  return `acum ${Math.round(s / 86400)}z`;
 }

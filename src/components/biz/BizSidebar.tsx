@@ -1,21 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
-  LayoutDashboard, Calendar, Megaphone, Activity, Settings2,
-  BarChart3, Eye, ShieldCheck, Sparkles, Rocket, Zap,
+  LayoutDashboard, Calendar, Megaphone, Activity, Trophy,
+  BarChart3, MapPin, Brain, Rocket, Zap,
 } from "lucide-react";
 
 const NAV = [
-  { id: "dashboard",   label: "Dashboard",       icon: LayoutDashboard },
-  { id: "stats",       label: "Statistici",      icon: BarChart3 },
+  { id: "dashboard",   label: "Hero & Live",     icon: LayoutDashboard },
+  { id: "stats",       label: "Creștere",        icon: BarChart3 },
+  { id: "visibility",  label: "Heatmap",         icon: MapPin },
+  { id: "live",        label: "Activitate live", icon: Activity },
+  { id: "recom",       label: "AI Coach",        icon: Brain },
+  { id: "reputation",  label: "Top oraș",        icon: Trophy },
   { id: "events",      label: "Evenimente",      icon: Calendar },
-  { id: "live",        label: "Live Activities", icon: Activity },
-  { id: "visibility",  label: "Vizibilitate",    icon: Eye },
-  { id: "reputation",  label: "Reputație",       icon: ShieldCheck },
-  { id: "recom",       label: "Recomandări",     icon: Sparkles },
-  { id: "promo",       label: "Promovare",       icon: Rocket },
+  { id: "promo",       label: "Premium Tiers",   icon: Rocket },
   { id: "campaigns",   label: "Campanii",        icon: Megaphone },
-  { id: "manager",     label: "Manager",         icon: Settings2 },
 ] as const;
 
 function handleClick(id: string) {
