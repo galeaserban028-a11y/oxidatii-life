@@ -12,6 +12,7 @@ import {
   Users, Heart, Flame, ChevronDown, Check, Zap, Trash2, Ticket, Video, Clock,
 } from "lucide-react";
 import { BizCommandCenter } from "@/components/biz/BizCommandCenter";
+import { BizSidebar } from "@/components/biz/BizSidebar";
 import { launchBusinessCampaign } from "@/lib/business-promotion.functions";
 
 export const Route = createFileRoute("/app/biz")({
