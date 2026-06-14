@@ -150,7 +150,7 @@ function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
 }
 
 function MapPage() {
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
 
   // filter state
   const [query, setQuery] = useState("");
