@@ -9,6 +9,7 @@ import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilter
 import { AddVenueSheet } from "@/components/app/AddVenueSheet";
 import { MapSettingsSheet } from "@/components/app/MapSettingsSheet";
 import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
+import { tierConfig } from "@/lib/biz/tiers";
 
 export const Route = createFileRoute("/app/map")({
   head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
