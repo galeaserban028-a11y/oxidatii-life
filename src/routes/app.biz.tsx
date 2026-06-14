@@ -1,10 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { WalletTopupDialog } from "@/components/WalletTopupDialog";
-import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import {
   Building2, Wallet, Rocket, Plus, TrendingUp, Eye, MousePointerClick,
   Image as ImageIcon, MapPin, Megaphone, Sparkles, Bell, Compass, Star,
@@ -112,11 +111,11 @@ function BizPage() {
     <div className="px-4 pt-4 pb-24 flex gap-6 max-w-[1400px] mx-auto">
       <BizSidebar />
       <div className="flex-1 min-w-0 space-y-6">
-      <PaymentTestModeBanner />
       <WalletTopupDialog
         businessId={topupBizId ?? ""}
         open={!!topupBizId}
         onClose={() => setTopupBizId(null)}
+        onSuccess={() => qc.invalidateQueries({ queryKey: ["biz"] })}
       />
 
 
@@ -185,7 +184,6 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
   onTopup: () => void;
 }) {
   const qc = useQueryClient();
-  const navigate = useNavigate();
   const [builderOpen, setBuilderOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editCampaign, setEditCampaign] = useState<any | null>(null);
@@ -289,7 +287,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
 
       {builderOpen && (
         <CampaignBuilder business={business} parties={parties} cities={cities} venues={venues}
-          onClose={() => { setBuilderOpen(false); navigate({ to: "/app" }); }}
+          onClose={() => setBuilderOpen(false)}
           onCreated={(c) => {
             setBuilderOpen(false);
             qc.invalidateQueries({ queryKey: ["biz"] });
