@@ -106,7 +106,30 @@
   --glow-blue: var(--shadow-elevated);
   --glow-green: var(--shadow-card);
   --glow-crimson: var(--shadow-elevated);
+
+  /* Business tier palette (Starter / Popular / Elite / Exclusive) */
+  --tier-starter: oklch(0.70 0.10 220);
+  --tier-popular: oklch(0.72 0.18 290);
+  --tier-elite:   oklch(0.78 0.22 350);
+  --tier-exclusive: oklch(0.84 0.16 90);
+  --glow-tier-starter:   0 0 24px oklch(0.70 0.10 220 / 40%);
+  --glow-tier-popular:   0 0 28px oklch(0.72 0.18 290 / 50%);
+  --glow-tier-elite:     0 0 36px oklch(0.78 0.22 350 / 55%);
+  --glow-tier-exclusive: 0 0 48px oklch(0.84 0.16 90 / 65%), 0 0 12px oklch(0.84 0.16 90 / 80%);
 }
+
+@keyframes tier-pulse {
+  0%, 100% { box-shadow: 0 0 36px oklch(0.78 0.22 350 / 55%); }
+  50% { box-shadow: 0 0 56px oklch(0.78 0.22 350 / 75%); }
+}
+@keyframes tier-exclusive-shimmer {
+  0%, 100% { box-shadow: 0 0 48px oklch(0.84 0.16 90 / 65%), 0 0 12px oklch(0.84 0.16 90 / 80%); }
+  50% { box-shadow: 0 0 72px oklch(0.84 0.16 90 / 85%), 0 0 24px oklch(0.84 0.16 90 / 95%); }
+}
+.tier-glow-starter { box-shadow: var(--glow-tier-starter); }
+.tier-glow-popular { box-shadow: var(--glow-tier-popular); }
+.tier-glow-elite { animation: tier-pulse 2.4s ease-in-out infinite; }
+.tier-glow-exclusive { animation: tier-exclusive-shimmer 3s ease-in-out infinite; }
 
 /* Light theme — opt-in via .light class on <html> */
 .light {
