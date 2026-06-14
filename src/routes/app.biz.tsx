@@ -217,82 +217,74 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
   };
 
 
-  return (
-    <div className="rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur overflow-hidden">
-      {/* Cover */}
-      <div className="relative h-28 bg-gradient-to-br from-neon-purple/30 to-neon-crimson/30 overflow-hidden">
-        {business.cover_url && <img src={business.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-        <button onClick={() => setEditOpen(true)}
-          className="absolute top-2 right-2 p-1.5 rounded-md bg-background/70 backdrop-blur-sm border border-foreground/15">
-          <Pencil size={12} />
-        </button>
-        <button onClick={deleteBusiness}
-          className="absolute top-2 right-11 p-1.5 rounded-md bg-background/70 backdrop-blur-sm border border-foreground/15 hover:border-neon-crimson hover:text-neon-crimson"
-          aria-label="Șterge business">
-          <Trash2 size={12} />
-        </button>
+  const coverTile = (
+    <div id="biz-dashboard" className="relative rounded-2xl overflow-hidden border border-white/[0.06] bg-zinc-900/40 h-full min-h-[180px]">
+      {business.cover_url ? (
+        <img src={business.cover_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-sunset-magenta/40 via-violet-500/30 to-sunset-amber/30" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
+      <button onClick={() => setEditOpen(true)}
+        className="absolute top-2 right-2 p-1.5 rounded-md bg-background/70 backdrop-blur-sm border border-foreground/15">
+        <Pencil size={12} />
+      </button>
+      <button onClick={deleteBusiness}
+        className="absolute top-2 right-11 p-1.5 rounded-md bg-background/70 backdrop-blur-sm border border-foreground/15 hover:border-neon-crimson hover:text-neon-crimson"
+        aria-label="Șterge business">
+        <Trash2 size={12} />
+      </button>
+      {business.logo_url && (
+        <img src={business.logo_url} alt="" className="absolute bottom-2 left-2 w-10 h-10 rounded-lg object-cover border-2 border-background" />
+      )}
+    </div>
+  );
 
-      </div>
-
-      <div className="p-4 -mt-10 relative space-y-4">
-        <div className="flex items-end gap-3">
-          <div className="w-14 h-14 rounded-xl bg-background border-2 border-background overflow-hidden flex-shrink-0">
-            {business.logo_url ? <img src={business.logo_url} alt="" className="w-full h-full object-cover" />
-              : <div className="w-full h-full bg-gradient-to-br from-neon-purple to-neon-crimson flex items-center justify-center font-display text-xl text-white">{business.brand_name?.[0]?.toUpperCase() ?? "?"}</div>}
-          </div>
-          <div className="min-w-0 flex-1 pb-1">
-            <div className="font-display uppercase text-lg leading-tight truncate">{business.brand_name}</div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
-              {business.type} · {business.verified ? "verificat" : "neverificat"} · {activeCount} active
-            </div>
-          </div>
+  const brandHeader = (
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <h1 className="font-display uppercase text-2xl leading-none truncate">{business.brand_name}</h1>
+          {business.verified && <BadgeCheckIcon />}
         </div>
-
-        {business.description && <p className="text-xs text-muted-foreground line-clamp-2">{business.description}</p>}
-
-        <BizCommandCenter
-          business={business}
-          campaigns={campaigns}
-          parties={parties}
-          onTopup={onTopup}
-          onNewCampaign={() => setBuilderOpen(true)}
-          onEditCampaign={(c) => setEditCampaign(c)}
-          onToggleCampaign={toggleCampaign}
-          onDeleteCampaign={deleteCampaign}
-          onDuplicateCampaign={async (c) => {
-            const { data: copy, error } = await supabase.from("campaigns").insert({
-              business_id: c.business_id,
-              kind: c.kind,
-              party_id: c.party_id,
-              venue_id: c.venue_id,
-              city_id: c.city_id,
-              title: `${c.title} (copie)`,
-              subtitle: c.subtitle,
-              cta_text: c.cta_text,
-              cta_url: c.cta_url,
-              image_urls: c.image_urls,
-              theme_color: c.theme_color,
-              bid_cents: c.bid_cents,
-              budget_cents: c.budget_cents,
-              pricing_model: c.pricing_model,
-              daily_cap_cents: c.daily_cap_cents,
-              targeting: c.targeting,
-              schedule: c.schedule,
-              event_starts_at: c.event_starts_at,
-              entry_kind: c.entry_kind,
-              entry_price_text: c.entry_price_text,
-              street: c.street,
-              special_guest: c.special_guest,
-              video_url: c.video_url,
-              status: "draft",
-            }).select().single();
-            if (error) { alert(error.message); return; }
-            qc.invalidateQueries({ queryKey: ["biz"] });
-            if (copy) setEditCampaign(copy);
-          }}
-        />
+        <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-zinc-500 mt-2">
+          {business.type} · {business.verified ? "verificat" : "neverificat"} · <span className="text-emerald-400">active</span>
+        </div>
       </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      <BizCommandCenter
+        business={business}
+        campaigns={campaigns}
+        parties={parties}
+        coverSlot={coverTile}
+        headerSlot={brandHeader}
+        onTopup={onTopup}
+        onNewCampaign={() => setBuilderOpen(true)}
+        onEditCampaign={(c) => setEditCampaign(c)}
+        onToggleCampaign={toggleCampaign}
+        onDeleteCampaign={deleteCampaign}
+        onDuplicateCampaign={async (c) => {
+          const { data: copy, error } = await supabase.from("campaigns").insert({
+            business_id: c.business_id, kind: c.kind, party_id: c.party_id, venue_id: c.venue_id,
+            city_id: c.city_id, title: `${c.title} (copie)`, subtitle: c.subtitle,
+            cta_text: c.cta_text, cta_url: c.cta_url, image_urls: c.image_urls,
+            theme_color: c.theme_color, bid_cents: c.bid_cents, budget_cents: c.budget_cents,
+            pricing_model: c.pricing_model, daily_cap_cents: c.daily_cap_cents,
+            targeting: c.targeting, schedule: c.schedule, event_starts_at: c.event_starts_at,
+            entry_kind: c.entry_kind, entry_price_text: c.entry_price_text,
+            street: c.street, special_guest: c.special_guest, video_url: c.video_url,
+            status: "draft",
+          }).select().single();
+          if (error) { alert(error.message); return; }
+          qc.invalidateQueries({ queryKey: ["biz"] });
+          if (copy) setEditCampaign(copy);
+        }}
+      />
+
 
 
       {builderOpen && (
