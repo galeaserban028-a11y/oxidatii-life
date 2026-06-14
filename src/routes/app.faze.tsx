@@ -307,7 +307,9 @@ function FazePage() {
         </div>
       ) : (
         <div className="pt-4 space-y-5 px-3">
-          {sortedItems.map((it) => {
+          {sortedItems.map((it, idx) => {
+            const showAd = promoCards.length > 0 && idx > 0 && idx % 6 === 0;
+            const ad = showAd ? promoCards[(Math.floor(idx / 6) - 1) % promoCards.length] : null;
             const profile = data.profilesMap.get(it.user_id);
             const venue = data.venuesMap.get(it.venue_id);
             const handle = profile?.handle ?? profile?.display_name ?? "anonim";
