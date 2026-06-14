@@ -306,8 +306,8 @@ function FeedPage() {
                   )}
                 </div>
               </article>
-              </Fragment>
             );
+            return ad ? [<SponsoredFazaCard key={`ad-${it.id}`} ad={ad} />, article] : article;
           })}
         </div>
       )}
