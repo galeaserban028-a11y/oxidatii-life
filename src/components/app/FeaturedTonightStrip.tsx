@@ -41,10 +41,10 @@ export function FeaturedTonightStrip({ cityId }: { cityId?: string | null }) {
     queryKey: ["featured-tonight", cityId ?? "global"],
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_featured_tonight", {
-        _city_id: cityId ?? undefined,
-        _limit: 8,
-      } as { _city_id?: string; _limit: number });
+      const { data, error } = await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ data: FeaturedRow[] | null; error: unknown }>)(
+        "get_featured_tonight",
+        { _city_id: cityId ?? null, _limit: 8 },
+      );
       if (error) throw error;
       return (data ?? []) as FeaturedRow[];
     },
