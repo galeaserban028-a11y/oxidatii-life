@@ -81,18 +81,26 @@ export type Database = {
           cover_url: string | null
           created_at: string
           description: string | null
+          exclusive_city_id: string | null
+          featured_score: number
           id: string
           instagram_handle: string | null
+          is_exclusive_slot: boolean
           lat: number | null
+          live_energy: number
           lng: number | null
           logo_url: string | null
           monthly_credits_cents: number
+          monthly_price_cents: number
           owner_user_id: string
           pro_tier: string | null
           pro_until: string | null
           reputation_score: number
           slug: string | null
+          suspended_until: string | null
           tier: Database["public"]["Enums"]["business_tier"]
+          tier_renews_at: string | null
+          tier_started_at: string | null
           tiktok_handle: string | null
           total_reviews: number
           total_visits: number
@@ -112,18 +120,26 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          exclusive_city_id?: string | null
+          featured_score?: number
           id?: string
           instagram_handle?: string | null
+          is_exclusive_slot?: boolean
           lat?: number | null
+          live_energy?: number
           lng?: number | null
           logo_url?: string | null
           monthly_credits_cents?: number
+          monthly_price_cents?: number
           owner_user_id: string
           pro_tier?: string | null
           pro_until?: string | null
           reputation_score?: number
           slug?: string | null
+          suspended_until?: string | null
           tier?: Database["public"]["Enums"]["business_tier"]
+          tier_renews_at?: string | null
+          tier_started_at?: string | null
           tiktok_handle?: string | null
           total_reviews?: number
           total_visits?: number
@@ -143,18 +159,26 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           description?: string | null
+          exclusive_city_id?: string | null
+          featured_score?: number
           id?: string
           instagram_handle?: string | null
+          is_exclusive_slot?: boolean
           lat?: number | null
+          live_energy?: number
           lng?: number | null
           logo_url?: string | null
           monthly_credits_cents?: number
+          monthly_price_cents?: number
           owner_user_id?: string
           pro_tier?: string | null
           pro_until?: string | null
           reputation_score?: number
           slug?: string | null
+          suspended_until?: string | null
           tier?: Database["public"]["Enums"]["business_tier"]
+          tier_renews_at?: string | null
+          tier_started_at?: string | null
           tiktok_handle?: string | null
           total_reviews?: number
           total_visits?: number
@@ -165,7 +189,15 @@ export type Database = {
           wallet_balance_cents?: number
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "business_accounts_exclusive_city_id_fkey"
+            columns: ["exclusive_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       business_battles: {
         Row: {
@@ -211,6 +243,53 @@ export type Database = {
             columns: ["city_id"]
             isOneToOne: false
             referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_metrics_daily: {
+        Row: {
+          business_id: string
+          created_at: string
+          event_joins: number
+          id: string
+          map_clicks: number
+          metric_date: string
+          offer_claims: number
+          profile_views: number
+          story_views: number
+          unique_visitors: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          event_joins?: number
+          id?: string
+          map_clicks?: number
+          metric_date?: string
+          offer_claims?: number
+          profile_views?: number
+          story_views?: number
+          unique_visitors?: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          event_joins?: number
+          id?: string
+          map_clicks?: number
+          metric_date?: string
+          offer_claims?: number
+          profile_views?: number
+          story_views?: number
+          unique_visitors?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_metrics_daily_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -808,6 +887,51 @@ export type Database = {
           title?: string | null
         }
         Relationships: []
+      }
+      exclusive_partner_slots: {
+        Row: {
+          business_id: string | null
+          city_id: string
+          claimed_at: string | null
+          created_at: string
+          id: string
+          locked_until: string | null
+          slot_index: number
+        }
+        Insert: {
+          business_id?: string | null
+          city_id: string
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          locked_until?: string | null
+          slot_index: number
+        }
+        Update: {
+          business_id?: string | null
+          city_id?: string
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          locked_until?: string | null
+          slot_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exclusive_partner_slots_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exclusive_partner_slots_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       follows: {
         Row: {
@@ -1822,7 +1946,15 @@ export type Database = {
         Args: { _check_in_id?: string; _offer_id: string }
         Returns: Json
       }
+      claim_exclusive_slot: {
+        Args: { _business_id: string; _city_id: string }
+        Returns: Json
+      }
       claim_profile_boost: { Args: never; Returns: Json }
+      compute_business_score: {
+        Args: { _business_id: string }
+        Returns: number
+      }
       get_business_contact: {
         Args: { _business_id: string }
         Returns: {
@@ -1835,6 +1967,20 @@ export type Database = {
         Returns: {
           monthly_credits_cents: number
           wallet_balance_cents: number
+        }[]
+      }
+      get_featured_tonight: {
+        Args: { _city_id: string; _limit?: number }
+        Returns: {
+          brand_name: string
+          business_id: string
+          cover_url: string
+          live_energy: number
+          logo_url: string
+          next_event_at: string
+          score: number
+          tier: Database["public"]["Enums"]["business_tier"]
+          venue_id: string
         }[]
       }
       get_profile_card: {
