@@ -245,7 +245,7 @@ function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }:
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <h1 className="font-display uppercase text-2xl leading-none truncate">{business.brand_name}</h1>
-          {business.verified && <BadgeCheckIcon />}
+          {business.verified && <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-sunset-magenta text-white"><Check size={11} strokeWidth={3} /></span>}
         </div>
         <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-zinc-500 mt-2">
           {business.type} · {business.verified ? "verificat" : "neverificat"} · <span className="text-emerald-400">active</span>
