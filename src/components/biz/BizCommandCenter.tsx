@@ -612,7 +612,7 @@ export function BizCommandCenter({
           </div>
         </Card>
 
-        <Card title="Reputație" icon={ShieldCheck}>
+        <Card id="biz-reputation" title="Reputație" icon={ShieldCheck}>
           <div className="p-4 flex items-center gap-4">
             <ReputationGauge value={rating} />
             <div className="flex-1 space-y-2">
