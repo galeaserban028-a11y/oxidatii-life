@@ -5,7 +5,6 @@ import { toast } from "sonner";
 
 const PACKAGES = [50, 100, 250];
 const MIN_AMOUNT = 50;
-const CURRENCY = "ron" as const;
 const SYMBOL = "RON";
 
 export function WalletTopupDialog({
