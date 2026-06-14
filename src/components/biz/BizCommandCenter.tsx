@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Eye, Users, Star, MessageSquare, Calendar, Activity, BarChart3, Sparkles,
   Megaphone, Wallet, Plus, Pencil, Trash2, Pause, Play, Copy, TrendingUp,
-  Clock, ShieldCheck, Info, Check, Share2, Ticket, Rocket,
+  Clock, ShieldCheck, Info, Share2, Ticket, Rocket,
 } from "lucide-react";
 import { toast } from "sonner";
 
