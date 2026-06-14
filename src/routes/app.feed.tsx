@@ -213,10 +213,9 @@ function FeedPage() {
             const handle = p?.handle ?? p?.display_name ?? "anonim";
             const showAd = promoCards.length > 0 && idx > 0 && idx % 6 === 0;
             const ad = showAd ? promoCards[(Math.floor(idx / 6) - 1) % promoCards.length] : null;
-            return (
-              <Fragment key={`${it.kind}-${it.id}`}>
-                {ad && <SponsoredFazaCard ad={ad} />}
+            const article = (
               <article
+                key={`${it.kind}-${it.id}`}
                 className="rounded-2xl overflow-hidden bg-foreground/[0.03] border border-foreground/10"
               >
                 <header className="flex items-center gap-2.5 p-3">
@@ -307,8 +306,8 @@ function FeedPage() {
                   )}
                 </div>
               </article>
-              </Fragment>
             );
+            return ad ? [<SponsoredFazaCard key={`ad-${it.id}`} ad={ad} />, article] : article;
           })}
         </div>
       )}

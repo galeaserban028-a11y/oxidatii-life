@@ -300,10 +300,8 @@ function FazePage() {
             const isLiked = data.likedSet.has(it.id);
             const isReposted = data.repostedSet.has(it.id);
             const isMine = user?.id === it.user_id;
-            return (
-              <Fragment key={it.id}>
-                {ad && <SponsoredFazaCard ad={ad} />}
-              <article className="rounded-3xl border border-foreground/10 bg-card/40 overflow-hidden shadow-[0_4px_24px_-12px_rgba(0,0,0,0.6)]">
+            const article = (
+              <article key={it.id} className="rounded-3xl border border-foreground/10 bg-card/40 overflow-hidden shadow-[0_4px_24px_-12px_rgba(0,0,0,0.6)]">
                 {/* Header row */}
                 <div className="flex items-center gap-3 px-3.5 py-3">
                   <Link to="/app/user/$id" params={{ id: it.user_id }} className="shrink-0">
@@ -408,8 +406,8 @@ function FazePage() {
                   {reposts > 0 && <> · {formatCount(reposts)} repostări</>}
                 </div>
               </article>
-              </Fragment>
             );
+            return ad ? [<SponsoredFazaCard key={`ad-${it.id}`} ad={ad} />, article] : article;
           })}
         </div>
       )}
