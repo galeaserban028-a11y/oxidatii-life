@@ -209,7 +209,7 @@ function ActionTile({ icon: Icon, title, hint, accent, onClick }: { icon: any; t
 /*  Main                                                              */
 /* ------------------------------------------------------------------ */
 export function BizCommandCenter({
-  business, campaigns, parties,
+  business, campaigns, parties, coverSlot, headerSlot,
   onTopup, onNewCampaign, onEditCampaign, onToggleCampaign, onDeleteCampaign, onDuplicateCampaign,
 }: Props) {
   const tier = tierConfig(business.tier);
