@@ -52,6 +52,7 @@ import { Route as AppMeRatersRouteImport } from './routes/app.me_.raters'
 import { Route as AppMeArchiveRouteImport } from './routes/app.me_.archive'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
+import { Route as AppBizPlansRouteImport } from './routes/app.biz.plans'
 import { Route as AppAdminUsersRouteImport } from './routes/app.admin.users'
 import { Route as AppAdminReportsRouteImport } from './routes/app.admin.reports'
 import { Route as AppAdminPlacesRouteImport } from './routes/app.admin.places'
@@ -276,6 +277,11 @@ const AppChatIdRoute = AppChatIdRouteImport.update({
   path: '/chat/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBizPlansRoute = AppBizPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => AppBizRoute,
+} as any)
 const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -331,7 +337,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/app/admin': typeof AppAdminRouteWithChildren
-  '/app/biz': typeof AppBizRoute
+  '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
@@ -358,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
+  '/app/biz/plans': typeof AppBizPlansRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/me/archive': typeof AppMeArchiveRoute
@@ -382,7 +389,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
-  '/app/biz': typeof AppBizRoute
+  '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
@@ -409,6 +416,7 @@ export interface FileRoutesByTo {
   '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
+  '/app/biz/plans': typeof AppBizPlansRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/me/archive': typeof AppMeArchiveRoute
@@ -436,7 +444,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/app/admin': typeof AppAdminRouteWithChildren
-  '/app/biz': typeof AppBizRoute
+  '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
@@ -463,6 +471,7 @@ export interface FileRoutesById {
   '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
+  '/app/biz/plans': typeof AppBizPlansRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
   '/app/me_/archive': typeof AppMeArchiveRoute
@@ -518,6 +527,7 @@ export interface FileRouteTypes {
     | '/app/admin/places'
     | '/app/admin/reports'
     | '/app/admin/users'
+    | '/app/biz/plans'
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/me/archive'
@@ -569,6 +579,7 @@ export interface FileRouteTypes {
     | '/app/admin/places'
     | '/app/admin/reports'
     | '/app/admin/users'
+    | '/app/biz/plans'
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/me/archive'
@@ -622,6 +633,7 @@ export interface FileRouteTypes {
     | '/app/admin/places'
     | '/app/admin/reports'
     | '/app/admin/users'
+    | '/app/biz/plans'
     | '/app/chat/$id'
     | '/app/city/$slug'
     | '/app/me_/archive'
@@ -954,6 +966,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/biz/plans': {
+      id: '/app/biz/plans'
+      path: '/plans'
+      fullPath: '/app/biz/plans'
+      preLoaderRoute: typeof AppBizPlansRouteImport
+      parentRoute: typeof AppBizRoute
+    }
     '/app/admin/users': {
       id: '/app/admin/users'
       path: '/users'
@@ -1039,9 +1058,20 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
   AppAdminRouteChildren,
 )
 
+interface AppBizRouteChildren {
+  AppBizPlansRoute: typeof AppBizPlansRoute
+}
+
+const AppBizRouteChildren: AppBizRouteChildren = {
+  AppBizPlansRoute: AppBizPlansRoute,
+}
+
+const AppBizRouteWithChildren =
+  AppBizRoute._addFileChildren(AppBizRouteChildren)
+
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
-  AppBizRoute: typeof AppBizRoute
+  AppBizRoute: typeof AppBizRouteWithChildren
   AppBlockedRoute: typeof AppBlockedRoute
   AppDiscoverRoute: typeof AppDiscoverRoute
   AppFazeRoute: typeof AppFazeRoute
@@ -1075,7 +1105,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
-  AppBizRoute: AppBizRoute,
+  AppBizRoute: AppBizRouteWithChildren,
   AppBlockedRoute: AppBlockedRoute,
   AppDiscoverRoute: AppDiscoverRoute,
   AppFazeRoute: AppFazeRoute,
