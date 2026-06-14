@@ -174,9 +174,11 @@ function BizPage() {
           </div>
         </Sheet>
       )}
+      </div>
     </div>
   );
 }
+
 
 function BusinessCard({ business, campaigns, parties, cities, venues, onTopup }: {
   business: any; campaigns: any[]; parties: any[]; cities: any[]; venues: any[];
