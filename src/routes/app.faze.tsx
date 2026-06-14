@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Fragment } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -394,7 +394,7 @@ function FazePage() {
             const isReposted = data.repostedSet.has(it.id);
             const isMine = user?.id === it.user_id;
             return (
-              <div key={it.id} className="contents">
+              <Fragment key={it.id}>
                 {ad && <SponsoredFazaCard ad={ad} />}
               <article className="rounded-3xl border border-foreground/10 bg-card/40 overflow-hidden shadow-[0_4px_24px_-12px_rgba(0,0,0,0.6)]">
                 {/* Header row */}
@@ -501,7 +501,7 @@ function FazePage() {
                   {reposts > 0 && <> · {formatCount(reposts)} repostări</>}
                 </div>
               </article>
-              </div>
+              </Fragment>
             );
           })}
         </div>
