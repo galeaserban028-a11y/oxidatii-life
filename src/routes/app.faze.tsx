@@ -394,7 +394,7 @@ function FazePage() {
             const isReposted = data.repostedSet.has(it.id);
             const isMine = user?.id === it.user_id;
             return (
-              <div key={it.id} className="contents">
+              <Fragment key={it.id}>
                 {ad && <SponsoredFazaCard ad={ad} />}
               <article className="rounded-3xl border border-foreground/10 bg-card/40 overflow-hidden shadow-[0_4px_24px_-12px_rgba(0,0,0,0.6)]">
                 {/* Header row */}
