@@ -151,6 +151,9 @@ function FeedPage() {
     queryFn: () => loadFeed(user!.id),
     refetchInterval: 60_000,
   });
+  const { data: promoCards = [] } = usePromoCards();
+
+
 
   if (!user) {
     return (
