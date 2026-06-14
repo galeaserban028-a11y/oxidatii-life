@@ -129,6 +129,40 @@ function StatTile({
   );
 }
 
+function CompactStat({
+  label, value, sub, accent = "amber",
+}: { label: string; value: string | number; sub?: string; accent?: "amber" | "orange" | "magenta" }) {
+  const color =
+    accent === "orange"  ? "text-sunset-orange"  :
+    accent === "magenta" ? "text-sunset-magenta" :
+                           "text-sunset-amber";
+  return (
+    <div className="px-4 py-4 text-center">
+      <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-500">{label}</div>
+      <div className={`mt-1 font-display text-xl leading-none tabular-nums ${color}`}>{value}</div>
+      {sub && <div className="mt-1 text-[9px] text-zinc-500">{sub}</div>}
+    </div>
+  );
+}
+
+function ActionTile({
+  icon: Icon, title, hint, accent, onClick,
+}: { icon: any; title: string; hint: string; accent: "amber" | "magenta"; onClick: () => void }) {
+  const hover = accent === "magenta" ? "hover:border-sunset-magenta" : "hover:border-sunset-amber";
+  const iconBg = accent === "magenta" ? "bg-sunset-magenta/10 text-sunset-magenta" : "bg-sunset-amber/10 text-sunset-amber";
+  return (
+    <button
+      onClick={onClick}
+      className={`group flex flex-col items-start text-left p-4 rounded-2xl bg-zinc-900/40 border border-white/5 ${hover} transition-all`}
+    >
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${iconBg} group-hover:scale-110 transition-transform`}>
+        <Icon size={18} />
+      </div>
+      <span className="font-display uppercase text-[12px] tracking-wide mb-0.5">{title}</span>
+      <span className="text-[10px] text-zinc-500">{hint}</span>
+    </button>
+  );
+
 /* ------------------------------------------------------------------ */
 /*  Main Command Center                                               */
 /* ------------------------------------------------------------------ */
