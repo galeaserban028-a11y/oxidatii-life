@@ -9,6 +9,7 @@ import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilter
 import { AddVenueSheet } from "@/components/app/AddVenueSheet";
 import { MapSettingsSheet } from "@/components/app/MapSettingsSheet";
 import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
+import { tierConfig } from "@/lib/biz/tiers";
 
 export const Route = createFileRoute("/app/map")({
   head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
@@ -208,16 +209,19 @@ function MapPage() {
       const nowIso = new Date().toISOString();
       const { data, error } = await supabase
         .from("campaigns")
-        .select("id, title, venue_id, theme_color, image_urls, business_id, business_accounts!inner(venue_id, logo_url, cover_url, brand_name), venues(name)")
+        .select("id, title, venue_id, theme_color, image_urls, business_id, business_accounts!inner(venue_id, logo_url, cover_url, brand_name, tier), venues(name)")
         .eq("status", "active")
         .lte("starts_at", nowIso)
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`);
       if (error) throw error;
-      const map: Record<string, { theme: string; cover: string | null; campaignId: string; title: string | null; venueName: string | null }> = {};
+      const tierRank: Record<string, number> = { starter: 1, popular: 2, elite: 3, exclusive: 4 };
+      const map: Record<string, { theme: string; cover: string | null; campaignId: string; title: string | null; venueName: string | null; tier: string }> = {};
       for (const c of (data ?? []) as any[]) {
         const vid = c.venue_id ?? c.business_accounts?.venue_id;
         if (!vid) continue;
-        if (map[vid]) continue;
+        const tier = (c.business_accounts?.tier as string) ?? "starter";
+        const existing = map[vid];
+        if (existing && (tierRank[existing.tier] ?? 0) >= (tierRank[tier] ?? 0)) continue;
         const cover = (c.image_urls?.[0] as string | undefined)
           ?? c.business_accounts?.logo_url
           ?? c.business_accounts?.cover_url
@@ -228,6 +232,7 @@ function MapPage() {
           campaignId: c.id,
           title: c.title ?? null,
           venueName: c.venues?.name ?? c.business_accounts?.brand_name ?? null,
+          tier,
         };
       }
       return map;
@@ -747,7 +752,7 @@ function MapPage() {
   );
 }
 
-type PromoMeta = { theme: string; cover: string | null; campaignId: string; title: string | null; venueName: string | null };
+type PromoMeta = { theme: string; cover: string | null; campaignId: string; title: string | null; venueName: string | null; tier: string };
 
 function PromoBanner({ promotedMeta }: { promotedMeta: Record<string, PromoMeta> }) {
   const items = useMemo(() => Object.values(promotedMeta), [promotedMeta]);
@@ -800,6 +805,15 @@ function PromoBanner({ promotedMeta }: { promotedMeta: Record<string, PromoMeta>
               >
                 AD
               </span>
+              {(() => { const tc = tierConfig(cur.tier); return (
+                <span
+                  className="font-mono text-[8px] uppercase tracking-[0.18em] font-black px-1.5 py-0.5 rounded inline-flex items-center gap-0.5"
+                  style={{ color: `hsl(${tc.color.includes('var') ? '0 0% 100%' : tc.color})`, border: `1px solid ${cur.theme}66` }}
+                  title={tc.name}
+                >
+                  <span>{tc.badgeEmoji}</span>{tc.name}
+                </span>
+              ); })()}
               <span className="font-display font-black text-[13px] truncate">
                 {cur.venueName ?? "Local promovat"}
               </span>
