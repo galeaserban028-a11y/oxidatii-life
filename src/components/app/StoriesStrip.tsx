@@ -211,6 +211,13 @@ export function StoriesStrip() {
             </span>
           </button>
 
+          {/* Sponsored tile (rotates) — opens campaign promo page */}
+          {promoTiles.length > 0 && (
+            <SponsoredTile promo={promoTiles[promoIdx % promoTiles.length]} />
+          )}
+
+
+
           {groups.map((g, i) => {
             const last = g.stories[g.stories.length - 1];
             const cover = last.media_type === "image" ? last.media_url : null;
