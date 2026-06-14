@@ -13,7 +13,7 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, Legend,
 } from "recharts";
 import { Link } from "@tanstack/react-router";
-import { tierConfig, priceLabel, type BusinessTier } from "@/lib/biz/tiers";
+import { tierConfig, priceLabel } from "@/lib/biz/tiers";
 
 type Business = any;
 type Campaign = any;
