@@ -150,11 +150,28 @@ export function StoriesStrip() {
     refetchInterval: 60_000,
   });
 
+  const { data: promoTiles = [] } = useQuery({
+    queryKey: ["stories-strip-promos"],
+    queryFn: loadPromoTiles,
+    refetchInterval: 120_000,
+  });
+
   const [viewerIdx, setViewerIdx] = useState<number | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [seenIds, setSeenIds] = useState<Set<string>>(() => new Set());
+  const [promoIdx, setPromoIdx] = useState(0);
   const groups = data?.groups ?? [];
   const myGroup = useMemo(() => groups.find((g) => g.user_id === user?.id) ?? null, [groups, user]);
+
+  // Rotate sponsored tile every 8s when multiple campaigns are active
+  useEffect(() => {
+    if (promoTiles.length < 2) return;
+    const id = window.setInterval(() => {
+      setPromoIdx((i) => (i + 1) % promoTiles.length);
+    }, 8000);
+    return () => window.clearInterval(id);
+  }, [promoTiles.length]);
+
 
   // Hydrate seen-set from localStorage (client only)
   useEffect(() => {
