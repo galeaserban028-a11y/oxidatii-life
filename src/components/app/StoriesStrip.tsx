@@ -140,6 +140,53 @@ function Cover({ cover, avatar, fallback }: { cover: string | null; avatar: stri
   );
 }
 
+function SponsoredTile({ promo }: { promo: PromoTile }) {
+  const navigate = useNavigate();
+  const label = promo.brand ?? promo.title ?? "promovat";
+  return (
+    <button
+      onClick={() => navigate({ to: "/app/promo/$id", params: { id: promo.campaignId } })}
+      className="shrink-0 flex flex-col items-center gap-2 w-[72px] active:scale-95 transition-transform animate-fade-in"
+      aria-label={`Reclamă: ${label}`}
+    >
+      <div
+        className="relative p-[2.5px] rounded-full"
+        style={{
+          backgroundImage: `linear-gradient(135deg, #ffd166, ${promo.theme}, #ffd166)`,
+          boxShadow: `0 0 18px ${promo.theme}80, 0 0 6px rgba(255,209,102,0.6)`,
+          animation: "oxi-pulse-strong 2.4s ease-in-out infinite",
+        }}
+      >
+        <div className="bg-background p-[2px] rounded-full">
+          <div className="w-[60px] h-[60px] rounded-full overflow-hidden bg-[#111]">
+            {promo.cover ? (
+              <img src={promo.cover} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div
+                className="h-full w-full grid place-items-center font-display font-black text-base"
+                style={{ color: promo.theme }}
+              >
+                {(label[0] ?? "?").toUpperCase()}
+              </div>
+            )}
+          </div>
+        </div>
+        <span
+          className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-1.5 rounded-full text-[8px] font-black tracking-[0.16em] leading-[12px] border-[1.5px] border-background"
+          style={{ background: promo.theme, color: "#06070a" }}
+        >
+          AD
+        </span>
+      </div>
+      <span className="text-[10px] font-bold tracking-wider uppercase truncate w-full text-center text-white">
+        {label}
+      </span>
+    </button>
+  );
+}
+
+
+
 export function StoriesStrip() {
   const { user } = useAuth();
   const qc = useQueryClient();
