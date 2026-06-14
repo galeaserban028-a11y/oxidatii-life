@@ -154,9 +154,14 @@ function SponsoredTile({ promo }: { promo: PromoTile }) {
         style={{
           backgroundImage: `linear-gradient(135deg, #ffd166, ${promo.theme}, #ffd166)`,
           boxShadow: `0 0 18px ${promo.theme}80, 0 0 6px rgba(255,209,102,0.6)`,
-          animation: "oxi-pulse-strong 2.4s ease-in-out infinite",
         }}
       >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -inset-1 rounded-full animate-ping"
+          style={{ background: promo.theme, opacity: 0.25 }}
+        />
+
         <div className="bg-background p-[2px] rounded-full">
           <div className="w-[60px] h-[60px] rounded-full overflow-hidden bg-[#111]">
             {promo.cover ? (
