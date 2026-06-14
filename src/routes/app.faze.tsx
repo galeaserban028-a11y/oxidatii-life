@@ -501,7 +501,7 @@ function FazePage() {
                   {reposts > 0 && <> · {formatCount(reposts)} repostări</>}
                 </div>
               </article>
-              </div>
+              </Fragment>
             );
           })}
         </div>
