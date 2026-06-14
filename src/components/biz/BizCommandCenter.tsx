@@ -131,9 +131,9 @@ async function loadDashboard(business: Business) {
 /* ------------------------------------------------------------------ */
 /*  Primitive UI helpers                                              */
 /* ------------------------------------------------------------------ */
-function Card({ children, className = "", title, hint, icon: Icon }: { children: any; className?: string; title?: string; hint?: string; icon?: any }) {
+function Card({ children, className = "", title, hint, icon: Icon, id }: { children: any; className?: string; title?: string; hint?: string; icon?: any; id?: string }) {
   return (
-    <div className={`rounded-2xl border border-white/[0.06] bg-zinc-950/70 backdrop-blur-xl overflow-hidden ${className}`}>
+    <div id={id} className={`rounded-2xl border border-white/[0.06] bg-zinc-950/70 backdrop-blur-xl overflow-hidden ${className}`}>
       {(title || hint) && (
         <div className="flex items-center justify-between px-4 pt-3 pb-2">
           <div className="flex items-center gap-2">
