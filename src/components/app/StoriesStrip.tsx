@@ -3,8 +3,38 @@ import { createPortal } from "react-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, X, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+
+type PromoTile = {
+  campaignId: string;
+  title: string | null;
+  brand: string | null;
+  cover: string | null;
+  theme: string;
+};
+
+async function loadPromoTiles(): Promise<PromoTile[]> {
+  const nowIso = new Date().toISOString();
+  const { data } = await supabase
+    .from("campaigns")
+    .select("id, title, theme_color, image_urls, business_accounts!inner(logo_url, cover_url, brand_name), venues(name)")
+    .eq("status", "active")
+    .lte("starts_at", nowIso)
+    .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
+    .limit(20);
+  return ((data ?? []) as any[]).map((c) => ({
+    campaignId: c.id,
+    title: c.title ?? null,
+    brand: c.venues?.name ?? c.business_accounts?.brand_name ?? null,
+    cover: (c.image_urls?.[0] as string | undefined)
+      ?? c.business_accounts?.cover_url
+      ?? c.business_accounts?.logo_url
+      ?? null,
+    theme: c.theme_color ?? "#ff8c31",
+  }));
+}
 
 type StoryRow = {
   id: string;
