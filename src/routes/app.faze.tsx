@@ -322,7 +322,9 @@ function FazePage() {
             const isReposted = data.repostedSet.has(it.id);
             const isMine = user?.id === it.user_id;
             return (
-              <article key={it.id} className="rounded-3xl border border-foreground/10 bg-card/40 overflow-hidden shadow-[0_4px_24px_-12px_rgba(0,0,0,0.6)]">
+              <div key={it.id} className="contents">
+                {ad && <SponsoredFazaCard ad={ad} />}
+              <article className="rounded-3xl border border-foreground/10 bg-card/40 overflow-hidden shadow-[0_4px_24px_-12px_rgba(0,0,0,0.6)]">
                 {/* Header row */}
                 <div className="flex items-center gap-3 px-3.5 py-3">
                   <Link to="/app/user/$id" params={{ id: it.user_id }} className="shrink-0">
