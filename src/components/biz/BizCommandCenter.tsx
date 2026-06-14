@@ -592,7 +592,7 @@ export function BizCommandCenter({
           </div>
         </Card>
 
-        <Card title="Performanță evenimente" hint="7 zile" icon={Calendar} id="biz-events-perf">
+        <div id="biz-events-perf"><Card title="Performanță evenimente" hint="7 zile" icon={Calendar}>
           <div className="h-56 px-2 pb-2">
             {eventJoins7 === 0 && (data?.venueCheckins7?.length ?? 0) === 0 ? (
               <div className="h-full grid place-items-center text-[11px] text-zinc-500 text-center px-4">Încă nu sunt interacțiuni pe evenimente.</div>
