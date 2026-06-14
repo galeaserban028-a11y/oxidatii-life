@@ -805,6 +805,15 @@ function PromoBanner({ promotedMeta }: { promotedMeta: Record<string, PromoMeta>
               >
                 AD
               </span>
+              {(() => { const tc = tierConfig(cur.tier); return (
+                <span
+                  className="font-mono text-[8px] uppercase tracking-[0.18em] font-black px-1.5 py-0.5 rounded inline-flex items-center gap-0.5"
+                  style={{ color: `hsl(${tc.color.includes('var') ? '0 0% 100%' : tc.color})`, border: `1px solid ${cur.theme}66` }}
+                  title={tc.name}
+                >
+                  <span>{tc.badgeEmoji}</span>{tc.name}
+                </span>
+              ); })()}
               <span className="font-display font-black text-[13px] truncate">
                 {cur.venueName ?? "Local promovat"}
               </span>
