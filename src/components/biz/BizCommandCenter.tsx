@@ -562,7 +562,7 @@ export function BizCommandCenter({
       </div>
 
       {/* ============== TRAFFIC + EVENT PERFORMANCE + REPUTATION ============== */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div id="biz-visibility" className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <Card title="Surse de trafic · 7 zile" icon={Eye}>
           <div className="h-56 px-2 pb-2">
             {trafficSources.length === 0 ? (
