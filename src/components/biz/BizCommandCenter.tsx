@@ -7,6 +7,7 @@ import {
   Clock, ShieldCheck, Info, Share2, Ticket, Rocket,
 } from "lucide-react";
 import { toast } from "sonner";
+import { BizTierHero } from "@/components/biz/BizTierHero";
 
 type Business = any;
 type Campaign = any;
