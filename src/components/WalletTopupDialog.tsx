@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
-import { getStripe, getStripeEnvironment } from "@/lib/stripe";
-import { createWalletTopupCheckout } from "@/lib/wallet-topup.functions";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { X, Wallet } from "lucide-react";
+import { toast } from "sonner";
 
 const PACKAGES = [50, 100, 250];
 const MIN_AMOUNT = 50;
@@ -13,54 +12,58 @@ export function WalletTopupDialog({
   businessId,
   open,
   onClose,
+  onSuccess,
 }: {
   businessId: string;
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }) {
   const [amount, setAmount] = useState<number>(PACKAGES[0]);
-  const [checkoutReady, setCheckoutReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) {
-      setCheckoutReady(false);
       setError(null);
       setAmount(PACKAGES[0]);
     }
   }, [open]);
 
-  const startCheckout = async () => {
+  const simulateTopup = async () => {
     if (!amount || amount < MIN_AMOUNT) {
       setError(`Sumă minimă: ${MIN_AMOUNT} ${SYMBOL}`);
       return;
     }
+    if (!businessId) return;
     setLoading(true);
     setError(null);
     try {
-      setCheckoutReady(true);
+      const { data: current, error: readError } = await supabase
+        .from("business_accounts")
+        .select("wallet_balance_cents")
+        .eq("id", businessId)
+        .single();
+
+      if (readError) throw readError;
+
+      const nextBalance = (current?.wallet_balance_cents ?? 0) + Math.round(amount * 100);
+      const { error: updateError } = await supabase
+        .from("business_accounts")
+        .update({ wallet_balance_cents: nextBalance })
+        .eq("id", businessId);
+
+      if (updateError) throw updateError;
+
+      toast.success(`Wallet încărcat cu ${amount} ${SYMBOL}`);
+      onSuccess?.();
+      onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Eroare necunoscută");
     } finally {
       setLoading(false);
     }
   };
-
-  const fetchClientSecret = useCallback(async (): Promise<string> => {
-    const result = await createWalletTopupCheckout({
-      data: {
-        businessId,
-        amount,
-        currency: CURRENCY,
-        returnUrl: `${window.location.origin}/app/biz?topup=success&session_id={CHECKOUT_SESSION_ID}`,
-        environment: getStripeEnvironment(),
-      },
-    });
-    if ("error" in result) throw new Error(result.error);
-    if (!result.clientSecret) throw new Error("Lipsește client secret");
-    return result.clientSecret;
-  }, [amount, businessId]);
 
   if (!open) return null;
 
@@ -77,38 +80,28 @@ export function WalletTopupDialog({
           </button>
         </div>
 
-        {checkoutReady ? (
-          <div className="p-2">
-            <EmbeddedCheckoutProvider stripe={getStripe()} options={{ fetchClientSecret }}>
-              <EmbeddedCheckout />
-            </EmbeddedCheckoutProvider>
+        <div className="p-4 space-y-4">
+          <div className="rounded-xl border border-neon-green/20 bg-neon-green/5 p-3">
+            <div className="font-display uppercase text-lg">Adaugă fonduri demo</div>
+            <p className="text-xs text-muted-foreground mt-1">Top-up intern simulat: suma intră imediat în wallet și poate fi folosită pentru campanii.</p>
           </div>
-        ) : (
-          <div className="p-4 space-y-4">
-            <div className="rounded-xl border border-neon-crimson/20 bg-neon-crimson/5 p-3">
-              <div className="font-display uppercase text-lg">Adaugă bani pentru reclame</div>
-              <p className="text-xs text-muted-foreground mt-1">Alegi suma, apeși plătește, apoi wallet-ul se actualizează automat.</p>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {PACKAGES.map((amt) => (
-                <button key={amt} onClick={() => setAmount(amt)}
-                  className={`px-3 py-4 rounded-xl border font-display text-lg transition ${amount === amt ? "border-neon-crimson bg-neon-crimson/10" : "border-foreground/15 text-muted-foreground hover:border-foreground/40"}`}>
-                  {amt}<span className="block text-[10px] font-mono text-muted-foreground">{SYMBOL}</span>
-                </button>
-              ))}
-            </div>
-            <div className="text-[10px] text-muted-foreground space-y-0.5">
-              <div>Metode acceptate: card, Revolut Pay, Apple Pay, Google Pay.</div>
-              <div>Card test preview: 4242 4242 4242 4242</div>
-            </div>
-            {error && <div className="text-xs text-neon-crimson border border-neon-crimson/30 bg-neon-crimson/5 rounded-md px-3 py-2">{error}</div>}
-            <button onClick={startCheckout} disabled={loading}
-              className="w-full font-display uppercase text-sm tracking-widest py-3 rounded-xl text-white disabled:opacity-50"
-              style={{ background: "var(--gradient-chaos)" }}>
-              {loading ? "Se încarcă…" : `Plătește ${amount} ${SYMBOL}`}
-            </button>
+          <div className="grid grid-cols-3 gap-2">
+            {PACKAGES.map((amt) => (
+              <button key={amt} onClick={() => setAmount(amt)}
+                className={`px-3 py-4 rounded-xl border font-display text-lg transition ${amount === amt ? "border-neon-green bg-neon-green/10 text-neon-green" : "border-foreground/15 text-muted-foreground hover:border-foreground/40"}`}>
+                {amt}<span className="block text-[10px] font-mono text-muted-foreground">{SYMBOL}</span>
+              </button>
+            ))}
           </div>
-        )}
+          <div className="text-[10px] text-muted-foreground">
+            Nu se procesează carduri reale. Actualizarea se face direct în wallet-ul business-ului.
+          </div>
+          {error && <div className="text-xs text-neon-crimson border border-neon-crimson/30 bg-neon-crimson/5 rounded-md px-3 py-2">{error}</div>}
+          <button onClick={simulateTopup} disabled={loading}
+            className="w-full font-display uppercase text-sm tracking-widest py-3 rounded-xl text-background disabled:opacity-50 bg-neon-green">
+            {loading ? "Se adaugă…" : `Adaugă ${amount} ${SYMBOL}`}
+          </button>
+        </div>
       </div>
     </div>
   );
