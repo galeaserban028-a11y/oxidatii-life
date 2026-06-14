@@ -696,7 +696,7 @@ export function BizCommandCenter({
       </Card>
 
       {/* ============== PROMOVARE (campaigns manager) ============== */}
-      <Card title="Promovare" hint="opțional" icon={Megaphone}>
+      <Card id="biz-promo" title="Promovare" hint="opțional" icon={Megaphone}>
         <div className="p-4 space-y-4">
           <p className="text-[11px] text-zinc-400 leading-relaxed">
             Promovarea crește vizibilitatea în aplicație. Rezultatele depind de comportamentul utilizatorilor. Nu garantăm vânzări sau clienți.
