@@ -42,9 +42,9 @@ export function FeaturedTonightStrip({ cityId }: { cityId?: string | null }) {
     staleTime: 5 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_featured_tonight", {
-        _city_id: cityId ?? null,
+        _city_id: cityId ?? undefined,
         _limit: 8,
-      });
+      } as { _city_id?: string; _limit: number });
       if (error) throw error;
       return (data ?? []) as FeaturedRow[];
     },
