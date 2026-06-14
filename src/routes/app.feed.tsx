@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { Lock, Sparkles, MapPin, Flame, Rocket } from "lucide-react";
 import { StoriesStrip } from "@/components/app/StoriesStrip";
 import { SponsoredFazaCard, usePromoCards } from "@/components/app/SponsoredFazaCard";
+import { FeaturedTonightStrip } from "@/components/app/FeaturedTonightStrip";
 
 export const Route = createFileRoute("/app/feed")({
   head: () => ({ meta: [{ title: "Feed privat · OXIDAȚII" }] }),
