@@ -246,15 +246,7 @@ export function BizCommandCenter({
   const totalClicks      = campaigns.reduce((s, c) => s + (c.clicks || 0), 0);
   const activeCount      = campaigns.filter((c) => c.status === "active").length;
 
-  // Onboarding checklist -------------------------------------------
-  const steps = [
-    { id: "account", label: "Creat cont", done: true },
-    { id: "profile", label: "Profil bază", done: completeness >= 40 },
-    { id: "verify",  label: "Verifică identitatea", done: !!business.verified },
-    { id: "event",   label: "Publică primul eveniment", done: upcomingEvents.length > 0 || (data?.offers?.length ?? 0) > 0 },
-  ];
-  const stepsDone = steps.filter((s) => s.done).length;
-  const allDone = stepsDone === steps.length;
+  /* onboarding checklist removed */
 
   const shareProfile = async () => {
     const url = `${window.location.origin}/biz/${business.slug ?? business.id}`;
@@ -272,35 +264,6 @@ export function BizCommandCenter({
 
   return (
     <div className="space-y-5">
-      {/* ============== ONBOARDING CHECKLIST ============== */}
-      {!allDone && (
-        <GlassCard className="p-5 border-sunset-amber/20 bg-sunset-amber/[0.03]">
-          <div className="flex items-center justify-between gap-2 mb-4">
-            <div className="font-display uppercase text-[13px] tracking-wide text-sunset-amber">
-              Configurare local ({stepsDone}/{steps.length} pași gata)
-            </div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-sunset-amber bg-sunset-amber/10 px-2 py-1 rounded">
-              Acțiune necesară
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {steps.map((s, idx) => (
-              <div key={s.id} className={`flex items-center gap-3 ${s.done ? "opacity-50" : ""}`}>
-                <div className={`w-6 h-6 shrink-0 rounded-full flex items-center justify-center ${
-                  s.done ? "bg-sunset-amber text-zinc-950" :
-                  idx === stepsDone ? "border-2 border-sunset-amber text-sunset-amber italic" :
-                  "border-2 border-white/15 text-zinc-500"
-                } text-[10px] font-bold`}>
-                  {s.done ? <Check size={13} strokeWidth={3} /> : idx + 1}
-                </div>
-                <span className={`text-[11px] ${s.done ? "font-semibold" : idx === stepsDone ? "font-bold" : "text-zinc-500"}`}>
-                  {s.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-      )}
 
       {/* ============== QUICK ACTIONS ============== */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
