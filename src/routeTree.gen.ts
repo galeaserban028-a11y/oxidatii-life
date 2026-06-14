@@ -53,6 +53,7 @@ import { Route as AppMeArchiveRouteImport } from './routes/app.me_.archive'
 import { Route as AppCitySlugRouteImport } from './routes/app.city.$slug'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppBizPlansRouteImport } from './routes/app.biz.plans'
+import { Route as AppBizExclusiveRouteImport } from './routes/app.biz.exclusive'
 import { Route as AppAdminUsersRouteImport } from './routes/app.admin.users'
 import { Route as AppAdminReportsRouteImport } from './routes/app.admin.reports'
 import { Route as AppAdminPlacesRouteImport } from './routes/app.admin.places'
@@ -282,6 +283,11 @@ const AppBizPlansRoute = AppBizPlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => AppBizRoute,
 } as any)
+const AppBizExclusiveRoute = AppBizExclusiveRouteImport.update({
+  id: '/exclusive',
+  path: '/exclusive',
+  getParentRoute: () => AppBizRoute,
+} as any)
 const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -364,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
+  '/app/biz/exclusive': typeof AppBizExclusiveRoute
   '/app/biz/plans': typeof AppBizPlansRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -416,6 +423,7 @@ export interface FileRoutesByTo {
   '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
+  '/app/biz/exclusive': typeof AppBizExclusiveRoute
   '/app/biz/plans': typeof AppBizPlansRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -471,6 +479,7 @@ export interface FileRoutesById {
   '/app/admin/places': typeof AppAdminPlacesRoute
   '/app/admin/reports': typeof AppAdminReportsRoute
   '/app/admin/users': typeof AppAdminUsersRoute
+  '/app/biz/exclusive': typeof AppBizExclusiveRoute
   '/app/biz/plans': typeof AppBizPlansRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/city/$slug': typeof AppCitySlugRoute
@@ -527,6 +536,7 @@ export interface FileRouteTypes {
     | '/app/admin/places'
     | '/app/admin/reports'
     | '/app/admin/users'
+    | '/app/biz/exclusive'
     | '/app/biz/plans'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -579,6 +589,7 @@ export interface FileRouteTypes {
     | '/app/admin/places'
     | '/app/admin/reports'
     | '/app/admin/users'
+    | '/app/biz/exclusive'
     | '/app/biz/plans'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -633,6 +644,7 @@ export interface FileRouteTypes {
     | '/app/admin/places'
     | '/app/admin/reports'
     | '/app/admin/users'
+    | '/app/biz/exclusive'
     | '/app/biz/plans'
     | '/app/chat/$id'
     | '/app/city/$slug'
@@ -973,6 +985,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBizPlansRouteImport
       parentRoute: typeof AppBizRoute
     }
+    '/app/biz/exclusive': {
+      id: '/app/biz/exclusive'
+      path: '/exclusive'
+      fullPath: '/app/biz/exclusive'
+      preLoaderRoute: typeof AppBizExclusiveRouteImport
+      parentRoute: typeof AppBizRoute
+    }
     '/app/admin/users': {
       id: '/app/admin/users'
       path: '/users'
@@ -1059,10 +1078,12 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
 )
 
 interface AppBizRouteChildren {
+  AppBizExclusiveRoute: typeof AppBizExclusiveRoute
   AppBizPlansRoute: typeof AppBizPlansRoute
 }
 
 const AppBizRouteChildren: AppBizRouteChildren = {
+  AppBizExclusiveRoute: AppBizExclusiveRoute,
   AppBizPlansRoute: AppBizPlansRoute,
 }
 
