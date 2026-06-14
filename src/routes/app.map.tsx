@@ -484,8 +484,64 @@ function MapPage() {
           </div>
         </div>
 
+        {/* Live OFF banner — when user hasn't consented to GPS or is in ghost mode,
+            their pin never broadcasts. One-tap fix right here. */}
+        {user && (!profile?.location_consent || privacyQ.data?.settings?.map_ghost) && (
+          <button
+            onClick={async () => {
+              if (!navigator.geolocation) {
+                alert("Browser-ul tău n-are GPS.");
+                return;
+              }
+              navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                  await supabase
+                    .from("profiles")
+                    .update({ location_consent: true, map_ghost: false } as any)
+                    .eq("id", user.id);
+                  await refreshProfile();
+                  qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
+                  setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                  setFocusCity({ lat: pos.coords.latitude, lng: pos.coords.longitude, zoom: 13 });
+                  // Push an immediate live row so friends see us right away.
+                  await supabase.from("live_locations").upsert(
+                    {
+                      user_id: user.id,
+                      lat: pos.coords.latitude,
+                      lng: pos.coords.longitude,
+                      accuracy: pos.coords.accuracy ?? null,
+                      heading: pos.coords.heading ?? null,
+                      updated_at: new Date().toISOString(),
+                      expires_at: new Date(Date.now() + 8 * 60 * 60_000).toISOString(),
+                    },
+                    { onConflict: "user_id" },
+                  );
+                  qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+                },
+                () => alert("Nu am putut citi locația. Verifică permisiunile browserului."),
+                { enableHighAccuracy: true, timeout: 8000 },
+              );
+            }}
+            className="w-full flex items-center gap-3 rounded-2xl border border-neon-green/40 bg-neon-green/10 px-4 py-3 text-left active:scale-[0.99] transition"
+          >
+            <span className="h-9 w-9 grid place-items-center rounded-xl bg-neon-green/20 border border-neon-green/40 shrink-0">
+              <Navigation size={16} className="text-neon-green" />
+            </span>
+            <span className="flex-1 min-w-0">
+              <span className="block font-display font-black uppercase text-sm leading-tight text-neon-green">
+                {privacyQ.data?.settings?.map_ghost ? "ești în ghost mode" : "live-ul e oprit"}
+              </span>
+              <span className="block font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
+                apasă ca să apari pe hartă pentru prieteni
+              </span>
+            </span>
+            <span className="font-display text-neon-green text-xl">→</span>
+          </button>
+        )}
+
         {/* Map block */}
         <div className="relative rounded-2xl overflow-hidden border border-border bg-foreground/5">
+
           {isLoading ? (
             <div className="aspect-[5/4] animate-pulse" />
           ) : (
