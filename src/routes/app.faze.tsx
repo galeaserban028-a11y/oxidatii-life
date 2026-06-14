@@ -406,8 +406,8 @@ function FazePage() {
                   {reposts > 0 && <> · {formatCount(reposts)} repostări</>}
                 </div>
               </article>
-              </Fragment>
             );
+            return ad ? [<SponsoredFazaCard key={`ad-${it.id}`} ad={ad} />, article] : article;
           })}
         </div>
       )}
