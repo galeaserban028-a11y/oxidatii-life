@@ -162,6 +162,9 @@ function ActionTile({
       <span className="text-[10px] text-zinc-500">{hint}</span>
     </button>
   );
+}
+
+
 
 /* ------------------------------------------------------------------ */
 /*  Main Command Center                                               */
