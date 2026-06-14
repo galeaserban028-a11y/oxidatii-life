@@ -109,25 +109,16 @@ function BizPage() {
   };
 
   return (
-    <div className="px-4 pt-8 pb-24 space-y-7">
+    <div className="px-4 pt-4 pb-24 flex gap-6 max-w-[1400px] mx-auto">
+      <BizSidebar />
+      <div className="flex-1 min-w-0 space-y-6">
       <PaymentTestModeBanner />
       <WalletTopupDialog
         businessId={topupBizId ?? ""}
         open={!!topupBizId}
         onClose={() => setTopupBizId(null)}
       />
-      <header className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Building2 size={11} className="text-sunset-amber" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">Business · Command Center</span>
-        </div>
-        <h1 className="font-display uppercase text-3xl leading-[0.95] tracking-tight">
-          Gestionează și crește <span className="text-gradient-chaos">localul tău.</span>
-        </h1>
-        <p className="text-xs text-zinc-400">
-          Date reale, măsurabile. Fără promisiuni, fără estimări inventate.
-        </p>
-      </header>
+
 
 
       {isLoading ? (
