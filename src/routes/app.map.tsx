@@ -751,7 +751,7 @@ function MapPage() {
   );
 }
 
-type PromoMeta = { theme: string; cover: string | null; campaignId: string; title: string | null; venueName: string | null };
+type PromoMeta = { theme: string; cover: string | null; campaignId: string; title: string | null; venueName: string | null; tier: string };
 
 function PromoBanner({ promotedMeta }: { promotedMeta: Record<string, PromoMeta> }) {
   const items = useMemo(() => Object.values(promotedMeta), [promotedMeta]);
