@@ -23,6 +23,8 @@ type Props = {
   business: Business;
   campaigns: Campaign[];
   parties: Party[];
+  coverSlot?: React.ReactNode;
+  headerSlot?: React.ReactNode;
   onTopup: () => void;
   onNewCampaign: () => void;
   onEditCampaign: (c: Campaign) => void;
