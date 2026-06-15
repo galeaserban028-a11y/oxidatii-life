@@ -547,14 +547,38 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
             </Field>
 
             {mediaKind === "image" ? (
-              <Field label="URL imagine">
-                <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..."
-                  className={inputClass} />
+              <Field label="Imagine">
+                {imageUrl ? (
+                  <div className="relative rounded-xl overflow-hidden border border-white/10">
+                    <img src={imageUrl} alt="preview" className="w-full max-h-64 object-cover" />
+                    <button type="button" onClick={() => setImageUrl("")}
+                      className="absolute top-2 right-2 bg-black/70 rounded-full p-1.5"><X size={14} /></button>
+                  </div>
+                ) : (
+                  <label className={`flex flex-col items-center justify-center gap-2 cursor-pointer ${inputClass} py-8 border-dashed text-zinc-400 hover:text-white hover:border-neon-crimson/50`}>
+                    {uploading ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+                    <span className="text-[11px] font-mono uppercase tracking-widest">{uploading ? "se încarcă..." : "alege imagine (max 10MB)"}</span>
+                    <input type="file" accept="image/*" className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, "image"); e.target.value = ""; }} />
+                  </label>
+                )}
               </Field>
             ) : (
-              <Field label="URL video (mp4)">
-                <input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://...mp4"
-                  className={inputClass} />
+              <Field label="Video">
+                {videoUrl ? (
+                  <div className="relative rounded-xl overflow-hidden border border-white/10">
+                    <video src={videoUrl} className="w-full max-h-64 object-cover" controls muted />
+                    <button type="button" onClick={() => setVideoUrl("")}
+                      className="absolute top-2 right-2 bg-black/70 rounded-full p-1.5"><X size={14} /></button>
+                  </div>
+                ) : (
+                  <label className={`flex flex-col items-center justify-center gap-2 cursor-pointer ${inputClass} py-8 border-dashed text-zinc-400 hover:text-white hover:border-neon-crimson/50`}>
+                    {uploading ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+                    <span className="text-[11px] font-mono uppercase tracking-widest">{uploading ? "se încarcă..." : "alege video (max 50MB)"}</span>
+                    <input type="file" accept="video/*" className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, "video"); e.target.value = ""; }} />
+                  </label>
+                )}
               </Field>
             )}
 
