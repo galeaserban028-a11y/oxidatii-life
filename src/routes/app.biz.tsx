@@ -484,6 +484,8 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
     }
     setBusy(true);
     const eventIso = eventAt ? new Date(eventAt).toISOString() : null;
+    const now = new Date();
+    const endsAt = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // max 2 zile activ
     const { error } = await supabase.from("campaigns").insert({
       business_id: businessId,
       title: title.trim(),
@@ -498,6 +500,8 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
       image_urls: mediaKind === "image" && imageUrl.trim() ? [imageUrl.trim()] : [],
       video_url: mediaKind === "video" && videoUrl.trim() ? videoUrl.trim() : null,
       event_starts_at: eventIso,
+      starts_at: now.toISOString(),
+      ends_at: endsAt.toISOString(),
     });
     setBusy(false);
     if (error) return toast.error(error.message);
