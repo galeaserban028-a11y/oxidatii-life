@@ -399,7 +399,7 @@ function StoryViewer({
   const ageLabel = ageM < 60 ? `${ageM}m` : `${Math.floor(ageM / 60)}h`;
 
   return (
-    <div className="fixed inset-0 z-[80] bg-black flex items-center justify-center" onClick={onClose}>
+      <div className="fixed inset-0 z-[80] bg-black flex items-center justify-center" onClick={onClose}>
       {/* top scrim for legibility */}
       <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black/80 to-transparent z-10 pointer-events-none" />
 
@@ -438,11 +438,11 @@ function StoryViewer({
       </div>
 
       {/* media */}
-      <div className="absolute inset-0 flex items-center justify-center px-3 py-20" onClick={(e) => e.stopPropagation()}>
+      <div className="absolute inset-0 flex items-center justify-center px-7 py-28" onClick={(e) => e.stopPropagation()}>
         {story.media_type === "image" && (
           <img src={story.media_url} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-35 blur-2xl scale-110" />
         )}
-        <div className="relative w-full max-w-[430px] max-h-[76dvh] aspect-[4/5] overflow-hidden rounded-[28px] bg-zinc-950 shadow-[0_24px_80px_rgba(0,0,0,0.65)]">
+        <div className="relative w-full max-w-[340px] max-h-[54dvh] aspect-square overflow-hidden rounded-[26px] bg-zinc-950 shadow-[0_24px_80px_rgba(0,0,0,0.65)]">
           {story.media_type === "video" ? (
             <video src={story.media_url} className="h-full w-full object-cover" autoPlay playsInline controls={false} onEnded={next} />
           ) : (
