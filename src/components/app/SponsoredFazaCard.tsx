@@ -1,9 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { recordCampaignEvent } from "@/lib/business-promotion.functions";
 
 const archivo = { fontFamily: '"Archivo Black", system-ui, sans-serif', letterSpacing: "-0.01em" } as const;
 
@@ -18,6 +20,8 @@ export type AdCard = {
   ctaUrl: string | null;
   ctaText: string | null;
   theme: string;
+  rating: number | null;
+  reviewsCount: number | null;
 };
 
 // Shared loader used by /app/faze and /app/feed so paying clubs get
@@ -29,7 +33,7 @@ export function usePromoCards() {
       const nowIso = new Date().toISOString();
       const { data } = await supabase
         .from("campaigns")
-        .select("id, title, body, subtitle, theme_color, image_urls, video_url, cta_url, cta_text, business_accounts!inner(logo_url, cover_url, brand_name), venues(name)")
+        .select("id, title, body, subtitle, theme_color, image_urls, video_url, cta_url, cta_text, business_accounts!inner(logo_url, cover_url, brand_name, reputation_score, total_reviews), venues(name)")
         .eq("status", "active")
         .lte("starts_at", nowIso)
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
@@ -45,6 +49,8 @@ export function usePromoCards() {
         ctaUrl: (c.cta_url as string | null) ?? null,
         ctaText: (c.cta_text as string | null) ?? null,
         theme: (c.theme_color ?? "#ff8c31") as string,
+        rating: (c.business_accounts?.reputation_score as number | null) ?? null,
+        reviewsCount: (c.business_accounts?.total_reviews as number | null) ?? null,
       }));
     },
     refetchInterval: 120_000,
