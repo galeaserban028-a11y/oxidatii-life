@@ -391,16 +391,14 @@ function MePage() {
           {profile.display_name && profile.handle && (
             <div className="text-[12px] font-mono text-muted-foreground">@{profile.handle}</div>
           )}
-          <div className="text-[10px] font-mono uppercase tracking-widest text-neon-crimson pt-1">
-            {RANK_LABELS[profile.rank] ?? profile.rank}
-          </div>
           {(profile as any).bio && (
             <p className="text-[13px] text-foreground/80 pt-2 whitespace-pre-line leading-relaxed">{(profile as any).bio}</p>
           )}
-          <div className="text-[12px] text-muted-foreground pt-1">
-            aură <span className="text-neon-purple font-mono">{profile.aura ?? 0}</span>
-            {moments?.city && <> · din <span className="text-foreground">{moments.city.name}</span></>}
-          </div>
+          {moments?.city && (
+            <div className="text-[12px] text-muted-foreground pt-1">
+              din <span className="text-foreground">{moments.city.name}</span>
+            </div>
+          )}
         </div>
 
         {/* Premium CTA — only when not subscribed */}
