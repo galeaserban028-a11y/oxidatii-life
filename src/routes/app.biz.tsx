@@ -150,9 +150,10 @@ function BizPage() {
             </div>
             <div>
               <div className="font-display uppercase text-lg">{activeBiz.brand_name}</div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-                Plan <span className="text-emerald-400">{activeBiz.pro_tier}</span>
-                {activeBiz.pro_until && ` · până ${new Date(activeBiz.pro_until).toLocaleDateString("ro-RO")}`}
+              <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-2 flex-wrap">
+                <span>Plan <span className="text-emerald-400">{activeBiz.pro_tier}</span></span>
+                {activeBiz.pro_until && <span>până {new Date(activeBiz.pro_until).toLocaleDateString("ro-RO")}</span>}
+                <span className="text-amber-400">★ {Number(activeBiz.reputation_score ?? 0).toFixed(1)} ({activeBiz.total_reviews ?? 0})</span>
               </div>
             </div>
           </div>
