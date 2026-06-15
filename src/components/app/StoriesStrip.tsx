@@ -437,9 +437,9 @@ function StoryViewer({
       {/* media */}
       <div className="absolute inset-0 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
         {story.media_type === "video" ? (
-          <video src={story.media_url} className="max-h-full max-w-full" autoPlay playsInline controls={false} onEnded={next} />
+          <video src={story.media_url} className="h-full w-full object-cover" autoPlay playsInline controls={false} onEnded={next} />
         ) : (
-          <img src={story.media_url} alt="" className="max-h-full max-w-full object-contain" />
+          <img src={story.media_url} alt="" className="h-full w-full object-cover" />
         )}
       </div>
 
