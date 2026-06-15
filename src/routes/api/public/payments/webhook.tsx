@@ -83,44 +83,30 @@ async function handleCoinPackPurchase(session: any, env: StripeEnv) {
     .update({ coin_balance: current + coins }).eq("id", userId);
 }
 
-const BIZ_PRO_MONTHLY_CREDITS_CENTS = 5000; // 50 RON
+const BIZ_PLAN_BY_LOOKUP: Record<string, "basic" | "pro" | "elite"> = {
+  biz_basic_monthly: "basic",
+  biz_pro_v2_monthly: "pro",
+  biz_elite_monthly: "elite",
+  biz_pro_monthly: "pro", // legacy
+};
 
-async function grantBizProMonthlyCredits(businessId: string, refTag: string) {
-  // Idempotent — wallet_ledger.note carries the unique stripe ref
-  const { data: existing } = await supabaseAdmin
-    .from("wallet_ledger").select("id").eq("note", refTag).maybeSingle();
-  if (existing) return;
-  await supabaseAdmin.from("wallet_ledger").insert({
-    business_id: businessId,
-    kind: "topup",
-    amount_cents: BIZ_PRO_MONTHLY_CREDITS_CENTS,
-    note: refTag,
-  });
-  const { data: biz } = await supabaseAdmin
-    .from("business_accounts").select("wallet_balance_cents, monthly_credits_cents")
-    .eq("id", businessId).maybeSingle();
-  const currentWallet = (biz?.wallet_balance_cents as number | undefined) ?? 0;
-  const currentMonthly = (biz?.monthly_credits_cents as number | undefined) ?? 0;
-  await supabaseAdmin.from("business_accounts").update({
-    wallet_balance_cents: currentWallet + BIZ_PRO_MONTHLY_CREDITS_CENTS,
-    monthly_credits_cents: currentMonthly + BIZ_PRO_MONTHLY_CREDITS_CENTS,
-  }).eq("id", businessId);
-}
-
-async function upsertBizProSubscription(subscription: any, env: StripeEnv, periodEndIso: string | null) {
+async function upsertBizPlanSubscription(
+  subscription: any,
+  _env: StripeEnv,
+  periodEndIso: string | null,
+  priceLookup: string | null,
+) {
   const businessId = subscription.metadata?.business_id;
   if (!businessId) return;
+  const plan = subscription.metadata?.plan
+    || (priceLookup ? BIZ_PLAN_BY_LOOKUP[priceLookup] : null)
+    || null;
   const isActive = ["active", "trialing", "past_due"].includes(subscription.status)
     || (subscription.status === "canceled" && periodEndIso && new Date(periodEndIso) > new Date());
   await supabaseAdmin.from("business_accounts").update({
-    pro_tier: isActive ? "pro" : null,
+    pro_tier: isActive ? plan : null,
     pro_until: isActive ? periodEndIso : null,
   }).eq("id", businessId);
-
-  // First-month credits on initial activation
-  if (isActive && ["active", "trialing"].includes(subscription.status)) {
-    await grantBizProMonthlyCredits(businessId, `biz_pro_init:${subscription.id}`);
-  }
 }
 
 async function upsertSubscription(subscription: any, env: StripeEnv) {
@@ -148,9 +134,8 @@ async function upsertSubscription(subscription: any, env: StripeEnv) {
     updated_at: new Date().toISOString(),
   }, { onConflict: "stripe_subscription_id" });
 
-  // Biz Pro subscription → update business_accounts, skip profile premium sync
-  if (subscription.metadata?.kind === "biz_pro") {
-    await upsertBizProSubscription(subscription, env, periodEndIso);
+  if (subscription.metadata?.kind === "biz_plan" || subscription.metadata?.kind === "biz_pro") {
+    await upsertBizPlanSubscription(subscription, env, periodEndIso, priceLookup);
     return;
   }
 
