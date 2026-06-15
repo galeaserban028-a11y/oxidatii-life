@@ -37,7 +37,7 @@ const PLANS: {
 
 async function loadBiz(userId: string) {
   const { data: businesses } = await supabase
-    .from("business_accounts").select("id, brand_name, type, pro_tier, pro_until")
+    .from("business_accounts").select("id, brand_name, type, pro_tier, pro_until, reputation_score, total_reviews")
     .eq("owner_user_id", userId).order("created_at", { ascending: false });
   return { businesses: businesses ?? [] };
 }
@@ -45,7 +45,7 @@ async function loadBiz(userId: string) {
 async function loadCampaigns(businessId: string) {
   const { data } = await supabase
     .from("campaigns")
-    .select("id, title, subtitle, body, status, kind, impressions, clicks, image_urls, video_url, cta_url, event_starts_at, created_at")
+    .select("id, title, subtitle, body, status, kind, impressions, clicks, image_urls, video_url, cta_url, event_starts_at, starts_at, ends_at, created_at")
     .eq("business_id", businessId)
     .order("created_at", { ascending: false });
   if (!data || data.length === 0) return [];
