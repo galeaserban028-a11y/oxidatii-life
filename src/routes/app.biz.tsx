@@ -45,10 +45,27 @@ async function loadBiz(userId: string) {
 async function loadCampaigns(businessId: string) {
   const { data } = await supabase
     .from("campaigns")
-    .select("id, title, status, kind, bid_cents, budget_cents, spent_cents, impressions, clicks, starts_at, ends_at")
+    .select("id, title, subtitle, status, kind, impressions, clicks, image_urls, created_at")
     .eq("business_id", businessId)
     .order("created_at", { ascending: false });
   return data ?? [];
+}
+
+// Câte postări sponsorizate poate publica un brand pe lună, în funcție de plan.
+const MONTHLY_POST_QUOTA: Record<string, number> = { basic: 4, pro: 10, elite: 20 };
+
+function startOfMonthIso() {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString();
+}
+
+async function countCampaignsThisMonth(businessId: string) {
+  const { count } = await supabase
+    .from("campaigns")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", businessId)
+    .gte("created_at", startOfMonthIso());
+  return count ?? 0;
 }
 
 function BizPage() {
