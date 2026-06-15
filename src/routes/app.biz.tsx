@@ -587,9 +587,20 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
                 className={inputClass} />
             </Field>
 
-            <Field label="Link (site, Instagram, bilete...) — opțional">
-              <input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://instagram.com/..."
-                className={inputClass} />
+            <Field label="Instagram (opțional)">
+              <div className="flex items-center gap-2">
+                <span className="text-zinc-500 text-sm font-mono">@</span>
+                <input
+                  value={ctaUrl.replace(/^https?:\/\/(www\.)?instagram\.com\//i, "").replace(/^@/, "").replace(/\/$/, "")}
+                  onChange={(e) => {
+                    const u = e.target.value.trim().replace(/^@/, "");
+                    setCtaUrl(u ? `https://instagram.com/${u}` : "");
+                    if (u) setCtaText("Instagram");
+                  }}
+                  placeholder="username"
+                  className={inputClass}
+                />
+              </div>
             </Field>
             {ctaUrl.trim() && (
               <Field label="Text buton">
