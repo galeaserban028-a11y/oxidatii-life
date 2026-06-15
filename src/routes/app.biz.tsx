@@ -324,10 +324,11 @@ function CampaignManager({ businessId, plan, onOpenCreate }: {
     queryKey: ["biz-campaigns", businessId],
     queryFn: () => loadCampaigns(businessId),
   });
-  const { data: usedThisMonth = 0 } = useQuery({
-    queryKey: ["biz-campaigns-month-count", businessId],
-    queryFn: () => countCampaignsThisMonth(businessId),
-  });
+
+  // Derive monthly quota usage from the actual list — guarantees that
+  // deleting a campaign immediately frees up a slot.
+  const monthStartMs = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1).getTime(); })();
+  const usedThisMonth = (campaigns ?? []).filter((c: any) => new Date(c.created_at).getTime() >= monthStartMs).length;
 
   const quota = MONTHLY_POST_QUOTA[plan] ?? 4;
   const remaining = Math.max(0, quota - usedThisMonth);
