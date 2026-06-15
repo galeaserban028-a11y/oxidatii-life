@@ -184,15 +184,12 @@ async function handleInvoicePaymentSucceeded(invoice: any, _env: StripeEnv) {
     || line?.price?.metadata?.lovable_external_id
     || line?.price?.id;
 
-  // Biz Pro renewal → grant 50 RON wallet credits
-  if (priceLookup === "biz_pro_monthly") {
-    const businessId = invoice.subscription_details?.metadata?.business_id
-      || invoice.lines?.data?.[0]?.metadata?.business_id;
-    if (businessId) {
-      await grantBizProMonthlyCredits(businessId, `biz_pro_renew:${invoice.id}`);
-    }
+  // Biz plan renewals — no credits to grant, status is kept by subscription.updated
+  if (priceLookup && BIZ_PLAN_BY_LOOKUP[priceLookup]) {
     return;
   }
+
+
 
 
   const tierInfo = priceLookup ? TIER_MAP[priceLookup] : null;
