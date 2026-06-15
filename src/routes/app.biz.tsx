@@ -601,6 +601,14 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
               </Field>
             )}
 
+            <Field label="Programare — apare în feed la (opțional)">
+              <input type="datetime-local" value={scheduleAt} onChange={(e) => setScheduleAt(e.target.value)}
+                className={inputClass} />
+              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-600 mt-1">
+                {scheduleAt ? "rămâne activă 2 zile de la data programată" : "lasă gol pentru publicare imediată"}
+              </p>
+            </Field>
+
             <Field label="Data și ora evenimentului (opțional)">
               <input type="datetime-local" value={eventAt} onChange={(e) => setEventAt(e.target.value)}
                 className={inputClass} />
