@@ -944,6 +944,7 @@ function PrizeSheet({ onClose }: { onClose: () => void }) {
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground" style={archivo}>Cum câștigi</div>
             <ol className="space-y-2.5">
               {[
+                "Trebuie neapărat să ai abonament PRO activ ca să intri în concurs. Fără PRO, faza nu se califică.",
                 "Postează o fază reală dintr-un local între vineri 18:00 și duminică 23:59 (ora României).",
                 "Faza trebuie să aibă locația selectată și să respecte regulile comunității (fără violență, fără minori, fără conținut sexual).",
                 "Câștigă faza cu cele mai multe aprecieri + comentarii combinate. La egalitate, decide repostările.",
@@ -956,6 +957,20 @@ function PrizeSheet({ onClose }: { onClose: () => void }) {
                 </li>
               ))}
             </ol>
+
+            {/* PRO required badge */}
+            <Link
+              to="/app/premium"
+              onClick={onClose}
+              className="flex items-center gap-3 rounded-2xl border border-sunset-amber/40 bg-gradient-to-r from-sunset-amber/15 via-sunset-orange/10 to-sunset-magenta/15 p-3.5 active:scale-[0.99] transition"
+            >
+              <div className="shrink-0 size-10 rounded-xl bg-gradient-to-br from-sunset-amber to-sunset-orange text-black grid place-items-center text-base" style={archivo}>★</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[9px] uppercase tracking-[0.22em] text-sunset-amber" style={archivo}>Necesită PRO</div>
+                <div className="text-[13px] leading-tight mt-0.5">Doar utilizatorii cu abonament <span className="font-semibold">PRO</span> pot câștiga cei 100 lei.</div>
+              </div>
+              <span className="shrink-0 text-sunset-amber text-lg" aria-hidden>→</span>
+            </Link>
           </section>
 
           {/* Disqualify */}
