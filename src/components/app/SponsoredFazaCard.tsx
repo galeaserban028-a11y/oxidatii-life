@@ -1,6 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { toast } from "sonner";
 
 const archivo = { fontFamily: '"Archivo Black", system-ui, sans-serif', letterSpacing: "-0.01em" } as const;
 
@@ -11,6 +14,9 @@ export type AdCard = {
   brand: string | null;
   logo: string | null;
   cover: string | null;
+  video: string | null;
+  ctaUrl: string | null;
+  ctaText: string | null;
   theme: string;
 };
 
@@ -23,7 +29,7 @@ export function usePromoCards() {
       const nowIso = new Date().toISOString();
       const { data } = await supabase
         .from("campaigns")
-        .select("id, title, body, theme_color, image_urls, business_accounts!inner(logo_url, cover_url, brand_name), venues(name)")
+        .select("id, title, body, subtitle, theme_color, image_urls, video_url, cta_url, cta_text, business_accounts!inner(logo_url, cover_url, brand_name), venues(name)")
         .eq("status", "active")
         .lte("starts_at", nowIso)
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
@@ -31,10 +37,13 @@ export function usePromoCards() {
       return ((data ?? []) as any[]).map((c) => ({
         id: c.id as string,
         title: (c.title as string | null) ?? null,
-        body: (c.body as string | null) ?? null,
+        body: (c.body as string | null) ?? (c.subtitle as string | null) ?? null,
         brand: (c.venues?.name ?? c.business_accounts?.brand_name ?? null) as string | null,
         logo: (c.business_accounts?.logo_url ?? null) as string | null,
         cover: ((c.image_urls?.[0] as string | undefined) ?? c.business_accounts?.cover_url ?? null) as string | null,
+        video: (c.video_url as string | null) ?? null,
+        ctaUrl: (c.cta_url as string | null) ?? null,
+        ctaText: (c.cta_text as string | null) ?? null,
         theme: (c.theme_color ?? "#ff8c31") as string,
       }));
     },
@@ -42,19 +51,56 @@ export function usePromoCards() {
   });
 }
 
+function useCampaignLikes(campaignId: string, userId: string | undefined) {
+  return useQuery({
+    queryKey: ["campaign-likes", campaignId, userId ?? null],
+    queryFn: async () => {
+      const [{ count }, mine] = await Promise.all([
+        supabase.from("campaign_likes").select("user_id", { count: "exact", head: true }).eq("campaign_id", campaignId),
+        userId
+          ? supabase.from("campaign_likes").select("user_id").eq("campaign_id", campaignId).eq("user_id", userId).maybeSingle()
+          : Promise.resolve({ data: null } as any),
+      ]);
+      return { count: count ?? 0, liked: !!mine.data };
+    },
+    staleTime: 30_000,
+  });
+}
+
 export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const { data: likeState } = useCampaignLikes(ad.id, user?.id);
+  const liked = !!likeState?.liked;
+  const likes = likeState?.count ?? 0;
   const handle = ad.brand ?? "promovat";
+  const [busy, setBusy] = useState(false);
+
+  const toggleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) { toast.error("Trebuie să fii logat."); return; }
+    if (busy) return;
+    setBusy(true);
+    if (liked) {
+      await supabase.from("campaign_likes").delete().eq("campaign_id", ad.id).eq("user_id", user.id);
+    } else {
+      await supabase.from("campaign_likes").insert({ campaign_id: ad.id, user_id: user.id });
+    }
+    qc.invalidateQueries({ queryKey: ["campaign-likes", ad.id] });
+    setBusy(false);
+  };
+
+  const openDetail = () => navigate({ to: "/app/promo/$id", params: { id: ad.id } });
+
   return (
     <article
       className="rounded-3xl border overflow-hidden shadow-[0_4px_24px_-12px_rgba(0,0,0,0.6)] animate-fade-in"
       style={{ borderColor: `${ad.theme}55`, background: `linear-gradient(180deg, ${ad.theme}10, transparent 60%)` }}
     >
-      <button
-        onClick={() => navigate({ to: "/app/promo/$id", params: { id: ad.id } })}
-        className="w-full text-left"
-      >
-        <div className="flex items-center gap-3 px-3.5 py-3">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-3.5 py-3">
+        <button onClick={openDetail} className="flex items-center gap-3 flex-1 min-w-0 text-left">
           <div className="p-[2px] rounded-full" style={{ background: `linear-gradient(135deg, #ffd166, ${ad.theme})` }}>
             <div className="p-[2px] rounded-full bg-background">
               {ad.logo ? (
@@ -72,34 +118,68 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
               <span style={{ color: ad.theme }}>●</span> sponsorizat
             </div>
           </div>
-          <span
-            className="px-2 py-0.5 rounded-full text-[9px] font-black tracking-[0.16em] uppercase"
-            style={{ background: ad.theme, color: "#06070a" }}
-          >
-            AD
-          </span>
-        </div>
+        </button>
+        <span
+          className="px-2 py-0.5 rounded-full text-[9px] font-black tracking-[0.16em] uppercase shrink-0"
+          style={{ background: ad.theme, color: "#06070a" }}
+        >
+          AD
+        </span>
+      </div>
 
-        {ad.cover && (
+      {/* Media */}
+      <button onClick={openDetail} className="block w-full text-left">
+        {ad.video ? (
+          <div className="relative bg-black">
+            <video src={ad.video} className="w-full aspect-square object-cover" playsInline muted loop autoPlay preload="metadata" />
+          </div>
+        ) : ad.cover ? (
           <div className="relative bg-black">
             <img src={ad.cover} alt={ad.title ?? handle} className="w-full aspect-square object-cover" loading="lazy" />
-            <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/85 to-transparent">
-              {ad.title && <div className="text-white text-lg font-black leading-tight" style={archivo}>{ad.title}</div>}
-              {ad.body && <div className="text-white/85 text-[12px] mt-1 line-clamp-2">{ad.body}</div>}
-            </div>
           </div>
-        )}
+        ) : null}
+      </button>
 
-        <div className="flex items-center justify-between px-4 py-3">
-          <span className="text-[12px] text-foreground/80">Vezi oferta →</span>
-          <span
-            className="text-[10px] uppercase tracking-[0.18em] px-2.5 py-1 rounded-full"
+      {/* Actions */}
+      <div className="flex items-center gap-1 px-2 pt-2.5">
+        <button onClick={toggleLike} aria-label="Apreciază" className="size-10 flex items-center justify-center active:scale-90 transition">
+          <svg viewBox="0 0 24 24" className={`size-7 ${liked ? "fill-sunset-orange stroke-sunset-orange" : "fill-none stroke-foreground"}`} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+        </button>
+        {ad.ctaUrl && (
+          <a
+            href={ad.ctaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] px-3 py-1.5 rounded-full"
             style={{ background: `${ad.theme}22`, color: ad.theme }}
           >
-            Deschide
-          </span>
+            {ad.ctaText || "Deschide"} →
+          </a>
+        )}
+      </div>
+
+      {/* Likes count */}
+      {likes > 0 && (
+        <div className="px-4 pt-1.5 text-[13px] font-semibold">
+          {likes} {likes === 1 ? "apreciere" : "aprecieri"}
         </div>
-      </button>
+      )}
+
+      {/* Title + body */}
+      <div className="px-4 pt-1 pb-1 text-[14px] leading-snug">
+        <span className="font-semibold mr-1.5">{handle}</span>
+        {ad.title && <span className="text-foreground/90">{ad.title}</span>}
+      </div>
+      {ad.body && (
+        <div className="px-4 pb-3 text-[13px] leading-snug text-foreground/80 whitespace-pre-wrap">
+          {ad.body}
+        </div>
+      )}
+
+      <div className="px-4 pb-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground" style={archivo}>
+        postare sponsorizată
+      </div>
     </article>
   );
 }

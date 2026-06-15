@@ -45,10 +45,19 @@ async function loadBiz(userId: string) {
 async function loadCampaigns(businessId: string) {
   const { data } = await supabase
     .from("campaigns")
-    .select("id, title, subtitle, status, kind, impressions, clicks, image_urls, created_at")
+    .select("id, title, subtitle, body, status, kind, impressions, clicks, image_urls, video_url, cta_url, event_starts_at, created_at")
     .eq("business_id", businessId)
     .order("created_at", { ascending: false });
-  return data ?? [];
+  if (!data || data.length === 0) return [];
+  // Fetch like counts in one batched call
+  const ids = data.map((c: any) => c.id);
+  const { data: likeRows } = await supabase
+    .from("campaign_likes")
+    .select("campaign_id")
+    .in("campaign_id", ids);
+  const counts = new Map<string, number>();
+  (likeRows ?? []).forEach((r: any) => counts.set(r.campaign_id, (counts.get(r.campaign_id) ?? 0) + 1));
+  return data.map((c: any) => ({ ...c, likes: counts.get(c.id) ?? 0 }));
 }
 
 // Câte postări sponsorizate poate publica un brand pe lună, în funcție de plan.
@@ -400,9 +409,10 @@ function CampaignManager({ businessId, plan, onOpenCreate }: {
                   }`}>{c.status}</span>
                 </div>
                 {c.subtitle && <div className="text-[11px] text-zinc-400 truncate">{c.subtitle}</div>}
-                <div className="font-mono text-[10px] text-zinc-500 flex items-center gap-3 mt-1">
+                <div className="font-mono text-[10px] text-zinc-500 flex items-center gap-3 mt-1 flex-wrap">
                   <span className="flex items-center gap-1"><Eye size={10} /> {c.impressions} afișări</span>
                   <span className="flex items-center gap-1"><MousePointerClick size={10} /> {c.clicks} click-uri</span>
+                  <span className="flex items-center gap-1 text-sunset-orange">♥ {c.likes ?? 0} aprecieri</span>
                 </div>
               </div>
               {c.status === "active" ? (
@@ -431,13 +441,19 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
   const qc = useQueryClient();
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [ctaUrl, setCtaUrl] = useState("");
+  const [body, setBody] = useState("");
+  const [mediaKind, setMediaKind] = useState<"image" | "video">("image");
   const [imageUrl, setImageUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [eventAt, setEventAt] = useState(""); // datetime-local
+  const [ctaUrl, setCtaUrl] = useState("");
+  const [ctaText, setCtaText] = useState("Vezi detalii");
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
     if (!title.trim()) return toast.error("Adaugă un titlu pentru postare");
-    // Re-check quota at submit time
+    if (mediaKind === "image" && !imageUrl.trim()) return toast.error("Adaugă o imagine sau alege video");
+    if (mediaKind === "video" && !videoUrl.trim()) return toast.error("Adaugă URL video sau alege imagine");
     const used = await countCampaignsThisMonth(businessId);
     const quota = MONTHLY_POST_QUOTA[plan] ?? 4;
     if (used >= quota) {
@@ -445,17 +461,21 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
       return;
     }
     setBusy(true);
+    const eventIso = eventAt ? new Date(eventAt).toISOString() : null;
     const { error } = await supabase.from("campaigns").insert({
       business_id: businessId,
       title: title.trim(),
       subtitle: subtitle.trim() || null,
+      body: body.trim() || null,
       kind: "boost_feed",
       status: "active",
       bid_cents: 0,
       budget_cents: 0,
-      cta_text: "Vezi detalii",
+      cta_text: ctaText.trim() || "Vezi detalii",
       cta_url: ctaUrl.trim() || null,
-      image_urls: imageUrl.trim() ? [imageUrl.trim()] : [],
+      image_urls: mediaKind === "image" && imageUrl.trim() ? [imageUrl.trim()] : [],
+      video_url: mediaKind === "video" && videoUrl.trim() ? videoUrl.trim() : null,
+      event_starts_at: eventIso,
     });
     setBusy(false);
     if (error) return toast.error(error.message);
@@ -464,34 +484,74 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
     onCreated();
   };
 
+  const inputClass = "w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none";
+
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
       <div className="min-h-full flex items-end sm:items-center justify-center sm:p-4">
         <div className="w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl bg-zinc-950 border border-white/10 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 sticky top-0 bg-zinc-950 z-10">
             <div>
               <h3 className="font-display uppercase text-base">Postare nouă</h3>
-              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-0.5">apare în feed ca „sponsorizat"</p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-0.5">apare în feed ca „sponsorizat" · poate fi like-uită</p>
             </div>
             <button onClick={onClose} className="p-1.5 -mr-1.5 rounded-lg hover:bg-white/5"><X size={18} /></button>
           </div>
-          <div className="p-5 space-y-3 max-h-[75vh] overflow-y-auto">
+          <div className="p-5 space-y-3 max-h-[80vh] overflow-y-auto">
             <Field label="Titlu">
               <input autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Vineri DJ Set @ Club Form"
-                className="w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
+                className={inputClass} maxLength={80} />
             </Field>
             <Field label="Subtitlu (opțional)">
               <input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder="Doar pentru cei tari"
-                className="w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
+                className={inputClass} maxLength={80} />
             </Field>
-            <Field label="URL imagine">
-              <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..."
-                className="w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
+            <Field label="Detalii / amănunte (opțional)">
+              <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="Linia 1 line-up, ora ușilor, regulile casei, ce să porți..."
+                className={inputClass + " min-h-[100px] resize-y"} maxLength={800} />
             </Field>
-            <Field label="Link la apăsare (opțional)">
-              <input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://..."
-                className="w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
+
+            <Field label="Tip media">
+              <div className="grid grid-cols-2 gap-2">
+                {(["image", "video"] as const).map((k) => (
+                  <button key={k} type="button" onClick={() => setMediaKind(k)}
+                    className={`px-3 py-2.5 rounded-xl text-[11px] font-mono uppercase tracking-widest border ${
+                      mediaKind === k ? "border-neon-crimson bg-neon-crimson/10 text-white" : "border-white/10 text-zinc-400"
+                    }`}>
+                    {k === "image" ? "📷 Imagine" : "🎬 Video"}
+                  </button>
+                ))}
+              </div>
             </Field>
+
+            {mediaKind === "image" ? (
+              <Field label="URL imagine">
+                <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..."
+                  className={inputClass} />
+              </Field>
+            ) : (
+              <Field label="URL video (mp4)">
+                <input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://...mp4"
+                  className={inputClass} />
+              </Field>
+            )}
+
+            <Field label="Data și ora evenimentului (opțional)">
+              <input type="datetime-local" value={eventAt} onChange={(e) => setEventAt(e.target.value)}
+                className={inputClass} />
+            </Field>
+
+            <Field label="Link (site, Instagram, bilete...) — opțional">
+              <input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://instagram.com/..."
+                className={inputClass} />
+            </Field>
+            {ctaUrl.trim() && (
+              <Field label="Text buton">
+                <input value={ctaText} onChange={(e) => setCtaText(e.target.value)} placeholder="Vezi detalii"
+                  className={inputClass} maxLength={15} />
+              </Field>
+            )}
+
             <button disabled={busy} onClick={submit}
               className="w-full mt-2 px-3 py-3.5 rounded-2xl text-white text-xs font-display uppercase tracking-widest disabled:opacity-50"
               style={{ background: "var(--gradient-chaos)" }}>
@@ -506,6 +566,7 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
     </div>
   );
 }
+
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
