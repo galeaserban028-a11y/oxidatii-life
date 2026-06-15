@@ -514,7 +514,7 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Postare sponsorizată publicată în feed");
-    qc.invalidateQueries({ queryKey: ["biz-campaigns-month-count", businessId] });
+    qc.invalidateQueries({ queryKey: ["biz-campaigns", businessId] });
     onCreated();
   };
 
