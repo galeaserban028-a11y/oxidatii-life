@@ -226,8 +226,8 @@ async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
     updated_at: new Date().toISOString(),
   }).eq("stripe_subscription_id", subscription.id).eq("environment", env);
 
-  // Biz Pro: revoke pro on business
-  if (subscription.metadata?.kind === "biz_pro" && subscription.metadata?.business_id) {
+  const kind = subscription.metadata?.kind;
+  if ((kind === "biz_plan" || kind === "biz_pro") && subscription.metadata?.business_id) {
     await supabaseAdmin.from("business_accounts").update({
       pro_tier: null, pro_until: null,
     }).eq("id", subscription.metadata.business_id);
