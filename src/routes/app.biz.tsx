@@ -45,10 +45,19 @@ async function loadBiz(userId: string) {
 async function loadCampaigns(businessId: string) {
   const { data } = await supabase
     .from("campaigns")
-    .select("id, title, subtitle, status, kind, impressions, clicks, image_urls, created_at")
+    .select("id, title, subtitle, body, status, kind, impressions, clicks, image_urls, video_url, cta_url, event_starts_at, created_at")
     .eq("business_id", businessId)
     .order("created_at", { ascending: false });
-  return data ?? [];
+  if (!data || data.length === 0) return [];
+  // Fetch like counts in one batched call
+  const ids = data.map((c: any) => c.id);
+  const { data: likeRows } = await supabase
+    .from("campaign_likes")
+    .select("campaign_id")
+    .in("campaign_id", ids);
+  const counts = new Map<string, number>();
+  (likeRows ?? []).forEach((r: any) => counts.set(r.campaign_id, (counts.get(r.campaign_id) ?? 0) + 1));
+  return data.map((c: any) => ({ ...c, likes: counts.get(c.id) ?? 0 }));
 }
 
 // Câte postări sponsorizate poate publica un brand pe lună, în funcție de plan.
