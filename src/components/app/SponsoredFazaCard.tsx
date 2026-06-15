@@ -1,9 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { recordCampaignEvent } from "@/lib/business-promotion.functions";
 
 const archivo = { fontFamily: '"Archivo Black", system-ui, sans-serif', letterSpacing: "-0.01em" } as const;
 
@@ -18,6 +20,8 @@ export type AdCard = {
   ctaUrl: string | null;
   ctaText: string | null;
   theme: string;
+  rating: number | null;
+  reviewsCount: number | null;
 };
 
 // Shared loader used by /app/faze and /app/feed so paying clubs get
@@ -29,7 +33,7 @@ export function usePromoCards() {
       const nowIso = new Date().toISOString();
       const { data } = await supabase
         .from("campaigns")
-        .select("id, title, body, subtitle, theme_color, image_urls, video_url, cta_url, cta_text, business_accounts!inner(logo_url, cover_url, brand_name), venues(name)")
+        .select("id, title, body, subtitle, theme_color, image_urls, video_url, cta_url, cta_text, business_accounts!inner(logo_url, cover_url, brand_name, reputation_score, total_reviews), venues(name)")
         .eq("status", "active")
         .lte("starts_at", nowIso)
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
@@ -45,6 +49,8 @@ export function usePromoCards() {
         ctaUrl: (c.cta_url as string | null) ?? null,
         ctaText: (c.cta_text as string | null) ?? null,
         theme: (c.theme_color ?? "#ff8c31") as string,
+        rating: (c.business_accounts?.reputation_score as number | null) ?? null,
+        reviewsCount: (c.business_accounts?.total_reviews as number | null) ?? null,
       }));
     },
     refetchInterval: 120_000,
@@ -76,6 +82,20 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
   const likes = likeState?.count ?? 0;
   const handle = ad.brand ?? "promovat";
   const [busy, setBusy] = useState(false);
+  const trackEvent = useServerFn(recordCampaignEvent);
+
+  // Log a single real impression per mount once the user is signed in.
+  const loggedRef = useRef(false);
+  useEffect(() => {
+    if (!user?.id || loggedRef.current) return;
+    loggedRef.current = true;
+    trackEvent({ data: { campaignId: ad.id, eventType: "impression" } }).catch(() => {});
+  }, [user?.id, ad.id, trackEvent]);
+
+  const logClick = () => {
+    if (!user?.id) return;
+    trackEvent({ data: { campaignId: ad.id, eventType: "click" } }).catch(() => {});
+  };
 
   const toggleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,7 +111,10 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
     setBusy(false);
   };
 
-  const openDetail = () => navigate({ to: "/app/promo/$id", params: { id: ad.id } });
+  const openDetail = () => {
+    logClick();
+    navigate({ to: "/app/promo/$id", params: { id: ad.id } });
+  };
 
   return (
     <article
@@ -113,7 +136,12 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
             </div>
           </div>
           <div className="flex-1 min-w-0 leading-tight">
-            <div className="text-[14px] font-semibold truncate">{handle}</div>
+            <div className="text-[14px] font-semibold truncate flex items-center gap-1.5">
+              {handle}
+              {ad.rating != null && ad.rating > 0 && (
+                <span className="text-[11px] font-normal text-amber-400 shrink-0">★ {ad.rating.toFixed(1)}{ad.reviewsCount ? ` (${ad.reviewsCount})` : ""}</span>
+              )}
+            </div>
             <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
               <span style={{ color: ad.theme }}>●</span> sponsorizat
             </div>
@@ -150,7 +178,7 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
             href={ad.ctaUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); logClick(); }}
             className="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] px-3 py-1.5 rounded-full"
             style={{ background: `${ad.theme}22`, color: ad.theme }}
           >

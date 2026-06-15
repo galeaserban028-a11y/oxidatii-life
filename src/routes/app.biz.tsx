@@ -37,7 +37,7 @@ const PLANS: {
 
 async function loadBiz(userId: string) {
   const { data: businesses } = await supabase
-    .from("business_accounts").select("id, brand_name, type, pro_tier, pro_until")
+    .from("business_accounts").select("id, brand_name, type, pro_tier, pro_until, reputation_score, total_reviews")
     .eq("owner_user_id", userId).order("created_at", { ascending: false });
   return { businesses: businesses ?? [] };
 }
@@ -45,7 +45,7 @@ async function loadBiz(userId: string) {
 async function loadCampaigns(businessId: string) {
   const { data } = await supabase
     .from("campaigns")
-    .select("id, title, subtitle, body, status, kind, impressions, clicks, image_urls, video_url, cta_url, event_starts_at, created_at")
+    .select("id, title, subtitle, body, status, kind, impressions, clicks, image_urls, video_url, cta_url, event_starts_at, starts_at, ends_at, created_at")
     .eq("business_id", businessId)
     .order("created_at", { ascending: false });
   if (!data || data.length === 0) return [];
@@ -150,9 +150,10 @@ function BizPage() {
             </div>
             <div>
               <div className="font-display uppercase text-lg">{activeBiz.brand_name}</div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-                Plan <span className="text-emerald-400">{activeBiz.pro_tier}</span>
-                {activeBiz.pro_until && ` · până ${new Date(activeBiz.pro_until).toLocaleDateString("ro-RO")}`}
+              <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-2 flex-wrap">
+                <span>Plan <span className="text-emerald-400">{activeBiz.pro_tier}</span></span>
+                {activeBiz.pro_until && <span>până {new Date(activeBiz.pro_until).toLocaleDateString("ro-RO")}</span>}
+                <span className="text-amber-400">★ {Number(activeBiz.reputation_score ?? 0).toFixed(1)} ({activeBiz.total_reviews ?? 0})</span>
               </div>
             </div>
           </div>
@@ -413,6 +414,12 @@ function CampaignManager({ businessId, plan, onOpenCreate }: {
                   <span className="flex items-center gap-1"><Eye size={10} /> {c.impressions} afișări</span>
                   <span className="flex items-center gap-1"><MousePointerClick size={10} /> {c.clicks} click-uri</span>
                   <span className="flex items-center gap-1 text-sunset-orange">♥ {c.likes ?? 0} aprecieri</span>
+                  {c.ends_at && (() => {
+                    const ms = new Date(c.ends_at).getTime() - Date.now();
+                    if (ms <= 0) return <span className="text-zinc-600">expirat</span>;
+                    const h = Math.floor(ms / 3_600_000);
+                    return <span className="text-zinc-400">expiră în {h >= 24 ? `${Math.floor(h / 24)}z ${h % 24}h` : `${h}h`}</span>;
+                  })()}
                 </div>
               </div>
               {c.status === "active" ? (
@@ -484,6 +491,8 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
     }
     setBusy(true);
     const eventIso = eventAt ? new Date(eventAt).toISOString() : null;
+    const now = new Date();
+    const endsAt = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // max 2 zile activ
     const { error } = await supabase.from("campaigns").insert({
       business_id: businessId,
       title: title.trim(),
@@ -498,6 +507,8 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
       image_urls: mediaKind === "image" && imageUrl.trim() ? [imageUrl.trim()] : [],
       video_url: mediaKind === "video" && videoUrl.trim() ? videoUrl.trim() : null,
       event_starts_at: eventIso,
+      starts_at: now.toISOString(),
+      ends_at: endsAt.toISOString(),
     });
     setBusy(false);
     if (error) return toast.error(error.message);
@@ -515,7 +526,7 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 sticky top-0 bg-zinc-950 z-10">
             <div>
               <h3 className="font-display uppercase text-base">Postare nouă</h3>
-              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-0.5">apare în feed ca „sponsorizat" · poate fi like-uită</p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-0.5">apare în feed ca „sponsorizat" · activ 2 zile · poate fi like-uită</p>
             </div>
             <button onClick={onClose} className="p-1.5 -mr-1.5 rounded-lg hover:bg-white/5"><X size={18} /></button>
           </div>

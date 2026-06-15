@@ -287,9 +287,9 @@ function FazePage() {
       ) : (
         <div className="pt-4 space-y-5 px-3">
           {sortedItems.map((it, idx) => {
-            // Boost sponsored visibility: interleave every 3 posts (was every 6).
-            const showAd = promoCards.length > 0 && idx > 0 && idx % 3 === 0;
-            const ad = showAd ? promoCards[(Math.floor(idx / 3) - 1) % promoCards.length] : null;
+            // Boost sponsored visibility: insert an ad after every 3rd post (idx 2,5,8,...).
+            const showAd = promoCards.length > 0 && (idx + 1) % 3 === 0;
+            const ad = showAd ? promoCards[(Math.floor((idx + 1) / 3) - 1) % promoCards.length] : null;
             const profile = data.profilesMap.get(it.user_id);
             const venue = data.venuesMap.get(it.venue_id);
             const handle = profile?.handle ?? profile?.display_name ?? "anonim";
@@ -410,6 +410,10 @@ function FazePage() {
             );
             return ad ? [<SponsoredFazaCard key={`ad-${it.id}`} ad={ad} />, article] : article;
           })}
+          {/* Always surface at least one sponsored card when the organic feed is too short to hit the cadence. */}
+          {promoCards.length > 0 && sortedItems.length > 0 && sortedItems.length < 3 && (
+            <SponsoredFazaCard key={`ad-tail-${promoCards[0].id}`} ad={promoCards[0]} />
+          )}
         </div>
       )}
 
