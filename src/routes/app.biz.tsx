@@ -45,10 +45,27 @@ async function loadBiz(userId: string) {
 async function loadCampaigns(businessId: string) {
   const { data } = await supabase
     .from("campaigns")
-    .select("id, title, status, kind, bid_cents, budget_cents, spent_cents, impressions, clicks, starts_at, ends_at")
+    .select("id, title, subtitle, status, kind, impressions, clicks, image_urls, created_at")
     .eq("business_id", businessId)
     .order("created_at", { ascending: false });
   return data ?? [];
+}
+
+// Câte postări sponsorizate poate publica un brand pe lună, în funcție de plan.
+const MONTHLY_POST_QUOTA: Record<string, number> = { basic: 4, pro: 10, elite: 20 };
+
+function startOfMonthIso() {
+  const d = new Date();
+  return new Date(d.getFullYear(), d.getMonth(), 1).toISOString();
+}
+
+async function countCampaignsThisMonth(businessId: string) {
+  const { count } = await supabase
+    .from("campaigns")
+    .select("id", { count: "exact", head: true })
+    .eq("business_id", businessId)
+    .gte("created_at", startOfMonthIso());
+  return count ?? 0;
 }
 
 function BizPage() {
@@ -142,25 +159,22 @@ function BizPage() {
           </div>
         </header>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-display uppercase text-xl">Campaniile tale</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">Postări sponsorizate, promovare în feed, evenimente boost-uite.</p>
-          </div>
-          <button onClick={() => setCampaignOpen(true)}
-            className="inline-flex items-center gap-1.5 font-display uppercase text-[11px] tracking-widest px-4 py-2.5 rounded-2xl text-white"
-            style={{ background: "var(--gradient-chaos)" }}>
-            <Plus size={12} /> Campanie nouă
-          </button>
-        </div>
-
-        <CampaignList businessId={activeBiz.id} />
+        <CampaignManager
+          businessId={activeBiz.id}
+          plan={(activeBiz.pro_tier as string) ?? "basic"}
+          onOpenCreate={() => setCampaignOpen(true)}
+        />
 
         {campaignOpen && (
-          <CampaignCreateModal businessId={activeBiz.id} onClose={() => setCampaignOpen(false)} onCreated={() => {
-            setCampaignOpen(false);
-            qc.invalidateQueries({ queryKey: ["biz-campaigns", activeBiz.id] });
-          }} />
+          <CampaignCreateModal
+            businessId={activeBiz.id}
+            plan={(activeBiz.pro_tier as string) ?? "basic"}
+            onClose={() => setCampaignOpen(false)}
+            onCreated={() => {
+              setCampaignOpen(false);
+              qc.invalidateQueries({ queryKey: ["biz-campaigns", activeBiz.id] });
+            }}
+          />
         )}
       </div>
     );
@@ -292,169 +306,200 @@ function CreateBusinessSheet({ open, onClose, brand, setBrand, busy, onCreate }:
   );
 }
 
-function CampaignList({ businessId }: { businessId: string }) {
+function CampaignManager({ businessId, plan, onOpenCreate }: {
+  businessId: string; plan: string; onOpenCreate: () => void;
+}) {
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({
+  const { data: campaigns, isLoading } = useQuery({
     queryKey: ["biz-campaigns", businessId],
     queryFn: () => loadCampaigns(businessId),
   });
+  const { data: usedThisMonth = 0 } = useQuery({
+    queryKey: ["biz-campaigns-month-count", businessId],
+    queryFn: () => countCampaignsThisMonth(businessId),
+  });
+
+  const quota = MONTHLY_POST_QUOTA[plan] ?? 4;
+  const remaining = Math.max(0, quota - usedThisMonth);
+  const atLimit = remaining === 0;
 
   const setStatus = async (id: string, status: "active" | "paused") => {
     const { error } = await supabase.from("campaigns").update({ status }).eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success(status === "active" ? "Campanie activată" : "Campanie pe pauză");
+    toast.success(status === "active" ? "Postare activă" : "Postare pe pauză");
     qc.invalidateQueries({ queryKey: ["biz-campaigns", businessId] });
   };
 
   const del = async (id: string) => {
-    if (!confirm("Șterg campania? Acțiune ireversibilă.")) return;
+    if (!confirm("Ștergi postarea sponsorizată? Acțiune ireversibilă.")) return;
     const { error } = await supabase.from("campaigns").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Campanie ștearsă");
+    toast.success("Postare ștearsă");
     qc.invalidateQueries({ queryKey: ["biz-campaigns", businessId] });
+    qc.invalidateQueries({ queryKey: ["biz-campaigns-month-count", businessId] });
   };
 
-  if (isLoading) return <div className="h-24 rounded-xl bg-zinc-900/30 border border-white/5 animate-pulse" />;
-  if (!data || data.length === 0) {
-    return (
-      <div className="rounded-2xl bg-zinc-900/30 border border-dashed border-white/10 p-8 text-center space-y-2">
-        <Megaphone size={28} className="mx-auto text-zinc-600" />
-        <p className="text-sm text-zinc-400">Nu ai niciun campanie încă.</p>
-        <p className="text-xs text-zinc-600">Apasă „Campanie nouă" ca să creezi prima ta postare sponsorizată.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-2">
-      {data.map((c: any) => (
-        <div key={c.id} className="rounded-xl border border-white/10 bg-zinc-900/40 p-3 flex items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="font-display text-sm truncate">{c.title}</span>
-              <span className={`font-mono text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded ${
-                c.status === "active" ? "bg-emerald-500/20 text-emerald-400" :
-                c.status === "paused" ? "bg-amber-500/20 text-amber-400" :
-                "bg-white/10 text-zinc-400"
-              }`}>{c.status}</span>
-              <span className="font-mono text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded bg-white/5 text-zinc-400">{c.kind}</span>
-            </div>
-            <div className="font-mono text-[10px] text-zinc-500 mt-0.5">
-              bid {(c.bid_cents / 100).toFixed(2)} · cheltuit {(c.spent_cents / 100).toFixed(2)} {c.budget_cents > 0 ? `/ ${(c.budget_cents / 100).toFixed(0)} RON` : "· fără cap"}
-            </div>
-            <div className="font-mono text-[10px] text-zinc-500 flex items-center gap-3 mt-0.5">
-              <span className="flex items-center gap-1"><Eye size={10} /> {c.impressions}</span>
-              <span className="flex items-center gap-1"><MousePointerClick size={10} /> {c.clicks}</span>
+    <div className="space-y-4">
+      {/* Quota strip */}
+      <div className="rounded-2xl border border-white/10 bg-zinc-900/40 p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="font-display uppercase text-base">Postări sponsorizate</div>
+            <div className="text-[11px] text-zinc-500 mt-0.5">
+              {usedThisMonth} din {quota} folosite luna asta · plan <span className="text-emerald-400 uppercase">{plan}</span>
             </div>
           </div>
-          {c.status === "active" ? (
-            <button onClick={() => setStatus(c.id, "paused")} title="Pauză" className="p-2 rounded-lg border border-white/10 hover:bg-white/5">
-              <Pause size={13} />
-            </button>
-          ) : (
-            <button onClick={() => setStatus(c.id, "active")} title="Activează" className="p-2 rounded-lg border border-white/10 hover:bg-white/5">
-              <Play size={13} />
-            </button>
-          )}
-          <button onClick={() => del(c.id)} title="Șterge" className="p-2 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10">
-            <Trash2 size={13} />
+          <button
+            onClick={onOpenCreate}
+            disabled={atLimit}
+            className="inline-flex items-center gap-1.5 font-display uppercase text-[11px] tracking-widest px-4 py-2.5 rounded-2xl text-white disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: "var(--gradient-chaos)" }}
+          >
+            <Plus size={12} /> Postare nouă
           </button>
         </div>
-      ))}
+        <div className="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-sunset-magenta to-sunset-amber transition-all"
+            style={{ width: `${Math.min(100, (usedThisMonth / quota) * 100)}%` }} />
+        </div>
+        {atLimit && (
+          <p className="mt-2 text-[11px] text-amber-400">
+            Ai atins limita lunară. Schimbă planul pentru mai multe postări sau așteaptă luna următoare.
+          </p>
+        )}
+      </div>
+
+      {/* List */}
+      {isLoading ? (
+        <div className="h-24 rounded-xl bg-zinc-900/30 border border-white/5 animate-pulse" />
+      ) : !campaigns || campaigns.length === 0 ? (
+        <div className="rounded-2xl bg-zinc-900/30 border border-dashed border-white/10 p-8 text-center space-y-2">
+          <Megaphone size={28} className="mx-auto text-zinc-600" />
+          <p className="text-sm text-zinc-400">Nu ai nicio postare sponsorizată încă.</p>
+          <p className="text-xs text-zinc-600">Apasă „Postare nouă" și apare în feed cu eticheta „sponsorizat".</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {campaigns.map((c: any) => (
+            <div key={c.id} className="rounded-2xl border border-white/10 bg-zinc-900/40 p-3 flex items-center gap-3">
+              {c.image_urls?.[0] ? (
+                <img src={c.image_urls[0]} alt="" className="w-14 h-14 rounded-xl object-cover shrink-0" />
+              ) : (
+                <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-zinc-600">
+                  <Megaphone size={18} />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-display text-sm truncate">{c.title}</span>
+                  <span className={`font-mono text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded ${
+                    c.status === "active" ? "bg-emerald-500/20 text-emerald-400" :
+                    c.status === "paused" ? "bg-amber-500/20 text-amber-400" :
+                    "bg-white/10 text-zinc-400"
+                  }`}>{c.status}</span>
+                </div>
+                {c.subtitle && <div className="text-[11px] text-zinc-400 truncate">{c.subtitle}</div>}
+                <div className="font-mono text-[10px] text-zinc-500 flex items-center gap-3 mt-1">
+                  <span className="flex items-center gap-1"><Eye size={10} /> {c.impressions} afișări</span>
+                  <span className="flex items-center gap-1"><MousePointerClick size={10} /> {c.clicks} click-uri</span>
+                </div>
+              </div>
+              {c.status === "active" ? (
+                <button onClick={() => setStatus(c.id, "paused")} title="Pauză" className="p-2 rounded-lg border border-white/10 hover:bg-white/5">
+                  <Pause size={13} />
+                </button>
+              ) : (
+                <button onClick={() => setStatus(c.id, "active")} title="Activează" className="p-2 rounded-lg border border-white/10 hover:bg-white/5">
+                  <Play size={13} />
+                </button>
+              )}
+              <button onClick={() => del(c.id)} title="Șterge" className="p-2 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10">
+                <Trash2 size={13} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function CampaignCreateModal({ businessId, onClose, onCreated }: {
-  businessId: string; onClose: () => void; onCreated: () => void;
+function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
+  businessId: string; plan: string; onClose: () => void; onCreated: () => void;
 }) {
+  const qc = useQueryClient();
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [kind, setKind] = useState<"boost_feed" | "boost_discover" | "boost_map">("boost_feed");
-  const [bidRon, setBidRon] = useState("1.50");
-  const [budgetRon, setBudgetRon] = useState("100");
-  const [ctaText, setCtaText] = useState("Vezi detalii");
   const [ctaUrl, setCtaUrl] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
-    if (!title.trim()) return toast.error("Titlul e obligatoriu");
+    if (!title.trim()) return toast.error("Adaugă un titlu pentru postare");
+    // Re-check quota at submit time
+    const used = await countCampaignsThisMonth(businessId);
+    const quota = MONTHLY_POST_QUOTA[plan] ?? 4;
+    if (used >= quota) {
+      toast.error(`Ai atins limita de ${quota} postări pe lună pentru planul ${plan}.`);
+      return;
+    }
     setBusy(true);
     const { error } = await supabase.from("campaigns").insert({
       business_id: businessId,
       title: title.trim(),
       subtitle: subtitle.trim() || null,
-      kind,
+      kind: "boost_feed",
       status: "active",
-      bid_cents: Math.max(1, Math.round(parseFloat(bidRon || "1.5") * 100)),
-      budget_cents: Math.max(0, Math.round(parseFloat(budgetRon || "0") * 100)),
-      cta_text: ctaText.trim() || "Vezi detalii",
+      bid_cents: 0,
+      budget_cents: 0,
+      cta_text: "Vezi detalii",
       cta_url: ctaUrl.trim() || null,
       image_urls: imageUrl.trim() ? [imageUrl.trim()] : [],
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success("Campanie creată și activă");
+    toast.success("Postare sponsorizată publicată în feed");
+    qc.invalidateQueries({ queryKey: ["biz-campaigns-month-count", businessId] });
     onCreated();
   };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
-      <div className="min-h-full flex items-start justify-center p-4 py-10">
-        <div className="w-full max-w-lg rounded-3xl bg-zinc-950 border border-white/10 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div className="min-h-full flex items-end sm:items-center justify-center sm:p-4">
+        <div className="w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl bg-zinc-950 border border-white/10 overflow-hidden" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
-            <h3 className="font-display uppercase text-lg">Campanie nouă</h3>
-            <button onClick={onClose}><X size={16} /></button>
+            <div>
+              <h3 className="font-display uppercase text-base">Postare nouă</h3>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-0.5">apare în feed ca „sponsorizat"</p>
+            </div>
+            <button onClick={onClose} className="p-1.5 -mr-1.5 rounded-lg hover:bg-white/5"><X size={18} /></button>
           </div>
-          <div className="p-5 space-y-3">
+          <div className="p-5 space-y-3 max-h-[75vh] overflow-y-auto">
             <Field label="Titlu">
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Vineri DJ Set @ Club Form"
-                className="w-full bg-white/5 rounded-md px-3 py-2.5 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
+              <input autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Vineri DJ Set @ Club Form"
+                className="w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
             </Field>
             <Field label="Subtitlu (opțional)">
               <input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder="Doar pentru cei tari"
-                className="w-full bg-white/5 rounded-md px-3 py-2.5 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
+                className="w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
             </Field>
-            <Field label="Tip campanie">
-              <div className="grid grid-cols-3 gap-2">
-                {(["boost_feed", "boost_discover", "boost_map"] as const).map((k) => (
-                  <button key={k} type="button" onClick={() => setKind(k)}
-                    className={`px-2 py-2 rounded-md text-[10px] font-mono uppercase tracking-widest border ${
-                      kind === k ? "border-neon-crimson bg-neon-crimson/10 text-white" : "border-white/10 text-zinc-400 hover:text-white"
-                    }`}>
-                    {k.replace("_", " ")}
-                  </button>
-                ))}
-              </div>
-            </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Bid (RON / 1000 afișări)">
-                <input type="number" step="0.5" min="0.5" value={bidRon} onChange={(e) => setBidRon(e.target.value)}
-                  className="w-full bg-white/5 rounded-md px-3 py-2.5 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
-              </Field>
-              <Field label="Buget total (RON, 0 = fără cap)">
-                <input type="number" step="10" min="0" value={budgetRon} onChange={(e) => setBudgetRon(e.target.value)}
-                  className="w-full bg-white/5 rounded-md px-3 py-2.5 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
-              </Field>
-            </div>
-            <Field label="Text buton CTA">
-              <input value={ctaText} onChange={(e) => setCtaText(e.target.value)}
-                className="w-full bg-white/5 rounded-md px-3 py-2.5 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
-            </Field>
-            <Field label="Link CTA (opțional)">
-              <input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://..."
-                className="w-full bg-white/5 rounded-md px-3 py-2.5 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
-            </Field>
-            <Field label="URL imagine (opțional)">
+            <Field label="URL imagine">
               <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..."
-                className="w-full bg-white/5 rounded-md px-3 py-2.5 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
+                className="w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
+            </Field>
+            <Field label="Link la apăsare (opțional)">
+              <input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://..."
+                className="w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none" />
             </Field>
             <button disabled={busy} onClick={submit}
-              className="w-full mt-2 px-3 py-3 rounded-2xl text-white text-xs font-display uppercase tracking-widest disabled:opacity-50"
+              className="w-full mt-2 px-3 py-3.5 rounded-2xl text-white text-xs font-display uppercase tracking-widest disabled:opacity-50"
               style={{ background: "var(--gradient-chaos)" }}>
-              {busy ? <Loader2 size={14} className="inline animate-spin" /> : "Publică campanie"}
+              {busy ? <Loader2 size={14} className="inline animate-spin" /> : "Publică în feed"}
             </button>
+            <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-600 text-center pt-1">
+              Plan {plan} · {MONTHLY_POST_QUOTA[plan] ?? 4} postări incluse pe lună
+            </p>
           </div>
         </div>
       </div>
@@ -464,9 +509,10 @@ function CampaignCreateModal({ businessId, onClose, onCreated }: {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="block space-y-1">
+    <label className="block space-y-1.5">
       <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">{label}</span>
       {children}
     </label>
   );
 }
+
