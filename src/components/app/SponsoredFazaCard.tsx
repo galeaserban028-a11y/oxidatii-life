@@ -178,7 +178,7 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
             href={ad.ctaUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => { e.stopPropagation(); logClick(); }}
             className="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] px-3 py-1.5 rounded-full"
             style={{ background: `${ad.theme}22`, color: ad.theme }}
           >
