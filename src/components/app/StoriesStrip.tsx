@@ -364,6 +364,7 @@ function StoryViewer({
 }) {
   const [gi, setGi] = useState(startIndex);
   const [si, setSi] = useState(0);
+  const [mediaRatio, setMediaRatio] = useState<number | null>(null);
   const group = groups[gi];
   const story = group?.stories[si];
 
@@ -371,6 +372,10 @@ function StoryViewer({
   useEffect(() => {
     if (story) onSeen([story.id]);
   }, [story, onSeen]);
+
+  useEffect(() => {
+    setMediaRatio(null);
+  }, [story?.id]);
 
   if (!group || !story) return null;
 
@@ -397,6 +402,7 @@ function StoryViewer({
   const isMine = story.user_id === viewerId;
   const ageM = Math.max(0, Math.floor((Date.now() - +new Date(story.created_at)) / 60000));
   const ageLabel = ageM < 60 ? `${ageM}m` : `${Math.floor(ageM / 60)}h`;
+  const safeRatio = Math.min(1.45, Math.max(0.82, mediaRatio ?? 1));
 
   return (
       <div className="fixed inset-0 z-[80] bg-black flex items-center justify-center" onClick={onClose}>
@@ -438,15 +444,37 @@ function StoryViewer({
       </div>
 
       {/* media */}
-      <div className="absolute inset-0 flex items-center justify-center px-7 py-28" onClick={(e) => e.stopPropagation()}>
+      <div className="absolute inset-0 flex items-center justify-center px-5 py-28" onClick={(e) => e.stopPropagation()}>
         {story.media_type === "image" && (
           <img src={story.media_url} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-35 blur-2xl scale-110" />
         )}
-        <div className="relative w-full max-w-[340px] max-h-[54dvh] aspect-square overflow-hidden rounded-[26px] bg-zinc-950 shadow-[0_24px_80px_rgba(0,0,0,0.65)]">
+        <div
+          className="relative w-[min(88vw,360px)] max-h-[52dvh] overflow-hidden rounded-[26px] bg-zinc-950 shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
+          style={{ aspectRatio: safeRatio }}
+        >
           {story.media_type === "video" ? (
-            <video src={story.media_url} className="h-full w-full object-cover" autoPlay playsInline controls={false} onEnded={next} />
+            <video
+              src={story.media_url}
+              className="h-full w-full object-contain bg-black"
+              autoPlay
+              playsInline
+              controls={false}
+              onLoadedMetadata={(e) => {
+                const video = e.currentTarget;
+                if (video.videoWidth && video.videoHeight) setMediaRatio(video.videoWidth / video.videoHeight);
+              }}
+              onEnded={next}
+            />
           ) : (
-            <img src={story.media_url} alt="" className="h-full w-full object-cover" />
+            <img
+              src={story.media_url}
+              alt=""
+              className="h-full w-full object-contain bg-black"
+              onLoad={(e) => {
+                const image = e.currentTarget;
+                if (image.naturalWidth && image.naturalHeight) setMediaRatio(image.naturalWidth / image.naturalHeight);
+              }}
+            />
           )}
         </div>
       </div>
