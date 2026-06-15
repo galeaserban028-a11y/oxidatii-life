@@ -439,21 +439,43 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
   businessId: string; plan: string; onClose: () => void; onCreated: () => void;
 }) {
   const qc = useQueryClient();
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [body, setBody] = useState("");
   const [mediaKind, setMediaKind] = useState<"image" | "video">("image");
   const [imageUrl, setImageUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [eventAt, setEventAt] = useState(""); // datetime-local
   const [ctaUrl, setCtaUrl] = useState("");
   const [ctaText, setCtaText] = useState("Vezi detalii");
   const [busy, setBusy] = useState(false);
 
+  const handleFile = async (file: File, kind: "image" | "video") => {
+    if (!user?.id) return toast.error("Trebuie să fii autentificat");
+    const maxMb = kind === "video" ? 50 : 10;
+    if (file.size > maxMb * 1024 * 1024) return toast.error(`Fișier prea mare (max ${maxMb}MB)`);
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || (kind === "video" ? "mp4" : "jpg");
+      const path = `${user.id}/campaigns/${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
+      if (kind === "image") setImageUrl(pub.publicUrl); else setVideoUrl(pub.publicUrl);
+      toast.success("Încărcat");
+    } catch (e: any) {
+      toast.error(e?.message || "Eroare la încărcare");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const submit = async () => {
     if (!title.trim()) return toast.error("Adaugă un titlu pentru postare");
     if (mediaKind === "image" && !imageUrl.trim()) return toast.error("Adaugă o imagine sau alege video");
-    if (mediaKind === "video" && !videoUrl.trim()) return toast.error("Adaugă URL video sau alege imagine");
+    if (mediaKind === "video" && !videoUrl.trim()) return toast.error("Adaugă un video sau alege imagine");
     const used = await countCampaignsThisMonth(businessId);
     const quota = MONTHLY_POST_QUOTA[plan] ?? 4;
     if (used >= quota) {
