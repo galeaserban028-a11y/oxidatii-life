@@ -507,7 +507,7 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
       subtitle: subtitle.trim() || null,
       body: body.trim() || null,
       kind: "boost_feed",
-      status: isScheduled ? "draft" : "active",
+      status: "active", // read filter already gates by starts_at, so scheduled posts stay hidden until then
       bid_cents: 0,
       budget_cents: 0,
       cta_text: ctaText.trim() || "Vezi detalii",
