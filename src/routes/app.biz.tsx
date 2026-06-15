@@ -526,7 +526,7 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
           <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 sticky top-0 bg-zinc-950 z-10">
             <div>
               <h3 className="font-display uppercase text-base">Postare nouă</h3>
-              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-0.5">apare în feed ca „sponsorizat" · poate fi like-uită</p>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-500 mt-0.5">apare în feed ca „sponsorizat" · activ 2 zile · poate fi like-uită</p>
             </div>
             <button onClick={onClose} className="p-1.5 -mr-1.5 rounded-lg hover:bg-white/5"><X size={18} /></button>
           </div>
