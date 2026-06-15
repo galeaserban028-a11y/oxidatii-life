@@ -418,7 +418,7 @@ function CampaignCreateModal({ businessId, onClose, onCreated }: {
             </Field>
             <Field label="Tip campanie">
               <div className="grid grid-cols-3 gap-2">
-                {(["boost_feed", "sponsored_party", "takeover"] as const).map((k) => (
+                {(["boost_feed", "boost_discover", "boost_map"] as const).map((k) => (
                   <button key={k} type="button" onClick={() => setKind(k)}
                     className={`px-2 py-2 rounded-md text-[10px] font-mono uppercase tracking-widest border ${
                       kind === k ? "border-neon-crimson bg-neon-crimson/10 text-white" : "border-white/10 text-zinc-400 hover:text-white"
