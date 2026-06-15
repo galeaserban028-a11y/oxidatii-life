@@ -96,9 +96,26 @@ async function upsertBizPlanSubscription(
   periodEndIso: string | null,
   priceLookup: string | null,
 ) {
-  const businessId = subscription.metadata?.business_id;
-  if (!businessId) return;
-  const plan = subscription.metadata?.plan
+  let businessId: string | null = subscription.metadata?.business_id ?? null;
+  const userId: string | null = subscription.metadata?.userId ?? null;
+
+  // Fallback: metadata.business_id missing → pick user's most recent business
+  if (!businessId && userId) {
+    const { data: biz } = await supabaseAdmin
+      .from("business_accounts")
+      .select("id")
+      .eq("owner_user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    businessId = (biz?.id as string | undefined) ?? null;
+  }
+  if (!businessId) {
+    console.error("biz_plan webhook: no business_id resolvable", { subId: subscription.id, userId });
+    return;
+  }
+
+  const plan = (subscription.metadata?.plan as "basic" | "pro" | "elite" | undefined)
     || (priceLookup ? BIZ_PLAN_BY_LOOKUP[priceLookup] : null)
     || null;
   const isActive = ["active", "trialing", "past_due"].includes(subscription.status)
@@ -134,10 +151,13 @@ async function upsertSubscription(subscription: any, env: StripeEnv) {
     updated_at: new Date().toISOString(),
   }, { onConflict: "stripe_subscription_id" });
 
-  if (subscription.metadata?.kind === "biz_plan" || subscription.metadata?.kind === "biz_pro") {
+  // Detect biz plan by metadata OR by price lookup (handles missing metadata.kind)
+  const isBizByLookup = priceLookup ? !!BIZ_PLAN_BY_LOOKUP[priceLookup] : false;
+  if (subscription.metadata?.kind === "biz_plan" || subscription.metadata?.kind === "biz_pro" || isBizByLookup) {
     await upsertBizPlanSubscription(subscription, env, periodEndIso, priceLookup);
     return;
   }
+
 
   // Sync premium_tier on profile
   const tierInfo = priceLookup ? TIER_MAP[priceLookup] : null;
