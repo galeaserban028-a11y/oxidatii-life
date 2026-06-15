@@ -439,21 +439,43 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
   businessId: string; plan: string; onClose: () => void; onCreated: () => void;
 }) {
   const qc = useQueryClient();
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [body, setBody] = useState("");
   const [mediaKind, setMediaKind] = useState<"image" | "video">("image");
   const [imageUrl, setImageUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [eventAt, setEventAt] = useState(""); // datetime-local
   const [ctaUrl, setCtaUrl] = useState("");
   const [ctaText, setCtaText] = useState("Vezi detalii");
   const [busy, setBusy] = useState(false);
 
+  const handleFile = async (file: File, kind: "image" | "video") => {
+    if (!user?.id) return toast.error("Trebuie să fii autentificat");
+    const maxMb = kind === "video" ? 50 : 10;
+    if (file.size > maxMb * 1024 * 1024) return toast.error(`Fișier prea mare (max ${maxMb}MB)`);
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() || (kind === "video" ? "mp4" : "jpg");
+      const path = `${user.id}/campaigns/${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
+      if (kind === "image") setImageUrl(pub.publicUrl); else setVideoUrl(pub.publicUrl);
+      toast.success("Încărcat");
+    } catch (e: any) {
+      toast.error(e?.message || "Eroare la încărcare");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const submit = async () => {
     if (!title.trim()) return toast.error("Adaugă un titlu pentru postare");
     if (mediaKind === "image" && !imageUrl.trim()) return toast.error("Adaugă o imagine sau alege video");
-    if (mediaKind === "video" && !videoUrl.trim()) return toast.error("Adaugă URL video sau alege imagine");
+    if (mediaKind === "video" && !videoUrl.trim()) return toast.error("Adaugă un video sau alege imagine");
     const used = await countCampaignsThisMonth(businessId);
     const quota = MONTHLY_POST_QUOTA[plan] ?? 4;
     if (used >= quota) {
@@ -525,14 +547,38 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
             </Field>
 
             {mediaKind === "image" ? (
-              <Field label="URL imagine">
-                <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..."
-                  className={inputClass} />
+              <Field label="Imagine">
+                {imageUrl ? (
+                  <div className="relative rounded-xl overflow-hidden border border-white/10">
+                    <img src={imageUrl} alt="preview" className="w-full max-h-64 object-cover" />
+                    <button type="button" onClick={() => setImageUrl("")}
+                      className="absolute top-2 right-2 bg-black/70 rounded-full p-1.5"><X size={14} /></button>
+                  </div>
+                ) : (
+                  <label className={`flex flex-col items-center justify-center gap-2 cursor-pointer ${inputClass} py-8 border-dashed text-zinc-400 hover:text-white hover:border-neon-crimson/50`}>
+                    {uploading ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+                    <span className="text-[11px] font-mono uppercase tracking-widest">{uploading ? "se încarcă..." : "alege imagine (max 10MB)"}</span>
+                    <input type="file" accept="image/*" className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, "image"); e.target.value = ""; }} />
+                  </label>
+                )}
               </Field>
             ) : (
-              <Field label="URL video (mp4)">
-                <input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://...mp4"
-                  className={inputClass} />
+              <Field label="Video">
+                {videoUrl ? (
+                  <div className="relative rounded-xl overflow-hidden border border-white/10">
+                    <video src={videoUrl} className="w-full max-h-64 object-cover" controls muted />
+                    <button type="button" onClick={() => setVideoUrl("")}
+                      className="absolute top-2 right-2 bg-black/70 rounded-full p-1.5"><X size={14} /></button>
+                  </div>
+                ) : (
+                  <label className={`flex flex-col items-center justify-center gap-2 cursor-pointer ${inputClass} py-8 border-dashed text-zinc-400 hover:text-white hover:border-neon-crimson/50`}>
+                    {uploading ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+                    <span className="text-[11px] font-mono uppercase tracking-widest">{uploading ? "se încarcă..." : "alege video (max 50MB)"}</span>
+                    <input type="file" accept="video/*" className="hidden"
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f, "video"); e.target.value = ""; }} />
+                  </label>
+                )}
               </Field>
             )}
 
