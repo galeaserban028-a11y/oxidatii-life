@@ -279,10 +279,13 @@ function FazePage() {
           {[0,1].map(i => <div key={i} className="aspect-square rounded-2xl bg-foreground/[0.04] animate-pulse" />)}
         </div>
       ) : !data || sortedItems.length === 0 ? (
-        <div className="mx-4 mt-8 rounded-3xl border border-dashed border-foreground/15 p-10 text-center space-y-3">
-          <div className="text-5xl">🎬</div>
-          <div className="uppercase text-lg" style={archivo}>Nicio fază încă.</div>
-          <p className="text-sm text-muted-foreground">Fii primul care pune o fază reală din teren.</p>
+        <div className="pt-4 space-y-5 px-3">
+          {promoCards.length > 0 && <SponsoredFazaCard key={`ad-empty-${promoCards[0].id}`} ad={promoCards[0]} />}
+          <div className="mx-1 rounded-3xl border border-dashed border-foreground/15 p-10 text-center space-y-3">
+            <div className="text-5xl">🎬</div>
+            <div className="uppercase text-lg" style={archivo}>Nicio fază încă.</div>
+            <p className="text-sm text-muted-foreground">Fii primul care pune o fază reală din teren.</p>
+          </div>
         </div>
       ) : (
         <div className="pt-4 space-y-5 px-3">

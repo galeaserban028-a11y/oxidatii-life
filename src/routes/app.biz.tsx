@@ -324,10 +324,11 @@ function CampaignManager({ businessId, plan, onOpenCreate }: {
     queryKey: ["biz-campaigns", businessId],
     queryFn: () => loadCampaigns(businessId),
   });
-  const { data: usedThisMonth = 0 } = useQuery({
-    queryKey: ["biz-campaigns-month-count", businessId],
-    queryFn: () => countCampaignsThisMonth(businessId),
-  });
+
+  // Derive monthly quota usage from the actual list — guarantees that
+  // deleting a campaign immediately frees up a slot.
+  const monthStartMs = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1).getTime(); })();
+  const usedThisMonth = (campaigns ?? []).filter((c: any) => new Date(c.created_at).getTime() >= monthStartMs).length;
 
   const quota = MONTHLY_POST_QUOTA[plan] ?? 4;
   const remaining = Math.max(0, quota - usedThisMonth);
@@ -455,6 +456,7 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
   const [videoUrl, setVideoUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [eventAt, setEventAt] = useState(""); // datetime-local
+  const [scheduleAt, setScheduleAt] = useState(""); // datetime-local — when the ad goes live
   const [ctaUrl, setCtaUrl] = useState("");
   const [ctaText, setCtaText] = useState("Vezi detalii");
   const [busy, setBusy] = useState(false);
@@ -492,14 +494,20 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
     setBusy(true);
     const eventIso = eventAt ? new Date(eventAt).toISOString() : null;
     const now = new Date();
-    const endsAt = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // max 2 zile activ
+    const startsAt = scheduleAt ? new Date(scheduleAt) : now;
+    if (startsAt.getTime() < now.getTime() - 60_000) {
+      setBusy(false);
+      return toast.error("Programarea trebuie să fie în viitor");
+    }
+    const endsAt = new Date(startsAt.getTime() + 2 * 24 * 60 * 60 * 1000); // 2 zile de la start
+    const isScheduled = startsAt.getTime() > now.getTime() + 60_000;
     const { error } = await supabase.from("campaigns").insert({
       business_id: businessId,
       title: title.trim(),
       subtitle: subtitle.trim() || null,
       body: body.trim() || null,
       kind: "boost_feed",
-      status: "active",
+      status: "active", // read filter already gates by starts_at, so scheduled posts stay hidden until then
       bid_cents: 0,
       budget_cents: 0,
       cta_text: ctaText.trim() || "Vezi detalii",
@@ -507,13 +515,13 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
       image_urls: mediaKind === "image" && imageUrl.trim() ? [imageUrl.trim()] : [],
       video_url: mediaKind === "video" && videoUrl.trim() ? videoUrl.trim() : null,
       event_starts_at: eventIso,
-      starts_at: now.toISOString(),
+      starts_at: startsAt.toISOString(),
       ends_at: endsAt.toISOString(),
     });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success("Postare sponsorizată publicată în feed");
-    qc.invalidateQueries({ queryKey: ["biz-campaigns-month-count", businessId] });
+    qc.invalidateQueries({ queryKey: ["biz-campaigns", businessId] });
     onCreated();
   };
 
@@ -592,6 +600,14 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
                 )}
               </Field>
             )}
+
+            <Field label="Programare — apare în feed la (opțional)">
+              <input type="datetime-local" value={scheduleAt} onChange={(e) => setScheduleAt(e.target.value)}
+                className={inputClass} />
+              <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-600 mt-1">
+                {scheduleAt ? "rămâne activă 2 zile de la data programată" : "lasă gol pentru publicare imediată"}
+              </p>
+            </Field>
 
             <Field label="Data și ora evenimentului (opțional)">
               <input type="datetime-local" value={eventAt} onChange={(e) => setEventAt(e.target.value)}
