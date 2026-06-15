@@ -136,7 +136,12 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
             </div>
           </div>
           <div className="flex-1 min-w-0 leading-tight">
-            <div className="text-[14px] font-semibold truncate">{handle}</div>
+            <div className="text-[14px] font-semibold truncate flex items-center gap-1.5">
+              {handle}
+              {ad.rating != null && ad.rating > 0 && (
+                <span className="text-[11px] font-normal text-amber-400 shrink-0">★ {ad.rating.toFixed(1)}{ad.reviewsCount ? ` (${ad.reviewsCount})` : ""}</span>
+              )}
+            </div>
             <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
               <span style={{ color: ad.theme }}>●</span> sponsorizat
             </div>
