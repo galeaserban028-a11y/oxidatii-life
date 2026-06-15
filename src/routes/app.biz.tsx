@@ -494,14 +494,20 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
     setBusy(true);
     const eventIso = eventAt ? new Date(eventAt).toISOString() : null;
     const now = new Date();
-    const endsAt = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // max 2 zile activ
+    const startsAt = scheduleAt ? new Date(scheduleAt) : now;
+    if (startsAt.getTime() < now.getTime() - 60_000) {
+      setBusy(false);
+      return toast.error("Programarea trebuie să fie în viitor");
+    }
+    const endsAt = new Date(startsAt.getTime() + 2 * 24 * 60 * 60 * 1000); // 2 zile de la start
+    const isScheduled = startsAt.getTime() > now.getTime() + 60_000;
     const { error } = await supabase.from("campaigns").insert({
       business_id: businessId,
       title: title.trim(),
       subtitle: subtitle.trim() || null,
       body: body.trim() || null,
       kind: "boost_feed",
-      status: "active",
+      status: isScheduled ? "scheduled" : "active",
       bid_cents: 0,
       budget_cents: 0,
       cta_text: ctaText.trim() || "Vezi detalii",
@@ -509,7 +515,7 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
       image_urls: mediaKind === "image" && imageUrl.trim() ? [imageUrl.trim()] : [],
       video_url: mediaKind === "video" && videoUrl.trim() ? videoUrl.trim() : null,
       event_starts_at: eventIso,
-      starts_at: now.toISOString(),
+      starts_at: startsAt.toISOString(),
       ends_at: endsAt.toISOString(),
     });
     setBusy(false);
