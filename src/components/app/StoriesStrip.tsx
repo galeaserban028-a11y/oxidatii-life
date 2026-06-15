@@ -444,7 +444,7 @@ function StoryViewer({
       </div>
 
       {/* media */}
-      <div className="absolute inset-0 flex items-center justify-center px-5 py-28" onClick={(e) => e.stopPropagation()}>
+      <div className="absolute inset-0 flex items-start justify-center px-5 pt-28 pb-8" onClick={(e) => e.stopPropagation()}>
         {story.media_type === "image" && (
           <img src={story.media_url} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-35 blur-2xl scale-110" />
         )}
