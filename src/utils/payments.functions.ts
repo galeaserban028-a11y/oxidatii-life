@@ -4,6 +4,14 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type CheckoutResult = { clientSecret: string } | { error: string };
 
+export type BizPlan = "basic" | "pro" | "elite";
+
+export const BIZ_PLAN_PRICES: Record<BizPlan, string> = {
+  basic: "biz_basic_monthly",
+  pro: "biz_pro_v2_monthly",
+  elite: "biz_elite_monthly",
+};
+
 async function resolveOrCreateCustomer(
   stripe: ReturnType<typeof createStripeClient>,
   options: { email?: string; userId: string },
@@ -33,10 +41,11 @@ async function resolveOrCreateCustomer(
   return created.id;
 }
 
-export const createBizProCheckout = createServerFn({ method: "POST" })
+export const createBizPlanCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { businessId: string; returnUrl: string; environment: StripeEnv }) => {
+  .inputValidator((data: { businessId: string; plan: BizPlan; returnUrl: string; environment: StripeEnv }) => {
     if (!/^[0-9a-f-]{36}$/i.test(data.businessId)) throw new Error("Invalid businessId");
+    if (!["basic", "pro", "elite"].includes(data.plan)) throw new Error("Invalid plan");
     return data;
   })
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
@@ -51,10 +60,11 @@ export const createBizProCheckout = createServerFn({ method: "POST" })
       if (biz.owner_user_id !== userId) throw new Error("Nu ai acces la acest business");
 
       const stripe = createStripeClient(data.environment);
-      const prices = await stripe.prices.list({ lookup_keys: ["biz_pro_monthly"] });
-      const matchedPrices = Array.isArray(prices.data) ? prices.data : [];
-      if (!matchedPrices.length) throw new Error("Preț Pro indisponibil");
-      const price = matchedPrices[0];
+      const lookupKey = BIZ_PLAN_PRICES[data.plan];
+      const prices = await stripe.prices.list({ lookup_keys: [lookupKey] });
+      const matched = Array.isArray(prices.data) ? prices.data : [];
+      if (!matched.length) throw new Error(`Preț indisponibil: ${lookupKey}`);
+      const price = matched[0];
 
       const { data: userRes } = await supabase.auth.getUser();
       const customerId = await resolveOrCreateCustomer(stripe, {
@@ -68,9 +78,9 @@ export const createBizProCheckout = createServerFn({ method: "POST" })
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
         customer: customerId,
-        metadata: { userId, kind: "biz_pro", business_id: data.businessId },
+        metadata: { userId, kind: "biz_plan", business_id: data.businessId, plan: data.plan },
         subscription_data: {
-          metadata: { userId, kind: "biz_pro", business_id: data.businessId },
+          metadata: { userId, kind: "biz_plan", business_id: data.businessId, plan: data.plan },
         },
       });
 
@@ -80,6 +90,35 @@ export const createBizProCheckout = createServerFn({ method: "POST" })
       }
       if (!clientSecret) return { error: "Plata nu a putut porni. Reîncearcă în câteva secunde." };
       return { clientSecret };
+    } catch (e) {
+      return { error: getStripeErrorMessage(e) };
+    }
+  });
+
+export const cancelBizPlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { businessId: string; environment: StripeEnv }) => {
+    if (!/^[0-9a-f-]{36}$/i.test(data.businessId)) throw new Error("Invalid businessId");
+    return data;
+  })
+  .handler(async ({ data, context }): Promise<{ ok: true } | { error: string }> => {
+    try {
+      const { supabase, userId } = context;
+      const { data: biz } = await supabase
+        .from("business_accounts").select("id, owner_user_id")
+        .eq("id", data.businessId).maybeSingle();
+      if (!biz || biz.owner_user_id !== userId) throw new Error("Forbidden");
+
+      const stripe = createStripeClient(data.environment);
+      const subs = await stripe.subscriptions.search({
+        query: `metadata['business_id']:'${data.businessId}' AND metadata['kind']:'biz_plan' AND status:'active'`,
+        limit: 5,
+      });
+      const list = Array.isArray(subs.data) ? subs.data : [];
+      for (const s of list) {
+        await stripe.subscriptions.update(s.id, { cancel_at_period_end: true });
+      }
+      return { ok: true };
     } catch (e) {
       return { error: getStripeErrorMessage(e) };
     }

@@ -1,15 +1,17 @@
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
-import { createBizProCheckout } from "@/utils/payments.functions";
+import { createBizPlanCheckout, type BizPlan } from "@/utils/payments.functions";
 
-export function BizProEmbeddedCheckout({
+export function BizPlanEmbeddedCheckout({
   businessId,
+  plan,
   returnUrl,
-}: { businessId: string; returnUrl?: string }) {
+}: { businessId: string; plan: BizPlan; returnUrl?: string }) {
   const fetchClientSecret = async (): Promise<string> => {
-    const result = await createBizProCheckout({
+    const result = await createBizPlanCheckout({
       data: {
         businessId,
+        plan,
         returnUrl: returnUrl || window.location.href,
         environment: getStripeEnvironment(),
       },
