@@ -433,9 +433,36 @@ export type Database = {
           },
         ]
       }
+      campaign_likes: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_likes_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
           bid_cents: number
+          body: string | null
           budget_cents: number
           business_id: string
           city_id: string | null
@@ -470,6 +497,7 @@ export type Database = {
         }
         Insert: {
           bid_cents?: number
+          body?: string | null
           budget_cents?: number
           business_id: string
           city_id?: string | null
@@ -504,6 +532,7 @@ export type Database = {
         }
         Update: {
           bid_cents?: number
+          body?: string | null
           budget_cents?: number
           business_id?: string
           city_id?: string | null
