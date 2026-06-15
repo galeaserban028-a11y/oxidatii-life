@@ -410,6 +410,10 @@ function FazePage() {
             );
             return ad ? [<SponsoredFazaCard key={`ad-${it.id}`} ad={ad} />, article] : article;
           })}
+          {/* Always surface at least one sponsored card when the organic feed is too short to hit the cadence. */}
+          {promoCards.length > 0 && sortedItems.length > 0 && sortedItems.length < 3 && (
+            <SponsoredFazaCard key={`ad-tail-${promoCards[0].id}`} ad={promoCards[0]} />
+          )}
         </div>
       )}
 
