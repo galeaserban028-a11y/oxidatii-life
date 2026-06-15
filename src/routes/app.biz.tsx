@@ -370,7 +370,7 @@ function CampaignCreateModal({ businessId, onClose, onCreated }: {
 }) {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [kind, setKind] = useState<"boost_feed" | "sponsored_party" | "takeover">("boost_feed");
+  const [kind, setKind] = useState<"boost_feed" | "boost_discover" | "boost_map">("boost_feed");
   const [bidRon, setBidRon] = useState("1.50");
   const [budgetRon, setBudgetRon] = useState("100");
   const [ctaText, setCtaText] = useState("Vezi detalii");
