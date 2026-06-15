@@ -119,8 +119,25 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
   return (
     <article
       className="rounded-3xl border overflow-hidden shadow-[0_4px_24px_-12px_rgba(0,0,0,0.6)] animate-fade-in"
-      style={{ borderColor: `${ad.theme}55`, background: `linear-gradient(180deg, ${ad.theme}10, transparent 60%)` }}
+      style={{ borderColor: `${ad.theme}66`, background: `linear-gradient(180deg, ${ad.theme}10, transparent 60%)` }}
     >
+      {/* Sponsored ribbon — clearly marks the card as a paid placement */}
+      <div
+        className="flex items-center justify-between gap-2 px-3.5 py-1.5 text-[10px] uppercase tracking-[0.22em]"
+        style={{ ...archivo, background: `${ad.theme}22`, color: ad.theme, borderBottom: `1px solid ${ad.theme}33` }}
+      >
+        <span className="inline-flex items-center gap-1.5">
+          <span className="size-1.5 rounded-full animate-pulse" style={{ background: ad.theme }} />
+          Postare sponsorizată
+        </span>
+        <span
+          className="px-2 py-0.5 rounded-full text-[9px] font-black tracking-[0.16em]"
+          style={{ background: ad.theme, color: "#06070a" }}
+        >
+          AD
+        </span>
+      </div>
+
       {/* Header */}
       <div className="flex items-center gap-3 px-3.5 py-3">
         <button onClick={openDetail} className="flex items-center gap-3 flex-1 min-w-0 text-left">
@@ -142,17 +159,11 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
                 <span className="text-[11px] font-normal text-amber-400 shrink-0">★ {ad.rating.toFixed(1)}{ad.reviewsCount ? ` (${ad.reviewsCount})` : ""}</span>
               )}
             </div>
-            <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
-              <span style={{ color: ad.theme }}>●</span> sponsorizat
+            <div className="text-[11px] text-muted-foreground truncate">
+              Promovat de business
             </div>
           </div>
         </button>
-        <span
-          className="px-2 py-0.5 rounded-full text-[9px] font-black tracking-[0.16em] uppercase shrink-0"
-          style={{ background: ad.theme, color: "#06070a" }}
-        >
-          AD
-        </span>
       </div>
 
       {/* Media */}
