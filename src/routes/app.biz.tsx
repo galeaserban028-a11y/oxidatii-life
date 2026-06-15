@@ -507,7 +507,7 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
       subtitle: subtitle.trim() || null,
       body: body.trim() || null,
       kind: "boost_feed",
-      status: isScheduled ? "scheduled" : "active",
+      status: isScheduled ? "draft" : "active",
       bid_cents: 0,
       budget_cents: 0,
       cta_text: ctaText.trim() || "Vezi detalii",
