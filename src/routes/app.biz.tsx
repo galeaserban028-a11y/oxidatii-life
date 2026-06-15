@@ -414,6 +414,12 @@ function CampaignManager({ businessId, plan, onOpenCreate }: {
                   <span className="flex items-center gap-1"><Eye size={10} /> {c.impressions} afișări</span>
                   <span className="flex items-center gap-1"><MousePointerClick size={10} /> {c.clicks} click-uri</span>
                   <span className="flex items-center gap-1 text-sunset-orange">♥ {c.likes ?? 0} aprecieri</span>
+                  {c.ends_at && (() => {
+                    const ms = new Date(c.ends_at).getTime() - Date.now();
+                    if (ms <= 0) return <span className="text-zinc-600">expirat</span>;
+                    const h = Math.floor(ms / 3_600_000);
+                    return <span className="text-zinc-400">expiră în {h >= 24 ? `${Math.floor(h / 24)}z ${h % 24}h` : `${h}h`}</span>;
+                  })()}
                 </div>
               </div>
               {c.status === "active" ? (
