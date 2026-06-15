@@ -435,12 +435,17 @@ function StoryViewer({
       </div>
 
       {/* media */}
-      <div className="absolute inset-0 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-        {story.media_type === "video" ? (
-          <video src={story.media_url} className="h-full w-full object-cover" autoPlay playsInline controls={false} onEnded={next} />
-        ) : (
-          <img src={story.media_url} alt="" className="h-full w-full object-cover" />
+      <div className="absolute inset-0 flex items-center justify-center px-3 py-20" onClick={(e) => e.stopPropagation()}>
+        {story.media_type === "image" && (
+          <img src={story.media_url} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-35 blur-2xl scale-110" />
         )}
+        <div className="relative w-full max-w-[430px] max-h-[76dvh] aspect-[4/5] overflow-hidden rounded-[28px] bg-zinc-950 shadow-[0_24px_80px_rgba(0,0,0,0.65)]">
+          {story.media_type === "video" ? (
+            <video src={story.media_url} className="h-full w-full object-cover" autoPlay playsInline controls={false} onEnded={next} />
+          ) : (
+            <img src={story.media_url} alt="" className="h-full w-full object-cover" />
+          )}
+        </div>
       </div>
 
       {/* tap zones */}
@@ -540,7 +545,7 @@ function StoryUploadSheet({
         />
 
         {previewUrl ? (
-          <div className="relative aspect-[3/4] w-full bg-zinc-950 rounded-3xl overflow-hidden border border-white/5">
+          <div className="relative aspect-[4/5] w-full bg-zinc-950 rounded-3xl overflow-hidden border border-white/5">
             {mediaType === "video" ? (
               <video src={previewUrl} className="w-full h-full object-cover" playsInline autoPlay muted loop />
             ) : (
@@ -570,7 +575,7 @@ function StoryUploadSheet({
         ) : (
           <button
             onClick={() => inputRef.current?.click()}
-            className="w-full aspect-[3/4] rounded-3xl border-2 border-dashed border-white/15 grid place-items-center gap-3 text-zinc-400 bg-zinc-950/40 hover:bg-zinc-900/40 transition-colors"
+            className="w-full aspect-[4/5] rounded-3xl border-2 border-dashed border-white/15 grid place-items-center gap-3 text-zinc-400 bg-zinc-950/40 hover:bg-zinc-900/40 transition-colors"
           >
             <Upload size={28} />
             <span className="font-bold text-xs uppercase tracking-widest">alege foto / video</span>
