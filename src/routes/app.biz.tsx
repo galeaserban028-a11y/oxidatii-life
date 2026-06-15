@@ -409,9 +409,10 @@ function CampaignManager({ businessId, plan, onOpenCreate }: {
                   }`}>{c.status}</span>
                 </div>
                 {c.subtitle && <div className="text-[11px] text-zinc-400 truncate">{c.subtitle}</div>}
-                <div className="font-mono text-[10px] text-zinc-500 flex items-center gap-3 mt-1">
+                <div className="font-mono text-[10px] text-zinc-500 flex items-center gap-3 mt-1 flex-wrap">
                   <span className="flex items-center gap-1"><Eye size={10} /> {c.impressions} afișări</span>
                   <span className="flex items-center gap-1"><MousePointerClick size={10} /> {c.clicks} click-uri</span>
+                  <span className="flex items-center gap-1 text-sunset-orange">♥ {c.likes ?? 0} aprecieri</span>
                 </div>
               </div>
               {c.status === "active" ? (
