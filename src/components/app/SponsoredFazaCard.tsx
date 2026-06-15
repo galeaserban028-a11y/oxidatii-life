@@ -31,18 +31,29 @@ export function usePromoCards() {
     queryKey: ["faze-promo-cards"],
     queryFn: async (): Promise<AdCard[]> => {
       const nowIso = new Date().toISOString();
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("campaigns")
-        .select("id, title, body, subtitle, theme_color, image_urls, video_url, cta_url, cta_text, business_accounts!inner(logo_url, cover_url, brand_name, reputation_score, total_reviews), venues(name)")
+        .select("id, title, body, subtitle, theme_color, image_urls, video_url, cta_url, cta_text, venue_id, business_accounts!inner(logo_url, cover_url, brand_name, reputation_score, total_reviews)")
         .eq("status", "active")
         .lte("starts_at", nowIso)
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
         .limit(10);
-      return ((data ?? []) as any[]).map((c) => ({
+      if (error) {
+        console.warn("[usePromoCards]", error.message);
+        return [];
+      }
+      const rows = (data ?? []) as any[];
+      const venueIds = Array.from(new Set(rows.map((r) => r.venue_id).filter(Boolean)));
+      const venuesMap = new Map<string, string>();
+      if (venueIds.length) {
+        const { data: vs } = await supabase.from("venues").select("id, name").in("id", venueIds);
+        (vs ?? []).forEach((v: any) => venuesMap.set(v.id, v.name));
+      }
+      return rows.map((c) => ({
         id: c.id as string,
         title: (c.title as string | null) ?? null,
         body: (c.body as string | null) ?? (c.subtitle as string | null) ?? null,
-        brand: (c.venues?.name ?? c.business_accounts?.brand_name ?? null) as string | null,
+        brand: (venuesMap.get(c.venue_id) ?? c.business_accounts?.brand_name ?? null) as string | null,
         logo: (c.business_accounts?.logo_url ?? null) as string | null,
         cover: ((c.image_urls?.[0] as string | undefined) ?? c.business_accounts?.cover_url ?? null) as string | null,
         video: (c.video_url as string | null) ?? null,
