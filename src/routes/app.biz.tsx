@@ -159,25 +159,22 @@ function BizPage() {
           </div>
         </header>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-display uppercase text-xl">Campaniile tale</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">Postări sponsorizate, promovare în feed, evenimente boost-uite.</p>
-          </div>
-          <button onClick={() => setCampaignOpen(true)}
-            className="inline-flex items-center gap-1.5 font-display uppercase text-[11px] tracking-widest px-4 py-2.5 rounded-2xl text-white"
-            style={{ background: "var(--gradient-chaos)" }}>
-            <Plus size={12} /> Campanie nouă
-          </button>
-        </div>
-
-        <CampaignList businessId={activeBiz.id} />
+        <CampaignManager
+          businessId={activeBiz.id}
+          plan={(activeBiz.pro_tier as string) ?? "basic"}
+          onOpenCreate={() => setCampaignOpen(true)}
+        />
 
         {campaignOpen && (
-          <CampaignCreateModal businessId={activeBiz.id} onClose={() => setCampaignOpen(false)} onCreated={() => {
-            setCampaignOpen(false);
-            qc.invalidateQueries({ queryKey: ["biz-campaigns", activeBiz.id] });
-          }} />
+          <CampaignCreateModal
+            businessId={activeBiz.id}
+            plan={(activeBiz.pro_tier as string) ?? "basic"}
+            onClose={() => setCampaignOpen(false)}
+            onCreated={() => {
+              setCampaignOpen(false);
+              qc.invalidateQueries({ queryKey: ["biz-campaigns", activeBiz.id] });
+            }}
+          />
         )}
       </div>
     );
