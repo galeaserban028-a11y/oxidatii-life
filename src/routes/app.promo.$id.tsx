@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Eye, MousePointerClick, Heart, Share2, ExternalLink } from "lucide-react";
+import { ArrowLeft, Heart, ArrowRight, Instagram } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/promo/$id")({
@@ -88,138 +88,190 @@ function PromoPage() {
     window.open(data.campaign.cta_url, "_blank", "noopener,noreferrer");
   };
 
-  const share = async () => {
-    const url = window.location.href;
-    try {
-      if (navigator.share) await navigator.share({ url, title: data?.campaign?.title ?? "Promovat" });
-      else { await navigator.clipboard.writeText(url); toast.success("Link copiat"); }
-    } catch {}
-  };
-
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="aspect-square bg-foreground/5 animate-pulse" />
-        <div className="p-5 space-y-3">
-          <div className="h-4 w-32 bg-foreground/10 rounded animate-pulse" />
-          <div className="h-6 w-2/3 bg-foreground/10 rounded animate-pulse" />
-        </div>
-      </div>
+      <div className="min-h-screen bg-black animate-pulse" />
     );
   }
   if (!data?.campaign) return <div className="p-6 text-sm">Promovare indisponibilă.</div>;
 
   const { campaign, biz } = data;
-  const color = campaign.theme_color || "#FF2D55";
   const hero = campaign.image_urls?.[0];
   const handle = biz?.brand_name ?? "promovat";
   const liked = !!likeState?.liked;
-  const likes = likeState?.count ?? 0;
   const body = (campaign.body ?? campaign.subtitle ?? "").trim();
+  const title = (campaign.title ?? "").trim();
+  const isInstagram = !!campaign.cta_url && /instagram\.com/i.test(campaign.cta_url);
+  const ctaLabel = isInstagram ? "Deschide Instagram" : (campaign.cta_text || "Deschide");
+
+  // Split title into two lines for billboard typography
+  const words = title ? title.split(/\s+/) : [];
+  let line1 = title;
+  let line2 = "";
+  if (words.length >= 2) {
+    const mid = Math.ceil(words.length / 2);
+    line1 = words.slice(0, mid).join(" ");
+    line2 = words.slice(mid).join(" ");
+  }
 
   return (
-    <div className="min-h-screen bg-background pb-32">
-      {/* Top bar — floats over image */}
-      <div
-        className="fixed top-0 inset-x-0 z-30 flex items-center justify-between px-3 pt-3"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)" }}
-      >
-        <button
-          onClick={() => history.length > 1 ? history.back() : navigate({ to: "/app" })}
-          className="p-2 rounded-full bg-black/55 backdrop-blur-md border border-white/15 text-white"
-          aria-label="Înapoi"
-        >
-          <ArrowLeft size={16} />
-        </button>
-        <span
-          className="px-2.5 py-1 rounded-full text-[9px] font-black tracking-[0.18em] uppercase"
-          style={{ background: color, color: "#06070a" }}
-        >
-          Sponsorizat
-        </span>
+    <div className="relative min-h-screen w-full bg-black text-white overflow-hidden antialiased">
+      {/* Full-bleed background image */}
+      <div className="fixed inset-0 z-0">
+        {hero ? (
+          <img
+            src={hero}
+            alt={title || handle}
+            className="w-full h-full object-cover opacity-70 scale-105"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-orange-900/40 via-pink-900/30 to-purple-900/40" />
+        )}
+        {/* Gradient overlays */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-transparent" />
+        {/* Ambient glow */}
+        <div className="absolute top-1/2 left-0 w-48 h-96 bg-pink-600/20 blur-[120px] pointer-events-none -translate-x-1/2" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 bg-orange-600/10 blur-[100px] pointer-events-none translate-x-1/4" />
       </div>
 
-      {/* Brand header */}
-      <header className="px-4 pt-16 pb-3 flex items-center gap-3">
-        <div className="p-[2px] rounded-full" style={{ background: `linear-gradient(135deg, #ffd166, ${color})` }}>
-          <div className="p-[2px] rounded-full bg-background">
-            {biz?.logo_url ? (
-              <img src={biz.logo_url} alt={handle} className="size-10 rounded-full object-cover" />
-            ) : (
-              <div className="size-10 rounded-full flex items-center justify-center text-sm font-black" style={{ color, background: "rgba(255,255,255,0.05)" }}>
-                {handle[0]?.toUpperCase()}
+      {/* Top branding layer */}
+      <div
+        className="fixed top-0 inset-x-0 z-30 px-5 pt-4 flex justify-between items-start"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
+      >
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => history.length > 1 ? history.back() : navigate({ to: "/app" })}
+            className="size-10 rounded-full bg-black/55 backdrop-blur-md border border-white/15 text-white flex items-center justify-center active:scale-95 transition"
+            aria-label="Înapoi"
+          >
+            <ArrowLeft size={16} />
+          </button>
+          <div className="flex items-center gap-2.5">
+            <div className="size-10 rounded-full border-2 border-orange-500 p-0.5 bg-zinc-900">
+              {biz?.logo_url ? (
+                <img src={biz.logo_url} alt={handle} className="w-full h-full rounded-full object-cover" />
+              ) : (
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-orange-500 via-pink-500 to-purple-600 flex items-center justify-center text-white font-black text-sm shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+                  {handle[0]?.toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="leading-none">
+              <h3 className="text-white font-bold tracking-tight text-[14px]">{handle}</h3>
+              <div className="flex items-center gap-1.5 mt-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                <p className="text-[9px] text-orange-400 font-bold tracking-[0.18em] uppercase">Postare Promovată</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 mt-1">
+          <span className="text-[9px] font-black text-white uppercase tracking-[0.18em]">Sponsorizat</span>
+        </div>
+      </div>
+
+      {/* Main ad content — anchored at bottom */}
+      <div
+        className="fixed bottom-0 inset-x-0 z-20 px-5 pb-4 space-y-5"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1rem)" }}
+      >
+        {/* Billboard typography */}
+        {title && (
+          <div className="space-y-2">
+            <h1
+              className="font-black text-white uppercase leading-[0.85] tracking-tighter italic"
+              style={{
+                fontFamily: "'Oswald', 'Anton', 'Bebas Neue', system-ui, sans-serif",
+                fontSize: line2 ? "clamp(44px, 14vw, 72px)" : "clamp(40px, 12vw, 64px)",
+                textShadow: "0 4px 24px rgba(0,0,0,0.6)",
+              }}
+            >
+              {line2 ? (
+                <>
+                  <span className="block">{line1}</span>
+                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500">
+                    {line2}
+                  </span>
+                </>
+              ) : (
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-pink-500 to-purple-500">
+                  {line1}
+                </span>
+              )}
+            </h1>
+          </div>
+        )}
+
+        {body && (
+          <p className="text-zinc-200 text-sm max-w-[300px] leading-relaxed border-l-2 border-orange-500 pl-4 whitespace-pre-wrap">
+            {body}
+          </p>
+        )}
+
+        {/* CTA + like */}
+        <div className="flex items-center gap-3">
+          {campaign.cta_url ? (
+            <button
+              onClick={handleCtaClick}
+              className="flex-1 relative overflow-hidden rounded-xl active:scale-[0.98] transition-transform"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600" />
+              <div className="relative m-[1.5px] bg-zinc-950 rounded-[10px] py-4 flex items-center justify-center gap-2">
+                {isInstagram && <Instagram size={16} className="text-pink-400" />}
+                <span className="text-white font-black uppercase tracking-[0.16em] text-[11px]">{ctaLabel}</span>
+                <ArrowRight size={14} className="text-orange-400" strokeWidth={3} />
+              </div>
+            </button>
+          ) : (
+            <div className="flex-1" />
+          )}
+
+          <button
+            onClick={toggleLike}
+            aria-label="Apreciază"
+            className="size-14 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 flex items-center justify-center active:bg-white/20 transition-all"
+          >
+            <Heart
+              size={22}
+              className={liked ? "fill-pink-500 text-pink-500" : "text-pink-400"}
+              strokeWidth={2}
+            />
+          </button>
+        </div>
+
+        {/* Metrics footer */}
+        <div className="flex items-center justify-between border-t border-white/5 pt-3">
+          <div className="flex gap-5">
+            <div className="flex flex-col">
+              <span className="text-base font-black text-white leading-none tabular-nums">
+                {(campaign.impressions ?? 0).toLocaleString("ro-RO")}
+              </span>
+              <span className="text-[8px] uppercase tracking-[0.18em] text-zinc-500 font-bold mt-1">Afișări</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-base font-black text-white leading-none tabular-nums">
+                {(campaign.clicks ?? 0).toLocaleString("ro-RO")}
+              </span>
+              <span className="text-[8px] uppercase tracking-[0.18em] text-zinc-500 font-bold mt-1">Click-uri</span>
+            </div>
+            {(likeState?.count ?? 0) > 0 && (
+              <div className="flex flex-col">
+                <span className="text-base font-black text-white leading-none tabular-nums">
+                  {(likeState?.count ?? 0).toLocaleString("ro-RO")}
+                </span>
+                <span className="text-[8px] uppercase tracking-[0.18em] text-zinc-500 font-bold mt-1">Aprecieri</span>
               </div>
             )}
           </div>
         </div>
-        <div className="min-w-0 flex-1 leading-tight">
-          <div className="text-[15px] font-semibold truncate flex items-center gap-1.5">
-            {handle}
-            {biz?.verified && <span className="text-[10px] text-sky-400">✓</span>}
-          </div>
-          <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
-            <span style={{ color }}>●</span> postare promovată
-          </div>
-        </div>
-      </header>
 
-      {/* Hero image */}
-      {hero ? (
-        <div className="relative bg-black">
-          <img src={hero} alt={campaign.title ?? handle} className="w-full aspect-square object-cover" />
-        </div>
-      ) : (
-        <div className="aspect-square flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${color}, ${color}33)` }}>
-          <span className="font-display uppercase text-3xl text-white/90">{handle}</span>
-        </div>
-      )}
-
-      {/* Actions */}
-      <div className="flex items-center gap-1 px-3 pt-3">
-        <button onClick={toggleLike} aria-label="Apreciază" className="size-11 flex items-center justify-center active:scale-90 transition">
-          <Heart size={26} className={liked ? "fill-sunset-orange text-sunset-orange" : "text-foreground"} strokeWidth={1.6} />
-        </button>
-        <button onClick={share} aria-label="Distribuie" className="size-11 flex items-center justify-center active:scale-90 transition">
-          <Share2 size={22} className="text-foreground" strokeWidth={1.6} />
-        </button>
-        {campaign.cta_url && (
-          <button
-            onClick={handleCtaClick}
-            className="ml-auto inline-flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-[0.14em] px-4 py-2 rounded-full"
-            style={{ background: `${color}22`, color }}
-          >
-            {campaign.cta_text || "Deschide"} <ExternalLink size={13} />
-          </button>
-        )}
-      </div>
-
-      {/* Likes */}
-      {likes > 0 && (
-        <div className="px-5 pt-2 text-[14px] font-semibold">
-          {likes} {likes === 1 ? "apreciere" : "aprecieri"}
-        </div>
-      )}
-
-      {/* Title + body */}
-      <div className="px-5 pt-2 text-[15px] leading-snug">
-        <span className="font-semibold mr-1.5">{handle}</span>
-        {campaign.title && <span className="text-foreground/90">{campaign.title}</span>}
-      </div>
-      {body && (
-        <div className="px-5 pt-2 text-[14px] leading-relaxed text-foreground/85 whitespace-pre-wrap">
-          {body}
-        </div>
-      )}
-
-      {/* Stats strip */}
-      <div className="mx-4 mt-5 rounded-2xl border border-foreground/10 bg-foreground/[0.03] px-4 py-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-        <span className="flex items-center gap-1.5"><Eye size={12} /> {campaign.impressions.toLocaleString()}</span>
-        <span className="flex items-center gap-1.5"><MousePointerClick size={12} /> {campaign.clicks.toLocaleString()}</span>
-        <span>{new Date(campaign.starts_at).toLocaleDateString("ro-RO", { day: "2-digit", month: "short" })}{campaign.ends_at ? ` – ${new Date(campaign.ends_at).toLocaleDateString("ro-RO", { day: "2-digit", month: "short" })}` : ""}</span>
-      </div>
-
-      <div className="pt-6 text-center font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground/60">
-        Promovat de {handle}
+        {/* Mandatory health warning */}
+        <p className="text-[7px] text-zinc-500 text-center uppercase tracking-[0.22em] font-black pt-1">
+          Alcoolul dăunează grav sănătății
+        </p>
       </div>
     </div>
   );
