@@ -456,6 +456,7 @@ function CampaignCreateModal({ businessId, plan, onClose, onCreated }: {
   const [videoUrl, setVideoUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [eventAt, setEventAt] = useState(""); // datetime-local
+  const [scheduleAt, setScheduleAt] = useState(""); // datetime-local — when the ad goes live
   const [ctaUrl, setCtaUrl] = useState("");
   const [ctaText, setCtaText] = useState("Vezi detalii");
   const [busy, setBusy] = useState(false);
