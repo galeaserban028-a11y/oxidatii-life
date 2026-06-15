@@ -242,31 +242,6 @@ function PromoPage() {
           </button>
         </div>
 
-        {/* Metrics footer */}
-        <div className="flex items-center justify-between border-t border-white/5 pt-3">
-          <div className="flex gap-5">
-            <div className="flex flex-col">
-              <span className="text-base font-black text-white leading-none tabular-nums">
-                {(campaign.impressions ?? 0).toLocaleString("ro-RO")}
-              </span>
-              <span className="text-[8px] uppercase tracking-[0.18em] text-zinc-500 font-bold mt-1">Afișări</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-base font-black text-white leading-none tabular-nums">
-                {(campaign.clicks ?? 0).toLocaleString("ro-RO")}
-              </span>
-              <span className="text-[8px] uppercase tracking-[0.18em] text-zinc-500 font-bold mt-1">Click-uri</span>
-            </div>
-            {(likeState?.count ?? 0) > 0 && (
-              <div className="flex flex-col">
-                <span className="text-base font-black text-white leading-none tabular-nums">
-                  {(likeState?.count ?? 0).toLocaleString("ro-RO")}
-                </span>
-                <span className="text-[8px] uppercase tracking-[0.18em] text-zinc-500 font-bold mt-1">Aprecieri</span>
-              </div>
-            )}
-          </div>
-        </div>
 
         {/* Mandatory health warning */}
         <p className="text-[7px] text-zinc-500 text-center uppercase tracking-[0.22em] font-black pt-1">
