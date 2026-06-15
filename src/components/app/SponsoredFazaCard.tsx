@@ -82,6 +82,20 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
   const likes = likeState?.count ?? 0;
   const handle = ad.brand ?? "promovat";
   const [busy, setBusy] = useState(false);
+  const trackEvent = useServerFn(recordCampaignEvent);
+
+  // Log a single real impression per mount once the user is signed in.
+  const loggedRef = useRef(false);
+  useEffect(() => {
+    if (!user?.id || loggedRef.current) return;
+    loggedRef.current = true;
+    trackEvent({ data: { campaignId: ad.id, eventType: "impression" } }).catch(() => {});
+  }, [user?.id, ad.id, trackEvent]);
+
+  const logClick = () => {
+    if (!user?.id) return;
+    trackEvent({ data: { campaignId: ad.id, eventType: "click" } }).catch(() => {});
+  };
 
   const toggleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -97,7 +111,10 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
     setBusy(false);
   };
 
-  const openDetail = () => navigate({ to: "/app/promo/$id", params: { id: ad.id } });
+  const openDetail = () => {
+    logClick();
+    navigate({ to: "/app/promo/$id", params: { id: ad.id } });
+  };
 
   return (
     <article
