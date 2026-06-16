@@ -18,6 +18,7 @@ import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
 import { PremiumExtrasCard } from "@/components/app/PremiumExtrasCard";
+import { StreakCard } from "@/components/app/StreakCard";
 
 
 export const Route = createFileRoute("/app/me")({
@@ -424,6 +425,7 @@ function MePage() {
         )}
 
         <div className="mt-8 space-y-3">
+          <StreakCard />
           <ProfileBoostCard />
           <PremiumExtrasCard />
         </div>
