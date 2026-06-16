@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Flame, MapPin, Users, Plus } from "lucide-react";
 
 import { PromoTakeover } from "@/components/app/PromoTakeover";
+import { NightWrapCard } from "@/components/app/NightWrapCard";
+import { getOrCreateNightWrap } from "@/lib/night-wrap.functions";
 
 type FeedItem = {
   id: string;
@@ -88,6 +91,8 @@ function AppFeed() {
       style={{ fontFamily: "'Work Sans', system-ui, sans-serif" }}
     >
       <PromoTakeover />
+
+      <NightWrapSection />
 
       {/* Status header */}
       <header className="space-y-7">
@@ -192,6 +197,27 @@ function AppFeed() {
     </div>
   );
 }
+
+function NightWrapSection() {
+  const { user } = useAuth();
+  const generateWrap = useServerFn(getOrCreateNightWrap);
+  const { data } = useQuery({
+    queryKey: ["night-wrap", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const hour = new Date().getHours();
+      // only after 6 AM local
+      if (hour < 6) return null;
+      const result = await generateWrap({ data: {} });
+      return "wrap" in result ? result.wrap : null;
+    },
+    staleTime: 60 * 60 * 1000,
+  });
+  if (!data) return null;
+  return <NightWrapCard wrap={data} />;
+}
+
+
 
 function LiveSpritzStrip() {
   const { data: parties = [] } = useQuery({
