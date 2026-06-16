@@ -5,6 +5,9 @@ import { useAuth } from "@/lib/auth";
 import { Flame, MapPin, Users, Plus } from "lucide-react";
 
 import { PromoTakeover } from "@/components/app/PromoTakeover";
+import { TonightStrip } from "@/components/app/TonightStrip";
+import { DailySpinCard } from "@/components/app/DailySpinCard";
+import { StreakCard } from "@/components/app/StreakCard";
 
 type FeedItem = {
   id: string;
@@ -163,6 +166,13 @@ function AppFeed() {
           </Link>
         </div>
       </header>
+
+      <TonightStrip />
+
+      <div className="grid grid-cols-1 gap-3">
+        <DailySpinCard />
+        <StreakCard compact />
+      </div>
 
       <LiveSpritzStrip />
 
