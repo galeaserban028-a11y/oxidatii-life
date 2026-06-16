@@ -151,7 +151,7 @@ function InboxPage() {
           </button>
         </div>
       ) : (
-        <div className="space-y-0.5">
+        <div className="space-y-1 -mx-5">
           {filtered.map((c: any) => {
             const isDM = c.kind === "dm";
             const title = isDM
@@ -166,36 +166,50 @@ function InboxPage() {
                 key={c.id}
                 to="/app/chat/$id"
                 params={{ id: c.id }}
-                className="flex items-center gap-3 p-2.5 -mx-1 rounded-2xl active:bg-foreground/[0.04] transition"
+                className={`relative flex items-center gap-4 px-5 py-4 border-y transition active:bg-zinc-900/60 ${
+                  c.unread ? "bg-zinc-900/40 border-zinc-800/50" : "border-transparent hover:bg-zinc-900/20"
+                }`}
               >
+                {c.unread && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-lime-400 rounded-r-full shadow-[0_0_10px_#a3e635]" />
+                )}
                 <div className="relative shrink-0">
-                  <div className={`h-14 w-14 rounded-full ${c.unread ? "p-[2px] bg-[conic-gradient(from_140deg,theme(colors.neon-crimson),theme(colors.neon-purple),theme(colors.neon-green),theme(colors.neon-crimson))]" : ""}`}>
+                  <div className="h-14 w-14 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden">
                     {isDM && c.others[0]?.avatar_url ? (
-                      <img src={c.others[0].avatar_url} alt="" className={`h-full w-full rounded-full object-cover ${c.unread ? "border-2 border-background" : ""}`} />
+                      <img src={c.others[0].avatar_url} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      <div className={`h-full w-full rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display font-black text-white text-lg ${c.unread ? "border-2 border-background" : ""}`}>
+                      <div className="h-full w-full bg-gradient-to-br from-fuchsia-600 to-rose-600 flex items-center justify-center font-display font-black text-white text-lg">
                         {isDM ? initial : <Users size={20} />}
                       </div>
                     )}
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className={`font-display truncate text-[15px] ${c.unread ? "font-black text-foreground" : "font-bold text-foreground"}`}>{title}</div>
-                    <div className={`text-[11px] shrink-0 tabular-nums ${c.unread ? "text-neon-purple font-bold" : "text-muted-foreground"}`}>
+                  <div className="flex justify-between items-baseline gap-2 mb-1">
+                    <h3 className={`font-display uppercase tracking-tight truncate text-sm ${c.unread ? "font-black text-white" : "font-bold text-zinc-300"}`}>{title}</h3>
+                    <span className={`text-[10px] font-bold shrink-0 tabular-nums uppercase ${c.unread ? "text-lime-400" : "text-zinc-600"}`}>
                       {timeAgo(c.last?.created_at ?? c.last_message_at)}
-                    </div>
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className={`text-[13px] truncate ${c.unread ? "text-foreground" : "text-muted-foreground"}`}>{subtitle}</div>
-                    {c.unread && <span className="ml-auto h-2 w-2 rounded-full bg-neon-purple shrink-0" />}
-                  </div>
+                  <p className={`text-xs truncate ${c.unread ? "text-zinc-300 font-medium" : "text-zinc-500"}`}>
+                    {c.last && c.last.sender_id === user?.id && <span className="text-zinc-600 italic mr-1">Tu:</span>}
+                    {c.last ? c.last.body : subtitle}
+                  </p>
                 </div>
               </Link>
             );
           })}
         </div>
       )}
+
+      {/* Floating new-message FAB */}
+      <button
+        onClick={() => setShowNew(true)}
+        aria-label="mesaj nou"
+        className="fixed bottom-28 right-5 w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-600 to-rose-600 flex items-center justify-center shadow-[0_0_30px_rgba(225,29,72,0.45)] border border-white/20 rotate-3 active:scale-95 transition-transform z-40"
+      >
+        <PenSquare size={26} className="-rotate-3 text-white" strokeWidth={2.5} />
+      </button>
 
       {showNew && (
         <NewMessageSheet
