@@ -11,14 +11,14 @@ export const Route = createFileRoute("/app/inbox")({
   component: InboxPage,
 });
 
-type Tab = "toate" | "dm" | "grup";
+type Tab = "pentru-tine" | "prieteni";
 
 function InboxPage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const qc = useQueryClient();
   const [showNew, setShowNew] = useState(false);
-  const [tab, setTab] = useState<Tab>("toate");
+  const [tab, setTab] = useState<Tab>("pentru-tine");
 
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["inbox", user?.id],
