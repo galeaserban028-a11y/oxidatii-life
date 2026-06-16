@@ -240,20 +240,22 @@ function FriendsRow({ onPick }: { onPick: (id: string) => void }) {
   });
   if (!friends.length) return null;
   return (
-    <div className="-mx-4 px-4 overflow-x-auto scrollbar-none">
-      <div className="flex gap-3 pb-1">
+    <div className="-mx-5 px-5 overflow-x-auto scrollbar-none">
+      <div className="flex gap-4 pb-1">
         {friends.slice(0, 20).map((f: any) => (
           <button
             key={f.id}
             onClick={() => onPick(f.id)}
-            className="flex flex-col items-center gap-1.5 w-[68px] shrink-0 active:scale-95 transition"
+            className="flex flex-col items-center gap-2 w-[72px] shrink-0 active:scale-95 transition"
           >
-            <div className="h-14 w-14 rounded-full p-[2px] bg-[conic-gradient(from_140deg,theme(colors.neon-crimson),theme(colors.neon-purple),theme(colors.neon-green),theme(colors.neon-crimson))]">
-              {f.avatar_url
-                ? <img src={f.avatar_url} alt="" className="h-full w-full rounded-full object-cover border-2 border-background" />
-                : <div className="h-full w-full rounded-full border-2 border-background bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display font-black text-white">{(f.handle ?? "?")[0]?.toUpperCase()}</div>}
+            <div className="h-16 w-16 rounded-full p-[2px] bg-gradient-to-tr from-lime-400 to-fuchsia-600">
+              <div className="h-full w-full rounded-full border-2 border-black overflow-hidden bg-zinc-800">
+                {f.avatar_url
+                  ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" />
+                  : <div className="h-full w-full bg-gradient-to-br from-fuchsia-600 to-rose-600 flex items-center justify-center font-display font-black text-white">{(f.handle ?? "?")[0]?.toUpperCase()}</div>}
+              </div>
             </div>
-            <div className="text-[10px] truncate w-full text-center text-muted-foreground">@{f.handle ?? f.display_name ?? "?"}</div>
+            <div className="text-[9px] font-bold uppercase tracking-tighter truncate w-full text-center text-zinc-400">@{f.handle ?? f.display_name ?? "?"}</div>
           </button>
         ))}
       </div>
