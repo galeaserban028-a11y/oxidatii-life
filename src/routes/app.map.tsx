@@ -461,32 +461,39 @@ function MapPage() {
   const instrument = { fontFamily: '"Instrument Serif", serif', letterSpacing: "-0.02em" } as const;
 
   return (
-    <div className="pb-4">
-      {/* Sticky app-style header */}
-      <header className="sticky top-0 z-30 -mx-0 px-5 pt-8 pb-6 bg-background/85 backdrop-blur-xl border-b border-foreground/5">
+    <div className="pb-32 bg-[#050505] min-h-screen text-white">
+      {/* Sticky header — cinema bento */}
+      <header className="sticky top-0 z-30 px-4 pt-5 pb-3 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-end justify-between gap-3">
           <div>
-            <h1 className="font-display font-black text-2xl tracking-tight lowercase">hartă</h1>
-            <div className="mt-2 flex items-center gap-3 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-zinc-500">
-                <MapPin size={10} /> {venues.length} locuri
+            <h1 className="text-[34px] leading-none tracking-tight" style={instrument}>
+              HARTĂ<span className="text-[#f7931e]">.</span>
+            </h1>
+            <div className="mt-1.5 flex items-center gap-3 flex-wrap">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin size={10} className="text-white/40" />
+                <span className="text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase">{venues.length} locuri</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-neon-green">
-                <span className="h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse" /> {friendPins.length} live
+              <span className="inline-flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff6b35] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff6b35]" />
+                </span>
+                <span className="text-[10px] font-bold tracking-[0.18em] text-[#ff6b35] uppercase">{friendPins.length} live</span>
               </span>
             </div>
           </div>
           <button
             onClick={requestGeo}
             aria-label="Locația mea"
-            className={`h-11 w-11 grid place-items-center rounded-2xl border ${geo ? "border-neon-green/40 text-neon-green bg-neon-green/10" : "border-white/5 text-zinc-400 bg-zinc-900/30"} backdrop-blur active:scale-95 transition`}
+            className={`h-10 w-10 grid place-items-center rounded-full border backdrop-blur active:scale-95 transition ${geo ? "border-transparent text-white bg-gradient-to-tr from-[#ff6b35] to-[#e84393] shadow-lg shadow-[#ff6b35]/30" : "border-white/10 text-white/70 bg-white/5"}`}
           >
             <Navigation size={16} />
           </button>
         </div>
       </header>
 
-      <div className="px-5 pt-6 space-y-5">
+      <div className="px-4 pt-4 space-y-4">
         <VenueFilters
           query={query} setQuery={setQuery}
           type={type} setType={setType}
@@ -499,22 +506,75 @@ function MapPage() {
           count={filtered.length}
         />
 
-        {/* Quick country chips strip */}
-        <div className="-mx-5 px-5 overflow-x-auto scrollbar-none">
+        {/* Country chips */}
+        <div className="-mx-4 px-4 overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-2 pb-1">
             <button
               onClick={() => { setCountry("all"); setCityId("all"); }}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === "all" ? "bg-neon-crimson text-background border-neon-crimson" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"}`}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === "all" ? "bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white border-transparent shadow-lg shadow-[#ff6b35]/25" : "bg-white/5 border-white/10 text-white/60"}`}
             >🌍 toate</button>
             {countries.map(c => (
               <button
                 key={c.code}
                 onClick={() => { setCountry(c.code); setCityId("all"); }}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === c.code ? "bg-neon-crimson text-background border-neon-crimson" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"}`}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === c.code ? "bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white border-transparent shadow-lg shadow-[#ff6b35]/25" : "bg-white/5 border-white/10 text-white/60"}`}
               >{c.label}<span className="opacity-60 ml-1">{c.count}</span></button>
             ))}
           </div>
         </div>
+
+        {/* Hotspots live rail */}
+        {hotspots.length > 0 && (
+          <div className="-mx-4">
+            <div className="px-4 pb-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-base italic text-[#f7931e]" style={instrument}>Hotspots</span>
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#e84393] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#e84393]" />
+                </span>
+                <span className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-bold">acum</span>
+              </div>
+              <span className="text-[10px] text-white/30 uppercase tracking-wider">{hotspots.length} locuri</span>
+            </div>
+            <div className="px-4 overflow-x-auto no-scrollbar">
+              <div className="flex gap-2 pb-1">
+                {hotspots.map(({ venue, count }) => {
+                  const heat = Math.min(1, count / 8);
+                  return (
+                    <button
+                      key={venue.id}
+                      onClick={() => {
+                        if (venue.city_id) setCityId(venue.city_id);
+                        if (venue.lat != null && venue.lng != null) {
+                          setFocusCity({ lat: Number(venue.lat), lng: Number(venue.lng), zoom: 15 });
+                        }
+                      }}
+                      className="shrink-0 relative rounded-2xl border border-white/10 bg-[#111] overflow-hidden p-3 w-[160px] text-left active:scale-95 transition"
+                    >
+                      <div
+                        className="absolute inset-x-0 top-0 h-12 pointer-events-none"
+                        style={{ background: `linear-gradient(180deg, rgba(255,107,53,${0.15 + heat * 0.35}), transparent)` }}
+                      />
+                      <div className="relative flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[11px] font-bold text-white truncate">{venue.name}</div>
+                          <div className="text-[9px] uppercase tracking-widest text-white/40 mt-0.5 truncate">
+                            {cityMap.get(venue.city_id)?.name ?? "—"}
+                          </div>
+                        </div>
+                        <div className="shrink-0 backdrop-blur-xl bg-black/40 border border-white/10 rounded-full px-2 py-0.5 flex items-center gap-0.5">
+                          <span className="text-[10px] font-bold text-[#ff6b35]">{count}</span>
+                          <span className="text-[9px]">🔥</span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Live OFF banner — when user hasn't consented to GPS or is in ghost mode,
             their pin never broadcasts. One-tap fix right here. */}
