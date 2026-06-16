@@ -220,11 +220,12 @@ function FazePage() {
 
   const sortedItems = (() => {
     if (!data) return [];
-    const arr = [...data.items];
-    if (tab === "recent") arr.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-    else if (tab === "top") arr.sort((a, b) => pseudoCount(b.id, 7, 2000) - pseudoCount(a.id, 7, 2000));
-    else if (tab === "legendare") return arr.filter((it) => pickBadge(it.id).key === "legendar");
-    return arr;
+    if (tab === "prieteni") {
+      if (!friendIds.length) return [];
+      const friendSet = new Set(friendIds);
+      return data.items.filter((it) => friendSet.has(it.user_id));
+    }
+    return [...data.items];
   })();
 
   return (
