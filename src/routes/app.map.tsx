@@ -433,33 +433,67 @@ function MapPage() {
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
   const [tab, setTab] = useState<"locatii" | "live">("locatii");
 
+  // Hotspots — top venues by live check-ins right now (public, not just friends)
+  const { data: hotspots = [] } = useQuery({
+    queryKey: ["map-hotspots"],
+    queryFn: async () => {
+      const nowIso = new Date().toISOString();
+      const { data } = await supabase
+        .from("check_ins")
+        .select("venue_id, venues(id, name, lat, lng, city_id)")
+        .gt("expires_at", nowIso)
+        .not("venue_id", "is", null)
+        .limit(400);
+      const counts = new Map<string, { venue: any; count: number }>();
+      for (const c of (data ?? []) as any[]) {
+        if (!c.venues) continue;
+        const cur = counts.get(c.venue_id);
+        if (cur) cur.count += 1;
+        else counts.set(c.venue_id, { venue: c.venues, count: 1 });
+      }
+      return Array.from(counts.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
+    },
+    refetchInterval: 60_000,
+  });
+
+  const instrument = { fontFamily: '"Instrument Serif", serif', letterSpacing: "-0.02em" } as const;
+
   return (
-    <div className="pb-4">
-      {/* Sticky app-style header */}
-      <header className="sticky top-0 z-30 -mx-0 px-5 pt-8 pb-6 bg-background/85 backdrop-blur-xl border-b border-foreground/5">
+    <div className="pb-32 bg-[#050505] min-h-screen text-white">
+      {/* Sticky header — cinema bento */}
+      <header className="sticky top-0 z-30 px-4 pt-5 pb-3 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-end justify-between gap-3">
           <div>
-            <h1 className="font-display font-black text-2xl tracking-tight lowercase">hartă</h1>
-            <div className="mt-2 flex items-center gap-3 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-zinc-500">
-                <MapPin size={10} /> {venues.length} locuri
+            <h1 className="text-[34px] leading-none tracking-tight" style={instrument}>
+              HARTĂ<span className="text-[#f7931e]">.</span>
+            </h1>
+            <div className="mt-1.5 flex items-center gap-3 flex-wrap">
+              <span className="inline-flex items-center gap-1.5">
+                <MapPin size={10} className="text-white/40" />
+                <span className="text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase">{venues.length} locuri</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-neon-green">
-                <span className="h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse" /> {friendPins.length} live
+              <span className="inline-flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff6b35] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff6b35]" />
+                </span>
+                <span className="text-[10px] font-bold tracking-[0.18em] text-[#ff6b35] uppercase">{friendPins.length} live</span>
               </span>
             </div>
           </div>
           <button
             onClick={requestGeo}
             aria-label="Locația mea"
-            className={`h-11 w-11 grid place-items-center rounded-2xl border ${geo ? "border-neon-green/40 text-neon-green bg-neon-green/10" : "border-white/5 text-zinc-400 bg-zinc-900/30"} backdrop-blur active:scale-95 transition`}
+            className={`h-10 w-10 grid place-items-center rounded-full border backdrop-blur active:scale-95 transition ${geo ? "border-transparent text-white bg-gradient-to-tr from-[#ff6b35] to-[#e84393] shadow-lg shadow-[#ff6b35]/30" : "border-white/10 text-white/70 bg-white/5"}`}
           >
             <Navigation size={16} />
           </button>
         </div>
       </header>
 
-      <div className="px-5 pt-6 space-y-5">
+      <div className="px-4 pt-4 space-y-4">
         <VenueFilters
           query={query} setQuery={setQuery}
           type={type} setType={setType}
@@ -472,22 +506,75 @@ function MapPage() {
           count={filtered.length}
         />
 
-        {/* Quick country chips strip */}
-        <div className="-mx-5 px-5 overflow-x-auto scrollbar-none">
+        {/* Country chips */}
+        <div className="-mx-4 px-4 overflow-x-auto no-scrollbar">
           <div className="flex items-center gap-2 pb-1">
             <button
               onClick={() => { setCountry("all"); setCityId("all"); }}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === "all" ? "bg-neon-crimson text-background border-neon-crimson" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"}`}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === "all" ? "bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white border-transparent shadow-lg shadow-[#ff6b35]/25" : "bg-white/5 border-white/10 text-white/60"}`}
             >🌍 toate</button>
             {countries.map(c => (
               <button
                 key={c.code}
                 onClick={() => { setCountry(c.code); setCityId("all"); }}
-                className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === c.code ? "bg-neon-crimson text-background border-neon-crimson" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"}`}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === c.code ? "bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white border-transparent shadow-lg shadow-[#ff6b35]/25" : "bg-white/5 border-white/10 text-white/60"}`}
               >{c.label}<span className="opacity-60 ml-1">{c.count}</span></button>
             ))}
           </div>
         </div>
+
+        {/* Hotspots live rail */}
+        {hotspots.length > 0 && (
+          <div className="-mx-4">
+            <div className="px-4 pb-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-base italic text-[#f7931e]" style={instrument}>Hotspots</span>
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#e84393] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#e84393]" />
+                </span>
+                <span className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-bold">acum</span>
+              </div>
+              <span className="text-[10px] text-white/30 uppercase tracking-wider">{hotspots.length} locuri</span>
+            </div>
+            <div className="px-4 overflow-x-auto no-scrollbar">
+              <div className="flex gap-2 pb-1">
+                {hotspots.map(({ venue, count }) => {
+                  const heat = Math.min(1, count / 8);
+                  return (
+                    <button
+                      key={venue.id}
+                      onClick={() => {
+                        if (venue.city_id) setCityId(venue.city_id);
+                        if (venue.lat != null && venue.lng != null) {
+                          setFocusCity({ lat: Number(venue.lat), lng: Number(venue.lng), zoom: 15 });
+                        }
+                      }}
+                      className="shrink-0 relative rounded-2xl border border-white/10 bg-[#111] overflow-hidden p-3 w-[160px] text-left active:scale-95 transition"
+                    >
+                      <div
+                        className="absolute inset-x-0 top-0 h-12 pointer-events-none"
+                        style={{ background: `linear-gradient(180deg, rgba(255,107,53,${0.15 + heat * 0.35}), transparent)` }}
+                      />
+                      <div className="relative flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[11px] font-bold text-white truncate">{venue.name}</div>
+                          <div className="text-[9px] uppercase tracking-widest text-white/40 mt-0.5 truncate">
+                            {cityMap.get(venue.city_id)?.name ?? "—"}
+                          </div>
+                        </div>
+                        <div className="shrink-0 backdrop-blur-xl bg-black/40 border border-white/10 rounded-full px-2 py-0.5 flex items-center gap-0.5">
+                          <span className="text-[10px] font-bold text-[#ff6b35]">{count}</span>
+                          <span className="text-[9px]">🔥</span>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Live OFF banner — when user hasn't consented to GPS or is in ghost mode,
             their pin never broadcasts. One-tap fix right here. */}
@@ -527,28 +614,28 @@ function MapPage() {
                 { enableHighAccuracy: true, timeout: 8000 },
               );
             }}
-            className="w-full flex items-center gap-3 rounded-2xl border border-neon-green/40 bg-neon-green/10 px-4 py-3 text-left active:scale-[0.99] transition"
+            className="w-full flex items-center gap-3 rounded-2xl border border-[#ff6b35]/40 bg-gradient-to-r from-[#ff6b35]/15 to-[#e84393]/10 px-4 py-3 text-left active:scale-[0.99] transition"
           >
-            <span className="h-9 w-9 grid place-items-center rounded-xl bg-neon-green/20 border border-neon-green/40 shrink-0">
-              <Navigation size={16} className="text-neon-green" />
+            <span className="h-9 w-9 grid place-items-center rounded-xl bg-gradient-to-tr from-[#ff6b35] to-[#e84393] shrink-0 shadow-lg shadow-[#ff6b35]/30">
+              <Navigation size={16} className="text-white" />
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block font-display font-black uppercase text-sm leading-tight text-neon-green">
+              <span className="block uppercase text-sm leading-tight text-white font-bold tracking-tight">
                 {privacyQ.data?.settings?.map_ghost ? "ești în ghost mode" : "live-ul e oprit"}
               </span>
-              <span className="block font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
+              <span className="block text-[10px] uppercase tracking-[0.2em] text-white/50 mt-0.5 font-bold">
                 apasă ca să apari pe hartă pentru prieteni
               </span>
             </span>
-            <span className="font-display text-neon-green text-xl">→</span>
+            <span className="text-[#ff6b35] text-xl font-bold">→</span>
           </button>
         )}
 
-        {/* Map block */}
-        <div className="relative rounded-2xl overflow-hidden border border-border bg-foreground/5">
+        {/* Map block — cinema bento card */}
+        <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#111] shadow-[0_4px_24px_-12px_rgba(0,0,0,0.8)]">
 
           {isLoading ? (
-            <div className="aspect-[5/4] animate-pulse" />
+            <div className="aspect-[5/4] animate-pulse bg-white/5" />
           ) : (
             <RomaniaMap3D
               cities={citiesScoped}
@@ -564,23 +651,23 @@ function MapPage() {
             />
           )}
           {activeCity && (
-            <div className="absolute top-2 left-2 right-2 z-10 flex items-center gap-2 rounded-xl bg-background/90 backdrop-blur border border-neon-purple/40 px-2.5 py-1.5">
-              <MapPin size={12} className="text-neon-purple shrink-0" />
+            <div className="absolute top-3 left-3 right-3 z-10 flex items-center gap-2 rounded-2xl backdrop-blur-xl bg-black/50 border border-white/10 px-3 py-2">
+              <MapPin size={12} className="text-[#f7931e] shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="font-mono text-[8px] uppercase tracking-widest text-neon-purple">filtru</div>
-                <div className="font-display font-bold text-xs truncate">{activeCity.name}</div>
+                <div className="text-[8px] uppercase tracking-[0.22em] text-[#f7931e] font-bold">filtru</div>
+                <div className="font-bold text-xs truncate text-white">{activeCity.name}</div>
               </div>
               <Link
                 to="/app/city/$slug"
                 params={{ slug: activeCity.slug }}
-                className="font-mono text-[9px] uppercase tracking-widest text-neon-green border border-neon-green/40 rounded-md px-1.5 py-0.5"
+                className="text-[9px] uppercase tracking-widest text-[#ff6b35] border border-[#ff6b35]/40 rounded-full px-2 py-0.5 font-bold"
               >
                 străzi →
               </Link>
               <button
                 onClick={() => { setCityId("all"); setFocusCity(null); }}
                 aria-label="Șterge filtru"
-                className="h-6 w-6 grid place-items-center rounded-md border border-border text-muted-foreground"
+                className="h-6 w-6 grid place-items-center rounded-full border border-white/15 text-white/60"
               >
                 <X size={11} />
               </button>
@@ -595,13 +682,13 @@ function MapPage() {
               onClick={() => setSettingsOpen(true)}
               aria-label="Setări hartă"
               style={{
-                top: "calc(env(safe-area-inset-top) + 0.5rem)",
-                right: "calc(env(safe-area-inset-right) + 0.5rem)",
+                top: "calc(env(safe-area-inset-top) + 0.75rem)",
+                right: "calc(env(safe-area-inset-right) + 0.75rem)",
               }}
-              className="absolute z-20 h-9 w-9 grid place-items-center rounded-full bg-black/70 backdrop-blur border border-foreground/15 text-foreground hover:bg-black/85 active:scale-95 transition"
+              className="absolute z-20 h-9 w-9 grid place-items-center rounded-full backdrop-blur-xl bg-black/50 border border-white/10 text-white/80 active:scale-95 transition"
             >
               {privacyQ.data?.settings?.map_ghost ? (
-                <Ghost size={15} className="text-fuchsia-400" />
+                <Ghost size={15} className="text-[#e84393]" />
               ) : (
                 <Settings size={15} />
               )}
@@ -614,50 +701,48 @@ function MapPage() {
 
         <MapSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
 
-
-
         <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
 
-        {/* Friends CTA — always visible under "add venue" */}
+        {/* Friends CTA */}
         <Link
           to="/app/friends"
-          className="group block rounded-2xl p-[1.5px] bg-gradient-to-r from-neon-green via-neon-purple to-neon-crimson active:scale-[0.99] transition"
+          className="group block rounded-2xl p-[1.5px] bg-gradient-to-r from-[#ff6b35] via-[#f7931e] to-[#e84393] active:scale-[0.99] transition shadow-lg shadow-[#ff6b35]/20"
         >
-          <div className="rounded-[14px] bg-background/95 px-3.5 py-3 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-neon-green/15 border border-neon-green/40 grid place-items-center shrink-0">
-              <UserPlus className="text-neon-green" size={18} strokeWidth={2.6} />
+          <div className="rounded-[14px] bg-[#0a0a0a] px-3.5 py-3 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#ff6b35] to-[#e84393] grid place-items-center shrink-0 shadow-lg shadow-[#ff6b35]/30">
+              <UserPlus className="text-white" size={18} strokeWidth={2.6} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-display font-black uppercase text-sm leading-tight">cheamă oxidații</div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
+              <div className="uppercase text-sm leading-tight text-white font-bold tracking-tight">cheamă oxidații</div>
+              <div className="text-[9px] uppercase tracking-[0.2em] text-white/50 mt-0.5 font-bold">
                 adaugă prieteni → vezi-i pe hartă
               </div>
             </div>
-            <span className="font-display text-neon-green text-xl">→</span>
+            <span className="text-[#ff6b35] text-xl font-bold">→</span>
           </div>
         </Link>
 
 
         {/* Tabs */}
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-foreground/5 border border-border">
+        <div className="flex items-center gap-1 p-1 rounded-full bg-white/5 border border-white/10">
           <button
             onClick={() => setTab("locatii")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest transition ${tab === "locatii" ? "bg-background text-foreground shadow" : "text-muted-foreground"}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold transition ${tab === "locatii" ? "bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white shadow-lg shadow-[#ff6b35]/25" : "text-white/50"}`}
           >
             <List size={11} /> locații · {filtered.length}
           </button>
           <button
             onClick={() => setTab("live")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-mono text-[10px] uppercase tracking-widest transition ${tab === "live" ? "bg-background text-neon-green shadow" : "text-muted-foreground"}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold transition ${tab === "live" ? "bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white shadow-lg shadow-[#ff6b35]/25" : "text-white/50"}`}
           >
             <Users size={11} /> live · {friendPins.length}
           </button>
         </div>
 
         {tab === "live" && (
-          <section className="space-y-1.5">
+          <section className="space-y-2">
             {friendPins.length === 0 ? (
-              <div className="py-10 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+              <div className="py-10 text-center text-[11px] uppercase tracking-widest text-white/40 font-bold">
                 niciun oxidat live acum.
               </div>
             ) : friendPins.map((f) => (
@@ -665,20 +750,20 @@ function MapPage() {
                 key={f.user_id}
                 to="/app/user/$id"
                 params={{ id: f.user_id }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04] border border-neon-green/20 active:scale-[0.99] transition"
+                className="flex items-center gap-3 p-3 rounded-2xl bg-[#111] border border-white/10 active:scale-[0.99] transition"
               >
-                <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-sm shrink-0">
+                <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-[#ff6b35] to-[#e84393] flex items-center justify-center text-sm font-bold shrink-0 text-white">
                   {f.avatar_url ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" /> : (f.handle ?? "?")[0]?.toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-display text-sm truncate">@{f.handle ?? f.display_name}</div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
+                  <div className="text-sm font-semibold truncate text-white">@{f.handle ?? f.display_name}</div>
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate font-bold mt-0.5">
                     📍 {f.venue_name ?? "în oraș"}
                   </div>
                 </div>
                 <span className="relative inline-flex h-2 w-2">
-                  <span className="absolute inset-0 rounded-full bg-neon-green animate-ping opacity-75" />
-                  <span className="relative h-2 w-2 rounded-full bg-neon-green" />
+                  <span className="absolute inset-0 rounded-full bg-[#ff6b35] animate-ping opacity-75" />
+                  <span className="relative h-2 w-2 rounded-full bg-[#ff6b35]" />
                 </span>
               </Link>
             ))}
@@ -686,14 +771,14 @@ function MapPage() {
         )}
 
         {tab === "locatii" && (
-          <section className="space-y-1.5">
+          <section className="space-y-2">
             {geo && (
-              <div className="font-mono text-[9px] uppercase tracking-widest text-neon-green flex items-center gap-1">
+              <div className="text-[9px] uppercase tracking-[0.18em] text-[#ff6b35] flex items-center gap-1 font-bold">
                 <Navigation size={10} /> sortat după distanță
               </div>
             )}
             {filtered.length === 0 ? (
-              <div className="py-10 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+              <div className="py-10 text-center text-[11px] uppercase tracking-widest text-white/40 font-bold">
                 zero locații. dă reset la filtre.
               </div>
             ) : (
@@ -705,30 +790,30 @@ function MapPage() {
                   const openState = isOpenNow(v.opening_hours);
                   const nextOpen = openState === false ? nextOpenLabel(v.opening_hours) : null;
                   return (
-                    <div key={v.id} className="flex items-center gap-3 p-3 rounded-xl bg-foreground/5 border border-foreground/10">
-                      <div className="h-10 w-10 rounded-lg bg-neon-green/10 border border-neon-green/30 flex items-center justify-center shrink-0 text-neon-green">
+                    <div key={v.id} className="flex items-center gap-3 p-3 rounded-2xl bg-[#111] border border-white/10">
+                      <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#ff6b35]/20 to-[#e84393]/10 border border-[#ff6b35]/30 flex items-center justify-center shrink-0 text-[#ff6b35]">
                         <Beer size={16} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <div className="font-display font-bold text-sm truncate">{v.name}</div>
+                          <div className="font-semibold text-sm truncate text-white">{v.name}</div>
                           {openState === true && (
-                            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-green/15 border border-neon-green/40 font-mono text-[8px] uppercase tracking-wider text-neon-green">
-                              <span className="h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse" /> open
+                            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#ff6b35]/15 border border-[#ff6b35]/40 text-[8px] uppercase tracking-wider text-[#ff6b35] font-bold">
+                              <span className="h-1.5 w-1.5 rounded-full bg-[#ff6b35] animate-pulse" /> open
                             </span>
                           )}
                           {openState === false && (
-                            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon-crimson/15 border border-neon-crimson/40 font-mono text-[8px] uppercase tracking-wider text-neon-crimson">
+                            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#e84393]/15 border border-[#e84393]/40 text-[8px] uppercase tracking-wider text-[#e84393] font-bold">
                               <Clock size={8} /> {nextOpen ? nextOpen : "închis"}
                             </span>
                           )}
                         </div>
-                        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate flex items-center gap-1">
+                        <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate flex items-center gap-1 font-bold mt-0.5">
                           <MapPin size={9} /> {city?.name ?? "?"}{v.address ? ` · ${v.address}` : ""}
                         </div>
                       </div>
                       {dist != null && (
-                        <div className="font-mono text-[10px] uppercase tracking-widest text-neon-purple shrink-0">
+                        <div className="text-[10px] uppercase tracking-widest text-[#f7931e] shrink-0 font-bold">
                           {dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`}
                         </div>
                       )}
@@ -738,7 +823,7 @@ function MapPage() {
                 {visible < filtered.length && (
                   <button
                     onClick={() => setVisible(v => v + 60)}
-                    className="w-full mt-2 py-3 rounded-xl border border-neon-green/40 text-neon-green font-mono text-[11px] uppercase tracking-widest active:scale-[0.98]"
+                    className="w-full mt-2 py-3 rounded-2xl border border-[#ff6b35]/40 text-[#ff6b35] text-[11px] uppercase tracking-widest active:scale-[0.98] font-bold"
                   >
                     + arată încă {Math.min(60, filtered.length - visible)} (din {filtered.length - visible})
                   </button>
