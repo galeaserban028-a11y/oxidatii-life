@@ -193,4 +193,12 @@ export const getOrCreateNightWrap = createServerFn({ method: "POST" })
       return { wrap: null, reason: "insert_failed" };
     }
     return { wrap: inserted, created: true };
+    })();
+
+    WRAP_INFLIGHT.set(dedupeKey, work);
+    try {
+      return await work;
+    } finally {
+      WRAP_INFLIGHT.delete(dedupeKey);
+    }
   });
