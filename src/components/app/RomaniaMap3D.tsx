@@ -113,6 +113,7 @@ const VOYAGER_STYLE = {
 
 
 const VENUES_SRC = "venues-src";
+const HEAT_SRC = "venues-heat-src";
 
 function isValidLngLat(lng: unknown, lat: unknown) {
   const x = Number(lng);
