@@ -14,9 +14,10 @@ export const Route = createFileRoute("/app/faze")({
   component: FazePage,
 });
 
-// Font helpers — page-local theme overrides (Archivo Black + Hind)
+// Font helpers — page-local theme overrides
 const archivo = { fontFamily: '"Archivo Black", system-ui, sans-serif', letterSpacing: "-0.01em" } as const;
-const hind = { fontFamily: '"Hind", system-ui, sans-serif' } as const;
+const hind = { fontFamily: '"Work Sans", "Hind", system-ui, sans-serif' } as const;
+const instrument = { fontFamily: '"Instrument Serif", "Work Sans", serif', letterSpacing: "-0.02em" } as const;
 
 // Bottom-safe inset for sheets above the global tab bar
 const SHEET_BOTTOM = "calc(env(safe-area-inset-bottom) + 5.5rem)";
@@ -213,37 +214,38 @@ function FazePage() {
   })();
 
   return (
-    <div className="pb-32 max-w-[480px] mx-auto" style={hind}>
+    <div className="pb-32 max-w-[480px] mx-auto bg-[#050505] min-h-screen text-white" style={hind}>
       {/* Header */}
-      <header className="flex items-center justify-between px-4 pt-5 pb-3">
-        <div className="space-y-1">
-          <h1 className="text-[28px] leading-none uppercase" style={archivo}>
-            Faze<span className="text-gradient-sunset">.</span>
+      <header className="flex items-center justify-between px-4 pt-5 pb-3 sticky top-0 z-30 bg-[#050505]/85 backdrop-blur-xl">
+        <div>
+          <h1 className="text-[34px] leading-none tracking-tight" style={instrument}>
+            FAZE<span className="text-[#f7931e]">.</span>
           </h1>
-          <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-            <span className="size-1.5 rounded-full bg-sunset-orange animate-pulse" />
-            live din teren
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff6b35] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff6b35]" />
+            </span>
+            <span className="text-[10px] font-bold tracking-[0.18em] text-[#ff6b35] uppercase">Live din teren</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setOpen(true)}
             aria-label="Postează o fază"
-            className="inline-flex items-center gap-2.5 uppercase text-[12px] tracking-[0.18em] pl-2 pr-5 py-2 rounded-full text-white shadow-[0_10px_28px_-10px_rgba(244,114,82,0.65)] active:scale-95 transition"
-            style={{ ...archivo, background: "var(--gradient-sunset)" }}
+            className="bg-gradient-to-r from-[#ff6b35] to-[#e84393] px-4 py-2 rounded-full text-[11px] font-bold tracking-wide uppercase text-white shadow-lg shadow-[#ff6b35]/25 active:scale-95 transition"
           >
-            <span className="grid place-items-center size-7 rounded-full bg-white/25 text-lg leading-none font-light">+</span>
-            Postează
+            + Postează
           </button>
-          <Link to="/app/notifications" className="relative size-10 flex items-center justify-center active:scale-95 transition rounded-full hover:bg-foreground/5">
-            <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-foreground" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
-            <span className="absolute top-2 right-2 size-2 rounded-full bg-sunset-magenta shadow-[0_0_8px_var(--sunset-magenta)]" />
+          <Link to="/app/notifications" className="relative p-2 rounded-full bg-white/5 border border-white/10 active:scale-95 transition">
+            <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-white/80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+            <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-[#e84393] border border-black" />
           </Link>
         </div>
       </header>
 
       {/* Tabs */}
-      <div className="flex items-center justify-around border-y border-foreground/10 sticky top-0 z-20 bg-background/90 backdrop-blur-xl">
+      <div className="flex px-4 gap-6 overflow-x-auto no-scrollbar border-b border-white/5 sticky top-[76px] z-20 bg-[#050505]/85 backdrop-blur-xl">
         {([
           { k: "foryou", label: "Pentru tine" },
           { k: "recent", label: "Recent" },
@@ -251,18 +253,19 @@ function FazePage() {
           { k: "legendare", label: "Legendare" },
         ] as { k: TabKey; label: string }[]).map((t) => {
           const active = tab === t.k;
+          const isLegendare = t.k === "legendare";
           return (
             <button
               key={t.k}
               onClick={() => setTab(t.k)}
-              className={`relative flex-1 py-3.5 text-[12px] uppercase tracking-[0.14em] transition ${
-                active ? "text-foreground" : "text-muted-foreground"
-              }`}
-              style={archivo}
+              className={`relative shrink-0 py-3 text-sm whitespace-nowrap transition ${
+                active ? "text-white font-semibold" : "text-white/40 font-medium"
+              } ${isLegendare && !active ? "italic text-amber-500/80" : ""}`}
+              style={isLegendare ? instrument : undefined}
             >
               {t.label}
               {active && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] rounded-full" style={{ background: "var(--gradient-sunset)" }} />
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#ff6b35] to-[#e84393]" />
               )}
             </button>
           );
@@ -305,109 +308,107 @@ function FazePage() {
             const isReposted = data.repostedSet.has(it.id);
             const isMine = user?.id === it.user_id;
             const article = (
-              <article key={it.id} className="rounded-3xl border border-foreground/10 bg-card/40 overflow-hidden shadow-[0_4px_24px_-12px_rgba(0,0,0,0.6)]">
-                {/* Header row */}
-                <div className="flex items-center gap-3 px-3.5 py-3">
-                  <Link to="/app/user/$id" params={{ id: it.user_id }} className="shrink-0">
-                    <div className="p-[2px] rounded-full" style={{ background: "var(--gradient-sunset)" }}>
-                      <div className="p-[2px] rounded-full bg-background">
-                        {profile?.avatar_url ? (
-                          <img src={profile.avatar_url} alt={handle} className="size-9 rounded-full object-cover" />
-                        ) : (
-                          <div className="size-9 rounded-full bg-foreground/10 flex items-center justify-center text-xs uppercase" style={archivo}>
-                            {handle[0]?.toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                  <div className="flex-1 min-w-0 leading-tight">
-                    <Link to="/app/user/$id" params={{ id: it.user_id }} className="text-[14px] font-semibold truncate block">
-                      {handle}
-                    </Link>
-                    {venue?.name && (
-                      <div className="text-[11px] text-muted-foreground truncate flex items-center gap-1">
-                        <span className="text-sunset-orange">📍</span>{venue.name}
-                      </div>
-                    )}
-                  </div>
-                  {isMine ? (
-                    <button
-                      onClick={() => setMenuFor(it)}
-                      aria-label="Opțiuni"
-                      className="size-8 rounded-full flex items-center justify-center text-foreground/70 active:scale-90 hover:bg-foreground/10 transition"
-                    >
-                      <svg viewBox="0 0 24 24" className="size-5 fill-current"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
-                    </button>
-                  ) : (
-                    <ReportDialog targetType="photo" targetId={it.id} className="h-8 w-8 rounded-full flex items-center justify-center text-foreground/60 active:scale-95 transition" />
-                  )}
-                </div>
-
-                {/* Media */}
-                <div className="relative bg-black">
+              <article key={it.id} className="relative rounded-3xl overflow-hidden bg-[#111] border border-white/5 shadow-[0_4px_24px_-12px_rgba(0,0,0,0.8)]">
+                {/* Media with floating overlays */}
+                <div className="relative aspect-square bg-black">
                   {isVideo ? (
-                    <video src={it.photo_url} className="w-full aspect-square object-cover" playsInline muted loop preload="metadata" />
+                    <video src={it.photo_url} className="w-full h-full object-cover" playsInline muted loop preload="metadata" />
                   ) : (
-                    <img src={it.photo_url} alt={it.caption ?? ""} className="w-full aspect-square object-cover" loading="lazy" />
+                    <img src={it.photo_url} alt={it.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
                   )}
-                  {/* Bottom gradient for legibility of badge */}
-                  <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/40 to-transparent pointer-events-none" />
-                  <span className={`absolute top-3 left-3 inline-flex items-center px-2.5 py-1 rounded-full border text-[10px] uppercase tracking-[0.14em] backdrop-blur-md ${badge.className}`} style={archivo}>
-                    {badge.label}
-                  </span>
+
+                  {/* Top overlay: badge left, author right */}
+                  <div className="absolute inset-x-0 top-0 p-3 flex justify-between items-start gap-2 pointer-events-none">
+                    <span className={`backdrop-blur-xl bg-black/40 border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.18em] uppercase ${
+                      badge.key === "legendar" ? "text-[#f7931e]" :
+                      badge.key === "murit" ? "text-amber-400" :
+                      badge.key === "wow" ? "text-[#e84393]" : "text-white/70"
+                    }`}>
+                      {badge.label}
+                    </span>
+                    <div className="flex items-center gap-2 pointer-events-auto">
+                      <Link to="/app/user/$id" params={{ id: it.user_id }} className="flex items-center gap-2 backdrop-blur-xl bg-black/40 border border-white/10 pl-1 pr-3 py-1 rounded-full">
+                        <div className="size-6 rounded-full overflow-hidden border border-[#ff6b35]">
+                          {profile?.avatar_url ? (
+                            <img src={profile.avatar_url} alt={handle} className="size-full object-cover" />
+                          ) : (
+                            <div className="size-full bg-white/10 grid place-items-center text-[10px] uppercase font-bold">{handle[0]?.toUpperCase()}</div>
+                          )}
+                        </div>
+                        <span className="text-[11px] font-semibold tracking-tight text-white">@{handle}</span>
+                      </Link>
+                      {isMine ? (
+                        <button
+                          onClick={() => setMenuFor(it)}
+                          aria-label="Opțiuni"
+                          className="pointer-events-auto size-8 rounded-full backdrop-blur-xl bg-black/40 border border-white/10 grid place-items-center text-white/80 active:scale-90 transition"
+                        >
+                          <svg viewBox="0 0 24 24" className="size-4 fill-current"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+                        </button>
+                      ) : (
+                        <ReportDialog targetType="photo" targetId={it.id} className="pointer-events-auto size-8 rounded-full backdrop-blur-xl bg-black/40 border border-white/10 grid place-items-center text-white/70 active:scale-95 transition" />
+                      )}
+                    </div>
+                  </div>
+
                   {isVideo && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="size-14 rounded-full bg-white/90 text-black flex items-center justify-center text-xl shadow-xl">▶</div>
                     </div>
                   )}
+
+                  {/* Bottom floating glass action pill */}
+                  <div className="absolute inset-x-3 bottom-3">
+                    <div className="backdrop-blur-2xl bg-black/35 border border-white/10 rounded-2xl p-2.5 flex items-center justify-around">
+                      <button onClick={() => toggleLike(it)} aria-label="Apreciază" className="flex flex-col items-center gap-0.5 active:scale-90 transition">
+                        <svg viewBox="0 0 24 24" className={`size-6 ${isLiked ? "fill-[#e84393] stroke-[#e84393]" : "fill-none stroke-white/90"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+                        <span className="text-[10px] font-bold text-white/90">{likes > 0 ? formatCount(likes) : "0"}</span>
+                      </button>
+                      <button onClick={() => setCommentsFor(it)} aria-label="Comentează" className="flex flex-col items-center gap-0.5 active:scale-90 transition">
+                        <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-white/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg>
+                        <span className="text-[10px] font-bold text-white/70">{comments > 0 ? formatCount(comments) : "0"}</span>
+                      </button>
+                      <button onClick={() => setShareFor(it)} aria-label="Trimite" className="flex flex-col items-center gap-0.5 active:scale-90 transition">
+                        <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-white/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2 11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
+                        <span className="text-[10px] font-bold text-white/70">Trimite</span>
+                      </button>
+                      <div className="w-px h-8 bg-white/10" />
+                      <button onClick={() => toggleRepost(it)} aria-label="Repost" className={`flex flex-col items-center gap-0.5 active:scale-90 transition ${isReposted ? "text-[#f7931e]" : "text-white/80"}`}>
+                        <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-current" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                        <span className="text-[10px] font-bold">{reposts > 0 ? formatCount(reposts) : "Repost"}</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-1 px-2 pt-2.5">
-                  <button onClick={() => toggleLike(it)} aria-label="Apreciază" className="size-10 flex items-center justify-center active:scale-90 transition">
-                    <svg viewBox="0 0 24 24" className={`size-7 ${isLiked ? "fill-sunset-orange stroke-sunset-orange" : "fill-none stroke-foreground"}`} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
-                  </button>
-                  <button onClick={() => setCommentsFor(it)} aria-label="Comentează" className="size-10 flex items-center justify-center active:scale-90 transition">
-                    <svg viewBox="0 0 24 24" className="size-7 fill-none stroke-foreground" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg>
-                  </button>
-                  <button onClick={() => setShareFor(it)} aria-label="Trimite unui prieten" className="size-10 flex items-center justify-center active:scale-90 transition">
-                    <svg viewBox="0 0 24 24" className="size-7 fill-none stroke-foreground" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2 11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
-                  </button>
-                  <button onClick={() => toggleRepost(it)} aria-label="Repost" className={`ml-auto size-10 flex items-center justify-center active:scale-90 transition ${isReposted ? "text-sunset-amber" : "text-foreground"}`}>
-                    <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-current" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-                  </button>
-                </div>
-
-                {/* Likes count */}
-                {likes > 0 && (
-                  <div className="px-4 pt-1 text-[13px] font-semibold">
-                    {formatCount(likes)} aprecieri
-                  </div>
-                )}
-
-                {/* Caption */}
-                {it.caption && (
-                  <div className="px-4 pt-1 text-[14px] leading-snug">
-                    <Link to="/app/user/$id" params={{ id: it.user_id }} className="font-semibold mr-1.5">{handle}</Link>
-                    <span className="text-foreground/90">{it.caption}</span>
-                  </div>
-                )}
-
-                {/* Comments link */}
-                {comments > 0 && (
-                  <button
-                    onClick={() => setCommentsFor(it)}
-                    className="px-4 pt-1 text-[13px] text-muted-foreground block"
-                  >
-                    Vezi toate cele {formatCount(comments)} comentarii
-                  </button>
-                )}
-
-                {/* Timestamp */}
-                <div className="px-4 pt-1 pb-3.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground" style={archivo}>
-                  acum {timeAgo(it.created_at)}
-                  {reposts > 0 && <> · {formatCount(reposts)} repostări</>}
+                {/* Caption Area */}
+                <div className="p-5 pt-4 bg-[#0a0a0a]">
+                  {venue?.name && (
+                    <div className="flex items-center gap-1.5 text-[#f7931e] mb-2">
+                      <svg className="size-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/></svg>
+                      <span className="text-[11px] font-bold uppercase tracking-[0.16em]">{venue.name}</span>
+                      <span className="text-white/20 mx-1">•</span>
+                      <span className="text-white/40 text-[10px] uppercase tracking-wider">acum {timeAgo(it.created_at)}</span>
+                    </div>
+                  )}
+                  {it.caption ? (
+                    <p className="text-sm text-white/90 leading-relaxed font-light">
+                      <Link to="/app/user/$id" params={{ id: it.user_id }} className="font-semibold mr-1.5 text-white">@{handle}</Link>
+                      {it.caption}
+                    </p>
+                  ) : (
+                    !venue?.name && (
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">acum {timeAgo(it.created_at)}</div>
+                    )
+                  )}
+                  {comments > 0 && (
+                    <button
+                      onClick={() => setCommentsFor(it)}
+                      className="mt-2 text-[12px] text-white/40 block"
+                    >
+                      Vezi toate cele {formatCount(comments)} comentarii
+                    </button>
+                  )}
                 </div>
               </article>
             );
