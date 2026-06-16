@@ -1111,25 +1111,34 @@ export type Database = {
       notification_prefs: {
         Row: {
           challenge: boolean
+          daily_spin: boolean
           friend_live: boolean
           new_party_in_city: boolean
           party_join: boolean
+          streak_risk: boolean
+          tonight_prompt: boolean
           updated_at: string
           user_id: string
         }
         Insert: {
           challenge?: boolean
+          daily_spin?: boolean
           friend_live?: boolean
           new_party_in_city?: boolean
           party_join?: boolean
+          streak_risk?: boolean
+          tonight_prompt?: boolean
           updated_at?: string
           user_id: string
         }
         Update: {
           challenge?: boolean
+          daily_spin?: boolean
           friend_live?: boolean
           new_party_in_city?: boolean
           party_join?: boolean
+          streak_risk?: boolean
+          tonight_prompt?: boolean
           updated_at?: string
           user_id?: string
         }
