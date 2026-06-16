@@ -409,16 +409,17 @@ function MePage() {
         {!(profile as any).premium_tier && (
           <Link
             to="/app/premium"
-            className="mt-8 flex items-center gap-4 rounded-2xl border border-white/5 bg-gradient-to-br from-indigo-600/15 via-purple-600/10 to-transparent p-4 active:scale-[0.99] transition group"
+            className="mt-8 relative flex items-center gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-[#ff6b35]/15 via-[#e84393]/10 to-transparent p-4 active:scale-[0.99] transition group overflow-hidden"
           >
-            <div className="h-11 w-11 rounded-xl bg-indigo-500/10 flex items-center justify-center shadow-inner">
-              <Gem size={18} className="text-indigo-300" />
+            <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-[#e84393]/20 blur-2xl pointer-events-none" />
+            <div className="relative h-11 w-11 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#e84393] flex items-center justify-center shadow-[0_0_20px_rgba(232,67,147,0.4)]">
+              <Gem size={18} className="text-white" />
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-display uppercase text-[12px] tracking-wider text-white">Devino VIP, PRO sau ELITE</div>
-              <div className="text-[10px] text-zinc-500 mt-0.5">Badge, frame, teme, șprițuri · de la 2.99 lei</div>
+            <div className="relative flex-1 min-w-0">
+              <div style={instrument} className="text-lg leading-tight text-white">Devino <em className="text-[#f7931e] not-italic">VIP, PRO sau ELITE</em></div>
+              <div className="text-[10px] text-white/50 mt-0.5">Badge, frame, teme, șprițuri · de la 2.99 lei</div>
             </div>
-            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 group-hover:text-white transition-colors">Vezi →</span>
+            <span className="relative text-[10px] font-mono uppercase tracking-wider text-white/50 group-hover:text-[#f7931e] transition-colors">Vezi →</span>
           </Link>
         )}
 
