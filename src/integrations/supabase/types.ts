@@ -1078,6 +1078,59 @@ export type Database = {
           },
         ]
       }
+      night_wraps: {
+        Row: {
+          created_at: string
+          crew_user_ids: string[]
+          id: string
+          night_date: string
+          peak_hour: number | null
+          photo_urls: string[]
+          stats: Json
+          tagline: string | null
+          title: string
+          top_venue_id: string | null
+          user_id: string
+          vibe_emoji: string | null
+        }
+        Insert: {
+          created_at?: string
+          crew_user_ids?: string[]
+          id?: string
+          night_date: string
+          peak_hour?: number | null
+          photo_urls?: string[]
+          stats?: Json
+          tagline?: string | null
+          title: string
+          top_venue_id?: string | null
+          user_id: string
+          vibe_emoji?: string | null
+        }
+        Update: {
+          created_at?: string
+          crew_user_ids?: string[]
+          id?: string
+          night_date?: string
+          peak_hour?: number | null
+          photo_urls?: string[]
+          stats?: Json
+          tagline?: string | null
+          title?: string
+          top_venue_id?: string | null
+          user_id?: string
+          vibe_emoji?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "night_wraps_top_venue_id_fkey"
+            columns: ["top_venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_prefs: {
         Row: {
           challenge: boolean
