@@ -69,70 +69,102 @@ export function BottomTabBar() {
     return null;
   }
 
+  const leftTabs = tabs.slice(0, 3);
+  const primaryTab = tabs[3];
+  const rightTabs = tabs.slice(4);
+
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 pb-[env(safe-area-inset-bottom)] pointer-events-none">
       <div className="mx-auto max-w-md px-3 pb-3 space-y-2 pointer-events-auto">
-        {/* Main pill — glass bar with circular wells */}
-        <div className="relative rounded-[28px] border border-foreground/10 bg-background/40 backdrop-blur-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.05)] pt-5 pb-2 px-2">
-          {/* subtle inner radial glow under POSTEAZĂ */}
-          <div className="pointer-events-none absolute inset-0 rounded-[28px] overflow-hidden">
-            <div className="absolute left-1/2 -translate-x-1/2 -top-6 h-24 w-24 rounded-full bg-neon-crimson/20 blur-2xl" />
+        {/* Alcohol Warning Pill — minimal, slim, sunset accent dot */}
+        {!warnDismissed && (
+          <div className="flex items-center justify-between rounded-full bg-white/[0.05] border border-white/10 px-3 py-1.5">
+            <div className="flex items-center gap-2">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#ff6b35] animate-pulse" />
+              <span className="text-[9px] font-semibold tracking-[0.2em] text-white/60 uppercase leading-none">
+                {tc("alcoholWarning")}
+              </span>
+            </div>
+            <button
+              onClick={dismissWarn}
+              aria-label="închide"
+              className="text-white/40 hover:text-white transition-colors"
+            >
+              <X size={12} />
+            </button>
           </div>
+        )}
 
-          <div className="relative grid grid-cols-7 gap-0.5">
-            {tabs.map(t => {
+        {/* Main Navigation Bar — sunset glass floating */}
+        <div className="relative bg-[#0d0d0d]/80 backdrop-blur-xl border border-white/5 rounded-[32px] p-2 flex items-center justify-between shadow-2xl shadow-orange-500/10">
+          {/* Left Group — 3 tabs */}
+          <div className="flex flex-1 justify-around items-center">
+            {leftTabs.map(t => {
               const active = t.exact ? loc.pathname === t.to : (loc.pathname === t.to || loc.pathname.startsWith(t.to + "/"));
               const Icon = t.icon;
-              const badge = t.badgeKey === "inbox" ? unread : 0;
-              const showDot = badge > 0;
-
-              if (t.primary) {
-                return (
-                  <Link
-                    key={t.to}
-                    to={t.to as any}
-                    className="flex flex-col items-center justify-end gap-1.5 min-w-0"
-                    aria-label={tt(t.labelKey)}
-                  >
-                    <div className="relative -mt-8 h-[58px] w-[58px] rounded-full grid place-items-center
-                                    bg-gradient-to-br from-[#ff8a3d] via-neon-crimson to-[#b8124a]
-                                    ring-[3px] ring-background/80
-                                    shadow-[0_0_30px_var(--neon-crimson),0_8px_24px_rgba(255,49,88,0.55)]
-                                    active:scale-95 transition">
-                      <span className="absolute inset-0 rounded-full ring-1 ring-white/30" />
-                      <Camera size={26} strokeWidth={2.2} className="text-white drop-shadow" />
-                    </div>
-                    <span className="font-display font-black text-[10px] uppercase tracking-[0.14em] text-white leading-none">
-                      {tt(t.labelKey)}
-                    </span>
-                  </Link>
-                );
-              }
-
-              const tint = active ? "text-neon-crimson" : "text-muted-foreground";
               return (
                 <Link
                   key={t.to}
                   to={t.to as any}
-                  className="flex flex-col items-center justify-end gap-1.5 min-w-0"
+                  className="flex flex-col items-center gap-1 min-w-0"
                   aria-label={tt(t.labelKey)}
                 >
-                  <div className={`relative h-10 w-10 rounded-full grid place-items-center
-                                   border border-foreground/10 bg-foreground/[0.04]
-                                   ${active ? "shadow-[0_0_14px_-2px_var(--neon-crimson),inset_0_0_0_1px_rgba(255,49,88,0.35)]" : ""}
-                                   transition active:scale-95`}>
-                    <Icon size={17} strokeWidth={2} className={tint} />
+                  <div className="relative">
+                    <Icon size={18} strokeWidth={2} className={active ? "text-[#ff6b35]" : "text-white/40"} />
+                    {t.labelKey === "live" && (
+                      <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-[#ff6b35] ring-2 ring-[#0d0d0d] animate-pulse" />
+                    )}
+                  </div>
+                  <span className={`text-[8px] font-semibold tracking-tighter uppercase leading-none ${active ? "text-[#ff6b35] font-bold" : "text-white/40 font-medium"}`}>
+                    {tt(t.labelKey)}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Center Primary: Postează */}
+          <div className="relative px-1">
+            <div
+              className="absolute inset-0 bg-gradient-to-tr from-[#ff6b35] via-[#f7931e] to-[#e84393] rounded-2xl blur-lg opacity-40"
+            />
+            <Link
+              to={primaryTab.to as any}
+              className="relative -top-6 flex flex-col items-center"
+              aria-label={tt(primaryTab.labelKey)}
+            >
+              <div className="w-14 h-14 bg-gradient-to-tr from-[#ff6b35] via-[#f7931e] to-[#e84393] rounded-2xl flex items-center justify-center shadow-xl shadow-orange-600/20 active:scale-95 transition-transform">
+                <Camera size={22} strokeWidth={2.2} className="text-white drop-shadow" />
+              </div>
+              <span className="mt-2 text-[9px] font-black tracking-tight uppercase bg-clip-text text-transparent bg-gradient-to-r from-[#ff6b35] to-[#f7931e]">
+                {tt(primaryTab.labelKey)}
+              </span>
+            </Link>
+          </div>
+
+          {/* Right Group — 3 tabs */}
+          <div className="flex flex-1 justify-around items-center">
+            {rightTabs.map(t => {
+              const active = t.exact ? loc.pathname === t.to : (loc.pathname === t.to || loc.pathname.startsWith(t.to + "/"));
+              const Icon = t.icon;
+              const badge = t.badgeKey === "inbox" ? unread : 0;
+              const showDot = badge > 0;
+              return (
+                <Link
+                  key={t.to}
+                  to={t.to as any}
+                  className="flex flex-col items-center gap-1 min-w-0"
+                  aria-label={tt(t.labelKey)}
+                >
+                  <div className="relative">
+                    <Icon size={18} strokeWidth={2} className={active ? "text-[#ff6b35]" : "text-white/40"} />
                     {showDot && (
-                      <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-1 rounded-full bg-neon-crimson text-white text-[8px] font-mono font-bold flex items-center justify-center border-2 border-background">
+                      <span className="absolute -top-1 -right-1 min-w-[12px] h-3 px-0.5 rounded-full bg-[#e84393] ring-2 ring-[#0d0d0d] text-[7px] font-bold text-white flex items-center justify-center">
                         {badge > 9 ? "9+" : badge}
                       </span>
                     )}
-                    {/* tiny live dot for /app (LIVE tab) */}
-                    {t.labelKey === "live" && !showDot && (
-                      <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-[#ff8a3d] shadow-[0_0_6px_#ff8a3d]" />
-                    )}
                   </div>
-                  <span className={`font-mono text-[9px] uppercase tracking-[0.08em] truncate w-full text-center leading-none ${tint}`}>
+                  <span className={`text-[8px] font-semibold tracking-tighter uppercase leading-none ${active ? "text-[#ff6b35] font-bold" : "text-white/40 font-medium"}`}>
                     {tt(t.labelKey)}
                   </span>
                 </Link>
@@ -140,23 +172,6 @@ export function BottomTabBar() {
             })}
           </div>
         </div>
-
-        {/* Alcohol warning — slim glass pill, dismissible */}
-        {!warnDismissed && (
-          <div className="flex items-center gap-2 rounded-full border border-[#ff8a3d]/30 bg-background/40 backdrop-blur-xl px-3 py-1.5 shadow-[0_6px_20px_-8px_rgba(255,138,61,0.4)]">
-            <AlertTriangle size={11} className="shrink-0 text-[#ff8a3d]" />
-            <span className="flex-1 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground truncate">
-              {tc("alcoholWarning")}
-            </span>
-            <button
-              onClick={dismissWarn}
-              aria-label="închide"
-              className="shrink-0 h-5 w-5 grid place-items-center rounded-full text-muted-foreground hover:text-foreground transition"
-            >
-              <X size={12} />
-            </button>
-          </div>
-        )}
       </div>
     </nav>
   );
