@@ -11,6 +11,10 @@ type WrapResult =
   | { wrap: any; created: boolean }
   | { wrap: null; reason: string };
 
+// Dedupe concurrent generations per (user, night) so a double-mount or
+// retried request reuses one DB+AI run instead of racing.
+const WRAP_INFLIGHT = new Map<string, Promise<WrapResult>>();
+
 export const getOrCreateNightWrap = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => {
@@ -24,6 +28,11 @@ export const getOrCreateNightWrap = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<WrapResult> => {
     const { supabase, userId } = context;
     const { nightDate } = data;
+    const dedupeKey = `${userId}:${nightDate}`;
+    const existingInflight = WRAP_INFLIGHT.get(dedupeKey);
+    if (existingInflight) return existingInflight;
+
+    const work = (async (): Promise<WrapResult> => {
 
     // 1. existing wrap?
     const { data: existing } = await supabase
