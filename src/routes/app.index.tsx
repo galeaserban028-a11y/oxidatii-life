@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Flame, MapPin, Users, Plus } from "lucide-react";
 
 import { PromoTakeover } from "@/components/app/PromoTakeover";
+import { NightWrapCard } from "@/components/app/NightWrapCard";
+import { getOrCreateNightWrap } from "@/lib/night-wrap.functions";
 
 type FeedItem = {
   id: string;
