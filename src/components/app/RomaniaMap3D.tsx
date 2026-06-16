@@ -241,7 +241,7 @@ export function RomaniaMap3D({
             1, "rgba(255,255,255,0.95)",
           ],
           "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 6, 22, 11, 50, 13, 80],
-          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0.85, 13, 0.25],
+          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.55, 11, 0.4, 13, 0.15],
         },
       });
 
