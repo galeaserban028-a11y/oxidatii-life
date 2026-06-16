@@ -483,7 +483,7 @@ function MePage() {
             }
           }}>
             <DialogTrigger asChild>
-              <button className="h-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-[0.98] transition flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest">
+              <button className="h-12 rounded-xl bg-gradient-to-r from-[#ff6b35] to-[#e84393] hover:shadow-[0_8px_24px_-8px_rgba(232,67,147,0.6)] active:scale-[0.98] transition flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white">
                 <Pencil size={13} /> Editează
               </button>
             </DialogTrigger>
