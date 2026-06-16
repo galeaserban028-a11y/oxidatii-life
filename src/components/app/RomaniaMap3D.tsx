@@ -692,6 +692,13 @@ export function RomaniaMap3D({
       <style>{`
         @keyframes oxi-pulse-strong { 0% { transform: translateX(-50%) scale(0.6); opacity: 0.7; } 80% { transform: translateX(-50%) scale(1.5); opacity: 0; } 100% { opacity: 0; } }
         @keyframes oxi-scan { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+        @keyframes oxi-radar-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes oxi-aurora-drift {
+          0%   { transform: translate3d(-4%, -2%, 0) scale(1); }
+          50%  { transform: translate3d(3%, 4%, 0) scale(1.08); }
+          100% { transform: translate3d(-4%, -2%, 0) scale(1); }
+        }
+        @keyframes oxi-ring-ping { 0% { transform: scale(0.6); opacity: 0.5; } 80% { transform: scale(1.6); opacity: 0; } 100% { opacity: 0; } }
         .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas { outline:none !important; }
