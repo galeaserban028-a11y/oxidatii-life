@@ -341,10 +341,10 @@ function TopPage() {
 
 function EmptyHint({ title, sub }: { title: string; sub: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center space-y-2">
+    <div className="rounded-3xl border border-white/10 bg-[#0d0d0d] p-10 text-center space-y-2">
       <div className="text-4xl">🥃</div>
-      <div className="font-display font-semibold">{title}</div>
-      <div className="text-sm text-muted-foreground">{sub}</div>
+      <div style={{ fontFamily: '"Instrument Serif", serif' }} className="text-2xl">{title}</div>
+      <div className="text-sm text-white/50">{sub}</div>
     </div>
   );
 }
