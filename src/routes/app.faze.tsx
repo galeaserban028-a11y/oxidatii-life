@@ -296,9 +296,13 @@ function FazePage() {
         <div className="pt-4 space-y-5 px-3">
           {promoCards.length > 0 && <SponsoredFazaCard key={`ad-empty-${promoCards[0].id}`} ad={promoCards[0]} />}
           <div className="mx-1 rounded-3xl border border-dashed border-foreground/15 p-10 text-center space-y-3">
-            <div className="text-5xl">🎬</div>
-            <div className="uppercase text-lg" style={archivo}>Nicio fază încă.</div>
-            <p className="text-sm text-muted-foreground">Fii primul care pune o fază reală din teren.</p>
+            <div className="text-5xl">{tab === "prieteni" ? "👥" : "🎬"}</div>
+            <div className="uppercase text-lg" style={archivo}>
+              {tab === "prieteni" ? "Nicio fază de la prieteni" : "Nicio fază încă."}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {tab === "prieteni" ? "Adaugă prieteni ca să vezi ce postează." : "Fii primul care pune o fază reală din teren."}
+            </p>
           </div>
         </div>
       ) : (
