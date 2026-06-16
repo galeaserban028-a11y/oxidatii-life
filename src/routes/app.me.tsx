@@ -619,17 +619,17 @@ function MePage() {
 
       {/* Grid moments */}
       {tabMoments.length === 0 ? (
-        <div className="mx-4 mt-4 rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-2">
+        <div className="mx-4 mt-4 rounded-3xl border border-white/10 bg-[#0d0d0d] p-8 text-center space-y-3">
           <div className="text-4xl">{tab === "reposts" ? "↻" : "📸"}</div>
-          <div className="font-display uppercase">
+          <div style={instrument} className="text-2xl text-white">
             {tab === "reposts" ? "Niciun repost încă" : "Niciun moment încă."}
           </div>
-          <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+          <p className="text-xs text-white/50 max-w-xs mx-auto">
             {tab === "reposts"
               ? "Când dai repost la o fază din feed, apare aici."
               : "Nu inventăm istorii. Când postezi o poză sau scanezi un șpriț, apare aici."}
           </p>
-          <Link to={tab === "reposts" ? "/app/faze" : "/app/scan"} className="inline-flex mt-2 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-md border border-foreground/20 hover:border-neon-purple">
+          <Link to={tab === "reposts" ? "/app/faze" : "/app/scan"} className="inline-flex mt-2 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-full bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white">
             {tab === "reposts" ? "vezi fazele →" : "scanează primul șpriț →"}
           </Link>
         </div>
@@ -637,29 +637,29 @@ function MePage() {
       ) : (
         <div className="grid grid-cols-3 gap-0.5">
           {tabMoments.map((m: any) => {
-            // Proofs go to venue; photos (incl. reposts) open the post detail
             const isProof = m._kind === "proof";
             return (
               <Link
                 key={`${m._kind}-${m.id}`}
                 to={isProof ? (m.venue?.id ? "/app/venue/$id" : "/app/me") : "/app/photo/$id"}
                 params={isProof ? (m.venue?.id ? { id: m.venue.id } : undefined as any) : { id: m.id }}
-                className="relative aspect-square overflow-hidden bg-foreground/5 group"
+                className="relative aspect-square overflow-hidden bg-black group"
               >
                 <img src={m.photo_url} alt={m.caption ?? ""} className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition" loading="lazy" />
                 {isProof && (
-                  <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-sm bg-neon-green/30 border border-neon-green/50 backdrop-blur-sm">
-                    <span className="font-mono text-[8px] uppercase text-neon-green">verificat</span>
+                  <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#f7931e]/50">
+                    <span className="font-mono text-[8px] uppercase text-[#f7931e]">verificat</span>
                   </div>
                 )}
                 {tab === "reposts" && (
-                  <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-sm bg-sunset-amber/30 border border-sunset-amber/50 backdrop-blur-sm">
-                    <span className="font-mono text-[8px] uppercase text-sunset-amber">↻ repost</span>
+                  <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#e84393]/50">
+                    <span className="font-mono text-[8px] uppercase text-[#e84393]">↻ repost</span>
                   </div>
                 )}
                 {m.venue?.name && (
-                  <div className="absolute bottom-0 inset-x-0 p-1 bg-gradient-to-t from-black/80 to-transparent">
-                    <div className="font-mono text-[9px] uppercase tracking-wider text-white truncate">
+                  <div className="absolute bottom-0 inset-x-0 p-1.5 bg-gradient-to-t from-black/90 to-transparent">
+                    <div className="font-mono text-[9px] uppercase tracking-wider text-white truncate flex items-center gap-1">
+                      <span className="h-1 w-1 rounded-full bg-[#f7931e]" />
                       {m.venue.name}
                     </div>
                   </div>
@@ -671,9 +671,7 @@ function MePage() {
         </div>
       )}
 
-      
-
-      <p className="text-[10px] font-mono text-center text-muted-foreground/50 pt-3">
+      <p className="text-[10px] font-mono text-center text-white/30 pt-4">
         OXIDAȚII · construit pe oameni reali · made in Balcani
       </p>
     </div>
