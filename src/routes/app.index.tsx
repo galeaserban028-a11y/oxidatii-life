@@ -382,18 +382,39 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
 
 function EmptyFeed() {
   return (
-    <div className="rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-3">
-      <div className="text-5xl">🌃</div>
-      <div className="font-display uppercase text-xl leading-tight">
-        Șprițurile încă sunt active.
+    <div
+      className="rounded-[36px] border border-dashed border-white/10 px-7 py-10 text-center flex flex-col items-center"
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0))",
+        fontFamily: "'Work Sans', system-ui, sans-serif",
+      }}
+    >
+      <div
+        className="w-20 h-20 rounded-2xl mb-6 flex items-center justify-center text-4xl"
+        style={{
+          background:
+            "radial-gradient(circle at 30% 30%, rgba(108,92,231,0.25), rgba(232,67,147,0.15) 60%, rgba(0,0,0,0) 80%)",
+          border: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        🌃
       </div>
-      <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
-        Nimeni n-a postat încă. Nu inventăm conținut. Când oamenii reali încep să posteze, apar aici — nimic altceva.
+      <h2 className="text-[17px] font-bold uppercase tracking-tight mb-3 text-white">
+        Șprițurile încă sunt active.
+      </h2>
+      <p className="text-[13px] text-white/45 leading-relaxed mb-8 max-w-[260px]">
+        Nimeni n-a postat încă. Nu inventăm conținut. Când oamenii reali încep
+        să posteze, apar aici — nimic altceva.
       </p>
       <Link
         to="/app/scan"
-        className="inline-flex mt-3 font-display uppercase text-xs tracking-[0.18em] px-5 py-3 rounded-md text-white"
-        style={{ background: "var(--gradient-chaos)" }}
+        className="w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-white active:scale-95 transition-transform"
+        style={{
+          background:
+            "linear-gradient(90deg, #ff6b35, #e84393, #6c5ce7)",
+          boxShadow: "0 12px 32px -12px rgba(255,107,53,0.55)",
+        }}
       >
         Fii primul → scanează un șpriț
       </Link>
