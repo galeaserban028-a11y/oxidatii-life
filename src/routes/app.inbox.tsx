@@ -112,23 +112,25 @@ function InboxPage() {
         }} />
       )}
 
-      {/* Segmented — pill row */}
-      <div className="flex gap-2 text-[10px] font-black uppercase tracking-widest">
+      {/* Tab bar — text style with underline indicator */}
+      <div className="flex gap-6 text-[13px] font-black uppercase tracking-wide border-b border-zinc-800/50">
         {([
-          ["toate", conversations.length],
-          ["dm", dms.length],
-          ["grup", groups.length],
-        ] as const).map(([k, n]) => (
+          ["pentru-tine", "Pentru tine"],
+          ["prieteni", "Prieteni"],
+        ] as const).map(([k, label]) => (
           <button
             key={k}
             onClick={() => setTab(k as Tab)}
-            className={`flex-1 py-2 px-3 rounded-full border transition ${
+            className={`relative py-3 transition ${
               tab === k
-                ? "bg-lime-400 text-black border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.35)]"
-                : "bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:bg-zinc-800/60"
+                ? "text-white"
+                : "text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            {k} <span className="opacity-60">· {n}</span>
+            {label}
+            {tab === k && (
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-neon-crimson via-neon-purple to-neon-green rounded-full" />
+            )}
           </button>
         ))}
       </div>
