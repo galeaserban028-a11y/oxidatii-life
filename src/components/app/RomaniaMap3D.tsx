@@ -216,6 +216,35 @@ export function RomaniaMap3D({
         clusterMaxZoom: 13,
       });
 
+      // Live "energy" heatmap — separate (unclustered) source so the heat
+      // gradient is smooth across the whole map. Pulses via animated paint
+      // properties below for a living, breathing feel.
+      map.addSource(HEAT_SRC, {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      map.addLayer({
+        id: "venues-heat",
+        type: "heatmap",
+        source: HEAT_SRC,
+        maxzoom: 13,
+        paint: {
+          "heatmap-weight": ["interpolate", ["linear"], ["get", "w"], 0, 0.2, 5, 1.2],
+          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.6, 9, 1.4, 13, 2.2],
+          "heatmap-color": [
+            "interpolate", ["linear"], ["heatmap-density"],
+            0, "rgba(3,4,10,0)",
+            0.15, "rgba(57,255,136,0.35)",
+            0.35, "rgba(198,107,255,0.55)",
+            0.6, "rgba(255,176,0,0.75)",
+            0.85, "rgba(255,49,88,0.9)",
+            1, "rgba(255,255,255,0.95)",
+          ],
+          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 6, 22, 11, 50, 13, 80],
+          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0.85, 13, 0.25],
+        },
+      });
+
       // Register one bottle icon per venue type (different tints).
       const bottleTypes: Array<[string, string]> = [
         ["bottle-club", TYPE_COLOR.club],
