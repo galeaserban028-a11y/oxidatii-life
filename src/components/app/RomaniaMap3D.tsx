@@ -395,9 +395,44 @@ export function RomaniaMap3D({
             properties: { id: v.id, name: v.name, type: v.type ?? "club", address: v.address ?? "", cover_url: v.cover_url ?? "" },
           })),
       });
+      const heat = map.getSource(HEAT_SRC) as maplibregl.GeoJSONSource | undefined;
+      if (heat) {
+        heat.setData({
+          type: "FeatureCollection",
+          features: venues
+            .filter(v => isValidLngLat(v.lng, v.lat))
+            .map(v => {
+              const promoted = !!promotedMeta[v.id];
+              const t = v.type ?? "club";
+              const baseWeight = t === "club" ? 3 : t === "after" ? 3.2 : t === "bar" ? 2 : 1.4;
+              return {
+                type: "Feature" as const,
+                geometry: { type: "Point" as const, coordinates: [Number(v.lng), Number(v.lat)] },
+                properties: { w: promoted ? baseWeight + 2 : baseWeight },
+              };
+            }),
+        });
+      }
     };
     if (loadedRef.current) apply(); else map.once("load", apply);
   }, [venues, promotedMeta, retryKey]);
+
+  // Pulse the heatmap intensity so the map feels alive (breathing energy).
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return;
+    let raf = 0;
+    const start = performance.now();
+    const tick = (t: number) => {
+      if (!map.getLayer("venues-heat")) { raf = requestAnimationFrame(tick); return; }
+      const k = (Math.sin((t - start) / 1400) + 1) / 2; // 0..1
+      const intensity = 0.9 + k * 0.9;
+      try { map.setPaintProperty("venues-heat", "heatmap-intensity", intensity); } catch {}
+      raf = requestAnimationFrame(tick);
+    };
+    const onLoad = () => { raf = requestAnimationFrame(tick); };
+    if (loadedRef.current) onLoad(); else map.once("load", onLoad);
+    return () => { if (raf) cancelAnimationFrame(raf); };
+  }, [retryKey]);
 
   // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
   // halo. Replaces the bottle silhouette so paying businesses are instantly
