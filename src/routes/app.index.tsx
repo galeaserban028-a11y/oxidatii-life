@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Flame, MapPin, Users, Plus } from "lucide-react";
-import logoLight from "@/assets/logo-oxidatii-light.png";
+
 import { PromoTakeover } from "@/components/app/PromoTakeover";
 
 type FeedItem = {
@@ -83,59 +83,96 @@ function AppFeed() {
   });
 
   return (
-    <div className="px-5 pt-6 pb-6 space-y-8">
+    <div
+      className="px-5 pt-6 pb-8 space-y-8"
+      style={{ fontFamily: "'Work Sans', system-ui, sans-serif" }}
+    >
       <PromoTakeover />
-      {/* Airy header */}
-      <header className="space-y-5">
-        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.3em]">
-          <span className="text-neon-crimson flicker">● LIVE · ROMÂNIA</span>
-          <span className="text-zinc-500">{new Date().toLocaleDateString("ro-RO", { weekday: "long" })}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <img src={logoLight} alt="" aria-hidden width={56} height={56} className="h-14 w-14 object-contain shrink-0 drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]" />
-          <h1 className="font-display uppercase text-2xl leading-[1.05] tracking-tight">
-            Ce șprițuri sunt <span className="text-gradient-chaos">diseară</span>
-          </h1>
+
+      {/* Status header */}
+      <header className="space-y-7">
+        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em]">
+          <span className="flex items-center gap-2 text-white/60">
+            <span
+              className="inline-block h-2 w-2 rounded-full bg-[#ff6b35] animate-pulse"
+              style={{ boxShadow: "0 0 8px #ff6b35" }}
+            />
+            LIVE · ROMÂNIA
+          </span>
+          <span className="text-white/30">
+            {new Date().toLocaleDateString("ro-RO", { weekday: "long" })}
+          </span>
         </div>
 
-        {/* Quick actions — calm glass tiles */}
-        <div className="grid grid-cols-3 gap-3 pt-2">
+        {/* Editorial headline */}
+        <h1
+          className="text-[42px] leading-[0.92] text-white"
+          style={{ fontFamily: "'Instrument Serif', serif" }}
+        >
+          Ce șprițuri sunt
+          <br />
+          <span
+            className="italic bg-clip-text text-transparent"
+            style={{
+              backgroundImage:
+                "linear-gradient(90deg, #ff6b35, #e84393, #6c5ce7)",
+            }}
+          >
+            diseară
+          </span>
+        </h1>
+
+        {/* Bento quick actions */}
+        <div className="grid grid-cols-2 gap-3">
           <Link
             to="/app/scan"
-            className="p-4 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
+            className="row-span-2 rounded-3xl border border-white/5 bg-[#121212] p-5 flex flex-col justify-between min-h-[156px] active:scale-[0.98] transition-all"
           >
-            <div className="w-9 h-9 rounded-full bg-neon-crimson/10 flex items-center justify-center">
-              <Plus size={16} strokeWidth={2.4} className="text-neon-crimson group-hover:scale-110 transition-transform" />
+            <div className="w-10 h-10 rounded-2xl bg-[#ff6b35]/15 flex items-center justify-center text-[#ff6b35]">
+              <Plus size={22} strokeWidth={2.6} />
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">deschide șpriț</span>
+            <span className="text-[13px] font-bold uppercase tracking-wider leading-tight">
+              Deschide
+              <br />
+              șpriț
+            </span>
           </Link>
+
           <Link
             to="/app/faze"
-            className="p-4 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
+            className="rounded-3xl border border-white/5 bg-[#121212] p-4 flex flex-col gap-3 active:scale-[0.98] transition-all"
           >
-            <div className="w-9 h-9 rounded-full bg-amber-500/10 flex items-center justify-center text-base leading-none">🎬</div>
-            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">faze din teren</span>
+            <div className="w-8 h-8 rounded-xl bg-[#f7931e]/15 flex items-center justify-center text-base leading-none">
+              🎬
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">
+              Faze din teren
+            </span>
           </Link>
+
           <Link
             to="/app/squad"
-            className="p-4 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
+            className="rounded-3xl border border-white/5 bg-[#121212] p-4 flex flex-col gap-3 active:scale-[0.98] transition-all"
           >
-            <div className="w-9 h-9 rounded-full bg-neon-purple/10 flex items-center justify-center">
-              <Users size={16} className="text-neon-purple group-hover:scale-110 transition-transform" />
+            <div className="w-8 h-8 rounded-xl bg-[#6c5ce7]/15 flex items-center justify-center text-[#6c5ce7]">
+              <Users size={16} strokeWidth={2.4} />
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">haita ta</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">
+              Haita ta
+            </span>
           </Link>
         </div>
       </header>
-
-
 
       <LiveSpritzStrip />
 
       {isLoading ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-72 rounded-xl bg-foreground/[0.04] animate-pulse" />
+            <div
+              key={i}
+              className="h-72 rounded-3xl bg-white/[0.04] animate-pulse"
+            />
           ))}
         </div>
       ) : !data || data.items.length === 0 ? (
@@ -145,7 +182,9 @@ function AppFeed() {
           {data.items.map((it) => {
             const profile = data.profilesMap.get(it.user_id);
             const venue = it.venue_id ? data.venuesMap.get(it.venue_id) : null;
-            return <FeedCard key={it.id} item={it} profile={profile} venue={venue} />;
+            return (
+              <FeedCard key={it.id} item={it} profile={profile} venue={venue} />
+            );
           })}
         </div>
       )}
@@ -343,18 +382,39 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
 
 function EmptyFeed() {
   return (
-    <div className="rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-3">
-      <div className="text-5xl">🌃</div>
-      <div className="font-display uppercase text-xl leading-tight">
-        Șprițurile încă sunt active.
+    <div
+      className="rounded-[36px] border border-dashed border-white/10 px-7 py-10 text-center flex flex-col items-center"
+      style={{
+        background:
+          "linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0))",
+        fontFamily: "'Work Sans', system-ui, sans-serif",
+      }}
+    >
+      <div
+        className="w-20 h-20 rounded-2xl mb-6 flex items-center justify-center text-4xl"
+        style={{
+          background:
+            "radial-gradient(circle at 30% 30%, rgba(108,92,231,0.25), rgba(232,67,147,0.15) 60%, rgba(0,0,0,0) 80%)",
+          border: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        🌃
       </div>
-      <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
-        Nimeni n-a postat încă. Nu inventăm conținut. Când oamenii reali încep să posteze, apar aici — nimic altceva.
+      <h2 className="text-[17px] font-bold uppercase tracking-tight mb-3 text-white">
+        Șprițurile încă sunt active.
+      </h2>
+      <p className="text-[13px] text-white/45 leading-relaxed mb-8 max-w-[260px]">
+        Nimeni n-a postat încă. Nu inventăm conținut. Când oamenii reali încep
+        să posteze, apar aici — nimic altceva.
       </p>
       <Link
         to="/app/scan"
-        className="inline-flex mt-3 font-display uppercase text-xs tracking-[0.18em] px-5 py-3 rounded-md text-white"
-        style={{ background: "var(--gradient-chaos)" }}
+        className="w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-white active:scale-95 transition-transform"
+        style={{
+          background:
+            "linear-gradient(90deg, #ff6b35, #e84393, #6c5ce7)",
+          boxShadow: "0 12px 32px -12px rgba(255,107,53,0.55)",
+        }}
       >
         Fii primul → scanează un șpriț
       </Link>

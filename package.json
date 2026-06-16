@@ -21,6 +21,7 @@
     "@fontsource/hind": "^5.2.8",
     "@fontsource/instrument-serif": "^5.2.8",
     "@fontsource/space-grotesk": "^5.2.10",
+    "@fontsource/work-sans": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
     "@mendable/firecrawl-js": "^4.25.1",
