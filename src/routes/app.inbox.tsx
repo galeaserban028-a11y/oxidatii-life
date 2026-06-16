@@ -151,6 +151,12 @@ function InboxPage() {
             <PenSquare size={14} /> Mesaj nou
           </button>
         </div>
+      {tab === "prieteni" ? (
+        <FriendsList onMessage={async (peerId) => {
+          if (!user) return;
+          const cid = await openOrCreateDM(user.id, peerId);
+          nav({ to: "/app/chat/$id", params: { id: cid } });
+        }} />
       ) : (
         <div className="space-y-1 -mx-5">
           {filtered.map((c: any) => {
