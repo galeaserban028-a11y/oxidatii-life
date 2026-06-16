@@ -425,7 +425,7 @@ export function RomaniaMap3D({
     const tick = (t: number) => {
       if (!map.getLayer("venues-heat")) { raf = requestAnimationFrame(tick); return; }
       const k = (Math.sin((t - start) / 1400) + 1) / 2; // 0..1
-      const intensity = 0.9 + k * 0.9;
+      const intensity = 0.7 + k * 0.5;
       try { map.setPaintProperty("venues-heat", "heatmap-intensity", intensity); } catch {}
       raf = requestAnimationFrame(tick);
     };
