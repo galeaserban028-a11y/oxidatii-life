@@ -106,7 +106,7 @@ function timeAgo(iso: string) {
   return `${Math.floor(s / 86400)}z`;
 }
 
-type TabKey = "foryou" | "recent" | "top" | "legendare";
+type TabKey = "pentru-tine" | "prieteni";
 
 const BADGES = [
   { key: "legendar", label: "LEGENDAR", className: "bg-sunset-orange/15 text-sunset-orange border-sunset-orange/40" },
@@ -142,8 +142,22 @@ function FazePage() {
   });
   // Native sponsored cards interleaved in the feed (shared with /app/feed).
   const { data: promoCards = [] } = usePromoCards();
+  // Friends list for "Prieteni" tab filtering
+  const { data: friendIds = [] } = useQuery({
+    queryKey: ["faze-friends", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      if (!user) return [];
+      const { data: rows } = await supabase
+        .from("friendships")
+        .select("requester_id,addressee_id,status")
+        .eq("status", "accepted")
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
+      return (rows ?? []).map((r: any) => r.requester_id === user.id ? r.addressee_id : r.requester_id);
+    },
+  });
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<TabKey>("foryou");
+  const [tab, setTab] = useState<TabKey>("pentru-tine");
   const [commentsFor, setCommentsFor] = useState<Moment | null>(null);
   const [shareFor, setShareFor] = useState<Moment | null>(null);
   const [menuFor, setMenuFor] = useState<Moment | null>(null);
@@ -206,11 +220,12 @@ function FazePage() {
 
   const sortedItems = (() => {
     if (!data) return [];
-    const arr = [...data.items];
-    if (tab === "recent") arr.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-    else if (tab === "top") arr.sort((a, b) => pseudoCount(b.id, 7, 2000) - pseudoCount(a.id, 7, 2000));
-    else if (tab === "legendare") return arr.filter((it) => pickBadge(it.id).key === "legendar");
-    return arr;
+    if (tab === "prieteni") {
+      if (!friendIds.length) return [];
+      const friendSet = new Set(friendIds);
+      return data.items.filter((it) => friendSet.has(it.user_id));
+    }
+    return [...data.items];
   })();
 
   return (
@@ -247,21 +262,17 @@ function FazePage() {
       {/* Tabs */}
       <div className="flex px-4 gap-6 overflow-x-auto no-scrollbar border-b border-white/5 sticky top-[76px] z-20 bg-[#050505]/85 backdrop-blur-xl">
         {([
-          { k: "foryou", label: "Pentru tine" },
-          { k: "recent", label: "Recent" },
-          { k: "top", label: "Top" },
-          { k: "legendare", label: "Legendare" },
+          { k: "pentru-tine", label: "Pentru tine" },
+          { k: "prieteni", label: "Prieteni" },
         ] as { k: TabKey; label: string }[]).map((t) => {
           const active = tab === t.k;
-          const isLegendare = t.k === "legendare";
           return (
             <button
               key={t.k}
               onClick={() => setTab(t.k)}
               className={`relative shrink-0 py-3 text-sm whitespace-nowrap transition ${
                 active ? "text-white font-semibold" : "text-white/40 font-medium"
-              } ${isLegendare && !active ? "italic text-amber-500/80" : ""}`}
-              style={isLegendare ? instrument : undefined}
+              }`}
             >
               {t.label}
               {active && (
