@@ -97,8 +97,11 @@ function InboxPage() {
       </div>
 
       <header className="space-y-2">
-        <h1 className="font-display uppercase text-3xl leading-[0.95]">Conversațiile tale.</h1>
-        <p className="text-xs text-zinc-500">DM-uri și grupuri cu trupa.</p>
+        <h1 className="font-display font-black uppercase text-4xl leading-[0.9] tracking-tighter">
+          Conversațiile<br />
+          <span className="text-fuchsia-500">tale.</span>
+        </h1>
+        <p className="text-[10px] text-zinc-500 uppercase tracking-widest">DM-uri și grupuri cu trupa.</p>
       </header>
 
       {/* Friends row (story-style) */}
@@ -110,8 +113,8 @@ function InboxPage() {
         }} />
       )}
 
-      {/* Segmented */}
-      <div className="grid grid-cols-3 gap-2 text-[11px] font-bold uppercase tracking-wider">
+      {/* Segmented — pill row */}
+      <div className="flex gap-2 text-[10px] font-black uppercase tracking-widest">
         {([
           ["toate", conversations.length],
           ["dm", dms.length],
@@ -120,7 +123,11 @@ function InboxPage() {
           <button
             key={k}
             onClick={() => setTab(k as Tab)}
-            className={`py-2.5 rounded-2xl border transition ${tab === k ? "bg-neon-crimson text-background border-neon-crimson" : "bg-zinc-900/30 border-white/5 text-zinc-400 hover:bg-zinc-800/40"}`}
+            className={`flex-1 py-2 px-3 rounded-full border transition ${
+              tab === k
+                ? "bg-lime-400 text-black border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.35)]"
+                : "bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:bg-zinc-800/60"
+            }`}
           >
             {k} <span className="opacity-60">· {n}</span>
           </button>
