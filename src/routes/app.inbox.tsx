@@ -11,14 +11,14 @@ export const Route = createFileRoute("/app/inbox")({
   component: InboxPage,
 });
 
-type Tab = "toate" | "dm" | "grup";
+type Tab = "pentru-tine" | "prieteni";
 
 function InboxPage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const qc = useQueryClient();
   const [showNew, setShowNew] = useState(false);
-  const [tab, setTab] = useState<Tab>("toate");
+  const [tab, setTab] = useState<Tab>("pentru-tine");
 
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["inbox", user?.id],
@@ -75,9 +75,8 @@ function InboxPage() {
 
   const dms = useMemo(() => conversations.filter((c: any) => c.kind === "dm"), [conversations]);
   const groups = useMemo(() => conversations.filter((c: any) => c.kind !== "dm"), [conversations]);
-  
 
-  const filtered = tab === "dm" ? dms : tab === "grup" ? groups : conversations;
+  const filtered = tab === "prieteni" ? [] : conversations;
 
   return (
     <div className="px-5 pt-6 pb-8 space-y-7 max-w-2xl mx-auto">
@@ -104,8 +103,8 @@ function InboxPage() {
         <p className="text-[10px] text-zinc-500 uppercase tracking-widest">DM-uri și grupuri cu trupa.</p>
       </header>
 
-      {/* Friends row (story-style) */}
-      {conversations.length > 0 && (
+      {/* Friends row (story-style) — only on Pentru tine */}
+      {tab === "pentru-tine" && conversations.length > 0 && (
         <FriendsRow onPick={async (peerId) => {
           if (!user) return;
           const cid = await openOrCreateDM(user.id, peerId);
@@ -113,23 +112,25 @@ function InboxPage() {
         }} />
       )}
 
-      {/* Segmented — pill row */}
-      <div className="flex gap-2 text-[10px] font-black uppercase tracking-widest">
+      {/* Tab bar — text style with underline indicator */}
+      <div className="flex gap-6 text-[13px] font-black uppercase tracking-wide border-b border-zinc-800/50">
         {([
-          ["toate", conversations.length],
-          ["dm", dms.length],
-          ["grup", groups.length],
-        ] as const).map(([k, n]) => (
+          ["pentru-tine", "Pentru tine"],
+          ["prieteni", "Prieteni"],
+        ] as const).map(([k, label]) => (
           <button
             key={k}
             onClick={() => setTab(k as Tab)}
-            className={`flex-1 py-2 px-3 rounded-full border transition ${
+            className={`relative py-3 transition ${
               tab === k
-                ? "bg-lime-400 text-black border-lime-400 shadow-[0_0_15px_rgba(163,230,53,0.35)]"
-                : "bg-zinc-900/60 text-zinc-400 border-zinc-800 hover:bg-zinc-800/60"
+                ? "text-white"
+                : "text-zinc-500 hover:text-zinc-300"
             }`}
           >
-            {k} <span className="opacity-60">· {n}</span>
+            {label}
+            {tab === k && (
+              <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-neon-crimson via-neon-purple to-neon-green rounded-full" />
+            )}
           </button>
         ))}
       </div>
@@ -143,13 +144,19 @@ function InboxPage() {
         <div className="py-14 text-center space-y-3">
           <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-neon-crimson via-neon-purple to-neon-green opacity-90 flex items-center justify-center text-2xl">💬</div>
           <div className="font-display font-black text-base">
-            {tab === "dm" ? "Nicio conversație încă" : tab === "grup" ? "Niciun grup" : "Liniște deplină"}
+            {tab === "prieteni" ? "Niciun prieten încă" : "Liniște deplină"}
           </div>
           <div className="text-xs text-muted-foreground">Începe o conversație nouă cu cineva din gașcă.</div>
           <button onClick={() => setShowNew(true)} className="mt-2 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-gradient-to-br from-neon-crimson via-neon-purple to-neon-purple text-white font-display font-black text-xs shadow-[0_8px_22px_-8px_theme(colors.neon-purple/0.7)] active:scale-[0.97] transition">
             <PenSquare size={14} /> Mesaj nou
           </button>
         </div>
+      ) : tab === "prieteni" ? (
+        <FriendsList onMessage={async (peerId) => {
+          if (!user) return;
+          const cid = await openOrCreateDM(user.id, peerId);
+          nav({ to: "/app/chat/$id", params: { id: cid } });
+        }} />
       ) : (
         <div className="space-y-1 -mx-5">
           {filtered.map((c: any) => {
@@ -262,6 +269,74 @@ function FriendsRow({ onPick }: { onPick: (id: string) => void }) {
     </div>
   );
 }
+
+function FriendsList({ onMessage }: { onMessage: (id: string) => void }) {
+  const { user } = useAuth();
+  const { data: friends = [], isLoading } = useQuery({
+    queryKey: ["friends-list", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data: rows } = await supabase
+        .from("friendships")
+        .select("requester_id,addressee_id,status")
+        .eq("status", "accepted")
+        .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`);
+      const ids = (rows ?? []).map((r: any) => r.requester_id === user!.id ? r.addressee_id : r.requester_id);
+      if (!ids.length) return [];
+      const { data: profs } = await supabase.from("profiles").select("id,handle,display_name,avatar_url").in("id", ids);
+      return profs ?? [];
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="py-10 flex flex-col items-center gap-2">
+        <div className="h-7 w-7 rounded-full border-2 border-foreground/15 border-t-foreground animate-spin" />
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">se încarcă</div>
+      </div>
+    );
+  }
+
+  if (!friends.length) {
+    return (
+      <div className="py-14 text-center space-y-3">
+        <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-neon-crimson via-neon-purple to-neon-green opacity-90 flex items-center justify-center">
+          <Users size={26} className="text-white" />
+        </div>
+        <div className="font-display font-black text-base">Niciun prieten încă</div>
+        <div className="text-xs text-muted-foreground">Adaugă oameni din gașcă pentru a începe.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1 -mx-5">
+      {friends.map((f: any) => (
+        <button
+          key={f.id}
+          onClick={() => onMessage(f.id)}
+          className="w-full flex items-center gap-4 px-5 py-3 border-y border-transparent hover:bg-zinc-900/30 active:bg-zinc-900/60 transition text-left"
+        >
+          <div className="h-12 w-12 rounded-full p-[2px] bg-gradient-to-tr from-lime-400 to-fuchsia-600 shrink-0">
+            <div className="h-full w-full rounded-full border-2 border-black overflow-hidden bg-zinc-800">
+              {f.avatar_url
+                ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" />
+                : <div className="h-full w-full bg-gradient-to-br from-fuchsia-600 to-rose-600 flex items-center justify-center font-display font-black text-white">{(f.handle ?? "?")[0]?.toUpperCase()}</div>}
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-display font-black uppercase tracking-tight text-sm text-white truncate">@{f.handle ?? f.display_name ?? "?"}</div>
+            {f.display_name && f.handle && (
+              <div className="text-[11px] text-zinc-500 truncate">{f.display_name}</div>
+            )}
+          </div>
+          <div className="text-[10px] font-black uppercase tracking-widest text-lime-400 shrink-0">mesaj</div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 
 function timeAgo(iso?: string) {
   if (!iso) return "";
