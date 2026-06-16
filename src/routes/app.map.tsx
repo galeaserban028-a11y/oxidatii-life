@@ -433,6 +433,33 @@ function MapPage() {
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
   const [tab, setTab] = useState<"locatii" | "live">("locatii");
 
+  // Hotspots — top venues by live check-ins right now (public, not just friends)
+  const { data: hotspots = [] } = useQuery({
+    queryKey: ["map-hotspots"],
+    queryFn: async () => {
+      const nowIso = new Date().toISOString();
+      const { data } = await supabase
+        .from("check_ins")
+        .select("venue_id, venues(id, name, lat, lng, city_id)")
+        .gt("expires_at", nowIso)
+        .not("venue_id", "is", null)
+        .limit(400);
+      const counts = new Map<string, { venue: any; count: number }>();
+      for (const c of (data ?? []) as any[]) {
+        if (!c.venues) continue;
+        const cur = counts.get(c.venue_id);
+        if (cur) cur.count += 1;
+        else counts.set(c.venue_id, { venue: c.venues, count: 1 });
+      }
+      return Array.from(counts.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
+    },
+    refetchInterval: 60_000,
+  });
+
+  const instrument = { fontFamily: '"Instrument Serif", serif', letterSpacing: "-0.02em" } as const;
+
   return (
     <div className="pb-4">
       {/* Sticky app-style header */}
