@@ -614,22 +614,212 @@ function MapPage() {
                 { enableHighAccuracy: true, timeout: 8000 },
               );
             }}
-            className="w-full flex items-center gap-3 rounded-2xl border border-neon-green/40 bg-neon-green/10 px-4 py-3 text-left active:scale-[0.99] transition"
+            className="w-full flex items-center gap-3 rounded-2xl border border-[#ff6b35]/40 bg-gradient-to-r from-[#ff6b35]/15 to-[#e84393]/10 px-4 py-3 text-left active:scale-[0.99] transition"
           >
-            <span className="h-9 w-9 grid place-items-center rounded-xl bg-neon-green/20 border border-neon-green/40 shrink-0">
-              <Navigation size={16} className="text-neon-green" />
+            <span className="h-9 w-9 grid place-items-center rounded-xl bg-gradient-to-tr from-[#ff6b35] to-[#e84393] shrink-0 shadow-lg shadow-[#ff6b35]/30">
+              <Navigation size={16} className="text-white" />
             </span>
             <span className="flex-1 min-w-0">
-              <span className="block font-display font-black uppercase text-sm leading-tight text-neon-green">
+              <span className="block uppercase text-sm leading-tight text-white font-bold tracking-tight">
                 {privacyQ.data?.settings?.map_ghost ? "ești în ghost mode" : "live-ul e oprit"}
               </span>
-              <span className="block font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-0.5">
+              <span className="block text-[10px] uppercase tracking-[0.2em] text-white/50 mt-0.5 font-bold">
                 apasă ca să apari pe hartă pentru prieteni
               </span>
             </span>
-            <span className="font-display text-neon-green text-xl">→</span>
+            <span className="text-[#ff6b35] text-xl font-bold">→</span>
           </button>
         )}
+
+        {/* Map block — cinema bento card */}
+        <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#111] shadow-[0_4px_24px_-12px_rgba(0,0,0,0.8)]">
+
+          {isLoading ? (
+            <div className="aspect-[5/4] animate-pulse bg-white/5" />
+          ) : (
+            <RomaniaMap3D
+              cities={citiesScoped}
+              venues={filtered}
+              promotedMeta={promotedMeta}
+              friends={friendPins}
+              focusCity={focusCity}
+              fitBounds={fitBounds}
+              onCityClick={(c) => {
+                setCityId(c.id);
+                setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
+              }}
+            />
+          )}
+          {activeCity && (
+            <div className="absolute top-3 left-3 right-3 z-10 flex items-center gap-2 rounded-2xl backdrop-blur-xl bg-black/50 border border-white/10 px-3 py-2">
+              <MapPin size={12} className="text-[#f7931e] shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[8px] uppercase tracking-[0.22em] text-[#f7931e] font-bold">filtru</div>
+                <div className="font-bold text-xs truncate text-white">{activeCity.name}</div>
+              </div>
+              <Link
+                to="/app/city/$slug"
+                params={{ slug: activeCity.slug }}
+                className="text-[9px] uppercase tracking-widest text-[#ff6b35] border border-[#ff6b35]/40 rounded-full px-2 py-0.5 font-bold"
+              >
+                străzi →
+              </Link>
+              <button
+                onClick={() => { setCityId("all"); setFocusCity(null); }}
+                aria-label="Șterge filtru"
+                className="h-6 w-6 grid place-items-center rounded-full border border-white/15 text-white/60"
+              >
+                <X size={11} />
+              </button>
+            </div>
+          )}
+          {/* Top CTA — "fă-ți localul vizibil", dismissible */}
+          {!activeCity && <BusinessVisibilityCTA />}
+
+          {/* Map settings button — top-right (safe-area aware) */}
+          {user && (
+            <button
+              onClick={() => setSettingsOpen(true)}
+              aria-label="Setări hartă"
+              style={{
+                top: "calc(env(safe-area-inset-top) + 0.75rem)",
+                right: "calc(env(safe-area-inset-right) + 0.75rem)",
+              }}
+              className="absolute z-20 h-9 w-9 grid place-items-center rounded-full backdrop-blur-xl bg-black/50 border border-white/10 text-white/80 active:scale-95 transition"
+            >
+              {privacyQ.data?.settings?.map_ghost ? (
+                <Ghost size={15} className="text-[#e84393]" />
+              ) : (
+                <Settings size={15} />
+              )}
+            </button>
+          )}
+
+          {/* Floating promo banner — bottom of map, dismissible */}
+          <PromoBanner promotedMeta={promotedMeta} />
+        </div>
+
+        <MapSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+        <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
+
+        {/* Friends CTA */}
+        <Link
+          to="/app/friends"
+          className="group block rounded-2xl p-[1.5px] bg-gradient-to-r from-[#ff6b35] via-[#f7931e] to-[#e84393] active:scale-[0.99] transition shadow-lg shadow-[#ff6b35]/20"
+        >
+          <div className="rounded-[14px] bg-[#0a0a0a] px-3.5 py-3 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#ff6b35] to-[#e84393] grid place-items-center shrink-0 shadow-lg shadow-[#ff6b35]/30">
+              <UserPlus className="text-white" size={18} strokeWidth={2.6} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="uppercase text-sm leading-tight text-white font-bold tracking-tight">cheamă oxidații</div>
+              <div className="text-[9px] uppercase tracking-[0.2em] text-white/50 mt-0.5 font-bold">
+                adaugă prieteni → vezi-i pe hartă
+              </div>
+            </div>
+            <span className="text-[#ff6b35] text-xl font-bold">→</span>
+          </div>
+        </Link>
+
+
+        {/* Tabs */}
+        <div className="flex items-center gap-1 p-1 rounded-full bg-white/5 border border-white/10">
+          <button
+            onClick={() => setTab("locatii")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold transition ${tab === "locatii" ? "bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white shadow-lg shadow-[#ff6b35]/25" : "text-white/50"}`}
+          >
+            <List size={11} /> locații · {filtered.length}
+          </button>
+          <button
+            onClick={() => setTab("live")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold transition ${tab === "live" ? "bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white shadow-lg shadow-[#ff6b35]/25" : "text-white/50"}`}
+          >
+            <Users size={11} /> live · {friendPins.length}
+          </button>
+        </div>
+
+        {tab === "live" && (
+          <section className="space-y-2">
+            {friendPins.length === 0 ? (
+              <div className="py-10 text-center text-[11px] uppercase tracking-widest text-white/40 font-bold">
+                niciun oxidat live acum.
+              </div>
+            ) : friendPins.map((f) => (
+              <Link
+                key={f.user_id}
+                to="/app/user/$id"
+                params={{ id: f.user_id }}
+                className="flex items-center gap-3 p-3 rounded-2xl bg-[#111] border border-white/10 active:scale-[0.99] transition"
+              >
+                <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-[#ff6b35] to-[#e84393] flex items-center justify-center text-sm font-bold shrink-0 text-white">
+                  {f.avatar_url ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" /> : (f.handle ?? "?")[0]?.toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold truncate text-white">@{f.handle ?? f.display_name}</div>
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate font-bold mt-0.5">
+                    📍 {f.venue_name ?? "în oraș"}
+                  </div>
+                </div>
+                <span className="relative inline-flex h-2 w-2">
+                  <span className="absolute inset-0 rounded-full bg-[#ff6b35] animate-ping opacity-75" />
+                  <span className="relative h-2 w-2 rounded-full bg-[#ff6b35]" />
+                </span>
+              </Link>
+            ))}
+          </section>
+        )}
+
+        {tab === "locatii" && (
+          <section className="space-y-2">
+            {geo && (
+              <div className="text-[9px] uppercase tracking-[0.18em] text-[#ff6b35] flex items-center gap-1 font-bold">
+                <Navigation size={10} /> sortat după distanță
+              </div>
+            )}
+            {filtered.length === 0 ? (
+              <div className="py-10 text-center text-[11px] uppercase tracking-widest text-white/40 font-bold">
+                zero locații. dă reset la filtre.
+              </div>
+            ) : (
+              <>
+                {filtered.slice(0, visible).map(v => {
+                  const city = cityMap.get(v.city_id);
+                  const dist = geo && v.lat != null && v.lng != null
+                    ? distanceKm(geo.lat, geo.lng, v.lat, v.lng) : null;
+                  const openState = isOpenNow(v.opening_hours);
+                  const nextOpen = openState === false ? nextOpenLabel(v.opening_hours) : null;
+                  return (
+                    <div key={v.id} className="flex items-center gap-3 p-3 rounded-2xl bg-[#111] border border-white/10">
+                      <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#ff6b35]/20 to-[#e84393]/10 border border-[#ff6b35]/30 flex items-center justify-center shrink-0 text-[#ff6b35]">
+                        <Beer size={16} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <div className="font-semibold text-sm truncate text-white">{v.name}</div>
+                          {openState === true && (
+                            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#ff6b35]/15 border border-[#ff6b35]/40 text-[8px] uppercase tracking-wider text-[#ff6b35] font-bold">
+                              <span className="h-1.5 w-1.5 rounded-full bg-[#ff6b35] animate-pulse" /> open
+                            </span>
+                          )}
+                          {openState === false && (
+                            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#e84393]/15 border border-[#e84393]/40 text-[8px] uppercase tracking-wider text-[#e84393] font-bold">
+                              <Clock size={8} /> {nextOpen ? nextOpen : "închis"}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate flex items-center gap-1 font-bold mt-0.5">
+                          <MapPin size={9} /> {city?.name ?? "?"}{v.address ? ` · ${v.address}` : ""}
+                        </div>
+                      </div>
+                      {dist != null && (
+                        <div className="text-[10px] uppercase tracking-widest text-[#f7931e] shrink-0 font-bold">
+                          {dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
 
         {/* Map block */}
         <div className="relative rounded-2xl overflow-hidden border border-border bg-foreground/5">
