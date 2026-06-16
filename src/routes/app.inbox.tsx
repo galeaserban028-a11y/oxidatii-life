@@ -103,8 +103,8 @@ function InboxPage() {
         <p className="text-[10px] text-zinc-500 uppercase tracking-widest">DM-uri și grupuri cu trupa.</p>
       </header>
 
-      {/* Friends row (story-style) */}
-      {conversations.length > 0 && (
+      {/* Friends row (story-style) — only on Pentru tine */}
+      {tab === "pentru-tine" && conversations.length > 0 && (
         <FriendsRow onPick={async (peerId) => {
           if (!user) return;
           const cid = await openOrCreateDM(user.id, peerId);
