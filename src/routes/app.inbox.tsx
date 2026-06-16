@@ -151,7 +151,7 @@ function InboxPage() {
             <PenSquare size={14} /> Mesaj nou
           </button>
         </div>
-      {tab === "prieteni" ? (
+      ) : tab === "prieteni" ? (
         <FriendsList onMessage={async (peerId) => {
           if (!user) return;
           const cid = await openOrCreateDM(user.id, peerId);
