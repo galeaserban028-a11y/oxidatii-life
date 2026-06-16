@@ -241,7 +241,7 @@ export function RomaniaMap3D({
             1, "rgba(255,255,255,0.95)",
           ],
           "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 6, 22, 11, 50, 13, 80],
-          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0.85, 13, 0.25],
+          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.55, 11, 0.4, 13, 0.15],
         },
       });
 
@@ -425,7 +425,7 @@ export function RomaniaMap3D({
     const tick = (t: number) => {
       if (!map.getLayer("venues-heat")) { raf = requestAnimationFrame(tick); return; }
       const k = (Math.sin((t - start) / 1400) + 1) / 2; // 0..1
-      const intensity = 0.9 + k * 0.9;
+      const intensity = 0.7 + k * 0.5;
       try { map.setPaintProperty("venues-heat", "heatmap-intensity", intensity); } catch {}
       raf = requestAnimationFrame(tick);
     };
@@ -727,46 +727,12 @@ export function RomaniaMap3D({
       {/* Deep space vignette — frames the globe like a tiny planet */}
       <div className="pointer-events-none absolute inset-0 z-[1]"
            style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 22%, rgba(3,4,10,0.55) 55%, rgba(3,4,10,0.98) 95%)" }} />
-      {/* Aurora drift — slow living halos */}
-      <div className="pointer-events-none absolute -inset-10 z-[1] opacity-70 blur-3xl mix-blend-screen"
+      {/* Aurora drift — subtle living halos */}
+      <div className="pointer-events-none absolute -inset-10 z-[1] opacity-40 blur-3xl mix-blend-screen"
            style={{
-             background: "radial-gradient(circle at 30% 30%, rgba(57,255,136,0.22), transparent 45%), radial-gradient(circle at 75% 70%, rgba(255,49,88,0.28), transparent 50%), radial-gradient(circle at 50% 50%, rgba(198,107,255,0.18), transparent 60%)",
-             animation: "oxi-aurora-drift 14s ease-in-out infinite",
+             background: "radial-gradient(circle at 30% 30%, rgba(57,255,136,0.18), transparent 50%), radial-gradient(circle at 75% 70%, rgba(255,49,88,0.20), transparent 55%)",
+             animation: "oxi-aurora-drift 18s ease-in-out infinite",
            }} />
-      {/* CRT scanlines — arcade feel */}
-      <div className="pointer-events-none absolute inset-0 z-[2] opacity-[0.08] mix-blend-overlay"
-           style={{ backgroundImage: "repeating-linear-gradient(0deg, rgba(255,255,255,0.6) 0 1px, transparent 1px 3px)" }} />
-
-      {/* Radar HUD — rotating conic sweep + concentric rings + ping */}
-      <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center">
-        <div className="relative h-48 w-48">
-          {/* concentric rings */}
-          <div className="absolute inset-0 rounded-full border border-neon-green/20" />
-          <div className="absolute inset-4 rounded-full border border-neon-purple/15" />
-          <div className="absolute inset-10 rounded-full border border-neon-green/10" />
-          {/* rotating sweep */}
-          <div
-            className="absolute inset-0 rounded-full mix-blend-screen"
-            style={{
-              background: "conic-gradient(from 0deg, rgba(57,255,136,0) 0deg, rgba(57,255,136,0.55) 28deg, rgba(57,255,136,0) 60deg, rgba(57,255,136,0) 360deg)",
-              animation: "oxi-radar-spin 4.5s linear infinite",
-              maskImage: "radial-gradient(circle, #000 60%, transparent 100%)",
-              WebkitMaskImage: "radial-gradient(circle, #000 60%, transparent 100%)",
-            }}
-          />
-          {/* center dot + ping */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-neon-green shadow-[0_0_12px_var(--neon-green)]" />
-          <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 rounded-full border border-neon-green/70"
-            style={{ animation: "oxi-ring-ping 2.2s ease-out infinite" }}
-          />
-          {/* crosshair ticks */}
-          <div className="absolute left-1/2 top-0 h-3 w-px -translate-x-1/2 bg-neon-green/50" />
-          <div className="absolute left-1/2 bottom-0 h-3 w-px -translate-x-1/2 bg-neon-green/50" />
-          <div className="absolute top-1/2 left-0 h-px w-3 -translate-y-1/2 bg-neon-green/50" />
-          <div className="absolute top-1/2 right-0 h-px w-3 -translate-y-1/2 bg-neon-green/50" />
-        </div>
-      </div>
 
       <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur font-mono text-[9px] uppercase tracking-widest text-neon-green pointer-events-none border border-neon-green/30">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse mr-1.5 align-middle" />
