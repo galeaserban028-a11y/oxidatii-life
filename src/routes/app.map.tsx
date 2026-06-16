@@ -231,7 +231,7 @@ function MapPage() {
           cover,
           campaignId: c.id,
           title: c.title ?? null,
-          venueName: c.venues?.name ?? c.business_accounts?.brand_name ?? null,
+          venueName: c.business_accounts?.brand_name ?? null,
           tier,
         };
       }
