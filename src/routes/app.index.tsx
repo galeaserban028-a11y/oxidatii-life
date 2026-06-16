@@ -92,6 +92,8 @@ function AppFeed() {
     >
       <PromoTakeover />
 
+      <NightWrapSection />
+
       {/* Status header */}
       <header className="space-y-7">
         <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em]">
