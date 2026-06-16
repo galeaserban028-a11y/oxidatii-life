@@ -83,59 +83,96 @@ function AppFeed() {
   });
 
   return (
-    <div className="px-5 pt-6 pb-6 space-y-8">
+    <div
+      className="px-5 pt-6 pb-8 space-y-8"
+      style={{ fontFamily: "'Work Sans', system-ui, sans-serif" }}
+    >
       <PromoTakeover />
-      {/* Airy header */}
-      <header className="space-y-5">
-        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.3em]">
-          <span className="text-neon-crimson flicker">● LIVE · ROMÂNIA</span>
-          <span className="text-zinc-500">{new Date().toLocaleDateString("ro-RO", { weekday: "long" })}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <img src={logoLight} alt="" aria-hidden width={56} height={56} className="h-14 w-14 object-contain shrink-0 drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]" />
-          <h1 className="font-display uppercase text-2xl leading-[1.05] tracking-tight">
-            Ce șprițuri sunt <span className="text-gradient-chaos">diseară</span>
-          </h1>
+
+      {/* Status header */}
+      <header className="space-y-7">
+        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em]">
+          <span className="flex items-center gap-2 text-white/60">
+            <span
+              className="inline-block h-2 w-2 rounded-full bg-[#ff6b35] animate-pulse"
+              style={{ boxShadow: "0 0 8px #ff6b35" }}
+            />
+            LIVE · ROMÂNIA
+          </span>
+          <span className="text-white/30">
+            {new Date().toLocaleDateString("ro-RO", { weekday: "long" })}
+          </span>
         </div>
 
-        {/* Quick actions — calm glass tiles */}
-        <div className="grid grid-cols-3 gap-3 pt-2">
+        {/* Editorial headline */}
+        <h1
+          className="text-[42px] leading-[0.92] text-white"
+          style={{ fontFamily: "'Instrument Serif', serif" }}
+        >
+          Ce șprițuri sunt
+          <br />
+          <span
+            className="italic bg-clip-text text-transparent"
+            style={{
+              backgroundImage:
+                "linear-gradient(90deg, #ff6b35, #e84393, #6c5ce7)",
+            }}
+          >
+            diseară
+          </span>
+        </h1>
+
+        {/* Bento quick actions */}
+        <div className="grid grid-cols-2 gap-3">
           <Link
             to="/app/scan"
-            className="p-4 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
+            className="row-span-2 rounded-3xl border border-white/5 bg-[#121212] p-5 flex flex-col justify-between min-h-[156px] active:scale-[0.98] transition-all"
           >
-            <div className="w-9 h-9 rounded-full bg-neon-crimson/10 flex items-center justify-center">
-              <Plus size={16} strokeWidth={2.4} className="text-neon-crimson group-hover:scale-110 transition-transform" />
+            <div className="w-10 h-10 rounded-2xl bg-[#ff6b35]/15 flex items-center justify-center text-[#ff6b35]">
+              <Plus size={22} strokeWidth={2.6} />
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">deschide șpriț</span>
+            <span className="text-[13px] font-bold uppercase tracking-wider leading-tight">
+              Deschide
+              <br />
+              șpriț
+            </span>
           </Link>
+
           <Link
             to="/app/faze"
-            className="p-4 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
+            className="rounded-3xl border border-white/5 bg-[#121212] p-4 flex flex-col gap-3 active:scale-[0.98] transition-all"
           >
-            <div className="w-9 h-9 rounded-full bg-amber-500/10 flex items-center justify-center text-base leading-none">🎬</div>
-            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">faze din teren</span>
+            <div className="w-8 h-8 rounded-xl bg-[#f7931e]/15 flex items-center justify-center text-base leading-none">
+              🎬
+            </div>
+            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">
+              Faze din teren
+            </span>
           </Link>
+
           <Link
             to="/app/squad"
-            className="p-4 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
+            className="rounded-3xl border border-white/5 bg-[#121212] p-4 flex flex-col gap-3 active:scale-[0.98] transition-all"
           >
-            <div className="w-9 h-9 rounded-full bg-neon-purple/10 flex items-center justify-center">
-              <Users size={16} className="text-neon-purple group-hover:scale-110 transition-transform" />
+            <div className="w-8 h-8 rounded-xl bg-[#6c5ce7]/15 flex items-center justify-center text-[#6c5ce7]">
+              <Users size={16} strokeWidth={2.4} />
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">haita ta</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">
+              Haita ta
+            </span>
           </Link>
         </div>
       </header>
-
-
 
       <LiveSpritzStrip />
 
       {isLoading ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-72 rounded-xl bg-foreground/[0.04] animate-pulse" />
+            <div
+              key={i}
+              className="h-72 rounded-3xl bg-white/[0.04] animate-pulse"
+            />
           ))}
         </div>
       ) : !data || data.items.length === 0 ? (
@@ -145,7 +182,9 @@ function AppFeed() {
           {data.items.map((it) => {
             const profile = data.profilesMap.get(it.user_id);
             const venue = it.venue_id ? data.venuesMap.get(it.venue_id) : null;
-            return <FeedCard key={it.id} item={it} profile={profile} venue={venue} />;
+            return (
+              <FeedCard key={it.id} item={it} profile={profile} venue={venue} />
+            );
           })}
         </div>
       )}
