@@ -198,6 +198,27 @@ function AppFeed() {
   );
 }
 
+function NightWrapSection() {
+  const { user } = useAuth();
+  const generateWrap = useServerFn(getOrCreateNightWrap);
+  const { data } = useQuery({
+    queryKey: ["night-wrap", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const hour = new Date().getHours();
+      // only after 6 AM local
+      if (hour < 6) return null;
+      const result = await generateWrap({ data: {} });
+      return "wrap" in result ? result.wrap : null;
+    },
+    staleTime: 60 * 60 * 1000,
+  });
+  if (!data) return null;
+  return <NightWrapCard wrap={data} />;
+}
+
+
+
 function LiveSpritzStrip() {
   const { data: parties = [] } = useQuery({
     queryKey: ["home-live-spritz"],
