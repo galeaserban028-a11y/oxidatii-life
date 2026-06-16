@@ -106,7 +106,7 @@ function timeAgo(iso: string) {
   return `${Math.floor(s / 86400)}z`;
 }
 
-type TabKey = "foryou" | "recent" | "top" | "legendare";
+type TabKey = "pentru-tine" | "prieteni";
 
 const BADGES = [
   { key: "legendar", label: "LEGENDAR", className: "bg-sunset-orange/15 text-sunset-orange border-sunset-orange/40" },
@@ -143,7 +143,7 @@ function FazePage() {
   // Native sponsored cards interleaved in the feed (shared with /app/feed).
   const { data: promoCards = [] } = usePromoCards();
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<TabKey>("foryou");
+  const [tab, setTab] = useState<TabKey>("pentru-tine");
   const [commentsFor, setCommentsFor] = useState<Moment | null>(null);
   const [shareFor, setShareFor] = useState<Moment | null>(null);
   const [menuFor, setMenuFor] = useState<Moment | null>(null);
