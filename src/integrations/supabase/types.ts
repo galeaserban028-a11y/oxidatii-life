@@ -917,36 +917,6 @@ export type Database = {
         }
         Relationships: []
       }
-      daily_spins: {
-        Row: {
-          created_at: string
-          id: string
-          reward_amount: number
-          reward_kind: string
-          reward_label: string | null
-          spin_date: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          reward_amount?: number
-          reward_kind: string
-          reward_label?: string | null
-          spin_date?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          reward_amount?: number
-          reward_kind?: string
-          reward_label?: string | null
-          spin_date?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       exclusive_partner_slots: {
         Row: {
           business_id: string | null
@@ -1764,44 +1734,6 @@ export type Database = {
         }
         Relationships: []
       }
-      tonight_intents: {
-        Row: {
-          created_at: string
-          id: string
-          intent_date: string
-          note: string | null
-          updated_at: string
-          user_id: string
-          venue_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          intent_date: string
-          note?: string | null
-          updated_at?: string
-          user_id: string
-          venue_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          intent_date?: string
-          note?: string | null
-          updated_at?: string
-          user_id?: string
-          venue_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tonight_intents_venue_id_fkey"
-            columns: ["venue_id"]
-            isOneToOne: false
-            referencedRelation: "venues"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_frames: {
         Row: {
           acquired_at: string
@@ -2052,13 +1984,11 @@ export type Database = {
         Args: { _check_in_id?: string; _offer_id: string }
         Returns: Json
       }
-      claim_daily_spin: { Args: never; Returns: Json }
       claim_exclusive_slot: {
         Args: { _business_id: string; _city_id: string }
         Returns: Json
       }
       claim_profile_boost: { Args: never; Returns: Json }
-      clear_tonight_intent: { Args: { _date: string }; Returns: Json }
       compute_business_score: {
         Args: { _business_id: string }
         Returns: number
@@ -2103,21 +2033,6 @@ export type Database = {
         }[]
       }
       get_streak_status: { Args: { _user_id?: string }; Returns: Json }
-      get_tonight_friends: {
-        Args: { _date?: string }
-        Returns: {
-          avatar_url: string
-          current_streak: number
-          display_name: string
-          handle: string
-          is_checked_in: boolean
-          note: string
-          set_at: string
-          user_id: string
-          venue_id: string
-          venue_name: string
-        }[]
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
