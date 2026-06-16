@@ -96,7 +96,7 @@ export function BottomTabBar() {
         )}
 
         {/* Main Navigation Bar — sunset glass floating */}
-        <div className="relative bg-[#0d0d0d]/80 backdrop-blur-xl border border-white/5 rounded-[32px] p-2 flex items-center justify-between shadow-2xl shadow-orange-500/10">
+        <div className="relative bg-[#0d0d0d]/40 backdrop-blur-xl border border-white/10 rounded-[32px] p-2 flex items-center justify-between shadow-2xl shadow-orange-500/10">
           {/* Left Group — 3 tabs */}
           <div className="flex flex-1 justify-around items-center">
             {leftTabs.map(t => {
