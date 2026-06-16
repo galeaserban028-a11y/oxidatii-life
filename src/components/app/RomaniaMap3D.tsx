@@ -113,6 +113,7 @@ const VOYAGER_STYLE = {
 
 
 const VENUES_SRC = "venues-src";
+const HEAT_SRC = "venues-heat-src";
 
 function isValidLngLat(lng: unknown, lat: unknown) {
   const x = Number(lng);
@@ -213,6 +214,35 @@ export function RomaniaMap3D({
         cluster: true,
         clusterRadius: 60,
         clusterMaxZoom: 13,
+      });
+
+      // Live "energy" heatmap — separate (unclustered) source so the heat
+      // gradient is smooth across the whole map. Pulses via animated paint
+      // properties below for a living, breathing feel.
+      map.addSource(HEAT_SRC, {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      map.addLayer({
+        id: "venues-heat",
+        type: "heatmap",
+        source: HEAT_SRC,
+        maxzoom: 13,
+        paint: {
+          "heatmap-weight": ["interpolate", ["linear"], ["get", "w"], 0, 0.2, 5, 1.2],
+          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.6, 9, 1.4, 13, 2.2],
+          "heatmap-color": [
+            "interpolate", ["linear"], ["heatmap-density"],
+            0, "rgba(3,4,10,0)",
+            0.15, "rgba(57,255,136,0.35)",
+            0.35, "rgba(198,107,255,0.55)",
+            0.6, "rgba(255,176,0,0.75)",
+            0.85, "rgba(255,49,88,0.9)",
+            1, "rgba(255,255,255,0.95)",
+          ],
+          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 6, 22, 11, 50, 13, 80],
+          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 11, 0.85, 13, 0.25],
+        },
       });
 
       // Register one bottle icon per venue type (different tints).
@@ -365,9 +395,44 @@ export function RomaniaMap3D({
             properties: { id: v.id, name: v.name, type: v.type ?? "club", address: v.address ?? "", cover_url: v.cover_url ?? "" },
           })),
       });
+      const heat = map.getSource(HEAT_SRC) as maplibregl.GeoJSONSource | undefined;
+      if (heat) {
+        heat.setData({
+          type: "FeatureCollection",
+          features: venues
+            .filter(v => isValidLngLat(v.lng, v.lat))
+            .map(v => {
+              const promoted = !!promotedMeta[v.id];
+              const t = v.type ?? "club";
+              const baseWeight = t === "club" ? 3 : t === "after" ? 3.2 : t === "bar" ? 2 : 1.4;
+              return {
+                type: "Feature" as const,
+                geometry: { type: "Point" as const, coordinates: [Number(v.lng), Number(v.lat)] },
+                properties: { w: promoted ? baseWeight + 2 : baseWeight },
+              };
+            }),
+        });
+      }
     };
     if (loadedRef.current) apply(); else map.once("load", apply);
   }, [venues, promotedMeta, retryKey]);
+
+  // Pulse the heatmap intensity so the map feels alive (breathing energy).
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return;
+    let raf = 0;
+    const start = performance.now();
+    const tick = (t: number) => {
+      if (!map.getLayer("venues-heat")) { raf = requestAnimationFrame(tick); return; }
+      const k = (Math.sin((t - start) / 1400) + 1) / 2; // 0..1
+      const intensity = 0.9 + k * 0.9;
+      try { map.setPaintProperty("venues-heat", "heatmap-intensity", intensity); } catch {}
+      raf = requestAnimationFrame(tick);
+    };
+    const onLoad = () => { raf = requestAnimationFrame(tick); };
+    if (loadedRef.current) onLoad(); else map.once("load", onLoad);
+    return () => { if (raf) cancelAnimationFrame(raf); };
+  }, [retryKey]);
 
   // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
   // halo. Replaces the bottle silhouette so paying businesses are instantly
@@ -627,6 +692,13 @@ export function RomaniaMap3D({
       <style>{`
         @keyframes oxi-pulse-strong { 0% { transform: translateX(-50%) scale(0.6); opacity: 0.7; } 80% { transform: translateX(-50%) scale(1.5); opacity: 0; } 100% { opacity: 0; } }
         @keyframes oxi-scan { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+        @keyframes oxi-radar-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes oxi-aurora-drift {
+          0%   { transform: translate3d(-4%, -2%, 0) scale(1); }
+          50%  { transform: translate3d(3%, 4%, 0) scale(1.08); }
+          100% { transform: translate3d(-4%, -2%, 0) scale(1); }
+        }
+        @keyframes oxi-ring-ping { 0% { transform: scale(0.6); opacity: 0.5; } 80% { transform: scale(1.6); opacity: 0; } 100% { opacity: 0; } }
         .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas { outline:none !important; }
@@ -655,24 +727,46 @@ export function RomaniaMap3D({
       {/* Deep space vignette — frames the globe like a tiny planet */}
       <div className="pointer-events-none absolute inset-0 z-[1]"
            style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 22%, rgba(3,4,10,0.55) 55%, rgba(3,4,10,0.98) 95%)" }} />
-      {/* Neon atmospheric halos */}
+      {/* Aurora drift — slow living halos */}
       <div className="pointer-events-none absolute -inset-10 z-[1] opacity-70 blur-3xl mix-blend-screen"
-           style={{ background: "radial-gradient(circle at 30% 30%, rgba(57,255,136,0.22), transparent 45%), radial-gradient(circle at 75% 70%, rgba(255,49,88,0.28), transparent 50%), radial-gradient(circle at 50% 50%, rgba(198,107,255,0.18), transparent 60%)" }} />
+           style={{
+             background: "radial-gradient(circle at 30% 30%, rgba(57,255,136,0.22), transparent 45%), radial-gradient(circle at 75% 70%, rgba(255,49,88,0.28), transparent 50%), radial-gradient(circle at 50% 50%, rgba(198,107,255,0.18), transparent 60%)",
+             animation: "oxi-aurora-drift 14s ease-in-out infinite",
+           }} />
       {/* CRT scanlines — arcade feel */}
       <div className="pointer-events-none absolute inset-0 z-[2] opacity-[0.08] mix-blend-overlay"
            style={{ backgroundImage: "repeating-linear-gradient(0deg, rgba(255,255,255,0.6) 0 1px, transparent 1px 3px)" }} />
-      {/* Crosshair / HUD reticle */}
+
+      {/* Radar HUD — rotating conic sweep + concentric rings + ping */}
       <div className="pointer-events-none absolute inset-0 z-[2] flex items-center justify-center">
-        <div className="relative h-40 w-40 rounded-full border border-neon-green/15">
-          <div className="absolute inset-3 rounded-full border border-neon-purple/15" />
-          <div className="absolute left-1/2 top-0 h-3 w-px -translate-x-1/2 bg-neon-green/40" />
-          <div className="absolute left-1/2 bottom-0 h-3 w-px -translate-x-1/2 bg-neon-green/40" />
-          <div className="absolute top-1/2 left-0 h-px w-3 -translate-y-1/2 bg-neon-green/40" />
-          <div className="absolute top-1/2 right-0 h-px w-3 -translate-y-1/2 bg-neon-green/40" />
+        <div className="relative h-48 w-48">
+          {/* concentric rings */}
+          <div className="absolute inset-0 rounded-full border border-neon-green/20" />
+          <div className="absolute inset-4 rounded-full border border-neon-purple/15" />
+          <div className="absolute inset-10 rounded-full border border-neon-green/10" />
+          {/* rotating sweep */}
+          <div
+            className="absolute inset-0 rounded-full mix-blend-screen"
+            style={{
+              background: "conic-gradient(from 0deg, rgba(57,255,136,0) 0deg, rgba(57,255,136,0.55) 28deg, rgba(57,255,136,0) 60deg, rgba(57,255,136,0) 360deg)",
+              animation: "oxi-radar-spin 4.5s linear infinite",
+              maskImage: "radial-gradient(circle, #000 60%, transparent 100%)",
+              WebkitMaskImage: "radial-gradient(circle, #000 60%, transparent 100%)",
+            }}
+          />
+          {/* center dot + ping */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-neon-green shadow-[0_0_12px_var(--neon-green)]" />
+          <div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-6 w-6 rounded-full border border-neon-green/70"
+            style={{ animation: "oxi-ring-ping 2.2s ease-out infinite" }}
+          />
+          {/* crosshair ticks */}
+          <div className="absolute left-1/2 top-0 h-3 w-px -translate-x-1/2 bg-neon-green/50" />
+          <div className="absolute left-1/2 bottom-0 h-3 w-px -translate-x-1/2 bg-neon-green/50" />
+          <div className="absolute top-1/2 left-0 h-px w-3 -translate-y-1/2 bg-neon-green/50" />
+          <div className="absolute top-1/2 right-0 h-px w-3 -translate-y-1/2 bg-neon-green/50" />
         </div>
       </div>
-
-
 
       <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur font-mono text-[9px] uppercase tracking-widest text-neon-green pointer-events-none border border-neon-green/30">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse mr-1.5 align-middle" />
