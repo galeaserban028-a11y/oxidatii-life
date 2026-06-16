@@ -546,18 +546,18 @@ function MePage() {
 
           <button
             onClick={shareProfile}
-            className="h-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-[0.98] transition flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest"
+            className="h-12 rounded-xl bg-white/5 border border-white/10 hover:border-[#f7931e]/40 hover:bg-white/10 active:scale-[0.98] transition flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white"
           >
             <Share2 size={13} /> Distribuie
           </button>
           <Link
             to="/app/notifications"
-            className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 active:scale-[0.98] transition flex items-center justify-center relative"
+            className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 hover:border-[#e84393]/40 hover:bg-white/10 active:scale-[0.98] transition flex items-center justify-center relative text-white"
             aria-label="Notificări"
           >
             <Bell size={16} />
             {pendingCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-neon-crimson text-white text-[9px] flex items-center justify-center font-mono">
+              <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-[#e84393] text-white text-[9px] flex items-center justify-center font-mono">
                 {pendingCount}
               </span>
             )}
@@ -568,16 +568,16 @@ function MePage() {
         {pendingCount > 0 && (
           <Link
             to="/app/requests"
-            className="mt-3 flex items-center gap-2.5 p-2.5 rounded-xl border border-neon-crimson/40 bg-neon-crimson/10 active:scale-[0.99] transition"
+            className="mt-3 flex items-center gap-2.5 p-3 rounded-2xl border border-[#e84393]/40 bg-gradient-to-r from-[#e84393]/15 to-transparent active:scale-[0.99] transition"
           >
-            <div className="h-8 w-8 rounded-full bg-neon-crimson text-white flex items-center justify-center shrink-0">
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#e84393] text-white flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(232,67,147,0.5)]">
               <UserPlus size={14} strokeWidth={2.6} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-display uppercase text-sm leading-tight">
+              <div style={instrument} className="text-lg leading-tight text-white">
                 {pendingCount} cerere{pendingCount === 1 ? "" : "i"} de urmărire
               </div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              <div className="text-[10px] font-mono uppercase tracking-widest text-white/50">
                 acceptă sau respinge →
               </div>
             </div>
@@ -586,32 +586,34 @@ function MePage() {
 
       </div>
 
-      {/* Stories — propriile story-uri + prieteni */}
+      {/* Stories */}
       <div className="mt-10">
         <StoriesStrip />
       </div>
 
-      <div className="mt-6 border-t border-foreground/5" />
+      <div className="mt-6 border-t border-white/5" />
 
-      {/* TikTok-style tabs */}
-      <div className="sticky top-12 z-20 bg-background/85 backdrop-blur-xl border-b border-foreground/10 grid grid-cols-2">
+      {/* Tabs */}
+      <div className="sticky top-12 z-20 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5 grid grid-cols-2">
         <button
           onClick={() => setTab("posts")}
-          className={`h-11 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest border-b-2 transition ${
-            tab === "posts" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground"
+          className={`relative h-11 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest transition ${
+            tab === "posts" ? "text-white" : "text-white/40"
           }`}
         >
           <Grid3x3 size={14} />
           Postări <span className="font-mono text-[10px] opacity-70">{postsCount}</span>
+          {tab === "posts" && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[2px] bg-gradient-to-r from-[#ff6b35] to-[#e84393]" />}
         </button>
         <button
           onClick={() => setTab("reposts")}
-          className={`h-11 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest border-b-2 transition ${
-            tab === "reposts" ? "border-foreground text-foreground" : "border-transparent text-muted-foreground"
+          className={`relative h-11 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest transition ${
+            tab === "reposts" ? "text-white" : "text-white/40"
           }`}
         >
           <Share2 size={14} />
           Reposturi <span className="font-mono text-[10px] opacity-70">{repostsCount}</span>
+          {tab === "reposts" && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[2px] bg-gradient-to-r from-[#ff6b35] to-[#e84393]" />}
         </button>
       </div>
 
