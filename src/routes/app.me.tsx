@@ -681,8 +681,8 @@ function MePage() {
 function IgStat({ value, label }: { value: number | string; label: string }) {
   return (
     <div className="py-1">
-      <div className="font-display text-xl leading-none">{value}</div>
-      <div className="text-[12px] text-muted-foreground mt-0.5">{label}</div>
+      <div style={{ fontFamily: '"Instrument Serif", serif' }} className="text-2xl leading-none text-white">{value}</div>
+      <div className="text-[11px] text-white/50 mt-1">{label}</div>
     </div>
   );
 }
