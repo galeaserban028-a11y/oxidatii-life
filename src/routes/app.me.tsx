@@ -255,79 +255,82 @@ function MePage() {
     nav({ to: "/", replace: true });
   };
 
+  const instrument = { fontFamily: '"Instrument Serif", "Work Sans", serif' };
+
   return (
-    <div className="pb-3">
-      {/* Top bar — IG style */}
-      <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-foreground/10 px-3 h-12 flex items-center justify-between">
-        <Link to="/app/scan" className="p-1.5 -ml-1.5 active:scale-95 transition" aria-label="Adaugă">
+    <div className="pb-3 bg-[#050505] min-h-screen text-white">
+      {/* Top bar — sunset glass */}
+      <header className="sticky top-0 z-30 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5 px-3 h-12 flex items-center justify-between">
+        <Link to="/app/scan" className="p-1.5 -ml-1.5 active:scale-95 transition text-white/80 hover:text-[#f7931e]" aria-label="Adaugă">
           <Plus size={24} strokeWidth={2.2} />
         </Link>
 
-        <div className="flex-1" />
+        <div className="flex-1 flex justify-center">
+          <span style={instrument} className="text-xl tracking-tight">
+            @{profile.handle ?? "—"}<span className="text-[#f7931e]">.</span>
+          </span>
+        </div>
 
-        <Link to="/app/settings" className="p-1.5 active:scale-95 transition" aria-label="Setări">
+        <Link to="/app/settings" className="p-1.5 active:scale-95 transition text-white/80 hover:text-white" aria-label="Setări">
           <Settings size={22} strokeWidth={2.1} />
         </Link>
 
-
-
-
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild>
-            <button className="p-1.5 -mr-1.5 active:scale-95 transition relative" aria-label="Meniu">
+            <button className="p-1.5 -mr-1.5 active:scale-95 transition relative text-white/80" aria-label="Meniu">
               <Menu size={24} strokeWidth={2.2} />
               {pendingCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-neon-crimson" />
+                <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-[#e84393] animate-pulse" />
               )}
             </button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0">
-            <SheetHeader className="px-4 py-3 border-b border-foreground/10 text-left">
-              <SheetTitle className="font-display uppercase">Meniu</SheetTitle>
+          <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0 bg-[#0a0a0a] border-l border-white/10 text-white">
+            <SheetHeader className="px-4 py-3 border-b border-white/10 text-left">
+              <SheetTitle style={instrument} className="text-2xl text-white">Meniu<span className="text-[#f7931e]">.</span></SheetTitle>
             </SheetHeader>
             <nav className="py-2">
-              <MenuItem to="/app/settings" icon={<Settings size={16} className="text-neon-green" />} onSelect={() => setMenuOpen(false)} label="Setări" />
-              <MenuItem to="/app/premium" icon={<Gem size={16} className="text-fuchsia-400" />} onSelect={() => setMenuOpen(false)} label="Șpriț Premium ✨" />
+              <MenuItem to="/app/settings" icon={<Settings size={16} className="text-[#f7931e]" />} onSelect={() => setMenuOpen(false)} label="Setări" />
+              <MenuItem to="/app/premium" icon={<Gem size={16} className="text-[#e84393]" />} onSelect={() => setMenuOpen(false)} label="Șpriț Premium ✨" />
               {["vip_plus", "pro", "elite"].includes((profile as any)?.premium_tier ?? "") && (
                 <MenuItem to="/app/me/raters" icon={<Gem size={16} className="text-rose-400" />} onSelect={() => setMenuOpen(false)} label="Cine ți-a dat rating" />
               )}
               {["pro", "elite"].includes((profile as any)?.premium_tier ?? "") && (
                 <MenuItem to="/app/me/reputation" icon={<Gem size={16} className="text-emerald-400" />} onSelect={() => setMenuOpen(false)} label="Reputation analytics" />
               )}
-              <MenuItem to="/app/biz" icon={<Rocket size={16} className="text-neon-purple" />} onSelect={() => setMenuOpen(false)} label="Business · Promovare" />
+              <MenuItem to="/app/biz" icon={<Rocket size={16} className="text-[#6c5ce7]" />} onSelect={() => setMenuOpen(false)} label="Business · Promovare" />
               {isStaff && (
-                <MenuItem to="/app/admin" icon={<ShieldAlert size={16} className="text-neon-crimson" />} onSelect={() => setMenuOpen(false)} label={isAdmin ? "Panou Admin" : "Panou Moderator"} />
+                <MenuItem to="/app/admin" icon={<ShieldAlert size={16} className="text-[#e84393]" />} onSelect={() => setMenuOpen(false)} label={isAdmin ? "Panou Admin" : "Panou Moderator"} />
               )}
-              <div className="my-1 border-t border-foreground/10" />
-              <MenuItem to="/app/me/archive" icon={<Bookmark size={16} className="text-amber-400" />} onSelect={() => setMenuOpen(false)} label="Arhiva ta" />
-              <MenuItem to="/app/notifications" icon={<Bell size={16} />} onSelect={() => setMenuOpen(false)} label="Notificări" />
-              <MenuItem to="/app/requests" icon={<UserPlus size={16} />} onSelect={() => setMenuOpen(false)}
+              <div className="my-1 border-t border-white/10" />
+              <MenuItem to="/app/me/archive" icon={<Bookmark size={16} className="text-[#f7931e]" />} onSelect={() => setMenuOpen(false)} label="Arhiva ta" />
+              <MenuItem to="/app/notifications" icon={<Bell size={16} className="text-white/70" />} onSelect={() => setMenuOpen(false)} label="Notificări" />
+              <MenuItem to="/app/requests" icon={<UserPlus size={16} className="text-white/70" />} onSelect={() => setMenuOpen(false)}
                 label="Cereri urmărire" badge={pendingCount > 0 ? pendingCount : undefined} />
-              <MenuItem to="/app/blocked" icon={<ShieldOff size={16} />} onSelect={() => setMenuOpen(false)} label="Utilizatori blocați" />
-              <MenuItem to="/app/inbox" icon={<UserSquare2 size={16} />} onSelect={() => setMenuOpen(false)} label="Mesaje" />
+              <MenuItem to="/app/blocked" icon={<ShieldOff size={16} className="text-white/70" />} onSelect={() => setMenuOpen(false)} label="Utilizatori blocați" />
+              <MenuItem to="/app/inbox" icon={<UserSquare2 size={16} className="text-white/70" />} onSelect={() => setMenuOpen(false)} label="Mesaje" />
 
               <button
                 onClick={() => { setMenuOpen(false); togglePrivacy(); }}
                 disabled={savingPrivacy}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition text-left"
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition text-left"
               >
-                {profile.is_public ? <Globe2 size={16} className="text-neon-green" /> : <Lock size={16} className="text-neon-crimson" />}
+                {profile.is_public ? <Globe2 size={16} className="text-[#f7931e]" /> : <Lock size={16} className="text-[#e84393]" />}
                 <span className="text-sm flex-1">
-                  Cont: <span className={profile.is_public ? "text-neon-green" : "text-neon-crimson"}>{profile.is_public ? "public" : "privat"}</span>
+                  Cont: <span className={profile.is_public ? "text-[#f7931e]" : "text-[#e84393]"}>{profile.is_public ? "public" : "privat"}</span>
                 </span>
-                <span className="text-[10px] font-mono uppercase text-muted-foreground">schimbă</span>
+                <span className="text-[10px] font-mono uppercase text-white/40">schimbă</span>
               </button>
               <button
                 onClick={() => { setMenuOpen(false); shareProfile(); }}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition text-left"
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition text-left"
               >
-                <Share2 size={16} />
+                <Share2 size={16} className="text-white/70" />
                 <span className="text-sm">Distribuie profilul</span>
               </button>
-              <div className="my-2 border-t border-foreground/10" />
+              <div className="my-2 border-t border-white/10" />
               <button
                 onClick={handleDoSignOut}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neon-crimson/10 transition text-left text-neon-crimson"
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#e84393]/10 transition text-left text-[#e84393]"
               >
                 <LogOut size={16} />
                 <span className="text-sm">Logout</span>
@@ -344,17 +347,17 @@ function MePage() {
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="relative h-[88px] w-[88px] rounded-full p-[2px] bg-gradient-to-tr from-[#ff0099] to-[#6600ff] shadow-[0_0_18px_rgba(255,0,153,0.25)] shrink-0 active:scale-95 transition"
+            className="relative h-[92px] w-[92px] rounded-full p-[2.5px] bg-gradient-to-br from-[#ff6b35] via-[#f7931e] to-[#e84393] shadow-[0_0_28px_rgba(232,67,147,0.4)] shrink-0 active:scale-95 transition"
             aria-label="Schimbă poza de profil"
           >
-            <div className={`h-full w-full rounded-full overflow-hidden bg-background flex items-center justify-center text-3xl font-display ${activeFrame?.css_class ?? ""}`}>
+            <div className={`h-full w-full rounded-full overflow-hidden bg-[#0a0a0a] flex items-center justify-center text-3xl ${activeFrame?.css_class ?? ""}`} style={instrument}>
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
               ) : (
                 (profile.handle ?? "?")[0].toUpperCase()
               )}
             </div>
-            <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#1a1a1a] border border-white/10 text-zinc-300 flex items-center justify-center shadow-lg">
+            <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#0a0a0a] border border-white/15 text-white/80 flex items-center justify-center shadow-lg">
               <Camera size={13} strokeWidth={2.4} />
             </div>
             {uploading && (
@@ -383,20 +386,21 @@ function MePage() {
         </div>
 
         {/* Bio block */}
-        <div className="mt-6 space-y-1">
-          <div className="font-display uppercase text-[18px] leading-tight flex items-center gap-2 flex-wrap tracking-tight">
+        <div className="mt-6 space-y-1.5">
+          <div style={instrument} className="text-2xl leading-tight flex items-center gap-2 flex-wrap tracking-tight">
             <span>{profile.display_name || `@${profile.handle ?? "—"}`}</span>
             <PremiumBadge tier={(profile as any).premium_tier} size="sm" />
           </div>
           {profile.display_name && profile.handle && (
-            <div className="text-[12px] font-mono text-muted-foreground">@{profile.handle}</div>
+            <div className="text-[12px] font-mono text-white/40">@{profile.handle}</div>
           )}
           {(profile as any).bio && (
-            <p className="text-[13px] text-foreground/80 pt-2 whitespace-pre-line leading-relaxed">{(profile as any).bio}</p>
+            <p className="text-[13px] text-white/80 pt-2 whitespace-pre-line leading-relaxed">{(profile as any).bio}</p>
           )}
           {moments?.city && (
-            <div className="text-[12px] text-muted-foreground pt-1">
-              din <span className="text-foreground">{moments.city.name}</span>
+            <div className="text-[12px] text-white/40 pt-1 flex items-center gap-1.5">
+              <span className="h-1 w-1 rounded-full bg-[#f7931e]" />
+              din <span className="text-white/90">{moments.city.name}</span>
             </div>
           )}
         </div>
