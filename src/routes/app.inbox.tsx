@@ -270,6 +270,74 @@ function FriendsRow({ onPick }: { onPick: (id: string) => void }) {
   );
 }
 
+function FriendsList({ onMessage }: { onMessage: (id: string) => void }) {
+  const { user } = useAuth();
+  const { data: friends = [], isLoading } = useQuery({
+    queryKey: ["friends-list", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data: rows } = await supabase
+        .from("friendships")
+        .select("requester_id,addressee_id,status")
+        .eq("status", "accepted")
+        .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`);
+      const ids = (rows ?? []).map((r: any) => r.requester_id === user!.id ? r.addressee_id : r.requester_id);
+      if (!ids.length) return [];
+      const { data: profs } = await supabase.from("profiles").select("id,handle,display_name,avatar_url").in("id", ids);
+      return profs ?? [];
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="py-10 flex flex-col items-center gap-2">
+        <div className="h-7 w-7 rounded-full border-2 border-foreground/15 border-t-foreground animate-spin" />
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">se încarcă</div>
+      </div>
+    );
+  }
+
+  if (!friends.length) {
+    return (
+      <div className="py-14 text-center space-y-3">
+        <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-neon-crimson via-neon-purple to-neon-green opacity-90 flex items-center justify-center">
+          <Users size={26} className="text-white" />
+        </div>
+        <div className="font-display font-black text-base">Niciun prieten încă</div>
+        <div className="text-xs text-muted-foreground">Adaugă oameni din gașcă pentru a începe.</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1 -mx-5">
+      {friends.map((f: any) => (
+        <button
+          key={f.id}
+          onClick={() => onMessage(f.id)}
+          className="w-full flex items-center gap-4 px-5 py-3 border-y border-transparent hover:bg-zinc-900/30 active:bg-zinc-900/60 transition text-left"
+        >
+          <div className="h-12 w-12 rounded-full p-[2px] bg-gradient-to-tr from-lime-400 to-fuchsia-600 shrink-0">
+            <div className="h-full w-full rounded-full border-2 border-black overflow-hidden bg-zinc-800">
+              {f.avatar_url
+                ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" />
+                : <div className="h-full w-full bg-gradient-to-br from-fuchsia-600 to-rose-600 flex items-center justify-center font-display font-black text-white">{(f.handle ?? "?")[0]?.toUpperCase()}</div>}
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-display font-black uppercase tracking-tight text-sm text-white truncate">@{f.handle ?? f.display_name ?? "?"}</div>
+            {f.display_name && f.handle && (
+              <div className="text-[11px] text-zinc-500 truncate">{f.display_name}</div>
+            )}
+          </div>
+          <div className="text-[10px] font-black uppercase tracking-widest text-lime-400 shrink-0">mesaj</div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+
 function timeAgo(iso?: string) {
   if (!iso) return "";
   const d = new Date(iso); const s = Math.floor((Date.now() - d.getTime()) / 1000);
