@@ -142,6 +142,20 @@ function FazePage() {
   });
   // Native sponsored cards interleaved in the feed (shared with /app/feed).
   const { data: promoCards = [] } = usePromoCards();
+  // Friends list for "Prieteni" tab filtering
+  const { data: friendIds = [] } = useQuery({
+    queryKey: ["faze-friends", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      if (!user) return [];
+      const { data: rows } = await supabase
+        .from("friendships")
+        .select("requester_id,addressee_id,status")
+        .eq("status", "accepted")
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
+      return (rows ?? []).map((r: any) => r.requester_id === user.id ? r.addressee_id : r.requester_id);
+    },
+  });
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<TabKey>("pentru-tine");
   const [commentsFor, setCommentsFor] = useState<Moment | null>(null);
