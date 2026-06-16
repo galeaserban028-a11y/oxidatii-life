@@ -262,21 +262,17 @@ function FazePage() {
       {/* Tabs */}
       <div className="flex px-4 gap-6 overflow-x-auto no-scrollbar border-b border-white/5 sticky top-[76px] z-20 bg-[#050505]/85 backdrop-blur-xl">
         {([
-          { k: "foryou", label: "Pentru tine" },
-          { k: "recent", label: "Recent" },
-          { k: "top", label: "Top" },
-          { k: "legendare", label: "Legendare" },
+          { k: "pentru-tine", label: "Pentru tine" },
+          { k: "prieteni", label: "Prieteni" },
         ] as { k: TabKey; label: string }[]).map((t) => {
           const active = tab === t.k;
-          const isLegendare = t.k === "legendare";
           return (
             <button
               key={t.k}
               onClick={() => setTab(t.k)}
               className={`relative shrink-0 py-3 text-sm whitespace-nowrap transition ${
                 active ? "text-white font-semibold" : "text-white/40 font-medium"
-              } ${isLegendare && !active ? "italic text-amber-500/80" : ""}`}
-              style={isLegendare ? instrument : undefined}
+              }`}
             >
               {t.label}
               {active && (
