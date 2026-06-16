@@ -443,31 +443,31 @@ function MePage() {
           />
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-4">
+        <div className="mt-8 grid grid-cols-2 gap-3">
           <Link
             to="/app/discover"
-            className="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
+            className="p-4 rounded-2xl bg-[#0d0d0d] border border-white/10 flex flex-col gap-3 hover:border-[#e84393]/40 active:scale-[0.99] transition group"
           >
-            <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center">
-              <svg className="w-5 h-5 text-pink-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#e84393]/20 to-[#ff6b35]/10 flex items-center justify-center">
+              <svg className="w-5 h-5 text-[#e84393] group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
               </svg>
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider">Caută oameni</div>
-              <div className="text-[10px] text-zinc-500 mt-0.5">dă follow</div>
+              <div style={instrument} className="text-lg leading-none">Caută oameni</div>
+              <div className="text-[10px] text-white/40 mt-1 font-mono uppercase tracking-wider">dă follow</div>
             </div>
           </Link>
           <Link
             to="/app/shop"
-            className="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
+            className="p-4 rounded-2xl bg-[#0d0d0d] border border-white/10 flex flex-col gap-3 hover:border-[#f7931e]/40 active:scale-[0.99] transition group"
           >
-            <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-              <Gem size={18} className="text-amber-400 group-hover:scale-110 transition-transform" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f7931e]/20 to-[#ff6b35]/10 flex items-center justify-center">
+              <Gem size={18} className="text-[#f7931e] group-hover:scale-110 transition-transform" />
             </div>
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider">Bar</div>
-              <div className="text-[10px] text-zinc-500 mt-0.5">{profile.coin_balance ?? 0} {(profile.coin_balance ?? 0) === 1 ? "șpriț" : "șprițuri"} · dă rândul</div>
+              <div style={instrument} className="text-lg leading-none">Bar</div>
+              <div className="text-[10px] text-white/40 mt-1 font-mono uppercase tracking-wider">{profile.coin_balance ?? 0} {(profile.coin_balance ?? 0) === 1 ? "șpriț" : "șprițuri"} · dă rândul</div>
             </div>
           </Link>
         </div>
