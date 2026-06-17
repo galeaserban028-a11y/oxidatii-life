@@ -31,12 +31,12 @@ const TYPE_COLOR: Record<string, string> = {
 };
 
 const TYPE_EMOJI: Record<string, string> = {
-  club: "🔊",
-  bar: "🍸",
-  pub: "🍺",
-  terasa: "🪑",
-  "terasă": "🪑",
-  after: "🎉",
+  club: "🍷",
+  bar: "🍷",
+  pub: "🍷",
+  terasa: "🍷",
+  "terasă": "🍷",
+  after: "🍷",
 };
 
 // Neon glowing emoji pin — big bright emoji with a wide multi-stop halo so
