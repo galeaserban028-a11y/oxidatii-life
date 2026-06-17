@@ -4,10 +4,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM } from "@/lib/chat";
 import { useNavigate } from "@tanstack/react-router";
-import { Users, Plus, MessageCircle, MapPin, Clock, Flame, Trash2 } from "lucide-react";
+import { Plus, MessageCircle, Trash2, UsersRound, Flame, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/app/squad")({
-  head: () => ({ meta: [{ title: "Organizare șpriț · OXIDAȚII" }] }),
+  head: () => ({
+    meta: [{ title: "Organizare șpriț · OXIDAȚII" }],
+    links: [
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Archivo+Black&family=Hind:wght@400;500;600;700&display=swap",
+      },
+    ],
+  }),
   component: SquadPage,
 });
 
@@ -16,24 +26,24 @@ type LiveParty = {
   location_text: string; spots_total: number; starts_at: string; vibe: string | null;
 };
 
+const ARCHIVO = { fontFamily: "'Archivo Black', system-ui, sans-serif" } as const;
+const HIND = { fontFamily: "'Hind', system-ui, sans-serif" } as const;
+
 function timeShort(iso: string) {
   const diff = new Date(iso).getTime() - Date.now();
   const mins = Math.round(diff / 60000);
   if (mins < -30) return `${Math.abs(Math.round(mins / 60))}h în urmă`;
   if (mins < 0) return "live";
   if (mins < 60) return `în ${mins}m`;
-  if (mins < 60 * 24) return `în ${Math.round(mins / 60)}h`;
+  if (mins < 60 * 24) return `${new Date(iso).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" })}`;
   return new Date(iso).toLocaleDateString("ro-RO", { day: "numeric", month: "short" });
 }
-
-
 
 function SquadPage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const qc = useQueryClient();
 
-  // Live parties — locuri disponibile RIGHT NOW
   const { data: liveParties = [] } = useQuery({
     queryKey: ["squad-live-parties"],
     queryFn: async () => {
@@ -60,7 +70,6 @@ function SquadPage() {
     refetchInterval: 20_000,
   });
 
-  // hide full parties unless user is already in or is host
   const visibleParties = liveParties.filter(p => {
     const taken = joins.filter(j => j.party_id === p.id).length;
     const free = p.spots_total - taken;
@@ -107,8 +116,6 @@ function SquadPage() {
     }
   };
 
-
-  // Friends list = haita ta
   const { data: friends = [], isLoading } = useQuery({
     queryKey: ["squad-friends", user?.id],
     enabled: !!user,
@@ -128,7 +135,6 @@ function SquadPage() {
     },
   });
 
-  // Active group conversations
   const { data: groups = [] } = useQuery({
     queryKey: ["squad-groups", user?.id],
     enabled: !!user,
@@ -160,82 +166,83 @@ function SquadPage() {
   const friendCount = friends.length;
 
   return (
-    <div className="pb-4">
-      {/* Header — airy */}
-      <header className="px-5 pt-8 pb-6">
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">organizare</div>
-        <h1 className="font-display font-black text-3xl mt-2 tracking-tight leading-none">cu cine ieșim?</h1>
+    <div className="pb-4" style={HIND}>
+      {/* Title */}
+      <header className="px-6 pt-6 pb-2">
+        <p className="text-[10px] uppercase tracking-[0.25em] text-white/40 font-bold mb-1">haita ta</p>
+        <h1 className="text-[40px] leading-[0.9] text-white" style={ARCHIVO}>
+          cu cine ieșim?
+        </h1>
       </header>
 
-      {/* Quick stats — open row, no card */}
-      <div className="px-5 mb-8">
-        <div className="flex items-stretch">
-          <a href="#live" className="flex-1 flex flex-col items-center py-2 active:opacity-70 transition-opacity">
-            <div className="font-display font-black text-2xl leading-none text-neon-crimson">{openCount}</div>
-            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-zinc-500 mt-2">deschise</div>
-          </a>
-          <div className="w-px bg-white/5 mx-1" />
-          <a href="#groups" className="flex-1 flex flex-col items-center py-2 active:opacity-70 transition-opacity">
-            <div className="font-display font-black text-2xl leading-none text-neon-green">{groupCount}</div>
-            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-zinc-500 mt-2">găști</div>
-          </a>
-          <div className="w-px bg-white/5 mx-1" />
-          <a href="#friends" className="flex-1 flex flex-col items-center py-2 active:opacity-70 transition-opacity">
-            <div className="font-display font-black text-2xl leading-none text-neon-purple">{friendCount}</div>
-            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-zinc-500 mt-2">haita</div>
-          </a>
-        </div>
+      {/* Stats Row — scroll-to chips */}
+      <div className="px-6 mt-5 mb-7 grid grid-cols-3 gap-2">
+        <a href="#live" className="bg-white/5 rounded-2xl py-3 border border-white/5 flex flex-col items-center active:scale-95 transition">
+          <span className="text-xl text-[#ff6b35]" style={ARCHIVO}>{openCount}</span>
+          <span className="text-[8px] uppercase tracking-widest text-white/30 font-bold mt-1">live</span>
+        </a>
+        <a href="#groups" className="bg-white/5 rounded-2xl py-3 border border-white/5 flex flex-col items-center active:scale-95 transition">
+          <span className="text-xl text-[#e84393]" style={ARCHIVO}>{groupCount}</span>
+          <span className="text-[8px] uppercase tracking-widest text-white/30 font-bold mt-1">găști</span>
+        </a>
+        <a href="#friends" className="bg-white/5 rounded-2xl py-3 border border-white/5 flex flex-col items-center active:scale-95 transition">
+          <span className="text-xl text-[#6c5ce7]" style={ARCHIVO}>{friendCount}</span>
+          <span className="text-[8px] uppercase tracking-widest text-white/30 font-bold mt-1">haita</span>
+        </a>
       </div>
 
-      {/* Primary actions — calmer glass tiles */}
-      <div className="px-5 mb-10 grid grid-cols-2 gap-4">
+      {/* Hero Action Grid */}
+      <div className="px-6 grid grid-cols-2 gap-4 mb-10">
         <Link
           to="/app/parties"
-          className="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
+          className="relative overflow-hidden bg-gradient-to-br from-[#1c1c1c] to-[#0a0a0a] p-5 rounded-3xl border border-[#ff6b35]/30 active:scale-95 transition-all shadow-lg"
         >
-          <div className="w-10 h-10 rounded-full bg-neon-crimson/10 flex items-center justify-center">
-            <Flame size={18} className="text-neon-crimson group-hover:scale-110 transition-transform" />
+          <div className="w-10 h-10 rounded-full bg-[#ff6b35] flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(255,107,53,0.4)]">
+            <Flame className="w-5 h-5 text-black" strokeWidth={2.5} />
           </div>
-          <div>
-            <div className="text-[12px] font-bold uppercase tracking-wider">deschide unul</div>
-            <div className="text-[10px] text-zinc-500 mt-0.5">cheamă lumea</div>
-          </div>
+          <p className="text-xs uppercase mb-1 tracking-tight text-white" style={ARCHIVO}>deschide unul</p>
+          <p className="text-[10px] text-white/40">cheamă lumea</p>
+          <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-[#ff6b35]/15 rounded-full blur-xl pointer-events-none" />
         </Link>
+
         <Link
           to="/app/friends"
-          className="p-5 rounded-2xl bg-zinc-900/30 border border-white/5 flex flex-col gap-3 hover:bg-zinc-800/40 active:scale-[0.99] transition-all duration-300 group"
+          className="relative overflow-hidden bg-gradient-to-br from-[#1c1c1c] to-[#0a0a0a] p-5 rounded-3xl border border-[#e84393]/30 active:scale-95 transition-all shadow-lg"
         >
-          <div className="w-10 h-10 rounded-full bg-neon-purple/10 flex items-center justify-center">
-            <Plus size={18} strokeWidth={2.4} className="text-neon-purple group-hover:scale-110 transition-transform" />
+          <div className="w-10 h-10 rounded-full bg-[#e84393] flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(232,67,147,0.4)]">
+            <UsersRound className="w-5 h-5 text-black" strokeWidth={2.5} />
           </div>
-          <div>
-            <div className="text-[12px] font-bold uppercase tracking-wider">grup nou</div>
-            <div className="text-[10px] text-zinc-500 mt-0.5">cu prietenii tăi</div>
-          </div>
+          <p className="text-xs uppercase mb-1 tracking-tight text-white" style={ARCHIVO}>grup nou</p>
+          <p className="text-[10px] text-white/40">cu prietenii tăi</p>
+          <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-[#e84393]/15 rounded-full blur-xl pointer-events-none" />
         </Link>
       </div>
 
-
       {/* LIVE ȘPRIȚURI */}
-      <section id="live" className="px-4 space-y-2 scroll-mt-4">
-        <div className="flex items-center justify-between">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-            <Flame size={11} className="text-neon-crimson" /> deschise acum · {openCount}
+      <section id="live" className="px-6 mb-10 scroll-mt-4">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#ff6b35] animate-pulse shadow-[0_0_8px_#ff6b35]" />
+            <h2 className="text-xs uppercase tracking-widest text-[#ff6b35]" style={ARCHIVO}>live acum</h2>
           </div>
           {openCount > 0 && (
-            <Link to="/app/parties" className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+            <Link to="/app/parties" className="text-[10px] text-white/30 uppercase font-bold tracking-wider">
               vezi tot →
             </Link>
           )}
         </div>
 
         {visibleParties.length === 0 ? (
-          <Link to="/app/parties" className="block p-5 rounded-2xl border border-dashed border-foreground/15 text-center">
-            <div className="font-display font-bold text-sm">nimic deschis acum</div>
-            <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground mt-1">deschide tu primul →</div>
+          <Link
+            to="/app/parties"
+            className="block p-6 rounded-3xl border border-dashed border-white/10 bg-white/[0.02] text-center active:scale-[0.99] transition"
+          >
+            <Flame className="mx-auto text-[#ff6b35]/40 mb-2" size={28} strokeWidth={1.5} />
+            <div className="text-sm text-white" style={ARCHIVO}>nimic deschis acum</div>
+            <div className="text-[10px] text-white/40 mt-1 uppercase tracking-widest">deschide tu primul →</div>
           </Link>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {visibleParties.map(p => {
               const host = hostMap.get(p.host_id);
               const taken = joins.filter(j => j.party_id === p.id).length;
@@ -243,77 +250,85 @@ function SquadPage() {
               const joined = !!user && joins.some(j => j.party_id === p.id && j.user_id === user.id);
               const isHost = user?.id === p.host_id;
               const full = free === 0 && !joined;
-              const city = (p.location_text.split(/[,·\-—]/)[0] ?? p.location_text).trim().toUpperCase();
-              const note = p.description?.trim();
+              const city = (p.location_text.split(/[,·\-—]/)[0] ?? p.location_text).trim();
+              const initial = (host?.handle ?? host?.display_name ?? "?")[0]?.toUpperCase();
+
               return (
-                <article key={p.id} className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-foreground/[0.04]">
-                  <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-neon-crimson/20 blur-2xl pointer-events-none" />
-                  <div className="relative p-3.5 space-y-2.5">
-                    <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest">
-                      <span className="px-1.5 py-0.5 rounded bg-neon-crimson/15 text-neon-crimson border border-neon-crimson/30 flex items-center gap-1">
-                        <MapPin size={9} /> {city}
-                      </span>
+                <article
+                  key={p.id}
+                  className={`bg-[#111] rounded-3xl p-5 border border-white/5 shadow-xl ${
+                    isHost ? "border-l-4 border-l-[#e84393]" : ""
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-5">
+                    <div className="flex gap-3 min-w-0 flex-1">
+                      <div className="w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-br from-[#ff6b35] to-[#6c5ce7] flex items-center justify-center text-sm shrink-0 text-white" style={ARCHIVO}>
+                        {host?.avatar_url
+                          ? <img src={host.avatar_url} alt="" className="h-full w-full object-cover" />
+                          : initial}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-sm font-bold text-white truncate">{p.title}</h3>
+                        <p className="text-[10px] text-white/40 truncate flex items-center gap-1">
+                          {isHost ? "Tu (Host)" : `@${host?.handle ?? host?.display_name ?? "anonim"}`}
+                          {city && <><span className="text-white/20">·</span><MapPin size={9} className="inline" />{city}</>}
+                        </p>
+                      </div>
+                    </div>
+                    {isHost ? (
+                      <button
+                        onClick={() => handleDelete(p.id, p.title)}
+                        disabled={deleteMutation.isPending}
+                        aria-label="șterge șpriț"
+                        className="p-2 text-white/20 hover:text-[#e84393] disabled:opacity-30 transition-colors shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    ) : (
+                      <div className="px-2 py-1 bg-[#ff6b35]/10 border border-[#ff6b35]/20 rounded-lg shrink-0">
+                        <p className="text-[10px] font-bold text-[#ff6b35]">{timeShort(p.starts_at)}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {p.description?.trim() && (
+                    <p className="text-xs text-white/60 leading-snug mb-4 line-clamp-2">„{p.description.trim()}"</p>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`text-[10px] uppercase tracking-widest font-bold ${
+                        full ? "text-[#e84393]" : "text-white/40"
+                      }`}>
+                        <span className="text-white">{taken}</span>
+                        <span className="text-white/30">/{p.spots_total}</span>
+                        <span className="ml-1.5">{full ? "plin" : "locuri"}</span>
+                      </div>
                       {p.vibe && (
-                        <span className="px-1.5 py-0.5 rounded bg-neon-purple/15 text-neon-purple border border-neon-purple/30">
+                        <span className="px-2 py-0.5 rounded-full bg-[#6c5ce7]/10 border border-[#6c5ce7]/20 text-[9px] uppercase tracking-wider text-[#6c5ce7] font-bold">
                           {p.vibe}
                         </span>
                       )}
-                      <span className="ml-auto text-muted-foreground flex items-center gap-1">
-                        <Clock size={9} /> {timeShort(p.starts_at)}
+                    </div>
+                    {isHost ? (
+                      <span className="px-5 py-2.5 bg-white/5 border border-white/10 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
+                        gestionezi
                       </span>
-                    </div>
-
-                    <div className="flex items-end justify-between gap-3">
-                      <h3 className="font-display font-black text-base leading-tight flex-1 break-words">
-                        {p.title}
-                      </h3>
-                      <div className={`text-right shrink-0 ${free === 0 ? "text-neon-crimson" : "text-neon-green"}`}>
-                        <div className="font-display font-black text-lg leading-none">
-                          {taken}<span className="text-muted-foreground">/</span>{p.spots_total}
-                        </div>
-                        <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground mt-0.5">
-                          {free === 0 ? "plin" : `${free} libere`}
-                        </div>
-                      </div>
-                    </div>
-
-                    {note && (
-                      <p className="text-xs text-foreground/75 leading-snug line-clamp-2">
-                        „{note}"
-                      </p>
-                    )}
-
-                    <div className="flex items-center gap-2 pt-1.5 border-t border-foreground/5">
-                      <div className="h-6 w-6 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-[10px] text-white shrink-0">
-                        {host?.avatar_url ? <img src={host.avatar_url} alt="" className="h-full w-full object-cover" /> : (host?.handle ?? "?")[0]?.toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0 font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
-                        @{host?.handle ?? host?.display_name ?? "anonim"}
-                      </div>
+                    ) : (
                       <button
                         onClick={() => joinMutation.mutate({ partyId: p.id, joined })}
-                        disabled={!user || joinMutation.isPending || (full && !joined) || isHost}
-                        className={`shrink-0 px-3 py-1.5 rounded-lg font-mono text-[10px] uppercase tracking-widest active:scale-95 disabled:opacity-30 transition ${
+                        disabled={!user || joinMutation.isPending || (full && !joined)}
+                        className={`px-5 py-2.5 text-[10px] font-bold rounded-full uppercase tracking-wider active:scale-95 disabled:opacity-30 transition-transform ${
                           joined
-                            ? "bg-neon-green/15 text-neon-green border border-neon-green/50"
+                            ? "bg-white/5 border border-[#6c5ce7]/40 text-[#6c5ce7]"
                             : full
-                              ? "bg-foreground/10 text-muted-foreground"
-                              : "bg-neon-crimson text-white shadow-[0_0_12px_-4px_var(--neon-crimson)]"
+                              ? "bg-white/5 text-white/40"
+                              : "bg-[#ff6b35] text-white shadow-[0_0_18px_-4px_#ff6b35]"
                         }`}
                       >
-                        {isHost ? "ești gazdă" : joined ? "vii" : full ? "plin" : "vin și eu"}
+                        {joined ? "vii" : full ? "plin" : "vin și eu"}
                       </button>
-                      {isHost && (
-                        <button
-                          onClick={() => handleDelete(p.id, p.title)}
-                          disabled={deleteMutation.isPending}
-                          aria-label="șterge șpriț"
-                          className="shrink-0 h-7 w-7 rounded-lg flex items-center justify-center text-neon-crimson border border-neon-crimson/40 hover:bg-neon-crimson/10 active:scale-95 disabled:opacity-40"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      )}
-                    </div>
+                    )}
                   </div>
                 </article>
               );
@@ -322,71 +337,96 @@ function SquadPage() {
         )}
       </section>
 
-      {/* Divider */}
-      <div className="px-4 my-5"><div className="h-px bg-foreground/10" /></div>
-
-      {/* Active groups */}
+      {/* GRUPURI */}
       {groups.length > 0 && (
-        <section id="groups" className="px-4 space-y-2 scroll-mt-4 mb-5">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-            <Users size={11} className="text-neon-green" /> grupuri · {groups.length}
+        <section id="groups" className="px-6 mb-10 scroll-mt-4">
+          <h2 className="text-xs uppercase tracking-widest text-[#e84393] mb-5" style={ARCHIVO}>grupuri active</h2>
+          <div className="space-y-3">
+            {groups.map((g: any) => (
+              <Link
+                key={g.id}
+                to="/app/chat/$id"
+                params={{ id: g.id }}
+                className="flex items-center justify-between bg-white/5 p-4 rounded-2xl border border-white/5 active:scale-[0.99] transition"
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#e84393] to-[#6c5ce7] flex items-center justify-center text-sm text-white shrink-0" style={ARCHIVO}>
+                    {(g.title ?? "G")[0].toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-white truncate">{g.title ?? "grup fără nume"}</p>
+                    <p className="text-[10px] text-white/40">
+                      {g.last_message_at ? new Date(g.last_message_at).toLocaleDateString("ro-RO", { day: "numeric", month: "short" }) : "—"}
+                    </p>
+                  </div>
+                </div>
+                <MessageCircle className="text-[#e84393]/60 shrink-0" size={18} />
+              </Link>
+            ))}
           </div>
-          {groups.map((g: any) => (
-            <Link key={g.id} to="/app/chat/$id" params={{ id: g.id }}
-              className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04] border border-foreground/10 active:scale-[0.99] transition">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-neon-green to-neon-purple flex items-center justify-center font-display font-black text-white">
-                {(g.title ?? "G")[0].toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-display font-bold text-sm truncate">{g.title ?? "grup fără nume"}</div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{new Date(g.last_message_at).toLocaleDateString("ro-RO")}</div>
-              </div>
-              <MessageCircle className="text-neon-green" size={18} />
-            </Link>
-          ))}
         </section>
       )}
 
-      {/* Friends */}
-      <section id="friends" className="px-4 space-y-2 scroll-mt-4">
-        <div className="flex items-center justify-between">
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-            <Users size={11} className="text-neon-purple" /> prieteni · {friends.length}
-          </div>
-          {friends.length > 0 && (
-            <Link to="/app/friends" className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+      {/* PRIETENI */}
+      <section id="friends" className="px-6 mb-6 scroll-mt-4">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xs uppercase tracking-widest text-[#6c5ce7]" style={ARCHIVO}>
+            haita ({friendCount})
+          </h2>
+          {friendCount > 0 && (
+            <Link to="/app/friends" className="text-[10px] text-white/30 uppercase font-bold tracking-wider">
               gestionează →
             </Link>
           )}
         </div>
+
         {isLoading ? (
-          <div className="py-8 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground">o secundă…</div>
+          <div className="py-8 text-center text-[10px] uppercase tracking-widest text-white/30">o secundă…</div>
         ) : friends.length === 0 ? (
-          <Link to="/app/friends" className="block py-6 rounded-2xl border border-dashed border-foreground/15 text-center">
-            <div className="font-display font-bold text-sm">nu ai adăugat încă pe nimeni</div>
-            <div className="text-xs text-muted-foreground mt-1">caută prieteni →</div>
+          <Link
+            to="/app/friends"
+            className="block py-6 rounded-3xl border border-dashed border-white/10 bg-white/[0.02] text-center active:scale-[0.99] transition"
+          >
+            <div className="text-sm text-white" style={ARCHIVO}>nu ai adăugat încă pe nimeni</div>
+            <div className="text-[10px] text-white/40 mt-1 uppercase tracking-widest">caută prieteni →</div>
           </Link>
         ) : (
-          <div className="space-y-1.5">
+          <div className="divide-y divide-white/5">
             {friends.map((p: any) => (
-              <div key={p.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-foreground/[0.04] border border-foreground/10">
-                <Link to="/app/user/$id" params={{ id: p.id }} className="h-9 w-9 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display font-black text-white shrink-0 text-sm">
-                  {p.avatar_url ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" /> : (p.handle ?? "?")[0]?.toUpperCase()}
+              <div key={p.id} className="flex items-center justify-between py-3">
+                <Link to="/app/user/$id" params={{ id: p.id }} className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#ff6b35] to-[#6c5ce7] flex items-center justify-center text-sm text-white shrink-0" style={ARCHIVO}>
+                    {p.avatar_url
+                      ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
+                      : (p.handle ?? "?")[0]?.toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-white truncate">@{p.handle ?? p.display_name}</p>
+                    <p className="text-[10px] text-white/40 truncate">{p.city?.name ?? "—"}</p>
+                  </div>
                 </Link>
-                <Link to="/app/user/$id" params={{ id: p.id }} className="flex-1 min-w-0">
-                  <div className="font-display font-bold text-sm truncate">@{p.handle ?? p.display_name}</div>
-                  <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground truncate">{p.city?.name ?? "—"}</div>
-                </Link>
-                <button onClick={() => startDM(p.id)}
-                  className="px-2.5 py-1.5 rounded-md border border-neon-green/40 text-neon-green font-mono text-[9px] uppercase tracking-widest flex items-center gap-1 active:scale-95">
-                  <MessageCircle size={11} /> dm
+                <button
+                  onClick={() => startDM(p.id)}
+                  aria-label="trimite mesaj"
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white/60 border border-white/5 hover:text-[#6c5ce7] hover:border-[#6c5ce7]/40 active:scale-95 transition shrink-0"
+                >
+                  <MessageCircle size={16} />
                 </button>
               </div>
             ))}
           </div>
         )}
       </section>
+
+      {/* Disclaimer */}
+      <div className="mx-6 mt-4 mb-2 px-4 py-3 rounded-2xl bg-[#ff6b35]/5 border border-[#ff6b35]/10 text-center">
+        <p className="text-[9px] font-bold text-[#ff6b35]/60 uppercase tracking-tight">
+          alcoolul dăunează grav sănătății.
+        </p>
+      </div>
+
+      {/* extra bottom space for tab bar */}
+      <div className="h-24" />
     </div>
   );
 }
-
