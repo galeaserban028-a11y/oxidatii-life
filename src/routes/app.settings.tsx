@@ -6,6 +6,7 @@ import {
   ChevronLeft, ChevronRight, Globe2, Lock, MapPin, Bell,
   ShieldOff, UserPlus, Pencil, LogOut, Trash2, MessageSquare,
   Building2, Loader2, ExternalLink, Bug, FileText, ScrollText, Cookie, ShieldCheck,
+  Search, X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +30,7 @@ function SettingsPage() {
   const [savingConsent, setSavingConsent] = useState(false);
   const [savingCity, setSavingCity] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
+  const [citySearch, setCitySearch] = useState("");
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -299,27 +301,47 @@ function SettingsPage() {
       </div>
 
       {/* City picker */}
-      <Dialog open={cityOpen} onOpenChange={setCityOpen}>
+      <Dialog open={cityOpen} onOpenChange={(v) => { setCityOpen(v); if (!v) setCitySearch(""); }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-display uppercase">Alege oraș</DialogTitle>
           </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto -mx-2">
-            {cities.map((c: any) => {
-              const selected = c.id === profile.city_id;
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => pickCity(c.id)}
-                  disabled={savingCity}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-left transition ${selected ? "bg-neon-green/10 text-neon-green" : "hover:bg-foreground/5"}`}
-                >
-                  <Building2 size={15} />
-                  <span className="text-sm flex-1">{c.name}</span>
-                  {selected && <span className="text-[10px] font-mono uppercase">activ</span>}
-                </button>
-              );
-            })}
+          <div className="relative mb-2">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              autoFocus
+              value={citySearch}
+              onChange={(e) => setCitySearch(e.target.value)}
+              placeholder="Caută oraș..."
+              className="w-full bg-foreground/5 rounded-xl pl-9 pr-8 py-2.5 text-sm border border-foreground/10 focus:border-foreground/30 outline-none"
+            />
+            {citySearch && (
+              <button onClick={() => setCitySearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          <div className="max-h-[50vh] overflow-y-auto -mx-2">
+            {cities
+              .filter((c: any) => c.name.toLowerCase().includes(citySearch.toLowerCase().trim()))
+              .map((c: any) => {
+                const selected = c.id === profile.city_id;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => pickCity(c.id)}
+                    disabled={savingCity}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition ${selected ? "bg-neon-green/10 text-neon-green" : "hover:bg-foreground/5"}`}
+                  >
+                    <Building2 size={15} />
+                    <span className="text-sm flex-1">{c.name}</span>
+                    {selected && <span className="text-[10px] font-mono uppercase">activ</span>}
+                  </button>
+                );
+              })}
+            {cities.filter((c: any) => c.name.toLowerCase().includes(citySearch.toLowerCase().trim())).length === 0 && (
+              <div className="px-4 py-6 text-center text-sm text-muted-foreground">Niciun oraș găsit</div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
