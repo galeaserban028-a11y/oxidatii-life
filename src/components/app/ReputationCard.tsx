@@ -395,8 +395,8 @@ function ReputationDetail({
               <div className="flex items-start gap-2 text-[10px] font-mono uppercase tracking-wider text-white/55 leading-snug">
                 <TrendingUp size={11} className="shrink-0 mt-px" style={{ color: rep.tier.color }} />
                 <span>
-                  {rep.totalPeerN > 0
-                    ? <>{rep.totalPeerN} voturi din comunitate + activitatea ta</>
+                  {uniqueRaters > 0
+                    ? <>{uniqueRaters} {uniqueRaters === 1 ? "vot" : "voturi"} din comunitate + activitatea ta</>
                     : <>doar activitatea ta — nimeni nu te-a votat încă</>}
                 </span>
               </div>
