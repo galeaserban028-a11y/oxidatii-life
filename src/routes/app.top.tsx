@@ -77,17 +77,18 @@ function TopPage() {
 
       // 2. Pull metric data
       let scoreMap = new Map<string, number>();
+      const lastPostMap = new Map<string, number>(); // user_id -> ms timestamp of latest sprit_proof this month
 
       if (metric === "streak") {
         for (const p of candidates) scoreMap.set(p.id, (p as any).current_streak ?? 0);
       } else {
-        // Fetch photos + checkins for this month (used by sprits / checkins / score)
+        // Fetch sprit_proofs + checkins for this month (used by sprits / checkins / score)
         const needPhotos = metric === "sprits" || metric === "score";
         const needCheckins = metric === "checkins" || metric === "score";
 
         const [photoRes, checkinRes] = await Promise.all([
           needPhotos
-            ? supabase.from("sprit_proofs").select("user_id").in("user_id", ids).gte("created_at", monthStart)
+            ? supabase.from("sprit_proofs").select("user_id, created_at").in("user_id", ids).gte("created_at", monthStart)
             : Promise.resolve({ data: [] as any[] }),
           needCheckins
             ? supabase.from("check_ins").select("user_id").in("user_id", ids).gte("created_at", monthStart)
@@ -95,7 +96,12 @@ function TopPage() {
         ]);
 
         const photoCounts = new Map<string, number>();
-        for (const r of photoRes.data ?? []) photoCounts.set((r as any).user_id, (photoCounts.get((r as any).user_id) ?? 0) + 1);
+        for (const r of photoRes.data ?? []) {
+          const uid = (r as any).user_id;
+          photoCounts.set(uid, (photoCounts.get(uid) ?? 0) + 1);
+          const t = +new Date((r as any).created_at);
+          if (t > (lastPostMap.get(uid) ?? 0)) lastPostMap.set(uid, t);
+        }
         const checkinCounts = new Map<string, number>();
         for (const r of checkinRes.data ?? []) checkinCounts.set((r as any).user_id, (checkinCounts.get((r as any).user_id) ?? 0) + 1);
 
@@ -113,9 +119,13 @@ function TopPage() {
       }
 
       return candidates
-        .map((p: any) => ({ ...p, value: scoreMap.get(p.id) ?? 0 }))
+        .map((p: any) => ({
+          ...p,
+          value: scoreMap.get(p.id) ?? 0,
+          last_post_at: lastPostMap.get(p.id) ?? 0,
+        }))
         .filter((p) => p.value > 0)
-        .sort((a, b) => b.value - a.value)
+        .sort((a, b) => (b.value - a.value) || (b.last_post_at - a.last_post_at))
         .slice(0, 100);
     },
   });
