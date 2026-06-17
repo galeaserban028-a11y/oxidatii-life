@@ -856,16 +856,34 @@ export function RomaniaMap3D({
         </div>
       )}
 
-      {/* Re-centrează button — fly to user's pin */}
-      {mePin && (
-        <button
-          onClick={handleRecenter}
-          aria-label="Re-centrează pe poziția mea"
-          className="absolute bottom-3 right-3 z-20 h-10 w-10 grid place-items-center rounded-full backdrop-blur-xl bg-black/60 border border-white/15 text-white/90 active:scale-95 transition shadow-lg shadow-black/40"
-        >
-          <Crosshair size={18} />
-        </button>
-      )}
+      {/* Zoom + recenter controls — stacked bottom-right */}
+      <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-2">
+        <div className="flex flex-col rounded-full overflow-hidden backdrop-blur-xl bg-black/60 border border-white/15 shadow-lg shadow-black/40">
+          <button
+            onClick={() => mapRef.current?.zoomIn({ duration: 220 })}
+            aria-label="Apropie harta"
+            className="h-10 w-10 grid place-items-center text-white/90 active:scale-95 transition border-b border-white/10"
+          >
+            <Plus size={18} />
+          </button>
+          <button
+            onClick={() => mapRef.current?.zoomOut({ duration: 220 })}
+            aria-label="Depărtează harta"
+            className="h-10 w-10 grid place-items-center text-white/90 active:scale-95 transition"
+          >
+            <Minus size={18} />
+          </button>
+        </div>
+        {mePin && (
+          <button
+            onClick={handleRecenter}
+            aria-label="Re-centrează pe poziția mea"
+            className="h-10 w-10 grid place-items-center rounded-full backdrop-blur-xl bg-black/60 border border-white/15 text-white/90 active:scale-95 transition shadow-lg shadow-black/40"
+          >
+            <Crosshair size={18} />
+          </button>
+        )}
+      </div>
 
       {/* Soft vignette only — no decorative blobs over the map. */}
       <div className="pointer-events-none absolute inset-0 z-[1]"
