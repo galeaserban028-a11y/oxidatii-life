@@ -291,10 +291,11 @@ export function ReputationCard(props: Props) {
 
 // ---------- Sheet conținut ----------
 function ReputationDetail({
-  rep, peers, targetUserId, canRate, onClose,
+  rep, peers, uniqueRaters, targetUserId, canRate, onClose,
 }: {
   rep: ReturnType<typeof computeReputation>;
   peers: PeerAgg;
+  uniqueRaters: number;
   targetUserId: string;
   canRate: boolean;
   onClose: () => void;
