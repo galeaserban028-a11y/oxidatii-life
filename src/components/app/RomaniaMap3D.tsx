@@ -49,20 +49,19 @@ function makePinImage(color: string, emoji: string, lowEnd = false): ImageData {
   const cx = W / 2, cy = H / 2;
   const s = W / 160; // scale factor
 
-  // wide outer aura
-  const aura = ctx.createRadialGradient(cx, cy, 4 * s, cx, cy, 78 * s);
-  aura.addColorStop(0, color + "ee");
-  aura.addColorStop(0.18, color + "aa");
-  aura.addColorStop(0.4, color + "55");
-  aura.addColorStop(0.7, color + "1c");
+  // tight outer aura — smaller, more focused glow
+  const aura = ctx.createRadialGradient(cx, cy, 2 * s, cx, cy, 52 * s);
+  aura.addColorStop(0, color + "cc");
+  aura.addColorStop(0.22, color + "77");
+  aura.addColorStop(0.55, color + "22");
   aura.addColorStop(1, color + "00");
   ctx.fillStyle = aura;
   ctx.fillRect(0, 0, W, H);
 
   if (!lowEnd) {
-    const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30 * s);
+    const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 22 * s);
     core.addColorStop(0, color);
-    core.addColorStop(0.6, color + "66");
+    core.addColorStop(0.6, color + "44");
     core.addColorStop(1, color + "00");
     ctx.globalCompositeOperation = "lighter";
     ctx.fillStyle = core;
@@ -71,11 +70,11 @@ function makePinImage(color: string, emoji: string, lowEnd = false): ImageData {
   }
 
   ctx.shadowColor = color;
-  ctx.shadowBlur = (lowEnd ? 14 : 24) * s;
+  ctx.shadowBlur = (lowEnd ? 10 : 18) * s;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 3.5 * s;
+  ctx.lineWidth = 3 * s;
   ctx.beginPath();
-  ctx.arc(cx, cy, 34 * s, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 26 * s, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.shadowColor = color;
