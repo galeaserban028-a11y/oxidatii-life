@@ -273,13 +273,11 @@ export function RomaniaMap3D({
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
         cluster: true,
-        clusterRadius: 60,
-        clusterMaxZoom: 13,
+        clusterRadius: 86,
+        clusterMaxZoom: 11,
       });
 
-      // Live "energy" heatmap — separate (unclustered) source so the heat
-      // gradient is smooth across the whole map. Pulses via animated paint
-      // properties below for a living, breathing feel.
+      // Very subtle energy source; kept low so the basemap roads/labels stay clean.
       map.addSource(HEAT_SRC, {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
@@ -290,33 +288,32 @@ export function RomaniaMap3D({
         source: HEAT_SRC,
         maxzoom: 13,
         paint: {
-          "heatmap-weight": ["interpolate", ["linear"], ["get", "w"], 0, 0.2, 5, 1.2],
-          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.6, 9, 1.4, 13, 2.2],
+          "heatmap-weight": ["interpolate", ["linear"], ["get", "w"], 0, 0.08, 5, 0.55],
+          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.18, 9, 0.45, 13, 0.75],
           "heatmap-color": [
             "interpolate", ["linear"], ["heatmap-density"],
             0, "rgba(3,4,10,0)",
-            0.15, "rgba(57,255,136,0.35)",
-            0.35, "rgba(198,107,255,0.55)",
-            0.6, "rgba(255,176,0,0.75)",
-            0.85, "rgba(255,49,88,0.9)",
-            1, "rgba(255,255,255,0.95)",
+            0.18, "rgba(57,255,210,0.16)",
+            0.45, "rgba(198,107,255,0.22)",
+            0.75, "rgba(255,176,0,0.24)",
+            1, "rgba(255,49,134,0.28)",
           ],
-          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 6, 22, 11, 50, 13, 80],
-          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.55, 11, 0.4, 13, 0.15],
+          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 6, 18, 11, 34, 13, 48],
+          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.22, 10, 0.16, 13, 0.05],
         },
       });
 
       // Register one neon pin icon per venue type.
       const pinTypes: Array<[string, string, string]> = [
-        ["pin-club", TYPE_COLOR.club, TYPE_EMOJI.club],
-        ["pin-bar", TYPE_COLOR.bar, TYPE_EMOJI.bar],
-        ["pin-pub", TYPE_COLOR.pub, TYPE_EMOJI.pub],
-        ["pin-terasa", TYPE_COLOR.terasa, TYPE_EMOJI.terasa],
-        ["pin-after", TYPE_COLOR.after, TYPE_EMOJI.after],
+        ["pin-club", TYPE_COLOR.club, "club"],
+        ["pin-bar", TYPE_COLOR.bar, "bar"],
+        ["pin-pub", TYPE_COLOR.pub, "pub"],
+        ["pin-terasa", TYPE_COLOR.terasa, "terasa"],
+        ["pin-after", TYPE_COLOR.after, "after"],
       ];
-      for (const [name, color, emoji] of pinTypes) {
+      for (const [name, color, kind] of pinTypes) {
         if (!map.hasImage(name)) {
-          try { map.addImage(name, makePinImage(color, emoji), { pixelRatio: 2 }); } catch {}
+          try { map.addImage(name, makePinImage(color, kind), { pixelRatio: 2 }); } catch {}
         }
       }
 
@@ -328,12 +325,12 @@ export function RomaniaMap3D({
         paint: {
           "circle-color": [
             "step", ["get", "point_count"],
-            "rgba(255,49,134,0.35)", 50,
-            "rgba(198,107,255,0.35)", 200,
-            "rgba(255,176,0,0.35)",
+            "rgba(255,49,134,0.18)", 80,
+            "rgba(198,107,255,0.20)", 240,
+            "rgba(255,176,0,0.18)",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 40, 50, 52, 200, 64],
-          "circle-blur": 1,
+          "circle-radius": ["step", ["get", "point_count"], 26, 80, 34, 240, 42],
+          "circle-blur": 0.75,
         },
       });
       map.addLayer({
@@ -342,13 +339,13 @@ export function RomaniaMap3D({
         source: VENUES_SRC,
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": "rgba(10,5,22,0.95)",
-          "circle-radius": ["step", ["get", "point_count"], 26, 50, 32, 200, 40],
-          "circle-stroke-width": 3.5,
+          "circle-color": "rgba(12,14,24,0.82)",
+          "circle-radius": ["step", ["get", "point_count"], 18, 80, 23, 240, 29],
+          "circle-stroke-width": 2,
           "circle-stroke-color": [
             "step", ["get", "point_count"],
-            "#ff3186", 50,
-            "#c66bff", 200,
+            "#ff3186", 80,
+            "#c66bff", 240,
             "#ffb000",
           ],
         },
@@ -360,11 +357,11 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-size": ["step", ["get", "point_count"], 18, 50, 20, 200, 24],
+          "text-size": ["step", ["get", "point_count"], 13, 80, 15, 240, 17],
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
           "text-allow-overlap": true,
         },
-        paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.85)", "text-halo-width": 1.5 },
+        paint: { "text-color": "rgba(255,255,255,0.94)", "text-halo-color": "rgba(0,0,0,0.7)", "text-halo-width": 1 },
       });
 
       // unclustered points → neon glowing emoji pins
@@ -384,7 +381,7 @@ export function RomaniaMap3D({
             "after", "pin-after",
             "pin-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.55, 6, 0.7, 10, 0.9, 14, 1.05, 17, 1.2],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.28, 6, 0.4, 10, 0.56, 14, 0.76, 17, 0.9],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
