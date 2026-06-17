@@ -154,6 +154,14 @@ function PremiumPage() {
           );
         })()}
 
+        {/* À LA CARTE — one-off purchases */}
+        <section className="space-y-3">
+          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/50 text-center">
+            Funcții à la carte
+          </div>
+          <CrystalBallCard />
+        </section>
+
 
         {/* HERO */}
         <section className="text-center space-y-4">
