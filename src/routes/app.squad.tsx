@@ -303,6 +303,16 @@ function SquadPage() {
                       >
                         {isHost ? "ești gazdă" : joined ? "vii" : full ? "plin" : "vin și eu"}
                       </button>
+                      {isHost && (
+                        <button
+                          onClick={() => handleDelete(p.id, p.title)}
+                          disabled={deleteMutation.isPending}
+                          aria-label="șterge șpriț"
+                          className="shrink-0 h-7 w-7 rounded-lg flex items-center justify-center text-neon-crimson border border-neon-crimson/40 hover:bg-neon-crimson/10 active:scale-95 disabled:opacity-40"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </article>
