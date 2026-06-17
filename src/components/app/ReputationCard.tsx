@@ -146,7 +146,9 @@ type Props = {
 export function ReputationCard(props: Props) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const { data: peers } = usePeerAgg(props.userId);
+  const { data: peerData } = usePeerAgg(props.userId);
+  const peers = peerData?.agg ?? {};
+  const uniqueRaters = peerData?.uniqueRaters ?? 0;
 
   const days = props.createdAt
     ? Math.max(0, Math.floor((Date.now() - +new Date(props.createdAt)) / 86_400_000))
@@ -162,7 +164,7 @@ export function ReputationCard(props: Props) {
     hasAvatar: props.hasAvatar,
     hasBio: props.hasBio,
     accountAgeDays: days,
-  }, peers ?? {});
+  }, peers);
 
   const canRate = !!props.allowRating && !!user && user.id !== props.userId;
 
