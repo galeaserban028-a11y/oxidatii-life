@@ -45,18 +45,18 @@ export function NightWrapSheet({ wrap, onClose }: { wrap: any; onClose: () => vo
         className="relative w-full max-w-[380px] aspect-[9/16] rounded-[32px] overflow-hidden border border-white/10"
         style={{
           background:
-            "linear-gradient(160deg, #1a0a2e 0%, #2d0f3d 30%, #4a1538 60%, #ff6b35 120%)",
-          boxShadow: "0 30px 80px -20px rgba(232,67,147,0.5)",
+            "linear-gradient(160deg, #1a0a2e 0%, #2d0f3d 30%, #4a1538 60%, #ff3d8b 120%)",
+          boxShadow: "0 30px 80px -20px rgba(199,36,255,0.5)",
         }}
       >
         {/* aurora glows */}
         <div
           className="absolute -top-20 -right-20 w-80 h-80 rounded-full opacity-50 blur-3xl pointer-events-none"
-          style={{ background: "radial-gradient(circle, #ff6b35, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #ff3d8b, transparent 70%)" }}
         />
         <div
           className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full opacity-50 blur-3xl pointer-events-none"
-          style={{ background: "radial-gradient(circle, #6c5ce7, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #00e5ff, transparent 70%)" }}
         />
 
         <div className="relative h-full flex flex-col p-7">

@@ -126,7 +126,7 @@ export function BottomTabBar() {
       {!warnDismissed && !shrunk && (
         <div className="mb-2 flex items-center justify-between rounded-full bg-white/[0.05] border border-white/10 px-3 py-1.5 pointer-events-auto animate-fade-in">
           <div className="flex items-center gap-2">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#ff6b35] animate-pulse" />
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#ff3d8b] animate-pulse" />
             <span className="text-[9px] font-semibold tracking-[0.2em] text-white/60 uppercase leading-none">
               {tc("alcoholWarning")}
             </span>

@@ -178,15 +178,15 @@ function SquadPage() {
       {/* Stats Row — scroll-to chips */}
       <div className="px-6 mt-5 mb-7 grid grid-cols-3 gap-2">
         <a href="#live" className="bg-white/5 rounded-2xl py-3 border border-white/5 flex flex-col items-center active:scale-95 transition">
-          <span className="text-xl text-[#ff6b35]" style={ARCHIVO}>{openCount}</span>
+          <span className="text-xl text-[#ff3d8b]" style={ARCHIVO}>{openCount}</span>
           <span className="text-[8px] uppercase tracking-widest text-white/30 font-bold mt-1">live</span>
         </a>
         <a href="#groups" className="bg-white/5 rounded-2xl py-3 border border-white/5 flex flex-col items-center active:scale-95 transition">
-          <span className="text-xl text-[#e84393]" style={ARCHIVO}>{groupCount}</span>
+          <span className="text-xl text-[#c724ff]" style={ARCHIVO}>{groupCount}</span>
           <span className="text-[8px] uppercase tracking-widest text-white/30 font-bold mt-1">găști</span>
         </a>
         <a href="#friends" className="bg-white/5 rounded-2xl py-3 border border-white/5 flex flex-col items-center active:scale-95 transition">
-          <span className="text-xl text-[#6c5ce7]" style={ARCHIVO}>{friendCount}</span>
+          <span className="text-xl text-[#00e5ff]" style={ARCHIVO}>{friendCount}</span>
           <span className="text-[8px] uppercase tracking-widest text-white/30 font-bold mt-1">haita</span>
         </a>
       </div>
@@ -195,26 +195,26 @@ function SquadPage() {
       <div className="px-6 grid grid-cols-2 gap-4 mb-10">
         <Link
           to="/app/parties"
-          className="relative overflow-hidden bg-gradient-to-br from-[#1c1c1c] to-[#0a0a0a] p-5 rounded-3xl border border-[#ff6b35]/30 active:scale-95 transition-all shadow-lg"
+          className="relative overflow-hidden bg-gradient-to-br from-[#1c1c1c] to-[#0a0a0a] p-5 rounded-3xl border border-[#ff3d8b]/30 active:scale-95 transition-all shadow-lg"
         >
-          <div className="w-10 h-10 rounded-full bg-[#ff6b35] flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(255,107,53,0.4)]">
+          <div className="w-10 h-10 rounded-full bg-[#ff3d8b] flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(255,61,139,0.4)]">
             <Flame className="w-5 h-5 text-black" strokeWidth={2.5} />
           </div>
           <p className="text-xs uppercase mb-1 tracking-tight text-white" style={ARCHIVO}>deschide unul</p>
           <p className="text-[10px] text-white/40">cheamă lumea</p>
-          <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-[#ff6b35]/15 rounded-full blur-xl pointer-events-none" />
+          <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-[#ff3d8b]/15 rounded-full blur-xl pointer-events-none" />
         </Link>
 
         <Link
           to="/app/friends"
-          className="relative overflow-hidden bg-gradient-to-br from-[#1c1c1c] to-[#0a0a0a] p-5 rounded-3xl border border-[#e84393]/30 active:scale-95 transition-all shadow-lg"
+          className="relative overflow-hidden bg-gradient-to-br from-[#1c1c1c] to-[#0a0a0a] p-5 rounded-3xl border border-[#c724ff]/30 active:scale-95 transition-all shadow-lg"
         >
-          <div className="w-10 h-10 rounded-full bg-[#e84393] flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(232,67,147,0.4)]">
+          <div className="w-10 h-10 rounded-full bg-[#c724ff] flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(199,36,255,0.4)]">
             <UsersRound className="w-5 h-5 text-black" strokeWidth={2.5} />
           </div>
           <p className="text-xs uppercase mb-1 tracking-tight text-white" style={ARCHIVO}>grup nou</p>
           <p className="text-[10px] text-white/40">cu prietenii tăi</p>
-          <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-[#e84393]/15 rounded-full blur-xl pointer-events-none" />
+          <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-[#c724ff]/15 rounded-full blur-xl pointer-events-none" />
         </Link>
       </div>
 
@@ -222,8 +222,8 @@ function SquadPage() {
       <section id="live" className="px-6 mb-10 scroll-mt-4">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#ff6b35] animate-pulse shadow-[0_0_8px_#ff6b35]" />
-            <h2 className="text-xs uppercase tracking-widest text-[#ff6b35]" style={ARCHIVO}>live acum</h2>
+            <div className="w-2 h-2 rounded-full bg-[#ff3d8b] animate-pulse shadow-[0_0_8px_#ff3d8b]" />
+            <h2 className="text-xs uppercase tracking-widest text-[#ff3d8b]" style={ARCHIVO}>live acum</h2>
           </div>
           {openCount > 0 && (
             <Link to="/app/parties" className="text-[10px] text-white/30 uppercase font-bold tracking-wider">
@@ -237,7 +237,7 @@ function SquadPage() {
             to="/app/parties"
             className="block p-6 rounded-3xl border border-dashed border-white/10 bg-white/[0.02] text-center active:scale-[0.99] transition"
           >
-            <Flame className="mx-auto text-[#ff6b35]/40 mb-2" size={28} strokeWidth={1.5} />
+            <Flame className="mx-auto text-[#ff3d8b]/40 mb-2" size={28} strokeWidth={1.5} />
             <div className="text-sm text-white" style={ARCHIVO}>nimic deschis acum</div>
             <div className="text-[10px] text-white/40 mt-1 uppercase tracking-widest">deschide tu primul →</div>
           </Link>
@@ -257,12 +257,12 @@ function SquadPage() {
                 <article
                   key={p.id}
                   className={`bg-[#111] rounded-3xl p-5 border border-white/5 shadow-xl ${
-                    isHost ? "border-l-4 border-l-[#e84393]" : ""
+                    isHost ? "border-l-4 border-l-[#c724ff]" : ""
                   }`}
                 >
                   <div className="flex justify-between items-start mb-5">
                     <div className="flex gap-3 min-w-0 flex-1">
-                      <div className="w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-br from-[#ff6b35] to-[#6c5ce7] flex items-center justify-center text-sm shrink-0 text-white" style={ARCHIVO}>
+                      <div className="w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#00e5ff] flex items-center justify-center text-sm shrink-0 text-white" style={ARCHIVO}>
                         {host?.avatar_url
                           ? <img src={host.avatar_url} alt="" className="h-full w-full object-cover" />
                           : initial}
@@ -280,13 +280,13 @@ function SquadPage() {
                         onClick={() => handleDelete(p.id, p.title)}
                         disabled={deleteMutation.isPending}
                         aria-label="șterge șpriț"
-                        className="p-2 text-white/20 hover:text-[#e84393] disabled:opacity-30 transition-colors shrink-0"
+                        className="p-2 text-white/20 hover:text-[#c724ff] disabled:opacity-30 transition-colors shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     ) : (
-                      <div className="px-2 py-1 bg-[#ff6b35]/10 border border-[#ff6b35]/20 rounded-lg shrink-0">
-                        <p className="text-[10px] font-bold text-[#ff6b35]">{timeShort(p.starts_at)}</p>
+                      <div className="px-2 py-1 bg-[#ff3d8b]/10 border border-[#ff3d8b]/20 rounded-lg shrink-0">
+                        <p className="text-[10px] font-bold text-[#ff3d8b]">{timeShort(p.starts_at)}</p>
                       </div>
                     )}
                   </div>
@@ -298,14 +298,14 @@ function SquadPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`text-[10px] uppercase tracking-widest font-bold ${
-                        full ? "text-[#e84393]" : "text-white/40"
+                        full ? "text-[#c724ff]" : "text-white/40"
                       }`}>
                         <span className="text-white">{taken}</span>
                         <span className="text-white/30">/{p.spots_total}</span>
                         <span className="ml-1.5">{full ? "plin" : "locuri"}</span>
                       </div>
                       {p.vibe && (
-                        <span className="px-2 py-0.5 rounded-full bg-[#6c5ce7]/10 border border-[#6c5ce7]/20 text-[9px] uppercase tracking-wider text-[#6c5ce7] font-bold">
+                        <span className="px-2 py-0.5 rounded-full bg-[#00e5ff]/10 border border-[#00e5ff]/20 text-[9px] uppercase tracking-wider text-[#00e5ff] font-bold">
                           {p.vibe}
                         </span>
                       )}
@@ -320,10 +320,10 @@ function SquadPage() {
                         disabled={!user || joinMutation.isPending || (full && !joined)}
                         className={`px-5 py-2.5 text-[10px] font-bold rounded-full uppercase tracking-wider active:scale-95 disabled:opacity-30 transition-transform ${
                           joined
-                            ? "bg-white/5 border border-[#6c5ce7]/40 text-[#6c5ce7]"
+                            ? "bg-white/5 border border-[#00e5ff]/40 text-[#00e5ff]"
                             : full
                               ? "bg-white/5 text-white/40"
-                              : "bg-[#ff6b35] text-white shadow-[0_0_18px_-4px_#ff6b35]"
+                              : "bg-[#ff3d8b] text-white shadow-[0_0_18px_-4px_#ff3d8b]"
                         }`}
                       >
                         {joined ? "vii" : full ? "plin" : "vin și eu"}
@@ -340,7 +340,7 @@ function SquadPage() {
       {/* GRUPURI */}
       {groups.length > 0 && (
         <section id="groups" className="px-6 mb-10 scroll-mt-4">
-          <h2 className="text-xs uppercase tracking-widest text-[#e84393] mb-5" style={ARCHIVO}>grupuri active</h2>
+          <h2 className="text-xs uppercase tracking-widest text-[#c724ff] mb-5" style={ARCHIVO}>grupuri active</h2>
           <div className="space-y-3">
             {groups.map((g: any) => (
               <Link
@@ -350,7 +350,7 @@ function SquadPage() {
                 className="flex items-center justify-between bg-white/5 p-4 rounded-2xl border border-white/5 active:scale-[0.99] transition"
               >
                 <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#e84393] to-[#6c5ce7] flex items-center justify-center text-sm text-white shrink-0" style={ARCHIVO}>
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c724ff] to-[#00e5ff] flex items-center justify-center text-sm text-white shrink-0" style={ARCHIVO}>
                     {(g.title ?? "G")[0].toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -360,7 +360,7 @@ function SquadPage() {
                     </p>
                   </div>
                 </div>
-                <MessageCircle className="text-[#e84393]/60 shrink-0" size={18} />
+                <MessageCircle className="text-[#c724ff]/60 shrink-0" size={18} />
               </Link>
             ))}
           </div>
@@ -370,7 +370,7 @@ function SquadPage() {
       {/* PRIETENI */}
       <section id="friends" className="px-6 mb-6 scroll-mt-4">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-xs uppercase tracking-widest text-[#6c5ce7]" style={ARCHIVO}>
+          <h2 className="text-xs uppercase tracking-widest text-[#00e5ff]" style={ARCHIVO}>
             haita ({friendCount})
           </h2>
           {friendCount > 0 && (
@@ -395,7 +395,7 @@ function SquadPage() {
             {friends.map((p: any) => (
               <div key={p.id} className="flex items-center justify-between py-3">
                 <Link to="/app/user/$id" params={{ id: p.id }} className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#ff6b35] to-[#6c5ce7] flex items-center justify-center text-sm text-white shrink-0" style={ARCHIVO}>
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#00e5ff] flex items-center justify-center text-sm text-white shrink-0" style={ARCHIVO}>
                     {p.avatar_url
                       ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
                       : (p.handle ?? "?")[0]?.toUpperCase()}
@@ -408,7 +408,7 @@ function SquadPage() {
                 <button
                   onClick={() => startDM(p.id)}
                   aria-label="trimite mesaj"
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white/60 border border-white/5 hover:text-[#6c5ce7] hover:border-[#6c5ce7]/40 active:scale-95 transition shrink-0"
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-white/60 border border-white/5 hover:text-[#00e5ff] hover:border-[#00e5ff]/40 active:scale-95 transition shrink-0"
                 >
                   <MessageCircle size={16} />
                 </button>
@@ -419,8 +419,8 @@ function SquadPage() {
       </section>
 
       {/* Disclaimer */}
-      <div className="mx-6 mt-4 mb-2 px-4 py-3 rounded-2xl bg-[#ff6b35]/5 border border-[#ff6b35]/10 text-center">
-        <p className="text-[9px] font-bold text-[#ff6b35]/60 uppercase tracking-tight">
+      <div className="mx-6 mt-4 mb-2 px-4 py-3 rounded-2xl bg-[#ff3d8b]/5 border border-[#ff3d8b]/10 text-center">
+        <p className="text-[9px] font-bold text-[#ff3d8b]/60 uppercase tracking-tight">
           alcoolul dăunează grav sănătății.
         </p>
       </div>

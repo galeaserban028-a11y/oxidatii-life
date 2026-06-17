@@ -52,70 +52,81 @@
 :root {
   --radius: 1rem;
 
-  /* Dark warm canvas — premium night, less AI */
-  --background: oklch(0.16 0.015 30);
-  --foreground: oklch(0.97 0.01 60);
+  /* Electric Night — deep midnight ink with neon glow */
+  --background: oklch(0.13 0.03 290);
+  --foreground: oklch(0.98 0.01 280);
 
-  --card: oklch(0.21 0.018 30);
-  --card-foreground: oklch(0.97 0.01 60);
-  --popover: oklch(0.21 0.018 30);
-  --popover-foreground: oklch(0.97 0.01 60);
+  --card: oklch(0.17 0.035 285);
+  --card-foreground: oklch(0.98 0.01 280);
+  --popover: oklch(0.17 0.035 285);
+  --popover-foreground: oklch(0.98 0.01 280);
 
-  /* Sunset Blaze — primary is the warm orange */
-  --primary: oklch(0.72 0.20 40);
-  --primary-foreground: oklch(0.15 0.02 30);
+  /* Electric hot pink primary — glows */
+  --primary: oklch(0.68 0.26 0);
+  --primary-foreground: oklch(0.12 0.02 290);
 
-  --secondary: oklch(0.25 0.02 30);
-  --secondary-foreground: oklch(0.97 0.01 60);
+  --secondary: oklch(0.22 0.04 285);
+  --secondary-foreground: oklch(0.98 0.01 280);
 
-  --muted: oklch(0.24 0.018 30);
-  --muted-foreground: oklch(0.68 0.03 60);
+  --muted: oklch(0.20 0.035 285);
+  --muted-foreground: oklch(0.72 0.04 280);
 
-  --accent: oklch(0.62 0.24 350);
-  --accent-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.78 0.18 200);
+  --accent-foreground: oklch(0.10 0.02 290);
 
-  --destructive: oklch(0.62 0.25 25);
+  --destructive: oklch(0.65 0.27 15);
   --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.30 0.02 30);
-  --input: oklch(0.25 0.02 30);
-  --ring: oklch(0.72 0.20 40);
+  --border: oklch(0.28 0.04 285);
+  --input: oklch(0.22 0.04 285);
+  --ring: oklch(0.68 0.26 0);
 
-  /* Sunset palette */
-  --sunset-orange: oklch(0.74 0.20 40);
-  --sunset-amber: oklch(0.80 0.16 65);
-  --sunset-magenta: oklch(0.65 0.24 350);
-  --sunset-indigo: oklch(0.60 0.20 290);
+  /* Electric Night palette — vivid neon */
+  --neon-pink:    oklch(0.68 0.26 0);     /* #ff3d8b */
+  --neon-yellow:  oklch(0.93 0.20 105);   /* #ffea00 */
+  --neon-violet:  oklch(0.60 0.30 310);   /* #c724ff */
+  --neon-cyan:    oklch(0.85 0.16 215);   /* #00e5ff */
+
+  /* Sunset aliases → repointed to neon */
+  --sunset-orange: var(--neon-pink);
+  --sunset-amber:  var(--neon-yellow);
+  --sunset-magenta: var(--neon-violet);
+  --sunset-indigo:  var(--neon-cyan);
 
   /* Gradients */
-  --gradient-sunset: linear-gradient(135deg, var(--sunset-orange) 0%, var(--sunset-magenta) 60%, var(--sunset-indigo) 100%);
-  --gradient-warm: linear-gradient(135deg, var(--sunset-orange) 0%, var(--sunset-amber) 100%);
-
-  /* Legacy gradient aliases */
+  --gradient-sunset: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-violet) 55%, var(--neon-cyan) 100%);
+  --gradient-warm: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-yellow) 100%);
   --gradient-chaos: var(--gradient-sunset);
-  --gradient-night: var(--background);
+  --gradient-night: radial-gradient(ellipse at top, oklch(0.20 0.08 310 / 0.55), transparent 60%),
+                    radial-gradient(ellipse at bottom, oklch(0.22 0.10 215 / 0.45), transparent 60%),
+                    var(--background);
   --gradient-toxic: var(--gradient-warm);
-  --gradient-edge: linear-gradient(90deg, transparent, var(--sunset-orange), transparent);
+  --gradient-edge: linear-gradient(90deg, transparent, var(--neon-pink), transparent);
 
-  /* Soft shadows tuned for dark surfaces */
-  --shadow-card: 0 1px 2px oklch(0 0 0 / 40%), 0 8px 24px -8px oklch(0 0 0 / 50%);
-  --shadow-elevated: 0 20px 48px -16px oklch(0.65 0.24 350 / 30%), 0 4px 12px -4px oklch(0 0 0 / 50%);
+  /* Glow shadows — the whole point */
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 50%), 0 10px 30px -10px oklch(0 0 0 / 60%);
+  --shadow-elevated: 0 0 40px -8px oklch(0.68 0.26 0 / 35%), 0 20px 48px -16px oklch(0 0 0 / 60%);
 
-  /* Legacy glows neutralized */
-  --glow-purple: var(--shadow-elevated);
-  --glow-blue: var(--shadow-elevated);
-  --glow-green: var(--shadow-card);
-  --glow-crimson: var(--shadow-elevated);
+  --glow-pink:   0 0 24px oklch(0.68 0.26 0 / 55%), 0 0 8px oklch(0.68 0.26 0 / 80%);
+  --glow-violet: 0 0 28px oklch(0.60 0.30 310 / 55%), 0 0 10px oklch(0.60 0.30 310 / 75%);
+  --glow-cyan:   0 0 26px oklch(0.85 0.16 215 / 55%), 0 0 8px oklch(0.85 0.16 215 / 80%);
+  --glow-yellow: 0 0 24px oklch(0.93 0.20 105 / 50%), 0 0 8px oklch(0.93 0.20 105 / 75%);
 
-  /* Business tier palette (Starter / Popular / Elite / Exclusive) */
-  --tier-starter: oklch(0.70 0.10 220);
-  --tier-popular: oklch(0.72 0.18 290);
-  --tier-elite:   oklch(0.78 0.22 350);
-  --tier-exclusive: oklch(0.84 0.16 90);
-  --glow-tier-starter:   0 0 24px oklch(0.70 0.10 220 / 40%);
-  --glow-tier-popular:   0 0 28px oklch(0.72 0.18 290 / 50%);
-  --glow-tier-elite:     0 0 36px oklch(0.78 0.22 350 / 55%);
-  --glow-tier-exclusive: 0 0 48px oklch(0.84 0.16 90 / 65%), 0 0 12px oklch(0.84 0.16 90 / 80%);
+  /* Legacy glow aliases */
+  --glow-purple:  var(--glow-violet);
+  --glow-blue:    var(--glow-cyan);
+  --glow-green:   var(--glow-cyan);
+  --glow-crimson: var(--glow-pink);
+
+  /* Business tier palette */
+  --tier-starter: oklch(0.78 0.14 210);
+  --tier-popular: oklch(0.65 0.24 305);
+  --tier-elite:   oklch(0.70 0.28 0);
+  --tier-exclusive: oklch(0.92 0.20 95);
+  --glow-tier-starter:   0 0 28px oklch(0.78 0.14 210 / 55%);
+  --glow-tier-popular:   0 0 32px oklch(0.65 0.24 305 / 60%);
+  --glow-tier-elite:     0 0 40px oklch(0.70 0.28 0 / 65%);
+  --glow-tier-exclusive: 0 0 52px oklch(0.92 0.20 95 / 70%), 0 0 14px oklch(0.92 0.20 95 / 85%);
 }
 
 @keyframes tier-pulse {
@@ -193,7 +204,11 @@
   }
 
   html, body {
-    background: #050505;
+    background: #050510;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% 0%, oklch(0.30 0.18 310 / 0.25), transparent 60%),
+      radial-gradient(ellipse 70% 40% at 80% 100%, oklch(0.32 0.20 215 / 0.20), transparent 60%);
+    background-attachment: fixed;
     color: var(--foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -250,8 +265,16 @@
     color: transparent;
   }
 
-  /* Legacy glow utilities → soft elevated shadow so existing markup stays clean */
-  .glow-purple, .glow-blue, .glow-green, .glow-crimson { box-shadow: var(--shadow-card); }
+  /* Real neon glow utilities */
+  .glow-purple, .glow-violet { box-shadow: var(--glow-violet); }
+  .glow-blue, .glow-cyan { box-shadow: var(--glow-cyan); }
+  .glow-green { box-shadow: var(--glow-cyan); }
+  .glow-crimson, .glow-pink { box-shadow: var(--glow-pink); }
+  .glow-yellow { box-shadow: var(--glow-yellow); }
+
+  .text-glow-pink { text-shadow: 0 0 12px oklch(0.68 0.26 0 / 70%), 0 0 4px oklch(0.68 0.26 0 / 90%); }
+  .text-glow-cyan { text-shadow: 0 0 12px oklch(0.85 0.16 215 / 70%), 0 0 4px oklch(0.85 0.16 215 / 90%); }
+  .text-glow-violet { text-shadow: 0 0 12px oklch(0.60 0.30 310 / 70%), 0 0 4px oklch(0.60 0.30 310 / 90%); }
 
   .glass {
     background: oklch(0.21 0.018 30 / 75%);

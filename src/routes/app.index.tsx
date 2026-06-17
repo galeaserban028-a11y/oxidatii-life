@@ -99,8 +99,8 @@ function AppFeed() {
         <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.25em]">
           <span className="flex items-center gap-2 text-white/60">
             <span
-              className="inline-block h-2 w-2 rounded-full bg-[#ff6b35] animate-pulse"
-              style={{ boxShadow: "0 0 8px #ff6b35" }}
+              className="inline-block h-2 w-2 rounded-full bg-[#ff3d8b] animate-pulse"
+              style={{ boxShadow: "0 0 8px #ff3d8b" }}
             />
             LIVE · ROMÂNIA
           </span>
@@ -120,7 +120,7 @@ function AppFeed() {
             className="italic bg-clip-text text-transparent"
             style={{
               backgroundImage:
-                "linear-gradient(90deg, #ff6b35, #e84393, #6c5ce7)",
+                "linear-gradient(90deg, #ff3d8b, #c724ff, #00e5ff)",
             }}
           >
             diseară
@@ -134,9 +134,9 @@ function AppFeed() {
             className="col-span-3 relative overflow-hidden rounded-3xl p-5 min-h-[170px] flex flex-col justify-between active:scale-[0.98] transition-all"
             style={{
               background:
-                "linear-gradient(135deg, #ff6b35 0%, #e84393 55%, #6c5ce7 100%)",
+                "linear-gradient(135deg, #ff3d8b 0%, #c724ff 55%, #00e5ff 100%)",
               boxShadow:
-                "0 18px 40px -18px rgba(255,107,53,0.55), inset 0 1px 0 rgba(255,255,255,0.18)",
+                "0 18px 40px -18px rgba(255,61,139,0.55), inset 0 1px 0 rgba(255,255,255,0.18)",
             }}
           >
             <div
@@ -167,11 +167,11 @@ function AppFeed() {
             <div
               aria-hidden
               className="absolute -bottom-8 -left-8 h-28 w-28 rounded-full opacity-30 blur-2xl"
-              style={{ background: "radial-gradient(circle, #f7931e, transparent 70%)" }}
+              style={{ background: "radial-gradient(circle, #ffea00, transparent 70%)" }}
             />
             <div className="relative flex items-center gap-2">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#f7931e] animate-pulse" style={{ boxShadow: "0 0 8px #f7931e" }} />
-              <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#f7931e]">live</span>
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#ffea00] animate-pulse" style={{ boxShadow: "0 0 8px #ffea00" }} />
+              <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#ffea00]">live</span>
             </div>
             <div className="relative">
               <div className="text-3xl leading-none mb-2">🎬</div>
@@ -438,7 +438,7 @@ function EmptyFeed() {
         className="w-20 h-20 rounded-2xl mb-6 flex items-center justify-center text-4xl"
         style={{
           background:
-            "radial-gradient(circle at 30% 30%, rgba(108,92,231,0.25), rgba(232,67,147,0.15) 60%, rgba(0,0,0,0) 80%)",
+            "radial-gradient(circle at 30% 30%, rgba(108,92,231,0.25), rgba(199,36,255,0.15) 60%, rgba(0,0,0,0) 80%)",
           border: "1px solid rgba(255,255,255,0.06)",
         }}
       >
@@ -456,8 +456,8 @@ function EmptyFeed() {
         className="w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-white active:scale-95 transition-transform"
         style={{
           background:
-            "linear-gradient(90deg, #ff6b35, #e84393, #6c5ce7)",
-          boxShadow: "0 12px 32px -12px rgba(255,107,53,0.55)",
+            "linear-gradient(90deg, #ff3d8b, #c724ff, #00e5ff)",
+          boxShadow: "0 12px 32px -12px rgba(255,61,139,0.55)",
         }}
       >
         Fii primul → scanează un șpriț

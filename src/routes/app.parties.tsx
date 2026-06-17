@@ -177,17 +177,17 @@ function PartiesPage() {
         <button
           onClick={() => setShowCreate(true)}
           disabled={!user}
-          className="relative overflow-hidden w-full bg-gradient-to-br from-[#1c1c1c] to-[#0a0a0a] p-5 rounded-3xl border border-[#ff6b35]/30 active:scale-[0.98] transition-all shadow-lg disabled:opacity-40 flex items-center gap-4 text-left"
+          className="relative overflow-hidden w-full bg-gradient-to-br from-[#1c1c1c] to-[#0a0a0a] p-5 rounded-3xl border border-[#ff3d8b]/30 active:scale-[0.98] transition-all shadow-lg disabled:opacity-40 flex items-center gap-4 text-left"
         >
-          <div className="w-12 h-12 rounded-full bg-[#ff6b35] flex items-center justify-center shadow-[0_0_20px_rgba(255,107,53,0.4)] shrink-0">
+          <div className="w-12 h-12 rounded-full bg-[#ff3d8b] flex items-center justify-center shadow-[0_0_20px_rgba(255,61,139,0.4)] shrink-0">
             <Flame className="w-6 h-6 text-black" strokeWidth={2.5} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm uppercase tracking-tight text-white" style={ARCHIVO}>deschide un șpriț</p>
             <p className="text-[10px] text-white/40 mt-0.5">cheamă haita · 2 coins</p>
           </div>
-          <Plus className="w-5 h-5 text-[#ff6b35] shrink-0" strokeWidth={3} />
-          <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-[#ff6b35]/15 rounded-full blur-2xl pointer-events-none" />
+          <Plus className="w-5 h-5 text-[#ff3d8b] shrink-0" strokeWidth={3} />
+          <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-[#ff3d8b]/15 rounded-full blur-2xl pointer-events-none" />
         </button>
       </div>
 
@@ -195,7 +195,7 @@ function PartiesPage() {
         <div className="px-6 mb-6">
           <Link
             to="/login"
-            className="block p-3 rounded-2xl border border-[#ff6b35]/30 bg-[#ff6b35]/5 text-center text-[10px] uppercase tracking-widest text-[#ff6b35] font-bold"
+            className="block p-3 rounded-2xl border border-[#ff3d8b]/30 bg-[#ff3d8b]/5 text-center text-[10px] uppercase tracking-widest text-[#ff3d8b] font-bold"
           >
             intră în cont ca să chemi sau să te alături →
           </Link>
@@ -205,8 +205,8 @@ function PartiesPage() {
       {/* Feed */}
       <section className="px-6">
         <div className="flex items-center gap-2 mb-5">
-          <div className="w-2 h-2 rounded-full bg-[#ff6b35] animate-pulse shadow-[0_0_8px_#ff6b35]" />
-          <h2 className="text-xs uppercase tracking-widest text-[#ff6b35]" style={ARCHIVO}>live acum</h2>
+          <div className="w-2 h-2 rounded-full bg-[#ff3d8b] animate-pulse shadow-[0_0_8px_#ff3d8b]" />
+          <h2 className="text-xs uppercase tracking-widest text-[#ff3d8b]" style={ARCHIVO}>live acum</h2>
         </div>
 
         {isLoading ? (
@@ -215,13 +215,13 @@ function PartiesPage() {
           </div>
         ) : visibleParties.length === 0 ? (
           <div className="p-8 rounded-3xl border border-dashed border-white/10 bg-white/[0.02] text-center">
-            <Flame className="mx-auto text-[#ff6b35]/40 mb-3" size={36} strokeWidth={1.5} />
+            <Flame className="mx-auto text-[#ff3d8b]/40 mb-3" size={36} strokeWidth={1.5} />
             <div className="text-base text-white" style={ARCHIVO}>zero șprițuri acum</div>
             <div className="text-[10px] text-white/40 mt-1 uppercase tracking-widest">fii primul · deschide unul</div>
             <button
               onClick={() => setShowCreate(true)}
               disabled={!user}
-              className="mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#ff6b35] text-white text-[10px] uppercase tracking-wider font-bold shadow-[0_0_18px_-4px_#ff6b35] active:scale-95 disabled:opacity-40"
+              className="mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#ff3d8b] text-white text-[10px] uppercase tracking-wider font-bold shadow-[0_0_18px_-4px_#ff3d8b] active:scale-95 disabled:opacity-40"
             >
               <Plus size={12} strokeWidth={3} /> deschid șpriț
             </button>
@@ -247,13 +247,13 @@ function PartiesPage() {
                 <article
                   key={p.id}
                   className={`bg-[#111] rounded-3xl p-5 border border-white/5 shadow-xl ${
-                    isHost ? "border-l-4 border-l-[#e84393]" : ""
+                    isHost ? "border-l-4 border-l-[#c724ff]" : ""
                   }`}
                 >
                   {/* host row */}
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex gap-3 min-w-0 flex-1">
-                      <div className="w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-br from-[#ff6b35] to-[#6c5ce7] flex items-center justify-center text-sm shrink-0 text-white" style={ARCHIVO}>
+                      <div className="w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#00e5ff] flex items-center justify-center text-sm shrink-0 text-white" style={ARCHIVO}>
                         {host?.avatar_url
                           ? <img src={host.avatar_url} alt="" className="h-full w-full object-cover" />
                           : initial}
@@ -271,14 +271,14 @@ function PartiesPage() {
                         onClick={() => handleDelete(p.id, p.title)}
                         disabled={deleteMutation.isPending}
                         aria-label="șterge șpriț"
-                        className="p-2 text-white/20 hover:text-[#e84393] disabled:opacity-30 transition-colors shrink-0"
+                        className="p-2 text-white/20 hover:text-[#c724ff] disabled:opacity-30 transition-colors shrink-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     ) : (
-                      <div className="px-2 py-1 bg-[#ff6b35]/10 border border-[#ff6b35]/20 rounded-lg shrink-0 flex items-center gap-1">
-                        <Clock size={9} className="text-[#ff6b35]" />
-                        <p className="text-[10px] font-bold text-[#ff6b35]">{timeLabel(p.starts_at)}</p>
+                      <div className="px-2 py-1 bg-[#ff3d8b]/10 border border-[#ff3d8b]/20 rounded-lg shrink-0 flex items-center gap-1">
+                        <Clock size={9} className="text-[#ff3d8b]" />
+                        <p className="text-[10px] font-bold text-[#ff3d8b]">{timeLabel(p.starts_at)}</p>
                       </div>
                     )}
                   </div>
@@ -294,7 +294,7 @@ function PartiesPage() {
                       <MapPin size={9} />{p.location_text}
                     </span>
                     {p.vibe && (
-                      <span className="px-2 py-0.5 rounded-full bg-[#6c5ce7]/10 border border-[#6c5ce7]/20 text-[9px] uppercase tracking-wider text-[#6c5ce7] font-bold">
+                      <span className="px-2 py-0.5 rounded-full bg-[#00e5ff]/10 border border-[#00e5ff]/20 text-[9px] uppercase tracking-wider text-[#00e5ff] font-bold">
                         {p.vibe}
                       </span>
                     )}
@@ -308,13 +308,13 @@ function PartiesPage() {
                         <span className="text-white/30">/{p.spots_total}</span>
                         <span className="ml-1.5 text-white/40">vin</span>
                       </span>
-                      <span className={`text-[10px] uppercase tracking-widest font-bold ${free === 0 ? "text-[#e84393]" : "text-white/40"}`}>
+                      <span className={`text-[10px] uppercase tracking-widest font-bold ${free === 0 ? "text-[#c724ff]" : "text-white/40"}`}>
                         {free === 0 ? "plin" : `${free} locuri`}
                       </span>
                     </div>
                     <div className="h-1 rounded-full bg-white/5 overflow-hidden">
                       <div
-                        className={`h-full ${free === 0 ? "bg-[#e84393]" : "bg-gradient-to-r from-[#ff6b35] to-[#e84393]"}`}
+                        className={`h-full ${free === 0 ? "bg-[#c724ff]" : "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff]"}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -332,12 +332,12 @@ function PartiesPage() {
                         disabled={!user || joinMutation.isPending || (full && !myJoin)}
                         className={`px-5 py-2.5 text-[10px] font-bold rounded-full uppercase tracking-wider active:scale-95 disabled:opacity-30 transition-transform ${
                           myStatus === "accepted"
-                            ? "bg-white/5 border border-[#6c5ce7]/40 text-[#6c5ce7]"
+                            ? "bg-white/5 border border-[#00e5ff]/40 text-[#00e5ff]"
                             : myStatus === "pending"
                               ? "bg-white/5 border border-white/15 text-white/60"
                               : full
                                 ? "bg-white/5 text-white/40"
-                                : "bg-[#ff6b35] text-white shadow-[0_0_18px_-4px_#ff6b35]"
+                                : "bg-[#ff3d8b] text-white shadow-[0_0_18px_-4px_#ff3d8b]"
                         }`}
                       >
                         {myStatus === "accepted" ? "✓ vii" : myStatus === "pending" ? "în așteptare" : full ? "plin" : "vin și eu"}
@@ -366,8 +366,8 @@ function PartiesPage() {
       </section>
 
       {/* Disclaimer */}
-      <div className="mx-6 mt-8 mb-2 px-4 py-3 rounded-2xl bg-[#ff6b35]/5 border border-[#ff6b35]/10 text-center">
-        <p className="text-[9px] font-bold text-[#ff6b35]/60 uppercase tracking-tight">
+      <div className="mx-6 mt-8 mb-2 px-4 py-3 rounded-2xl bg-[#ff3d8b]/5 border border-[#ff3d8b]/10 text-center">
+        <p className="text-[9px] font-bold text-[#ff3d8b]/60 uppercase tracking-tight">
           alcoolul dăunează grav sănătății.
         </p>
       </div>
@@ -402,7 +402,7 @@ function HostJoinsPanel({
         <span className="flex items-center gap-2">
           <span className="text-white/40 font-bold">cereri</span>
           {pending.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full bg-[#ff6b35] text-black text-[9px] font-bold">{pending.length} noi</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-[#ff3d8b] text-black text-[9px] font-bold">{pending.length} noi</span>
           )}
           <span className="text-white/30">{total} total</span>
         </span>
@@ -418,7 +418,7 @@ function HostJoinsPanel({
                   to="/app/user/$id" params={{ id: j.user_id }}
                   className="flex items-center gap-2 flex-1 min-w-0 group"
                 >
-                  <div className="h-8 w-8 rounded-lg overflow-hidden bg-gradient-to-br from-[#6c5ce7] to-[#ff6b35] flex items-center justify-center text-[10px] text-white shrink-0" style={ARCHIVO}>
+                  <div className="h-8 w-8 rounded-lg overflow-hidden bg-gradient-to-br from-[#00e5ff] to-[#ff3d8b] flex items-center justify-center text-[10px] text-white shrink-0" style={ARCHIVO}>
                     {u?.avatar_url ? <img src={u.avatar_url} alt="" className="h-full w-full object-cover" /> : (u?.handle ?? "?")[0]?.toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -429,14 +429,14 @@ function HostJoinsPanel({
                 <button
                   onClick={() => onAccept(j.id)} disabled={busy}
                   aria-label="accept"
-                  className="h-8 w-8 rounded-full flex items-center justify-center bg-[#6c5ce7]/15 text-[#6c5ce7] border border-[#6c5ce7]/40 active:scale-95 disabled:opacity-40"
+                  className="h-8 w-8 rounded-full flex items-center justify-center bg-[#00e5ff]/15 text-[#00e5ff] border border-[#00e5ff]/40 active:scale-95 disabled:opacity-40"
                 >
                   <Check size={14} strokeWidth={3} />
                 </button>
                 <button
                   onClick={() => onReject(j.id)} disabled={busy}
                   aria-label="respinge"
-                  className="h-8 w-8 rounded-full flex items-center justify-center bg-[#e84393]/10 text-[#e84393] border border-[#e84393]/40 active:scale-95 disabled:opacity-40"
+                  className="h-8 w-8 rounded-full flex items-center justify-center bg-[#c724ff]/10 text-[#c724ff] border border-[#c724ff]/40 active:scale-95 disabled:opacity-40"
                 >
                   <X size={14} strokeWidth={3} />
                 </button>
@@ -446,7 +446,7 @@ function HostJoinsPanel({
           {accepted.length > 0 && (
             <>
               {pending.length > 0 && <div className="h-px bg-white/5 my-2" />}
-              <div className="text-[9px] uppercase tracking-widest text-[#6c5ce7] font-bold">vin</div>
+              <div className="text-[9px] uppercase tracking-widest text-[#00e5ff] font-bold">vin</div>
               {accepted.map(j => {
                 const u = profileMap.get(j.user_id);
                 return (
@@ -455,7 +455,7 @@ function HostJoinsPanel({
                       to="/app/user/$id" params={{ id: j.user_id }}
                       className="flex items-center gap-2 flex-1 min-w-0 group"
                     >
-                      <div className="h-8 w-8 rounded-lg overflow-hidden bg-gradient-to-br from-[#6c5ce7] to-[#e84393] flex items-center justify-center text-[10px] text-white shrink-0" style={ARCHIVO}>
+                      <div className="h-8 w-8 rounded-lg overflow-hidden bg-gradient-to-br from-[#00e5ff] to-[#c724ff] flex items-center justify-center text-[10px] text-white shrink-0" style={ARCHIVO}>
                         {u?.avatar_url ? <img src={u.avatar_url} alt="" className="h-full w-full object-cover" /> : (u?.handle ?? "?")[0]?.toUpperCase()}
                       </div>
                       <div className="min-w-0">
@@ -465,7 +465,7 @@ function HostJoinsPanel({
                     <button
                       onClick={() => onReject(j.id)} disabled={busy}
                       aria-label="elimină"
-                      className="h-8 w-8 rounded-full flex items-center justify-center text-white/40 border border-white/10 hover:text-[#e84393] hover:border-[#e84393]/40 active:scale-95 disabled:opacity-40"
+                      className="h-8 w-8 rounded-full flex items-center justify-center text-white/40 border border-white/10 hover:text-[#c724ff] hover:border-[#c724ff]/40 active:scale-95 disabled:opacity-40"
                     >
                       <UserX size={14} />
                     </button>
@@ -560,7 +560,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
     create.mutate();
   };
 
-  const inputCls = "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#ff6b35]";
+  const inputCls = "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#ff3d8b]";
   const labelCls = "text-[10px] uppercase tracking-widest text-white/40 font-bold";
 
   const sheet = (
@@ -571,13 +571,13 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
     >
       <div
         ref={scrollRef}
-        className="w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-3xl p-5 space-y-4 max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] overflow-y-auto overscroll-contain shadow-[0_24px_100px_-35px_#ff6b35]"
+        className="w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-3xl p-5 space-y-4 max-h-[calc(100dvh-env(safe-area-inset-top)-env(safe-area-inset-bottom)-1.5rem)] overflow-y-auto overscroll-contain shadow-[0_24px_100px_-35px_#ff3d8b]"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="sticky top-0 z-10 -mx-5 -mt-5 px-5 pt-5 pb-3 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/5 flex items-center justify-between">
           <div>
-            <div className="text-[9px] uppercase tracking-[0.28em] text-[#ff6b35] font-bold">formular șpriț</div>
+            <div className="text-[9px] uppercase tracking-[0.28em] text-[#ff3d8b] font-bold">formular șpriț</div>
             <h2 className="text-2xl text-white mt-0.5" style={ARCHIVO}>deschid un șpriț.</h2>
           </div>
           <button onClick={onClose} className="h-9 w-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60"><X size={16} /></button>
@@ -641,7 +641,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
                 onClick={() => setWhenMin(o.v)}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-bold border transition ${
                   whenMin === o.v
-                    ? "bg-[#ff6b35] border-[#ff6b35] text-black"
+                    ? "bg-[#ff3d8b] border-[#ff3d8b] text-black"
                     : "border-white/10 text-white/50 bg-white/5"
                 }`}
               >{o.l}</button>
@@ -668,7 +668,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
             className={`relative w-full overflow-hidden rounded-2xl py-4 px-4 transition-all active:scale-[0.98] ${
               isDisabled
                 ? "bg-white/5 border border-white/10"
-                : "bg-gradient-to-r from-[#ff6b35] via-[#f7931e] to-[#e84393] shadow-[0_10px_40px_-10px_#ff6b35]"
+                : "bg-gradient-to-r from-[#ff3d8b] via-[#ffea00] to-[#c724ff] shadow-[0_10px_40px_-10px_#ff3d8b]"
             }`}
           >
             {create.isPending ? (
@@ -679,7 +679,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
                   deschide șprițul 🥂
                 </span>
                 <span className={`text-[10px] uppercase tracking-[0.25em] flex items-center gap-1.5 font-bold ${
-                  canAfford ? (isDisabled ? "text-white/40" : "text-black/70") : "text-[#e84393]"
+                  canAfford ? (isDisabled ? "text-white/40" : "text-black/70") : "text-[#c724ff]"
                 }`}>
                   cost: {PARTY_COST} coins · ai {balance} 🍺
                 </span>

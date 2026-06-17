@@ -234,27 +234,27 @@ function FazePage() {
       <header className="flex items-center justify-between px-4 pt-5 pb-3 sticky top-0 z-30 bg-[#050505]/85 backdrop-blur-xl">
         <div>
           <h1 className="text-[34px] leading-none tracking-tight" style={instrument}>
-            FAZE<span className="text-[#f7931e]">.</span>
+            FAZE<span className="text-[#ffea00]">.</span>
           </h1>
           <div className="flex items-center gap-1.5 mt-1">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff6b35] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff6b35]" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff3d8b] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff3d8b]" />
             </span>
-            <span className="text-[10px] font-bold tracking-[0.18em] text-[#ff6b35] uppercase">Live din teren</span>
+            <span className="text-[10px] font-bold tracking-[0.18em] text-[#ff3d8b] uppercase">Live din teren</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setOpen(true)}
             aria-label="Postează o fază"
-            className="bg-gradient-to-r from-[#ff6b35] to-[#e84393] px-4 py-2 rounded-full text-[11px] font-bold tracking-wide uppercase text-white shadow-lg shadow-[#ff6b35]/25 active:scale-95 transition"
+            className="bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] px-4 py-2 rounded-full text-[11px] font-bold tracking-wide uppercase text-white shadow-lg shadow-[#ff3d8b]/25 active:scale-95 transition"
           >
             + Postează
           </button>
           <Link to="/app/notifications" className="relative p-2 rounded-full bg-white/5 border border-white/10 active:scale-95 transition">
             <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-white/80" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
-            <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-[#e84393] border border-black" />
+            <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-[#c724ff] border border-black" />
           </Link>
         </div>
       </header>
@@ -276,7 +276,7 @@ function FazePage() {
             >
               {t.label}
               {active && (
-                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#ff6b35] to-[#e84393]" />
+                <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#ff3d8b] to-[#c724ff]" />
               )}
             </button>
           );
@@ -331,15 +331,15 @@ function FazePage() {
                   {/* Top overlay: badge left, author right */}
                   <div className="absolute inset-x-0 top-0 p-3 flex justify-between items-start gap-2 pointer-events-none">
                     <span className={`backdrop-blur-xl bg-black/40 border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.18em] uppercase ${
-                      badge.key === "legendar" ? "text-[#f7931e]" :
+                      badge.key === "legendar" ? "text-[#ffea00]" :
                       badge.key === "murit" ? "text-amber-400" :
-                      badge.key === "wow" ? "text-[#e84393]" : "text-white/70"
+                      badge.key === "wow" ? "text-[#c724ff]" : "text-white/70"
                     }`}>
                       {badge.label}
                     </span>
                     <div className="flex items-center gap-2 pointer-events-auto">
                       <Link to="/app/user/$id" params={{ id: it.user_id }} className="flex items-center gap-2 backdrop-blur-xl bg-black/40 border border-white/10 pl-1 pr-3 py-1 rounded-full">
-                        <div className="size-6 rounded-full overflow-hidden border border-[#ff6b35]">
+                        <div className="size-6 rounded-full overflow-hidden border border-[#ff3d8b]">
                           {profile?.avatar_url ? (
                             <img src={profile.avatar_url} alt={handle} className="size-full object-cover" />
                           ) : (
@@ -372,7 +372,7 @@ function FazePage() {
                   <div className="absolute inset-x-3 bottom-3">
                     <div className="backdrop-blur-2xl bg-black/35 border border-white/10 rounded-2xl p-2.5 flex items-center justify-around">
                       <button onClick={() => toggleLike(it)} aria-label="Apreciază" className="flex flex-col items-center gap-0.5 active:scale-90 transition">
-                        <svg viewBox="0 0 24 24" className={`size-6 ${isLiked ? "fill-[#e84393] stroke-[#e84393]" : "fill-none stroke-white/90"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+                        <svg viewBox="0 0 24 24" className={`size-6 ${isLiked ? "fill-[#c724ff] stroke-[#c724ff]" : "fill-none stroke-white/90"}`} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
                         <span className="text-[10px] font-bold text-white/90">{likes > 0 ? formatCount(likes) : "0"}</span>
                       </button>
                       <button onClick={() => setCommentsFor(it)} aria-label="Comentează" className="flex flex-col items-center gap-0.5 active:scale-90 transition">
@@ -384,7 +384,7 @@ function FazePage() {
                         <span className="text-[10px] font-bold text-white/70">Trimite</span>
                       </button>
                       <div className="w-px h-8 bg-white/10" />
-                      <button onClick={() => toggleRepost(it)} aria-label="Repost" className={`flex flex-col items-center gap-0.5 active:scale-90 transition ${isReposted ? "text-[#f7931e]" : "text-white/80"}`}>
+                      <button onClick={() => toggleRepost(it)} aria-label="Repost" className={`flex flex-col items-center gap-0.5 active:scale-90 transition ${isReposted ? "text-[#ffea00]" : "text-white/80"}`}>
                         <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-current" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
                         <span className="text-[10px] font-bold">{reposts > 0 ? formatCount(reposts) : "Repost"}</span>
                       </button>
@@ -395,7 +395,7 @@ function FazePage() {
                 {/* Caption Area */}
                 <div className="p-5 pt-4 bg-[#0a0a0a]">
                   {venue?.name && (
-                    <div className="flex items-center gap-1.5 text-[#f7931e] mb-2">
+                    <div className="flex items-center gap-1.5 text-[#ffea00] mb-2">
                       <svg className="size-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/></svg>
                       <span className="text-[11px] font-bold uppercase tracking-[0.16em]">{venue.name}</span>
                       <span className="text-white/20 mx-1">•</span>

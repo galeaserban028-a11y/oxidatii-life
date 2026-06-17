@@ -141,7 +141,7 @@ function TopPage() {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-[10px] uppercase tracking-[0.3em] text-white/40">leaderboard</span>
-              <span className="h-1 w-1 rounded-full bg-[#f7931e]" />
+              <span className="h-1 w-1 rounded-full bg-[#ffea00]" />
               <span className="text-[10px] uppercase tracking-[0.2em] text-amber-500/90">{monthLabel}</span>
             </div>
             <div className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">
@@ -149,8 +149,8 @@ function TopPage() {
             </div>
           </div>
           <h1 style={instrument} className="text-5xl leading-[0.9] tracking-tight">
-            Top<span className="text-[#f7931e]">.</span>{" "}
-            <em className="bg-gradient-to-r from-[#ff6b35] via-[#f7931e] to-[#e84393] bg-clip-text text-transparent not-italic font-normal">{METRIC_META[metric].label}</em>
+            Top<span className="text-[#ffea00]">.</span>{" "}
+            <em className="bg-gradient-to-r from-[#ff3d8b] via-[#ffea00] to-[#c724ff] bg-clip-text text-transparent not-italic font-normal">{METRIC_META[metric].label}</em>
           </h1>
           <p className="text-[12px] text-white/50 mt-2">Cei mai tari {scopeLabel}.</p>
         </div>
@@ -171,7 +171,7 @@ function TopPage() {
                   disabled={(opt as any).disabled}
                   className={`relative py-2.5 rounded-2xl transition flex items-center justify-center gap-1.5 disabled:opacity-30 ${
                     active
-                      ? "bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white shadow-[0_8px_24px_-8px_rgba(232,67,147,0.6)]"
+                      ? "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white shadow-[0_8px_24px_-8px_rgba(199,36,255,0.6)]"
                       : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
                   }`}
                 >
@@ -198,7 +198,7 @@ function TopPage() {
                       key={c}
                       onClick={() => { setCountry(c); setCountryOpen(false); }}
                       className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition ${
-                        c === country ? "bg-white/5 font-semibold text-[#f7931e]" : ""
+                        c === country ? "bg-white/5 font-semibold text-[#ffea00]" : ""
                       }`}
                     >
                       {COUNTRY_LABEL[c] ?? c}
@@ -230,8 +230,8 @@ function TopPage() {
             {/* Cinema podium bento */}
             {top3.length > 0 && (
               <div className="relative rounded-3xl overflow-hidden border border-white/5 bg-gradient-to-br from-[#1a0a0e] via-[#0a0a0a] to-[#1a0f05] p-5">
-                <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#e84393]/20 blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-[#ff6b35]/20 blur-3xl pointer-events-none" />
+                <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#c724ff]/20 blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-[#ff3d8b]/20 blur-3xl pointer-events-none" />
                 <div className="relative grid grid-cols-3 gap-3 items-end">
                   {podiumOrder.map((p: any, idx) => {
                     const realRank = p === top3[0] ? 1 : p === top3[1] ? 2 : 3;
@@ -247,8 +247,8 @@ function TopPage() {
                         className="flex flex-col items-center gap-2"
                       >
                         <div className={`relative ${isKing ? "h-20 w-20" : "h-16 w-16"} rounded-full p-[2px] bg-gradient-to-br ${
-                          isKing ? "from-[#ff6b35] to-[#e84393]" : "from-white/20 to-white/5"
-                        } ${isKing ? "shadow-[0_0_30px_rgba(232,67,147,0.5)]" : ""}`}>
+                          isKing ? "from-[#ff3d8b] to-[#c724ff]" : "from-white/20 to-white/5"
+                        } ${isKing ? "shadow-[0_0_30px_rgba(199,36,255,0.5)]" : ""}`}>
                           <div className="h-full w-full rounded-full overflow-hidden bg-[#0a0a0a]">
                             {p?.avatar_url
                               ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -261,18 +261,18 @@ function TopPage() {
                         </div>
                         <div className="text-center min-w-0 w-full">
                           <div className={`text-[12px] font-semibold truncate ${isKing ? "text-white" : "text-white/80"}`}>
-                            @{handle}{isMe && <span className="text-[#f7931e]"> ·tu</span>}
+                            @{handle}{isMe && <span className="text-[#ffea00]"> ·tu</span>}
                           </div>
-                          <div style={instrument} className={`leading-none mt-1 ${isKing ? "text-3xl text-[#f7931e]" : "text-2xl text-white/70"}`}>
+                          <div style={instrument} className={`leading-none mt-1 ${isKing ? "text-3xl text-[#ffea00]" : "text-2xl text-white/70"}`}>
                             {p.value}
                           </div>
                         </div>
                         <div className={`${podiumH} w-full rounded-t-2xl backdrop-blur-xl border-t border-white/10 ${
                           isKing
-                            ? "bg-gradient-to-t from-[#e84393]/30 to-transparent"
+                            ? "bg-gradient-to-t from-[#c724ff]/30 to-transparent"
                             : "bg-white/[0.03]"
                         } flex items-start justify-center pt-2`}>
-                          <span className={`text-[11px] font-mono font-bold ${isKing ? "text-[#f7931e]" : "text-white/40"}`}>
+                          <span className={`text-[11px] font-mono font-bold ${isKing ? "text-[#ffea00]" : "text-white/40"}`}>
                             #{realRank}
                           </span>
                         </div>
@@ -298,21 +298,21 @@ function TopPage() {
                       params={{ id: uid }}
                       className={`grid grid-cols-[32px_44px_1fr_auto] items-center gap-3 p-3 rounded-2xl border transition active:scale-[0.99] ${
                         isMe
-                          ? "bg-gradient-to-r from-[#ff6b35]/10 to-[#e84393]/10 border-[#e84393]/40"
+                          ? "bg-gradient-to-r from-[#ff3d8b]/10 to-[#c724ff]/10 border-[#c724ff]/40"
                           : "bg-[#0d0d0d] border-white/5 hover:bg-[#111]"
                       }`}
                     >
                       <div className="font-mono font-bold text-sm text-center text-white/40">
                         {rank}
                       </div>
-                      <div className="h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-[#ff6b35] to-[#e84393] flex items-center justify-center text-white font-semibold">
+                      <div className="h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center text-white font-semibold">
                         {p?.avatar_url
                           ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
                           : handle[0]?.toUpperCase()}
                       </div>
                       <div className="min-w-0">
                         <div className="font-semibold text-sm truncate text-white">
-                          @{handle} {isMe && <span className="text-[10px] text-[#f7931e]">· tu</span>}
+                          @{handle} {isMe && <span className="text-[10px] text-[#ffea00]">· tu</span>}
                         </div>
                         <div className="text-[11px] text-white/40 truncate">
                           {p?.city?.name ?? "—"}{p?.city?.country ? ` · ${p.city.country}` : ""}
