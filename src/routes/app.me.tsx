@@ -18,6 +18,7 @@ import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
 import { PremiumExtrasCard } from "@/components/app/PremiumExtrasCard";
+import { CrystalBallCard } from "@/components/app/CrystalBallCard";
 
 
 
@@ -425,7 +426,7 @@ function MePage() {
         )}
 
         <div className="mt-8 space-y-3">
-          
+          <CrystalBallCard />
           <ProfileBoostCard />
           <PremiumExtrasCard />
         </div>

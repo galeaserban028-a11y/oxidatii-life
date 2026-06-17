@@ -917,6 +917,33 @@ export type Database = {
         }
         Relationships: []
       }
+      crystal_ball_unlocks: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          price_coins: number
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          price_coins: number
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          price_coins?: number
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       exclusive_partner_slots: {
         Row: {
           business_id: string | null
@@ -1433,6 +1460,27 @@ export type Database = {
           lng?: number
           radius_m?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      profile_visits: {
+        Row: {
+          id: string
+          profile_id: string
+          visited_at: string
+          visitor_id: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          visited_at?: string
+          visitor_id: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          visited_at?: string
+          visitor_id?: string
         }
         Relationships: []
       }
@@ -2060,6 +2108,7 @@ export type Database = {
           wallet_balance_cents: number
         }[]
       }
+      get_crystal_ball: { Args: never; Returns: Json }
       get_featured_tonight: {
         Args: { _city_id: string; _limit?: number }
         Returns: {
@@ -2103,6 +2152,10 @@ export type Database = {
         Returns: boolean
       }
       iso_week_start: { Args: { _ts: string }; Returns: string }
+      record_profile_visit: {
+        Args: { _profile_id: string }
+        Returns: undefined
+      }
       send_chat_gift: {
         Args: { _conversation_id: string; _gift_id: string }
         Returns: Json
@@ -2115,6 +2168,7 @@ export type Database = {
         Args: { _amount: number; _kind: string; _ref_id?: string }
         Returns: number
       }
+      unlock_crystal_ball: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "moderator"
