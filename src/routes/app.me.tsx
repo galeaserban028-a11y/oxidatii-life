@@ -734,6 +734,7 @@ function MePage() {
       <p className="text-[10px] font-mono text-center text-white/30 pt-4">
         OXIDAȚII · construit pe oameni reali · made in Balcani
       </p>
+      </div>
     </div>
   );
 }
