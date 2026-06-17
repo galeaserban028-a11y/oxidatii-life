@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM } from "@/lib/chat";
 import { useNavigate } from "@tanstack/react-router";
-import { Users, Plus, MessageCircle, MapPin, Clock, Flame } from "lucide-react";
+import { Users, Plus, MessageCircle, MapPin, Clock, Flame, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/app/squad")({
   head: () => ({ meta: [{ title: "Organizare șpriț · OXIDAȚII" }] }),
@@ -88,6 +88,24 @@ function SquadPage() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["squad-joins"] }),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (partyId: string) => {
+      if (!user) throw new Error("login");
+      const { error } = await supabase.from("parties").delete().eq("id", partyId).eq("host_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["squad-live-parties"] });
+      qc.invalidateQueries({ queryKey: ["parties"] });
+    },
+  });
+
+  const handleDelete = (partyId: string, title: string) => {
+    if (confirm(`Ștergi șprițul "${title}"? Nu se mai poate recupera.`)) {
+      deleteMutation.mutate(partyId);
+    }
+  };
 
 
   // Friends list = haita ta
@@ -285,6 +303,16 @@ function SquadPage() {
                       >
                         {isHost ? "ești gazdă" : joined ? "vii" : full ? "plin" : "vin și eu"}
                       </button>
+                      {isHost && (
+                        <button
+                          onClick={() => handleDelete(p.id, p.title)}
+                          disabled={deleteMutation.isPending}
+                          aria-label="șterge șpriț"
+                          className="shrink-0 h-7 w-7 rounded-lg flex items-center justify-center text-neon-crimson border border-neon-crimson/40 hover:bg-neon-crimson/10 active:scale-95 disabled:opacity-40"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </article>
