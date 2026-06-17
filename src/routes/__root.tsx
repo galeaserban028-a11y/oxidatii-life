@@ -67,6 +67,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   const { t } = useTranslation();
+  // Întârziem 400ms ca să nu flash-uim "Aplicația a picat" pentru erori tranzitorii
+  // de navigare (preload/route swap) care se rezolvă singure.
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setShow(true), 400);
+    return () => clearTimeout(id);
+  }, []);
+
+  if (!show) {
+    return <div className="min-h-screen bg-background" aria-hidden />;
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
