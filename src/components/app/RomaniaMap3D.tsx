@@ -323,18 +323,18 @@ export function RomaniaMap3D({
         },
       });
 
-      // Register one neon pin icon per venue type (emoji glyph + neon halo).
-      const pinTypes: Array<[string, string, string]> = [
-        ["pin-v2-club", TYPE_COLOR.club, TYPE_EMOJI.club],
-        ["pin-v2-bar", TYPE_COLOR.bar, TYPE_EMOJI.bar],
-        ["pin-v2-pub", TYPE_COLOR.pub, TYPE_EMOJI.pub],
-        ["pin-v2-terasa", TYPE_COLOR.terasa, TYPE_EMOJI.terasa],
-        ["pin-v2-after", TYPE_COLOR.after, TYPE_EMOJI.after],
+      // Register one clear vector wine-bottle icon per venue type.
+      const pinTypes: Array<[string, string]> = [
+        ["pin-bottle-v3-club", TYPE_COLOR.club],
+        ["pin-bottle-v3-bar", TYPE_COLOR.bar],
+        ["pin-bottle-v3-pub", TYPE_COLOR.pub],
+        ["pin-bottle-v3-terasa", TYPE_COLOR.terasa],
+        ["pin-bottle-v3-after", TYPE_COLOR.after],
       ];
-      for (const [name, color, emoji] of pinTypes) {
+      for (const [name, color] of pinTypes) {
         try {
           if (map.hasImage(name)) map.removeImage(name);
-          map.addImage(name, makePinImage(color, emoji, isSmall), { pixelRatio: 2 });
+          map.addImage(name, makePinImage(color, isSmall), { pixelRatio: 2 });
         } catch {}
       }
 
@@ -413,7 +413,7 @@ export function RomaniaMap3D({
         paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.85)", "text-halo-width": 1.2 },
       });
 
-      // unclustered points → neon glowing emoji pins
+      // unclustered points → clear wine-bottle pins
       map.addLayer({
         id: "venues-points",
         type: "symbol",
@@ -422,15 +422,15 @@ export function RomaniaMap3D({
         layout: {
           "icon-image": [
             "match", ["get", "type"],
-            "club", "pin-v2-club",
-            "bar", "pin-v2-bar",
-            "pub", "pin-v2-pub",
-            "terasa", "pin-v2-terasa",
-            "terasă", "pin-v2-terasa",
-            "after", "pin-v2-after",
-            "pin-v2-bar",
+            "club", "pin-bottle-v3-club",
+            "bar", "pin-bottle-v3-bar",
+            "pub", "pin-bottle-v3-pub",
+            "terasa", "pin-bottle-v3-terasa",
+            "terasă", "pin-bottle-v3-terasa",
+            "after", "pin-bottle-v3-after",
+            "pin-bottle-v3-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.08, 6, 0.11, 10, 0.16, 14, 0.24, 17, 0.32],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.16, 6, 0.22, 10, 0.32, 14, 0.46, 17, 0.6],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
