@@ -1491,6 +1491,7 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           birthdate: string | null
+          boost_until: string | null
           city_id: string | null
           coin_balance: number
           created_at: string
@@ -1499,6 +1500,7 @@ export type Database = {
           handle: string | null
           id: string
           is_public: boolean
+          last_boost_at: string | null
           last_streak_week: string | null
           lifetime_sprits: number
           location_consent: boolean
@@ -1509,9 +1511,12 @@ export type Database = {
           map_precision: string
           map_require_reciprocity: boolean
           map_visibility: string
+          music_clip_url: string | null
           onboarded: boolean
           premium_tier: Database["public"]["Enums"]["premium_tier"] | null
           premium_until: string | null
+          profile_bg_url: string | null
+          profile_theme_id: string | null
           rank: Database["public"]["Enums"]["balkan_rank"]
           tutorial_seen: boolean
           updated_at: string
@@ -1522,6 +1527,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           birthdate?: string | null
+          boost_until?: string | null
           city_id?: string | null
           coin_balance?: number
           created_at?: string
@@ -1530,6 +1536,7 @@ export type Database = {
           handle?: string | null
           id: string
           is_public?: boolean
+          last_boost_at?: string | null
           last_streak_week?: string | null
           lifetime_sprits?: number
           location_consent?: boolean
@@ -1540,9 +1547,12 @@ export type Database = {
           map_precision?: string
           map_require_reciprocity?: boolean
           map_visibility?: string
+          music_clip_url?: string | null
           onboarded?: boolean
           premium_tier?: Database["public"]["Enums"]["premium_tier"] | null
           premium_until?: string | null
+          profile_bg_url?: string | null
+          profile_theme_id?: string | null
           rank?: Database["public"]["Enums"]["balkan_rank"]
           tutorial_seen?: boolean
           updated_at?: string
@@ -1553,6 +1563,7 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           birthdate?: string | null
+          boost_until?: string | null
           city_id?: string | null
           coin_balance?: number
           created_at?: string
@@ -1561,6 +1572,7 @@ export type Database = {
           handle?: string | null
           id?: string
           is_public?: boolean
+          last_boost_at?: string | null
           last_streak_week?: string | null
           lifetime_sprits?: number
           location_consent?: boolean
@@ -1571,9 +1583,12 @@ export type Database = {
           map_precision?: string
           map_require_reciprocity?: boolean
           map_visibility?: string
+          music_clip_url?: string | null
           onboarded?: boolean
           premium_tier?: Database["public"]["Enums"]["premium_tier"] | null
           premium_until?: string | null
+          profile_bg_url?: string | null
+          profile_theme_id?: string | null
           rank?: Database["public"]["Enums"]["balkan_rank"]
           tutorial_seen?: boolean
           updated_at?: string
