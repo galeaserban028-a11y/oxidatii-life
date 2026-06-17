@@ -21,127 +21,65 @@ export type FriendPin = {
 };
 
 const TYPE_COLOR: Record<string, string> = {
-  club: "#c66bff",
+  club: "#ff2bd6",
   bar: "#ffb000",
   pub: "#ff8a3d",
-  terasa: "#39ff88",
-  "terasă": "#39ff88",
+  terasa: "#39ffd2",
+  "terasă": "#39ffd2",
   after: "#ff3158",
 };
 
-function drawPinGlyph(ctx: CanvasRenderingContext2D, kind: string, cx: number, cy: number, color: string) {
-  ctx.save();
-  ctx.strokeStyle = color;
-  ctx.fillStyle = color;
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
+const TYPE_EMOJI: Record<string, string> = {
+  club: "🔊",
+  bar: "🍸",
+  pub: "🍺",
+  terasa: "🪑",
+  "terasă": "🪑",
+  after: "🎉",
+};
 
-  if (kind === "club") {
-    ctx.fillRect(cx - 15, cy - 8, 7, 16);
-    ctx.beginPath();
-    ctx.moveTo(cx - 8, cy - 8);
-    ctx.lineTo(cx + 2, cy - 15);
-    ctx.lineTo(cx + 2, cy + 15);
-    ctx.lineTo(cx - 8, cy + 8);
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx + 7, cy, 8, -0.8, 0.8);
-    ctx.arc(cx + 12, cy, 14, -0.7, 0.7);
-    ctx.stroke();
-  } else if (kind === "bar") {
-    ctx.beginPath();
-    ctx.moveTo(cx - 16, cy - 14);
-    ctx.lineTo(cx + 16, cy - 14);
-    ctx.lineTo(cx, cy + 3);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx, cy + 3);
-    ctx.lineTo(cx, cy + 17);
-    ctx.moveTo(cx - 10, cy + 17);
-    ctx.lineTo(cx + 10, cy + 17);
-    ctx.stroke();
-  } else if (kind === "pub") {
-    ctx.strokeRect(cx - 11, cy - 8, 16, 21);
-    ctx.beginPath();
-    ctx.moveTo(cx + 5, cy - 2);
-    ctx.quadraticCurveTo(cx + 17, cy - 2, cx + 15, cy + 8);
-    ctx.quadraticCurveTo(cx + 15, cy + 15, cx + 5, cy + 13);
-    ctx.moveTo(cx - 8, cy - 13);
-    ctx.lineTo(cx + 2, cy - 13);
-    ctx.stroke();
-  } else if (kind === "terasa" || kind === "terasă") {
-    ctx.beginPath();
-    ctx.arc(cx, cy - 10, 16, Math.PI, 0);
-    ctx.moveTo(cx, cy - 10);
-    ctx.lineTo(cx, cy + 16);
-    ctx.moveTo(cx - 10, cy + 16);
-    ctx.lineTo(cx + 10, cy + 16);
-    ctx.moveTo(cx - 14, cy - 10);
-    ctx.lineTo(cx + 14, cy - 10);
-    ctx.stroke();
-  } else {
-    ctx.beginPath();
-    ctx.moveTo(cx - 16, cy + 9);
-    ctx.lineTo(cx - 11, cy - 11);
-    ctx.lineTo(cx - 2, cy + 3);
-    ctx.lineTo(cx + 8, cy - 13);
-    ctx.lineTo(cx + 15, cy + 9);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx - 13, cy + 14);
-    ctx.lineTo(cx + 13, cy + 14);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-// Clean neon pin — compact transparent halo, dark glass circle and a simple
-// line glyph. No emoji blobs, so the map stays crisp like the reference.
-function makePinImage(color: string, kind: string): ImageData {
-  const W = 96, H = 96;
+// Neon glowing emoji pin — matches the reference (big bright emoji floating on
+// a transparent neon halo, no dark glass disk, no line glyph).
+function makePinImage(color: string, emoji: string): ImageData {
+  const W = 128, H = 128;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
-
   const cx = W / 2, cy = H / 2;
 
-  const halo = ctx.createRadialGradient(cx, cy, 15, cx, cy, 44);
-  halo.addColorStop(0, color + "99");
-  halo.addColorStop(0.55, color + "2f");
+  // soft outer halo
+  const halo = ctx.createRadialGradient(cx, cy, 8, cx, cy, 58);
+  halo.addColorStop(0, color + "cc");
+  halo.addColorStop(0.35, color + "55");
+  halo.addColorStop(0.7, color + "1a");
   halo.addColorStop(1, color + "00");
   ctx.fillStyle = halo;
   ctx.fillRect(0, 0, W, H);
 
+  // thin neon ring
   ctx.shadowColor = color;
-  ctx.shadowBlur = 16;
+  ctx.shadowBlur = 22;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.arc(cx, cy, 27, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 30, 0, Math.PI * 2);
   ctx.stroke();
 
+  // emoji glyph, glowing
   ctx.shadowColor = color;
-  ctx.shadowBlur = 10;
-  ctx.fillStyle = "rgba(8,10,20,0.86)";
-  ctx.beginPath();
-  ctx.arc(cx, cy, 23, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.shadowBlur = 0;
-  ctx.strokeStyle = "rgba(255,255,255,0.18)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 22, 0, Math.PI * 2);
-  ctx.stroke();
-
-  drawPinGlyph(ctx, kind, cx, cy, color);
+  ctx.shadowBlur = 18;
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = '44px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  ctx.fillText(emoji, cx, cy + 2);
+  // re-stroke for extra punch
+  ctx.shadowBlur = 28;
+  ctx.fillText(emoji, cx, cy + 2);
 
   return ctx.getImageData(0, 0, W, H);
 }
+
 
 
 const VOYAGER_STYLE = {
