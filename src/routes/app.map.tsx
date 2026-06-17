@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
@@ -26,6 +26,38 @@ type Venue = {
 
 type City = { id: string; slug: string; name: string; lat: number; lng: number; chaos_level: number; country: string };
 const EMPTY_CITIES: City[] = [];
+
+type RawMapSettings = {
+  map_ghost?: boolean | null;
+  map_visibility?: string | null;
+  map_precision?: string | null;
+  map_auto_ghost_hours?: number | null;
+};
+
+function normalizeMapSettings(settings: RawMapSettings | null | undefined) {
+  return {
+    map_ghost: Boolean(settings?.map_ghost),
+    map_visibility: settings?.map_visibility ?? "friends",
+    map_precision: settings?.map_precision === "approx" || settings?.map_precision === "city" ? settings.map_precision : "exact",
+    map_auto_ghost_hours: Number(settings?.map_auto_ghost_hours ?? 8),
+  };
+}
+
+function applyLocationPrivacy(
+  lat: number,
+  lng: number,
+  settings: ReturnType<typeof normalizeMapSettings>,
+  cityCenter: { lat: number; lng: number } | null | undefined,
+) {
+  if (settings.map_precision === "approx") {
+    const j = 0.0018;
+    return { lat: lat + (Math.random() * 2 - 1) * j, lng: lng + (Math.random() * 2 - 1) * j, exact: false };
+  }
+  if (settings.map_precision === "city" && cityCenter) {
+    return { lat: cityCenter.lat, lng: cityCenter.lng, exact: false };
+  }
+  return { lat, lng, exact: true };
+}
 
 async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   const { data: rows } = await supabase
@@ -81,13 +113,12 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   const userIds = new Set<string>([...liveMap.keys(), ...checkinMap.keys()]);
   const pins: FriendPin[] = [];
 
-  // Fallback for self: if no live row and no active check-in, use the most
-  // recent (even expired) live_location, then last check-in venue, then city.
+  // Fallback for self: use only a previous GPS/live row or a check-in.
+  // Never place "tu ești aici" on the city center — it feels imprecise.
   if (!userIds.has(userId)) {
-    const [{ data: lastLive }, { data: lastCheckin }, { data: meProfile }] = await Promise.all([
+    const [{ data: lastLive }, { data: lastCheckin }] = await Promise.all([
       supabase.from("live_locations").select("lat, lng").eq("user_id", userId).order("updated_at", { ascending: false }).limit(1).maybeSingle(),
       supabase.from("check_ins").select("venue_id, lat, lng").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("profiles").select("city_id").eq("id", userId).maybeSingle(),
     ]);
     let lat: number | null = null, lng: number | null = null;
     if (lastLive) { lat = Number((lastLive as any).lat); lng = Number((lastLive as any).lng); }
@@ -98,10 +129,6 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
         const { data: v } = await supabase.from("venues").select("lat,lng").eq("id", ck.venue_id).maybeSingle();
         if (v?.lat != null && v?.lng != null) { lat = Number(v.lat); lng = Number(v.lng); }
       }
-    }
-    if ((lat == null || lng == null) && (meProfile as any)?.city_id) {
-      const { data: city } = await supabase.from("cities").select("lat,lng").eq("id", (meProfile as any).city_id).maybeSingle();
-      if (city) { lat = Number(city.lat); lng = Number(city.lng); }
     }
     if (lat != null && lng != null && isFinite(lat) && isFinite(lng)) {
       const me: any = profMap.get(userId);
@@ -140,6 +167,48 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   return pins;
 }
 
+function getPrecisePosition(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Browser-ul tău n-are GPS."));
+      return;
+    }
+
+    let best: GeolocationPosition | null = null;
+    let settled = false;
+    let watchId: number | null = null;
+    let timeoutId: number | null = null;
+
+    const finish = (pos?: GeolocationPosition) => {
+      if (settled) return;
+      settled = true;
+      if (watchId != null) navigator.geolocation.clearWatch(watchId);
+      if (timeoutId != null) window.clearTimeout(timeoutId);
+      if (pos ?? best) resolve((pos ?? best)!);
+      else reject(new Error("Nu am putut citi locația."));
+    };
+
+    watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        if (!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
+        if (pos.coords.accuracy <= 35) finish(pos);
+      },
+      (error) => {
+        if (best) finish(best);
+        else {
+          settled = true;
+          if (watchId != null) navigator.geolocation.clearWatch(watchId);
+          if (timeoutId != null) window.clearTimeout(timeoutId);
+          reject(error);
+        }
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 30_000 },
+    );
+
+    timeoutId = window.setTimeout(() => finish(), 12_000);
+  });
+}
+
 function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
   const R = 6371;
   const dLat = (bLat - aLat) * Math.PI / 180;
@@ -163,6 +232,7 @@ function MapPage() {
   const [visible, setVisible] = useState(40);
   const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
+  const [autoLocated, setAutoLocated] = useState(false);
 
   const { data: citiesData, isLoading } = useQuery({
     queryKey: ["cities"],
@@ -247,6 +317,15 @@ function MapPage() {
     enabled: !!user,
     refetchInterval: 30_000,
   });
+
+  const mapFriendPins = useMemo(() => {
+    if (!user || !geo) return friendPins;
+    const me = friendPins.find((f) => f.is_me);
+    return [
+      { ...(me ?? { user_id: user.id, handle: profile?.handle ?? null, display_name: profile?.display_name ?? "tu", avatar_url: profile?.avatar_url ?? null }), lat: geo.lat, lng: geo.lng, venue_name: "tu ești aici", is_me: true },
+      ...friendPins.filter((f) => f.user_id !== user.id),
+    ];
+  }, [friendPins, geo, profile?.avatar_url, profile?.display_name, profile?.handle, user]);
 
   // Realtime: refresh on check-ins AND live GPS updates from friends
   const qc = useQueryClient();
@@ -362,7 +441,7 @@ function MapPage() {
         if (c) cityCenter = { lat: Number(c.lat), lng: Number(c.lng) };
       }
       return {
-        settings: (pRes.data ?? { map_ghost: false, map_visibility: "friends", map_precision: "exact", map_auto_ghost_hours: 8 }) as any,
+        settings: normalizeMapSettings(pRes.data),
         privateLocs: (locRes.data ?? []) as { lat: number; lng: number; radius_m: number }[],
         cityCenter,
       };
@@ -371,63 +450,71 @@ function MapPage() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const requestGeo = () => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setGeo({ lat, lng });
-        setFocusCity({ lat, lng, zoom: 13 });
-        if (!user) return;
+  const publishPosition = useCallback(async (pos: GeolocationPosition, ensureLive = false) => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    setGeo({ lat, lng });
+    setFocusCity({ lat, lng, zoom: 16 });
+    if (!user) return;
 
-        const s = privacyQ.data?.settings;
-        // Ghost mode or fully hidden → wipe and skip publishing.
-        if (s?.map_ghost || s?.map_visibility === "nobody") {
-          await supabase.from("live_locations").delete().eq("user_id", user.id);
-          qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
-          return;
-        }
-        // Inside a private location → skip.
-        const inPrivate = (privacyQ.data?.privateLocs ?? []).some((pl) => {
-          const dKm = distanceKm(lat, lng, Number(pl.lat), Number(pl.lng));
-          return dKm * 1000 <= pl.radius_m;
-        });
-        if (inPrivate) {
-          await supabase.from("live_locations").delete().eq("user_id", user.id);
-          qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
-          return;
-        }
-        // Apply precision.
-        let outLat = lat, outLng = lng;
-        if (s?.map_precision === "approx") {
-          // ±~200m random jitter (1 deg lat ≈ 111km)
-          const j = 0.0018;
-          outLat = lat + (Math.random() * 2 - 1) * j;
-          outLng = lng + (Math.random() * 2 - 1) * j;
-        } else if (s?.map_precision === "city" && privacyQ.data?.cityCenter) {
-          outLat = privacyQ.data.cityCenter.lat;
-          outLng = privacyQ.data.cityCenter.lng;
-        }
-        const hours = Math.max(1, Math.min(24, s?.map_auto_ghost_hours ?? 8));
-        await supabase.from("live_locations").upsert(
-          {
-            user_id: user.id,
-            lat: outLat,
-            lng: outLng,
-            accuracy: s?.map_precision === "exact" ? (pos.coords.accuracy ?? null) : null,
-            heading: s?.map_precision === "exact" ? (pos.coords.heading ?? null) : null,
-            updated_at: new Date().toISOString(),
-            expires_at: new Date(Date.now() + hours * 60 * 60_000).toISOString(),
-          },
-          { onConflict: "user_id" },
-        );
-        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+    if (ensureLive) {
+      await supabase
+        .from("profiles")
+        .update({ location_consent: true, map_ghost: false, map_precision: "exact" } as any)
+        .eq("id", user.id);
+      await refreshProfile();
+      qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
+    }
+
+    const s = ensureLive
+      ? normalizeMapSettings({ map_precision: "exact", map_auto_ghost_hours: 8 })
+      : normalizeMapSettings(privacyQ.data?.settings);
+    // Ghost mode or fully hidden → wipe and skip publishing.
+    if (s?.map_ghost || s?.map_visibility === "nobody") {
+      await supabase.from("live_locations").delete().eq("user_id", user.id);
+      qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+      return;
+    }
+    // Inside a private location → skip.
+    const inPrivate = (privacyQ.data?.privateLocs ?? []).some((pl) => {
+      const dKm = distanceKm(lat, lng, Number(pl.lat), Number(pl.lng));
+      return dKm * 1000 <= pl.radius_m;
+    });
+    if (inPrivate) {
+      await supabase.from("live_locations").delete().eq("user_id", user.id);
+      qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+      return;
+    }
+    // Apply precision.
+    const out = applyLocationPrivacy(lat, lng, s, privacyQ.data?.cityCenter);
+    const hours = Math.max(1, Math.min(24, s?.map_auto_ghost_hours ?? 8));
+    await supabase.from("live_locations").upsert(
+      {
+        user_id: user.id,
+        lat: out.lat,
+        lng: out.lng,
+        accuracy: out.exact ? (pos.coords.accuracy ?? null) : null,
+        heading: out.exact ? (pos.coords.heading ?? null) : null,
+        updated_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + hours * 60 * 60_000).toISOString(),
       },
-      () => alert("Nu am putut citi locația. Verifică permisiunile."),
-      { enableHighAccuracy: true, timeout: 8000 }
+      { onConflict: "user_id" },
     );
+    qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+  }, [privacyQ.data?.cityCenter, privacyQ.data?.privateLocs, privacyQ.data?.settings, qc, refreshProfile, user]);
+
+  const requestGeo = () => {
+    getPrecisePosition()
+      .then((pos) => publishPosition(pos))
+      .catch(() => alert("Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
   };
+
+  useEffect(() => {
+    if (!user || !profile?.location_consent || autoLocated || privacyQ.isLoading) return;
+    if (privacyQ.data?.settings?.map_ghost || privacyQ.data?.settings?.map_visibility === "nobody") return;
+    setAutoLocated(true);
+    getPrecisePosition().then((pos) => publishPosition(pos)).catch(() => {});
+  }, [autoLocated, privacyQ.isLoading, privacyQ.data?.settings?.map_ghost, privacyQ.data?.settings?.map_visibility, profile?.location_consent, publishPosition, user]);
 
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
@@ -585,34 +672,9 @@ function MapPage() {
                 alert("Browser-ul tău n-are GPS.");
                 return;
               }
-              navigator.geolocation.getCurrentPosition(
-                async (pos) => {
-                  await supabase
-                    .from("profiles")
-                    .update({ location_consent: true, map_ghost: false } as any)
-                    .eq("id", user.id);
-                  await refreshProfile();
-                  qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
-                  setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                  setFocusCity({ lat: pos.coords.latitude, lng: pos.coords.longitude, zoom: 13 });
-                  // Push an immediate live row so friends see us right away.
-                  await supabase.from("live_locations").upsert(
-                    {
-                      user_id: user.id,
-                      lat: pos.coords.latitude,
-                      lng: pos.coords.longitude,
-                      accuracy: pos.coords.accuracy ?? null,
-                      heading: pos.coords.heading ?? null,
-                      updated_at: new Date().toISOString(),
-                      expires_at: new Date(Date.now() + 8 * 60 * 60_000).toISOString(),
-                    },
-                    { onConflict: "user_id" },
-                  );
-                  qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
-                },
-                () => alert("Nu am putut citi locația. Verifică permisiunile browserului."),
-                { enableHighAccuracy: true, timeout: 8000 },
-              );
+                getPrecisePosition()
+                  .then((pos) => publishPosition(pos, true))
+                  .catch(() => alert("Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
             }}
             className="w-full flex items-center gap-3 rounded-2xl border border-[#ff3d8b]/40 bg-gradient-to-r from-[#ff3d8b]/15 to-[#c724ff]/10 px-4 py-3 text-left active:scale-[0.99] transition"
           >
@@ -641,7 +703,7 @@ function MapPage() {
               cities={citiesScoped}
               venues={filtered}
               promotedMeta={promotedMeta}
-              friends={friendPins}
+              friends={mapFriendPins}
               focusCity={focusCity}
               fitBounds={fitBounds}
               onCityClick={(c) => {

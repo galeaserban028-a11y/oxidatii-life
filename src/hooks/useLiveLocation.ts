@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
  */
 export function useLiveLocation(userId: string | null | undefined, enabled: boolean) {
   const lastSentRef = useRef(0);
-  const lastCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
+  const lastCoordsRef = useRef<{ lat: number; lng: number; accuracy: number | null } | null>(null);
 
   useEffect(() => {
     if (!userId || !enabled) return;
@@ -17,17 +17,31 @@ export function useLiveLocation(userId: string | null | undefined, enabled: bool
     let cancelled = false;
     let watchId: number | null = null;
 
-    const push = async (lat: number, lng: number, heading: number | null, accuracy: number | null) => {
+    const push = async (
+      lat: number,
+      lng: number,
+      heading: number | null,
+      accuracy: number | null,
+    ) => {
       if (cancelled) return;
       const now = Date.now();
-      // throttle: at most one upsert every 10s, OR if moved > ~25m
+      // Ignore very rough browser fixes once we already have a better live pin.
+      // Mobile browsers often emit a cached/cell-tower position first, then GPS.
+      if (accuracy != null && accuracy > 250 && lastCoordsRef.current) return;
+
+      // throttle: at most one upsert every 10s, OR if moved > ~12m, OR if accuracy improved clearly
       const prev = lastCoordsRef.current;
       const moved = prev
-        ? Math.hypot((lat - prev.lat) * 111000, (lng - prev.lng) * 111000 * Math.cos((lat * Math.PI) / 180))
+        ? Math.hypot(
+            (lat - prev.lat) * 111000,
+            (lng - prev.lng) * 111000 * Math.cos((lat * Math.PI) / 180),
+          )
         : Infinity;
-      if (now - lastSentRef.current < 10_000 && moved < 25) return;
+      const improvedAccuracy =
+        prev?.accuracy != null && accuracy != null ? prev.accuracy - accuracy : 0;
+      if (now - lastSentRef.current < 10_000 && moved < 12 && improvedAccuracy < 10) return;
       lastSentRef.current = now;
-      lastCoordsRef.current = { lat, lng };
+      lastCoordsRef.current = { lat, lng, accuracy };
 
       await supabase.from("live_locations").upsert(
         {
@@ -56,7 +70,7 @@ export function useLiveLocation(userId: string | null | undefined, enabled: bool
         () => {
           /* silent */
         },
-        { enableHighAccuracy: true, maximumAge: 8_000, timeout: 15_000 },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 30_000 },
       );
     };
 
