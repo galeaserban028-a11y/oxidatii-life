@@ -28,7 +28,7 @@ function PrivacyPage() {
       <h2>1. Operatorul datelor</h2>
       <p>
         Operatorul datelor cu caracter personal este echipa OXIDAȚII. Ne poți
-        contacta oricând la <a href="mailto:privacy@oxidatii.app">privacy@oxidatii.app</a> pentru orice
+        contacta oricând la <a href="mailto:privacy@oxidatii.life">privacy@oxidatii.life</a> pentru orice
         întrebare privind prelucrarea datelor tale.
       </p>
 
@@ -118,7 +118,7 @@ function PrivacyPage() {
       </ul>
       <p>
         Îți poți exercita drepturile scriindu-ne la
-        <a href="mailto:privacy@oxidatii.app"> privacy@oxidatii.app</a> sau direct din ecranul „Profil → Setări" din aplicație.
+        <a href="mailto:privacy@oxidatii.life"> privacy@oxidatii.life</a> sau direct din ecranul „Profil → Setări" din aplicație.
       </p>
 
       <h2>7. Minori</h2>
