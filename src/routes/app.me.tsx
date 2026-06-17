@@ -62,6 +62,7 @@ function MePage() {
   const [tab, setTab] = useState<"posts" | "reposts">("posts");
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [editingPremium, setEditingPremium] = useState(false);
 
   async function handleDelete(m: any) {
     if (!user) return;
