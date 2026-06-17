@@ -459,11 +459,11 @@ function MapPage() {
     ];
   }, [friendPins, geo, privacyQ.data?.cityCenter, profile?.avatar_url, profile?.display_name, profile?.handle, user]);
 
-  const publishPosition = useCallback(async (pos: GeolocationPosition, ensureLive = false) => {
+  const publishPosition = useCallback(async (pos: GeolocationPosition, ensureLive = false, recenter = false) => {
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
     setGeo({ lat, lng });
-    setFocusCity({ lat, lng, zoom: 16 });
+    if (recenter || ensureLive) setFocusCity({ lat, lng, zoom: 16 });
     if (!user) return;
 
     if (ensureLive) {
