@@ -117,7 +117,42 @@ function PremiumPage() {
         {currentTier && <div className="ml-auto"><PremiumBadge tier={currentTier} size="sm" asLink={false} /></div>}
       </header>
 
-      <div className="w-full max-w-[420px] mx-auto px-6 flex flex-col gap-12 pt-10">
+      <div className="w-full max-w-[420px] mx-auto px-4 sm:px-6 flex flex-col gap-12 pt-10 min-w-0">
+
+        {/* ACTIVE PLAN BANNER */}
+        {currentTier && (() => {
+          const active = TIERS.find((t) => t.id === currentTier);
+          if (!active) return null;
+          return (
+            <div
+              className="relative rounded-2xl p-4 flex items-center gap-3 overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, ${active.neon}22, transparent 70%)`,
+                border: `1px solid ${active.neon}66`,
+                boxShadow: `0 0 24px ${active.neon}33`,
+              }}
+            >
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: active.neon, boxShadow: `0 0 16px ${active.neon}99` }}
+              >
+                <Sparkles size={18} strokeWidth={2.5} style={{ color: active.textOnNeon }} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p
+                  className="text-[9px] uppercase tracking-[0.3em] font-bold"
+                  style={{ color: active.neon }}
+                >
+                  Planul tău activ
+                </p>
+                <p className="text-sm font-black uppercase truncate">
+                  {active.name} <span className="text-white/50 font-normal italic" style={{ fontFamily: "'Instrument Serif', serif" }}>· {active.coins} șprițuri/lună</span>
+                </p>
+              </div>
+            </div>
+          );
+        })()}
+
 
         {/* HERO */}
         <section className="text-center space-y-4">
