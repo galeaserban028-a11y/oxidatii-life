@@ -459,19 +459,24 @@ function MapPage() {
   const mapFriendPins = useMemo(() => {
     if (!user) return friendPins;
     const me = friendPins.find((f) => f.is_me);
-    const pos = geo ?? (me ? { lat: me.lat, lng: me.lng } : null);
+    const pos =
+      geo ??
+      (me ? { lat: me.lat, lng: me.lng } : null) ??
+      (privacyQ.data?.cityCenter
+        ? { lat: privacyQ.data.cityCenter.lat, lng: privacyQ.data.cityCenter.lng }
+        : null);
     if (!pos) return friendPins;
     return [
       {
         ...(me ?? { user_id: user.id, handle: profile?.handle ?? null, display_name: profile?.display_name ?? "tu", avatar_url: profile?.avatar_url ?? null }),
         lat: pos.lat,
         lng: pos.lng,
-        venue_name: "tu ești aici",
+        venue_name: geo ? "tu ești aici" : "în oraș",
         is_me: true,
       },
       ...friendPins.filter((f) => f.user_id !== user.id),
     ];
-  }, [friendPins, geo, profile?.avatar_url, profile?.display_name, profile?.handle, user]);
+  }, [friendPins, geo, privacyQ.data?.cityCenter, profile?.avatar_url, profile?.display_name, profile?.handle, user]);
 
   const publishPosition = useCallback(async (pos: GeolocationPosition, ensureLive = false, recenter = false) => {
     const lat = pos.coords.latitude;
