@@ -11,7 +11,7 @@ export const Route = createFileRoute("/app/inbox")({
   component: InboxPage,
 });
 
-type Tab = "pentru-tine" | "prieteni";
+type Tab = "mesaje" | "grupuri" | "prieteni";
 
 function InboxPage() {
   const { user } = useAuth();
