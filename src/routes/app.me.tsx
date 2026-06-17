@@ -18,6 +18,7 @@ import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
 import { PremiumExtrasCard } from "@/components/app/PremiumExtrasCard";
+import { getTheme } from "@/lib/premium-themes";
 
 
 
