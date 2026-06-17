@@ -17,7 +17,12 @@ export function useLiveLocation(userId: string | null | undefined, enabled: bool
     let cancelled = false;
     let watchId: number | null = null;
 
-    const push = async (lat: number, lng: number, heading: number | null, accuracy: number | null) => {
+    const push = async (
+      lat: number,
+      lng: number,
+      heading: number | null,
+      accuracy: number | null,
+    ) => {
       if (cancelled) return;
       const now = Date.now();
       // Ignore very rough browser fixes once we already have a better live pin.
@@ -27,9 +32,13 @@ export function useLiveLocation(userId: string | null | undefined, enabled: bool
       // throttle: at most one upsert every 10s, OR if moved > ~12m, OR if accuracy improved clearly
       const prev = lastCoordsRef.current;
       const moved = prev
-        ? Math.hypot((lat - prev.lat) * 111000, (lng - prev.lng) * 111000 * Math.cos((lat * Math.PI) / 180))
+        ? Math.hypot(
+            (lat - prev.lat) * 111000,
+            (lng - prev.lng) * 111000 * Math.cos((lat * Math.PI) / 180),
+          )
         : Infinity;
-      const improvedAccuracy = prev?.accuracy != null && accuracy != null ? prev.accuracy - accuracy : 0;
+      const improvedAccuracy =
+        prev?.accuracy != null && accuracy != null ? prev.accuracy - accuracy : 0;
       if (now - lastSentRef.current < 10_000 && moved < 12 && improvedAccuracy < 10) return;
       lastSentRef.current = now;
       lastCoordsRef.current = { lat, lng, accuracy };
