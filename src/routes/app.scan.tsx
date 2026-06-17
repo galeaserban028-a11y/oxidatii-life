@@ -23,6 +23,7 @@ function ScanPage() {
   const [venueQuery, setVenueQuery] = useState("");
   const [selectedVenue, setSelectedVenue] = useState<{ id: string; name: string; city?: any } | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [postToProfile, setPostToProfile] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [newVenueName, setNewVenueName] = useState("");
   const [newVenueType, setNewVenueType] = useState<"club" | "bar" | "terasa">("club");
