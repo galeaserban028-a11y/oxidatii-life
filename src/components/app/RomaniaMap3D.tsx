@@ -40,15 +40,16 @@ const TYPE_EMOJI: Record<string, string> = {
 
 // Neon glowing emoji pin — big bright emoji with a wide multi-stop halo so
 // each pin reads as a glowing orb on the dark map (matches reference).
-function makePinImage(color: string, emoji: string): ImageData {
-  const W = 160, H = 160;
+function makePinImage(color: string, emoji: string, lowEnd = false): ImageData {
+  const W = lowEnd ? 96 : 144, H = W;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
   const cx = W / 2, cy = H / 2;
+  const s = W / 160; // scale factor
 
   // wide outer aura
-  const aura = ctx.createRadialGradient(cx, cy, 4, cx, cy, 78);
+  const aura = ctx.createRadialGradient(cx, cy, 4 * s, cx, cy, 78 * s);
   aura.addColorStop(0, color + "ee");
   aura.addColorStop(0.18, color + "aa");
   aura.addColorStop(0.4, color + "55");
@@ -57,38 +58,40 @@ function makePinImage(color: string, emoji: string): ImageData {
   ctx.fillStyle = aura;
   ctx.fillRect(0, 0, W, H);
 
-  // bright inner core glow
-  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
-  core.addColorStop(0, color);
-  core.addColorStop(0.6, color + "66");
-  core.addColorStop(1, color + "00");
-  ctx.globalCompositeOperation = "lighter";
-  ctx.fillStyle = core;
-  ctx.fillRect(0, 0, W, H);
-  ctx.globalCompositeOperation = "source-over";
+  if (!lowEnd) {
+    const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30 * s);
+    core.addColorStop(0, color);
+    core.addColorStop(0.6, color + "66");
+    core.addColorStop(1, color + "00");
+    ctx.globalCompositeOperation = "lighter";
+    ctx.fillStyle = core;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "source-over";
+  }
 
-  // neon ring
   ctx.shadowColor = color;
-  ctx.shadowBlur = 28;
+  ctx.shadowBlur = (lowEnd ? 14 : 24) * s;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 3.5;
+  ctx.lineWidth = 3.5 * s;
   ctx.beginPath();
-  ctx.arc(cx, cy, 34, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 34 * s, 0, Math.PI * 2);
   ctx.stroke();
 
-  // emoji glyph — stroke twice for punch
   ctx.shadowColor = color;
-  ctx.shadowBlur = 24;
+  ctx.shadowBlur = (lowEnd ? 12 : 22) * s;
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = '50px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-  ctx.fillText(emoji, cx, cy + 2);
-  ctx.shadowBlur = 36;
-  ctx.fillText(emoji, cx, cy + 2);
+  ctx.font = `${Math.round(50 * s)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+  ctx.fillText(emoji, cx, cy + 2 * s);
+  if (!lowEnd) {
+    ctx.shadowBlur = 32 * s;
+    ctx.fillText(emoji, cx, cy + 2 * s);
+  }
 
   return ctx.getImageData(0, 0, W, H);
 }
+
 
 
 
@@ -332,28 +335,31 @@ export function RomaniaMap3D({
       ];
       for (const [name, color, emoji] of pinTypes) {
         if (!map.hasImage(name)) {
-          try { map.addImage(name, makePinImage(color, emoji), { pixelRatio: 2 }); } catch {}
+          try { map.addImage(name, makePinImage(color, emoji, isSmall), { pixelRatio: 2 }); } catch {}
         }
       }
 
-      // Outer wide aura behind clusters
-      map.addLayer({
-        id: "venues-clusters-aura",
-        type: "circle",
-        source: VENUES_SRC,
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": [
-            "step", ["get", "point_count"],
-            "rgba(255,43,214,0.42)", 80,
-            "rgba(255,255,255,0.28)", 240,
-            "rgba(255,140,90,0.42)",
-          ],
-          "circle-radius": ["step", ["get", "point_count"], 64, 80, 78, 240, 92],
-          "circle-blur": 1,
-          "circle-opacity": 0.55,
-        },
-      });
+      // Outer wide aura behind clusters — desktop only (expensive blur on mobile GPUs)
+      if (!isSmall) {
+        map.addLayer({
+          id: "venues-clusters-aura",
+          type: "circle",
+          source: VENUES_SRC,
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-color": [
+              "step", ["get", "point_count"],
+              "rgba(255,43,214,0.42)", 80,
+              "rgba(255,255,255,0.28)", 240,
+              "rgba(255,140,90,0.42)",
+            ],
+            "circle-radius": ["step", ["get", "point_count"], 64, 80, 78, 240, 92],
+            "circle-blur": 1,
+            "circle-opacity": 0.55,
+          },
+        });
+      }
+
       map.addLayer({
         id: "venues-clusters-glow",
         type: "circle",
@@ -535,22 +541,25 @@ export function RomaniaMap3D({
     if (loadedRef.current) apply(); else map.once("load", apply);
   }, [venues, promotedMeta, retryKey]);
 
-  // Subtle pulse only; keep the reference-style road network readable.
+  // Heatmap pulse — desktop only, throttled to ~8fps to avoid forcing a full
+  // GL repaint every frame on phones.
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
-    let raf = 0;
+    const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
+    if (isSmall) return;
+    let timer: number | null = null;
     const start = performance.now();
-    const tick = (t: number) => {
-      if (!map.getLayer("venues-heat")) { raf = requestAnimationFrame(tick); return; }
-      const k = (Math.sin((t - start) / 1400) + 1) / 2; // 0..1
-      const intensity = 0.16 + k * 0.1;
-      try { map.setPaintProperty("venues-heat", "heatmap-intensity", intensity); } catch {}
-      raf = requestAnimationFrame(tick);
+    const tick = () => {
+      if (!map.getLayer("venues-heat")) { timer = window.setTimeout(tick, 250); return; }
+      const k = (Math.sin((performance.now() - start) / 1400) + 1) / 2;
+      try { map.setPaintProperty("venues-heat", "heatmap-intensity", 0.16 + k * 0.1); } catch {}
+      timer = window.setTimeout(tick, 120);
     };
-    const onLoad = () => { raf = requestAnimationFrame(tick); };
+    const onLoad = () => { tick(); };
     if (loadedRef.current) onLoad(); else map.once("load", onLoad);
-    return () => { if (raf) cancelAnimationFrame(raf); };
+    return () => { if (timer) clearTimeout(timer); };
   }, [retryKey]);
+
 
   // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
   // halo. Replaces the bottle silhouette so paying businesses are instantly
