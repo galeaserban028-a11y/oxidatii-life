@@ -167,7 +167,7 @@ export function BottomTabBar() {
               to={t.to as any}
               className="tab-press flex flex-col items-center flex-1 min-w-0"
               style={{
-                color: active ? "#ff6b00" : "#8e8c99",
+                color: active ? "#ff3d8b" : "#8e8c99",
                 fontSize: 10,
                 fontWeight: 600,
                 textTransform: "uppercase",
@@ -183,7 +183,7 @@ export function BottomTabBar() {
                   size={iconSize}
                   strokeWidth={active ? 2.4 : 2}
                   style={{
-                    filter: active ? "drop-shadow(0 0 8px #ff6b00)" : undefined,
+                    filter: active ? "drop-shadow(0 0 8px #ff3d8b)" : undefined,
                     transition: "all 0.3s cubic-bezier(0.4,0,0.2,1)",
                   }}
                 />
@@ -191,12 +191,12 @@ export function BottomTabBar() {
                   <>
                     <span
                       className="absolute -top-0.5 -right-0.5 h-[6px] w-[6px] rounded-full"
-                      style={{ backgroundColor: "#ff0055" }}
+                      style={{ backgroundColor: "#ff3d8b" }}
                     />
                     <span
                       className="absolute -top-0.5 -right-0.5 h-[6px] w-[6px] rounded-full"
                       style={{
-                        backgroundColor: "#ff0055",
+                        backgroundColor: "#ff3d8b",
                         animation: "pulse-waves 1.8s infinite ease-in-out",
                       }}
                     />
@@ -228,7 +228,7 @@ export function BottomTabBar() {
               height: centerSize,
               borderRadius: shrunk ? 16 : 18,
               marginTop: centerMargin,
-              background: "linear-gradient(135deg, #ff9f43, #ff5252, #9b51e0)",
+              background: "linear-gradient(135deg, #ff3d8b, #ff3d8b, #c724ff)",
               backgroundSize: "200% 200%",
               animation: "gradient-shift 5s ease infinite",
               boxShadow:
@@ -261,7 +261,7 @@ export function BottomTabBar() {
               to={t.to as any}
               className="tab-press flex flex-col items-center flex-1 min-w-0"
               style={{
-                color: active ? "#ff6b00" : "#8e8c99",
+                color: active ? "#ff3d8b" : "#8e8c99",
                 fontSize: 10,
                 fontWeight: 600,
                 textTransform: "uppercase",
@@ -277,7 +277,7 @@ export function BottomTabBar() {
                   size={iconSize}
                   strokeWidth={active ? 2.4 : 2}
                   style={{
-                    filter: active ? "drop-shadow(0 0 8px #ff6b00)" : undefined,
+                    filter: active ? "drop-shadow(0 0 8px #ff3d8b)" : undefined,
                     transition: "all 0.3s cubic-bezier(0.4,0,0.2,1)",
                   }}
                 />
@@ -288,7 +288,7 @@ export function BottomTabBar() {
                       minWidth: 14,
                       height: 14,
                       padding: "0 3px",
-                      backgroundColor: "#ff0055",
+                      backgroundColor: "#ff3d8b",
                       boxShadow: "0 0 0 2px rgba(15,13,28,0.75)",
                     }}
                   >

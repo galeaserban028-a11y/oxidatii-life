@@ -32,7 +32,7 @@ async function loadPromoTiles(): Promise<PromoTile[]> {
       ?? c.business_accounts?.cover_url
       ?? c.business_accounts?.logo_url
       ?? null,
-    theme: c.theme_color ?? "#ff8c31",
+    theme: c.theme_color ?? "#ff3d8b",
   }));
 }
 
@@ -117,11 +117,11 @@ async function loadStories(viewerId: string) {
 // ─── helpers ──────────────────────────────────────────────────────────────
 
 const GRADIENTS: { bg: string; glow: string }[] = [
-  { bg: "linear-gradient(to top right, #ff3158, #ff8c31)", glow: "rgba(255,49,88,0.3)" },
-  { bg: "linear-gradient(to top right, #8a2be2, #ff3158)", glow: "rgba(138,43,226,0.3)" },
-  { bg: "linear-gradient(to bottom right, #ff3158, #ed1e79, #ff8c31)", glow: "rgba(237,30,121,0.3)" },
-  { bg: "linear-gradient(to top right, #f97316, #ed1e79, #8a2be2)", glow: "rgba(249,115,22,0.3)" },
-  { bg: "linear-gradient(to bottom right, #8a2be2, #4f46e5, #ff3158)", glow: "rgba(79,70,229,0.3)" },
+  { bg: "linear-gradient(to top right, #ff3d8b, #ff3d8b)", glow: "rgba(255,49,88,0.3)" },
+  { bg: "linear-gradient(to top right, #c724ff, #ff3d8b)", glow: "rgba(138,43,226,0.3)" },
+  { bg: "linear-gradient(to bottom right, #ff3d8b, #ff3d8b, #ff3d8b)", glow: "rgba(237,30,121,0.3)" },
+  { bg: "linear-gradient(to top right, #ff3d8b, #ff3d8b, #c724ff)", glow: "rgba(249,115,22,0.3)" },
+  { bg: "linear-gradient(to bottom right, #c724ff, #4f46e5, #ff3d8b)", glow: "rgba(79,70,229,0.3)" },
 ];
 
 function pickGradient(seed: string) {
@@ -152,7 +152,7 @@ function SponsoredTile({ promo }: { promo: PromoTile }) {
       <div
         className="relative p-[2.5px] rounded-full"
         style={{
-          backgroundImage: `linear-gradient(135deg, #ffd166, ${promo.theme}, #ffd166)`,
+          backgroundImage: `linear-gradient(135deg, #ffea00, ${promo.theme}, #ffea00)`,
           boxShadow: `0 0 18px ${promo.theme}80, 0 0 6px rgba(255,209,102,0.6)`,
         }}
       >
@@ -590,7 +590,7 @@ function StoryUploadSheet({
                 value={caption}
                 onChange={(e) => setCaption(e.target.value.slice(0, 200))}
                 placeholder="Adaugă un mesaj…"
-                className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#FF3B8E]/50 backdrop-blur-xl text-sm"
+                className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d8b]/50 backdrop-blur-xl text-sm"
               />
             </div>
 
@@ -619,9 +619,9 @@ function StoryUploadSheet({
           className="group relative w-full overflow-hidden rounded-2xl transition-all active:scale-[0.97] disabled:opacity-40 disabled:active:scale-100"
         >
           {file && !uploading && (
-            <div className="absolute inset-0 bg-gradient-to-r from-[#FF3B8E] to-[#FF8C00] opacity-60 blur-xl" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#ff3d8b] to-[#ff3d8b] opacity-60 blur-xl" />
           )}
-          <div className="relative w-full py-4 bg-gradient-to-r from-[#FF3B8E] to-[#FF8C00] rounded-2xl flex items-center justify-center gap-2">
+          <div className="relative w-full py-4 bg-gradient-to-r from-[#ff3d8b] to-[#ff3d8b] rounded-2xl flex items-center justify-center gap-2">
             <span className="text-white font-bold text-base tracking-wide">
               {uploading ? "se încarcă…" : "Publică acum"}
             </span>

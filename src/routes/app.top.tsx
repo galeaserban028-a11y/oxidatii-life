@@ -229,7 +229,7 @@ function TopPage() {
           <>
             {/* Cinema podium bento */}
             {top3.length > 0 && (
-              <div className="relative rounded-3xl overflow-hidden border border-white/5 bg-gradient-to-br from-[#1a0a0e] via-[#0a0a0a] to-[#1a0f05] p-5">
+              <div className="relative rounded-3xl overflow-hidden border border-white/5 bg-gradient-to-br from-[#0a0a14] via-[#0a0a0a] to-[#0a0a14] p-5">
                 <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#c724ff]/20 blur-3xl pointer-events-none" />
                 <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-[#ff3d8b]/20 blur-3xl pointer-events-none" />
                 <div className="relative grid grid-cols-3 gap-3 items-end">

@@ -227,7 +227,7 @@ function MapPage() {
           ?? c.business_accounts?.cover_url
           ?? null;
         map[vid] = {
-          theme: c.theme_color ?? "#ff3158",
+          theme: c.theme_color ?? "#ff3d8b",
           cover,
           campaignId: c.id,
           title: c.title ?? null,
@@ -952,7 +952,7 @@ function BusinessVisibilityCTA() {
         className="oxi-cta-wrap absolute left-3 z-20 will-change-transform"
         style={{ top: "calc(env(safe-area-inset-top) + 3rem)" }}
       >
-        <div className="oxi-cta-pill flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sunset-amber to-[#ffd66b] text-black pl-2.5 pr-1 py-1 border border-black/10">
+        <div className="oxi-cta-pill flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sunset-amber to-[#ffea00] text-black pl-2.5 pr-1 py-1 border border-black/10">
           <Link
             to="/app/biz"
             className="flex items-center gap-1.5 active:scale-[0.97] transition-transform"

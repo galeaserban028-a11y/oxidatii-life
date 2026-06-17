@@ -42,7 +42,7 @@ export function NightWrapCard({ wrap }: { wrap: any }) {
 
         <div className="relative p-5 space-y-3">
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.25em] text-white/70">
-            <Sparkles size={12} className="text-[#ffd700]" />
+            <Sparkles size={12} className="text-[#ffea00]" />
             <span>Noaptea ta de aseară</span>
             <span className="ml-auto text-white/40">{wrap.vibe_emoji}</span>
           </div>

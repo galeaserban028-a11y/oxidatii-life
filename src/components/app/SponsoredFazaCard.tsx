@@ -59,7 +59,7 @@ export function usePromoCards() {
         video: (c.video_url as string | null) ?? null,
         ctaUrl: (c.cta_url as string | null) ?? null,
         ctaText: (c.cta_text as string | null) ?? null,
-        theme: (c.theme_color ?? "#ff8c31") as string,
+        theme: (c.theme_color ?? "#ff3d8b") as string,
         rating: (c.business_accounts?.reputation_score as number | null) ?? null,
         reviewsCount: (c.business_accounts?.total_reviews as number | null) ?? null,
       }));
@@ -152,7 +152,7 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
       {/* Header */}
       <div className="flex items-center gap-3 px-3.5 py-3">
         <button onClick={openDetail} className="flex items-center gap-3 flex-1 min-w-0 text-left">
-          <div className="p-[2px] rounded-full" style={{ background: `linear-gradient(135deg, #ffd166, ${ad.theme})` }}>
+          <div className="p-[2px] rounded-full" style={{ background: `linear-gradient(135deg, #ffea00, ${ad.theme})` }}>
             <div className="p-[2px] rounded-full bg-background">
               {ad.logo ? (
                 <img src={ad.logo} alt={handle} className="size-9 rounded-full object-cover" />
