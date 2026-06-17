@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { triageBugReport } from "@/lib/bug-triage.functions";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
 import { LanguageSwitcher } from "@/components/app/LanguageSwitcher";
 import {
