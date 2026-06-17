@@ -38,50 +38,59 @@ const TYPE_EMOJI: Record<string, string> = {
   after: "🎉",
 };
 
-// Render a glowing neon "pin" — a dark circle with a colored halo and the
-// type emoji inside. Matches the reference: small icon-bubble with strong
-// outer glow, not a bottle silhouette.
+// Neon glowing pin — large dark disc, thick colored neon ring, soft outer
+// halo, big emoji glyph centered. Matches the reference (Aarhus speaker,
+// Praha cocktail, etc.).
 function makePinImage(color: string, emoji: string): ImageData {
-  const W = 64, H = 64;
+  const W = 128, H = 128;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
   const cx = W / 2, cy = H / 2;
 
-  // Outer glow halo
+  // Outer soft halo — wide, low alpha
+  const halo = ctx.createRadialGradient(cx, cy, 18, cx, cy, 60);
+  halo.addColorStop(0, color + "cc");
+  halo.addColorStop(0.4, color + "55");
+  halo.addColorStop(1, color + "00");
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, W, H);
+
+  // Strong inner glow
   ctx.shadowColor = color;
-  ctx.shadowBlur = 16;
+  ctx.shadowBlur = 28;
   ctx.fillStyle = color;
-  ctx.globalAlpha = 0.55;
+  ctx.globalAlpha = 0.9;
   ctx.beginPath();
-  ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 34, 0, Math.PI * 2);
   ctx.fill();
 
-  // Solid neon ring
+  // Thick neon ring
   ctx.globalAlpha = 1;
-  ctx.shadowBlur = 10;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 16, 0, Math.PI * 2);
-  ctx.lineWidth = 2.5;
+  ctx.shadowBlur = 18;
+  ctx.lineWidth = 5;
   ctx.strokeStyle = color;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 32, 0, Math.PI * 2);
   ctx.stroke();
 
   // Inner dark fill
   ctx.shadowBlur = 0;
-  ctx.fillStyle = "rgba(8,6,18,0.95)";
+  ctx.fillStyle = "#0a0814";
   ctx.beginPath();
-  ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 28, 0, Math.PI * 2);
   ctx.fill();
 
-  // Emoji glyph
-  ctx.font = "16px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',system-ui";
+  // Big emoji glyph
+  ctx.font = "36px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',system-ui";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(emoji, cx, cy + 1);
+  ctx.fillText(emoji, cx, cy + 2);
 
   return ctx.getImageData(0, 0, W, H);
 }
+
 
 const VOYAGER_STYLE = {
   version: 8,
@@ -89,9 +98,9 @@ const VOYAGER_STYLE = {
     "carto-dark": {
       type: "raster",
       tiles: [
-        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
       ],
       tileSize: 256,
       attribution: "© CARTO, © OpenStreetMap contributors",
@@ -99,8 +108,8 @@ const VOYAGER_STYLE = {
     },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#03040a" } },
-    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 0.85, "raster-saturation": -0.2, "raster-contrast": 0.15, "raster-brightness-max": 0.75 } },
+    { id: "background", type: "background", paint: { "background-color": "#0a0420" } },
+    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 0.85, "raster-saturation": 0.4, "raster-contrast": 0.25, "raster-brightness-min": 0.05, "raster-brightness-max": 0.7, "raster-hue-rotate": 250 } },
   ],
   sky: {
     "sky-color": "#03040a",
@@ -259,17 +268,20 @@ export function RomaniaMap3D({
         }
       }
 
-      // cluster bubbles — dark fills with a strong neon magenta halo
-      // (matches the reference: white count number, glowing pink ring).
       map.addLayer({
         id: "venues-clusters-glow",
         type: "circle",
         source: VENUES_SRC,
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": "rgba(255,49,134,0.18)",
-          "circle-radius": ["step", ["get", "point_count"], 24, 10, 30, 50, 36],
-          "circle-blur": 0.8,
+          "circle-color": [
+            "step", ["get", "point_count"],
+            "rgba(255,49,134,0.35)", 50,
+            "rgba(198,107,255,0.35)", 200,
+            "rgba(255,176,0,0.35)",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 40, 50, 52, 200, 64],
+          "circle-blur": 1,
         },
       });
       map.addLayer({
@@ -278,13 +290,13 @@ export function RomaniaMap3D({
         source: VENUES_SRC,
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": "rgba(10,8,20,0.92)",
-          "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 50, 24],
-          "circle-stroke-width": 2,
+          "circle-color": "rgba(10,5,22,0.95)",
+          "circle-radius": ["step", ["get", "point_count"], 26, 50, 32, 200, 40],
+          "circle-stroke-width": 3.5,
           "circle-stroke-color": [
             "step", ["get", "point_count"],
-            "#ff3186", 10,
-            "#c66bff", 50,
+            "#ff3186", 50,
+            "#c66bff", 200,
             "#ffb000",
           ],
         },
@@ -296,10 +308,11 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-size": 12,
+          "text-size": ["step", ["get", "point_count"], 18, 50, 20, 200, 24],
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-allow-overlap": true,
         },
-        paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.6)", "text-halo-width": 1 },
+        paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.85)", "text-halo-width": 1.5 },
       });
 
       // unclustered points → neon glowing emoji pins
@@ -319,9 +332,9 @@ export function RomaniaMap3D({
             "after", "pin-after",
             "pin-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 10, 0.7, 14, 0.95, 17, 1.15],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.55, 6, 0.7, 10, 0.9, 14, 1.05, 17, 1.2],
           "icon-allow-overlap": true,
-          "icon-ignore-placement": false,
+          "icon-ignore-placement": true,
           "icon-anchor": "center",
           "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
         },
