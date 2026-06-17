@@ -229,10 +229,10 @@ export function ReputationCard(props: Props) {
                   {rep.tier.name}
                 </span>
                 <span className="text-[9px] font-mono uppercase text-white/45 flex items-center gap-1 shrink-0">
-                  {rep.totalPeerN > 0 ? (
+                  {uniqueRaters > 0 ? (
                     <>
                       <Star size={9} className="fill-current" style={{ color: rep.tier.color }} />
-                      {rep.totalPeerN} voturi
+                      {uniqueRaters} {uniqueRaters === 1 ? "vot" : "voturi"}
                     </>
                   ) : (
                     <>reputație</>
