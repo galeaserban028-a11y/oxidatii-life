@@ -178,14 +178,34 @@ function getPrecisePosition(): Promise<GeolocationPosition> {
     let settled = false;
     let watchId: number | null = null;
     let timeoutId: number | null = null;
+    const maxAcceptedAccuracy = 80;
+
+    const cleanup = () => {
+      if (watchId != null) navigator.geolocation.clearWatch(watchId);
+      if (timeoutId != null) window.clearTimeout(timeoutId);
+    };
+
+    const fail = (error: GeolocationPositionError | Error) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(error);
+    };
 
     const finish = (pos?: GeolocationPosition) => {
       if (settled) return;
+      const candidate = pos ?? best;
+      if (!candidate) {
+        fail(new Error("Nu am putut citi locația."));
+        return;
+      }
+      if (candidate.coords.accuracy > maxAcceptedAccuracy) {
+        fail(new Error("GPS-ul încă e prea aproximativ. Ieși lângă geam și încearcă din nou."));
+        return;
+      }
       settled = true;
-      if (watchId != null) navigator.geolocation.clearWatch(watchId);
-      if (timeoutId != null) window.clearTimeout(timeoutId);
-      if (pos ?? best) resolve((pos ?? best)!);
-      else reject(new Error("Nu am putut citi locația."));
+      cleanup();
+      resolve(candidate);
     };
 
     watchId = navigator.geolocation.watchPosition(
@@ -195,17 +215,12 @@ function getPrecisePosition(): Promise<GeolocationPosition> {
       },
       (error) => {
         if (best) finish(best);
-        else {
-          settled = true;
-          if (watchId != null) navigator.geolocation.clearWatch(watchId);
-          if (timeoutId != null) window.clearTimeout(timeoutId);
-          reject(error);
-        }
+        else fail(error);
       },
       { enableHighAccuracy: true, maximumAge: 0, timeout: 30_000 },
     );
 
-    timeoutId = window.setTimeout(() => finish(), 12_000);
+    timeoutId = window.setTimeout(() => finish(), 25_000);
   });
 }
 
@@ -514,7 +529,7 @@ function MapPage() {
   const requestGeo = () => {
     getPrecisePosition()
       .then((pos) => publishPosition(pos, true, true))
-      .catch(() => alert("Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
+      .catch((error) => alert(error instanceof Error ? error.message : "Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
   };
 
   useEffect(() => {
@@ -702,7 +717,7 @@ function MapPage() {
               }
                 getPrecisePosition()
                   .then((pos) => publishPosition(pos, true, true))
-                  .catch(() => alert("Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
+                  .catch((error) => alert(error instanceof Error ? error.message : "Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
             }}
             className="w-full flex items-center gap-3 rounded-2xl border border-[#ff3d8b]/40 bg-gradient-to-r from-[#ff3d8b]/15 to-[#c724ff]/10 px-4 py-3 text-left active:scale-[0.99] transition"
           >
