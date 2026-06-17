@@ -514,7 +514,7 @@ function MapPage() {
 
   const requestGeo = () => {
     getPrecisePosition()
-      .then((pos) => publishPosition(pos))
+      .then((pos) => publishPosition(pos, false, true))
       .catch(() => alert("Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
   };
 
@@ -527,7 +527,8 @@ function MapPage() {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
         setGeo({ lat, lng });
-        setFocusCity({ lat, lng, zoom: 16 });
+        // Center the map once on first load, then let the user pan freely.
+        setFocusCity((prev) => prev ?? { lat, lng, zoom: 14 });
         // Only broadcast to friends if consent + not ghost/hidden.
         if (
           user &&
@@ -540,7 +541,7 @@ function MapPage() {
       })
       .catch(() => {
         const fallback = privacyQ.data?.cityCenter;
-        if (fallback) setFocusCity({ lat: fallback.lat, lng: fallback.lng, zoom: 12.5 });
+        if (fallback) setFocusCity((prev) => prev ?? { lat: fallback.lat, lng: fallback.lng, zoom: 12.5 });
       });
   }, [autoLocated, privacyQ.data?.cityCenter, privacyQ.data?.settings?.map_ghost, privacyQ.data?.settings?.map_visibility, profile?.location_consent, publishPosition, user]);
 
