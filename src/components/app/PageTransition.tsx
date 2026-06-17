@@ -91,23 +91,23 @@ export function PageTransition({ children }: { children: ReactNode }) {
       };
     }
     return {
-      enter: (dir: number) => ({ x: dir > 0 ? 40 : -40, opacity: 0, filter: "blur(8px)", scale: 0.985 }),
-      center: { x: 0, opacity: 1, filter: "blur(0px)", scale: 1 },
-      exit: (dir: number) => ({ x: dir > 0 ? -28 : 28, opacity: 0, filter: "blur(8px)", scale: 0.99 }),
+      enter: (dir: number) => ({ x: dir > 0 ? 24 : -24, opacity: 0 }),
+      center: { x: 0, opacity: 1 },
+      exit: (dir: number) => ({ x: dir > 0 ? -16 : 16, opacity: 0 }),
     };
   }, [lightweight]);
 
   const transition = lightweight
-    ? { duration: 0.18, ease: EASE }
-    : { type: "spring" as const, stiffness: 280, damping: 32, mass: 0.7, opacity: { duration: 0.3, ease: EASE }, filter: { duration: 0.32, ease: EASE } };
+    ? { duration: 0.14, ease: EASE }
+    : { duration: 0.22, ease: EASE };
 
   return (
     <div
-      className="touch-pan-y"
+      className="touch-pan-y relative"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <AnimatePresence mode="wait" initial={false} custom={direction} onExitComplete={() => setAnimating(false)}>
+      <AnimatePresence mode="popLayout" initial={false} custom={direction} onExitComplete={() => setAnimating(false)}>
         <motion.div
           key={pathname}
           custom={direction}
