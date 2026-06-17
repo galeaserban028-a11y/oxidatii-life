@@ -490,9 +490,9 @@ function PremiumPage() {
                 <div key={i}>
                   <button
                     onClick={() => setOpenFaq(open ? null : i)}
-                    className="w-full py-5 flex items-center justify-between gap-4 text-left group"
+                    className="w-full py-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 text-left group"
                   >
-                    <span className="text-sm font-medium text-white/85 group-hover:text-white transition">
+                    <span className="text-sm font-medium text-white/85 group-hover:text-white transition min-w-0 break-words">
                       {f.q}
                     </span>
                     <span
@@ -502,6 +502,7 @@ function PremiumPage() {
                       {open ? <Minus size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
                     </span>
                   </button>
+
                   {open && (
                     <div
                       className="pb-5 pr-8 text-[13px] text-white/65 leading-relaxed italic"
