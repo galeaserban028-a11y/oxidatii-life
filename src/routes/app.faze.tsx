@@ -14,10 +14,10 @@ export const Route = createFileRoute("/app/faze")({
   component: FazePage,
 });
 
-// Font helpers — page-local theme overrides
-const archivo = { fontFamily: '"Archivo Black", system-ui, sans-serif', letterSpacing: "-0.01em" } as const;
-const hind = { fontFamily: '"Work Sans", "Hind", system-ui, sans-serif' } as const;
-const instrument = { fontFamily: '"Instrument Serif", "Work Sans", serif', letterSpacing: "-0.02em" } as const;
+// Font helpers — unified DM Sans across the app
+const archivo = { letterSpacing: "-0.01em" } as const;
+const hind = {} as const;
+const instrument = { letterSpacing: "-0.02em" } as const;
 
 // Bottom-safe inset for sheets above the global tab bar
 const SHEET_BOTTOM = "calc(env(safe-area-inset-bottom) + 5.5rem)";

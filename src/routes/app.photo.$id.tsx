@@ -11,8 +11,8 @@ export const Route = createFileRoute("/app/photo/$id")({
   component: PhotoPage,
 });
 
-const archivo = { fontFamily: '"Archivo Black", system-ui, sans-serif', letterSpacing: "-0.01em" } as const;
-const hind = { fontFamily: '"Hind", system-ui, sans-serif' } as const;
+const archivo = { letterSpacing: "-0.01em" } as const;
+const hind = {} as const;
 
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - +new Date(iso)) / 1000);

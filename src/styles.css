@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Fonts loaded via @fontsource in __root.tsx: Space Grotesk (display), DM Sans (body) */
+/* Single font across the whole app: DM Sans */
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
