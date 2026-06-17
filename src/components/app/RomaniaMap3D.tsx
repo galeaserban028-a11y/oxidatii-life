@@ -456,15 +456,15 @@ export function RomaniaMap3D({
         const p = f.properties as any;
         const coords = (f.geometry as any).coordinates.slice();
         const cover = p.cover_url ? `<img src="${p.cover_url}" alt="" style="width:100%;height:120px;object-fit:cover;display:block;" loading="lazy"/>` : "";
-        const addr = p.address ? `<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;color:#aaa;margin-top:2px;">${p.address}</div>` : "";
+        const addr = p.address ? `<div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#aaa;margin-top:2px;">${p.address}</div>` : "";
         const typeColor = TYPE_COLOR[p.type] ?? "#ffea00";
         const html = `<div style="width:220px;background:#06070a;color:#fff;border-radius:12px;overflow:hidden;border:1px solid ${typeColor}55;">
           ${cover}
           <div style="padding:10px 12px;">
-            <div style="display:inline-block;padding:1px 6px;border-radius:9999px;background:${typeColor}22;color:${typeColor};border:1px solid ${typeColor}55;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">${p.type ?? "loc"}</div>
-            <div style="font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:14px;line-height:1.15;">${p.name}</div>
+            <div style="display:inline-block;padding:1px 6px;border-radius:9999px;background:${typeColor}22;color:${typeColor};border:1px solid ${typeColor}55;font-family:'DM Sans',sans-serif;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">${p.type ?? "loc"}</div>
+            <div style="font-family:'DM Sans',sans-serif;font-weight:900;font-size:14px;line-height:1.15;">${p.name}</div>
             ${addr}
-            <a href="/app/venue/${p.id}" data-oxi-venue="${p.id}" style="margin-top:8px;display:block;text-align:center;padding:6px 10px;border-radius:8px;background:${typeColor};color:#06070a;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;text-decoration:none;">detalii →</a>
+            <a href="/app/venue/${p.id}" data-oxi-venue="${p.id}" style="margin-top:8px;display:block;text-align:center;padding:6px 10px;border-radius:8px;background:${typeColor};color:#06070a;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;text-decoration:none;">detalii →</a>
           </div>
         </div>`;
         const popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, offset: 14, maxWidth: "240px", className: "oxi-popup" })
@@ -608,7 +608,7 @@ export function RomaniaMap3D({
         } else {
           const ini = document.createElement("div");
           ini.textContent = (v.name?.[0] ?? "?").toUpperCase();
-          ini.style.cssText = `width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${theme};font-weight:900;font-family:'Space Grotesk',sans-serif;font-size:16px;`;
+          ini.style.cssText = `width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${theme};font-weight:900;font-family:'DM Sans',sans-serif;font-size:16px;`;
           ring.appendChild(ini);
         }
         wrap.appendChild(ring);
@@ -624,7 +624,7 @@ export function RomaniaMap3D({
         close.type = "button";
         close.setAttribute("aria-label", "Ascunde reclama");
         close.textContent = "×";
-        close.style.cssText = `position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.78;`;
+        close.style.cssText = `position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'DM Sans',sans-serif;font-weight:900;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.78;`;
         close.onclick = (e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -682,7 +682,7 @@ export function RomaniaMap3D({
       const label = document.createElement("div");
       label.textContent = c.name;
       label.className = "oxi-city-label";
-      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:10px;letter-spacing:0;color:rgba(255,255,255,0.82);text-shadow:0 0 5px ${color},0 1px 3px #000;white-space:nowrap;`;
+      label.style.cssText = `font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:0;color:rgba(255,255,255,0.82);text-shadow:0 0 5px ${color},0 1px 3px #000;white-space:nowrap;`;
       wrap.appendChild(label);
       let pressTimer: number | null = null;
       let longPressed = false;
@@ -776,7 +776,7 @@ export function RomaniaMap3D({
       } else {
         const ini = document.createElement("div");
         ini.textContent = ((f.handle ?? f.display_name ?? "?")[0] ?? "?").toUpperCase();
-        ini.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:'Space Grotesk',sans-serif;font-size:14px;";
+        ini.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:'DM Sans',sans-serif;font-size:14px;";
         ring.appendChild(ini);
       }
       wrap.appendChild(ring);
@@ -788,7 +788,7 @@ export function RomaniaMap3D({
       if (f.is_me) {
         const crown = document.createElement("div");
         crown.textContent = "TU";
-        crown.style.cssText = "position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:9999px;background:#ff3d8b;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.08em;border:1.5px solid #06070a;box-shadow:0 0 8px #ff3d8b;";
+        crown.style.cssText = "position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:9999px;background:#ff3d8b;color:#fff;font-family:'DM Sans',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.08em;border:1.5px solid #06070a;box-shadow:0 0 8px #ff3d8b;";
         wrap.appendChild(crown);
       }
 
