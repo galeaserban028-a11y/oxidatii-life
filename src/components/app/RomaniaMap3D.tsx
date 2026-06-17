@@ -245,17 +245,17 @@ export function RomaniaMap3D({
         },
       });
 
-      // Register one bottle icon per venue type (different tints).
-      const bottleTypes: Array<[string, string]> = [
-        ["bottle-club", TYPE_COLOR.club],
-        ["bottle-bar", TYPE_COLOR.bar],
-        ["bottle-pub", TYPE_COLOR.pub],
-        ["bottle-terasa", TYPE_COLOR.terasa],
-        ["bottle-after", TYPE_COLOR.after],
+      // Register one neon pin icon per venue type.
+      const pinTypes: Array<[string, string, string]> = [
+        ["pin-club", TYPE_COLOR.club, TYPE_EMOJI.club],
+        ["pin-bar", TYPE_COLOR.bar, TYPE_EMOJI.bar],
+        ["pin-pub", TYPE_COLOR.pub, TYPE_EMOJI.pub],
+        ["pin-terasa", TYPE_COLOR.terasa, TYPE_EMOJI.terasa],
+        ["pin-after", TYPE_COLOR.after, TYPE_EMOJI.after],
       ];
-      for (const [name, color] of bottleTypes) {
+      for (const [name, color, emoji] of pinTypes) {
         if (!map.hasImage(name)) {
-          try { map.addImage(name, makeBottleImage(color), { pixelRatio: 2 }); } catch {}
+          try { map.addImage(name, makePinImage(color, emoji), { pixelRatio: 2 }); } catch {}
         }
       }
 
