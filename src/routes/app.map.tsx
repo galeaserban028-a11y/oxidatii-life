@@ -457,47 +457,49 @@ function MapPage() {
     setFocusCity({ lat, lng, zoom: 16 });
     if (!user) return;
 
-        if (ensureLive) {
-          await supabase
-            .from("profiles")
-            .update({ location_consent: true, map_ghost: false, map_precision: "exact" } as any)
-            .eq("id", user.id);
-          await refreshProfile();
-          qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
-        }
+    if (ensureLive) {
+      await supabase
+        .from("profiles")
+        .update({ location_consent: true, map_ghost: false, map_precision: "exact" } as any)
+        .eq("id", user.id);
+      await refreshProfile();
+      qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
+    }
 
-        const s = ensureLive ? normalizeMapSettings({ map_precision: "exact", map_auto_ghost_hours: 8 }) : normalizeMapSettings(privacyQ.data?.settings);
-        // Ghost mode or fully hidden → wipe and skip publishing.
-        if (s?.map_ghost || s?.map_visibility === "nobody") {
-          await supabase.from("live_locations").delete().eq("user_id", user.id);
-          qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
-          return;
-        }
-        // Inside a private location → skip.
-        const inPrivate = (privacyQ.data?.privateLocs ?? []).some((pl) => {
-          const dKm = distanceKm(lat, lng, Number(pl.lat), Number(pl.lng));
-          return dKm * 1000 <= pl.radius_m;
-        });
-        if (inPrivate) {
-          await supabase.from("live_locations").delete().eq("user_id", user.id);
-          qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
-          return;
-        }
-        // Apply precision.
-        const out = applyLocationPrivacy(lat, lng, s, privacyQ.data?.cityCenter);
-        const hours = Math.max(1, Math.min(24, s?.map_auto_ghost_hours ?? 8));
-        await supabase.from("live_locations").upsert(
-          {
-            user_id: user.id,
-            lat: out.lat,
-            lng: out.lng,
-            accuracy: out.exact ? (pos.coords.accuracy ?? null) : null,
-            heading: out.exact ? (pos.coords.heading ?? null) : null,
-            updated_at: new Date().toISOString(),
-            expires_at: new Date(Date.now() + hours * 60 * 60_000).toISOString(),
-          },
-          { onConflict: "user_id" },
-        );
+    const s = ensureLive
+      ? normalizeMapSettings({ map_precision: "exact", map_auto_ghost_hours: 8 })
+      : normalizeMapSettings(privacyQ.data?.settings);
+    // Ghost mode or fully hidden → wipe and skip publishing.
+    if (s?.map_ghost || s?.map_visibility === "nobody") {
+      await supabase.from("live_locations").delete().eq("user_id", user.id);
+      qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+      return;
+    }
+    // Inside a private location → skip.
+    const inPrivate = (privacyQ.data?.privateLocs ?? []).some((pl) => {
+      const dKm = distanceKm(lat, lng, Number(pl.lat), Number(pl.lng));
+      return dKm * 1000 <= pl.radius_m;
+    });
+    if (inPrivate) {
+      await supabase.from("live_locations").delete().eq("user_id", user.id);
+      qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+      return;
+    }
+    // Apply precision.
+    const out = applyLocationPrivacy(lat, lng, s, privacyQ.data?.cityCenter);
+    const hours = Math.max(1, Math.min(24, s?.map_auto_ghost_hours ?? 8));
+    await supabase.from("live_locations").upsert(
+      {
+        user_id: user.id,
+        lat: out.lat,
+        lng: out.lng,
+        accuracy: out.exact ? (pos.coords.accuracy ?? null) : null,
+        heading: out.exact ? (pos.coords.heading ?? null) : null,
+        updated_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + hours * 60 * 60_000).toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
     qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
   }, [privacyQ.data?.cityCenter, privacyQ.data?.privateLocs, privacyQ.data?.settings, qc, refreshProfile, user]);
 
