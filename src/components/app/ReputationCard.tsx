@@ -277,7 +277,8 @@ export function ReputationCard(props: Props) {
       >
         <ReputationDetail
           rep={rep}
-          peers={peers ?? {}}
+          peers={peers}
+          uniqueRaters={uniqueRaters}
           targetUserId={props.userId}
           canRate={canRate}
           onClose={() => setOpen(false)}
