@@ -28,6 +28,9 @@ import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { ReportDialog } from "@/components/app/ReportDialog";
 import { getTheme } from "@/lib/premium-themes";
+import { ThemeAtmosphere } from "@/components/app/ThemeAtmosphere";
+import { AvatarAura } from "@/components/app/AvatarAura";
+import { SignatureReveal } from "@/components/app/SignatureReveal";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
