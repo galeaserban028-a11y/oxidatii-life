@@ -84,6 +84,22 @@ export function NotificationSettings() {
     await supabase.from("notification_prefs").upsert({ user_id: user.id, ...next }, { onConflict: "user_id" });
   }
 
+  const runTest = useServerFn(sendTestPush);
+  const [testMsg, setTestMsg] = useState<string | null>(null);
+  async function sendTest() {
+    setTestMsg(null);
+    setBusy(true);
+    try {
+      const res = await runTest({});
+      if (res.sent > 0) setTestMsg("Trimis! Verifică notificarea.");
+      else setTestMsg("Niciun dispozitiv abonat. Activează push mai întâi.");
+    } catch (e: any) {
+      setTestMsg(e?.message ?? "Eroare la trimitere.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (!user) return null;
 
   return (
