@@ -38,8 +38,43 @@ function SettingsPage() {
   const [bugReason, setBugReason] = useState("");
   const [bugDetails, setBugDetails] = useState("");
   const [bugSending, setBugSending] = useState(false);
+  const [msgKind, setMsgKind] = useState<null | "support" | "contact">(null);
+  const [msgSubject, setMsgSubject] = useState("");
+  const [msgBody, setMsgBody] = useState("");
+  const [msgSending, setMsgSending] = useState(false);
 
   const triage = useServerFn(triageBugReport);
+
+  async function sendMessage() {
+    if (!msgKind) return;
+    if (!msgSubject.trim()) return toast.error("Adaugă un subiect scurt");
+    if (!msgBody.trim()) return toast.error("Scrie mesajul");
+    setMsgSending(true);
+    try {
+      const { error } = await supabase.from("reports").insert({
+        reporter_id: user!.id,
+        target_type: msgKind === "support" ? "support_feedback" : "contact_team",
+        target_id: user!.id,
+        reason: msgSubject.trim().slice(0, 200),
+        details: [
+          msgBody.trim().slice(0, 4000),
+          `--- context ---`,
+          `kind: ${msgKind}`,
+          `url: ${window.location.href}`,
+          `user: ${user!.email ?? user!.id}`,
+        ].join("\n"),
+      });
+      if (error) throw error;
+      toast.success("Mesaj trimis către echipă. Mulțumim!");
+      setMsgKind(null);
+      setMsgSubject("");
+      setMsgBody("");
+    } catch (e: any) {
+      toast.error(e.message ?? "Nu s-a putut trimite");
+    } finally {
+      setMsgSending(false);
+    }
+  }
 
   async function sendBugReport() {
     if (!bugReason.trim()) return toast.error("Spune pe scurt ce nu merge");
@@ -265,16 +300,19 @@ function SettingsPage() {
             hint="Trimite un bug sau o sugestie către echipă"
             onClick={() => setBugOpen(true)}
           />
-          <RowExternal
-            href="mailto:suport@oxidatii.life?subject=Suport%20%26%20feedback%20OXIDA%C8%9AII&body=Salut%20echipa%20OXIDA%C8%9AII%2C%0A%0A"
+          <RowButton
+            icon={<ExternalLink size={16} />}
             label="Suport & feedback"
+            hint="Trimite-ne ce te ajută/ce nu merge — ajunge direct la echipă"
+            onClick={() => { setMsgKind("support"); setMsgSubject(""); setMsgBody(""); }}
           />
-          <RowExternalLink
+          <RowButton
             icon={<FileText size={16} />}
-            href="mailto:contact@oxidatii.life"
             label="Contact echipă"
             hint="Răspundem în maxim 2 zile lucrătoare"
+            onClick={() => { setMsgKind("contact"); setMsgSubject(""); setMsgBody(""); }}
           />
+
           <div className="px-4 py-3 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
             <span>Versiune</span>
             <span>oxidatii · v1.0</span>
@@ -383,6 +421,46 @@ function SettingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Support / Contact message */}
+      <Dialog open={!!msgKind} onOpenChange={(v) => { if (!v) setMsgKind(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-display uppercase flex items-center gap-2">
+              {msgKind === "support" ? <><ExternalLink size={16} /> Suport & feedback</> : <><FileText size={16} /> Contact echipă</>}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <input
+              autoFocus
+              value={msgSubject}
+              onChange={(e) => setMsgSubject(e.target.value)}
+              placeholder="Subiect (scurt)"
+              maxLength={200}
+              className="w-full bg-foreground/5 rounded-md px-3 py-2.5 text-sm border border-foreground/10 focus:border-foreground/30 outline-none"
+            />
+            <textarea
+              value={msgBody}
+              onChange={(e) => setMsgBody(e.target.value)}
+              placeholder={msgKind === "support" ? "Cu ce te ajutăm? Ce nu merge? Idei?" : "Scrie-ne mesajul tău…"}
+              maxLength={4000}
+              rows={6}
+              className="w-full bg-foreground/5 rounded-md px-3 py-2.5 text-sm border border-foreground/10 focus:border-foreground/30 outline-none resize-none"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Mesajul ajunge în panoul echipei. Atașăm și emailul tău ca să te poată contacta.
+            </p>
+          </div>
+          <DialogFooter>
+            <button onClick={() => setMsgKind(null)} disabled={msgSending} className="px-4 py-2 rounded-lg border border-foreground/15 text-sm">Renunță</button>
+            <button onClick={sendMessage} disabled={msgSending} className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-semibold flex items-center gap-1.5">
+              {msgSending && <Loader2 size={14} className="animate-spin" />} Trimite
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
 
       {/* Confirm logout */}
       <Dialog open={confirmLogout} onOpenChange={setConfirmLogout}>
