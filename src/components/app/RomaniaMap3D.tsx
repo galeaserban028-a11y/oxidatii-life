@@ -490,7 +490,7 @@ export function RomaniaMap3D({
     if (loadedRef.current) apply(); else map.once("load", apply);
   }, [venues, promotedMeta, retryKey]);
 
-  // Pulse the heatmap intensity so the map feels alive (breathing energy).
+  // Subtle pulse only; keep the reference-style road network readable.
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
     let raf = 0;
@@ -498,7 +498,7 @@ export function RomaniaMap3D({
     const tick = (t: number) => {
       if (!map.getLayer("venues-heat")) { raf = requestAnimationFrame(tick); return; }
       const k = (Math.sin((t - start) / 1400) + 1) / 2; // 0..1
-      const intensity = 0.7 + k * 0.5;
+      const intensity = 0.16 + k * 0.1;
       try { map.setPaintProperty("venues-heat", "heatmap-intensity", intensity); } catch {}
       raf = requestAnimationFrame(tick);
     };
@@ -605,25 +605,27 @@ export function RomaniaMap3D({
   }, [venues, promotedMeta, retryKey]);
 
 
-  // CITIES → DOM markers (small count, re-render OK)
+  // CITIES → only the hottest cities get a tiny label; the basemap provides
+  // the clean city/country typography, avoiding the previous label pile-up.
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
     cityMarkers.current.forEach(m => m.remove());
     cityMarkers.current = [];
     for (const c of cities) {
       if (!isValidLngLat(c.lng, c.lat)) continue;
-      const big = c.chaos_level >= 8;
+      const big = c.chaos_level >= 9;
+      if (!big) continue;
       const wrap = document.createElement("button");
       wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:0;padding:0;transform:translate(-50%,-50%);";
       wrap.title = c.name;
       // City labels only — no marker icon. The neon emoji venue pins +
       // cluster bubbles from the GPU layer carry the visual weight, exactly
       // like the reference (Praha, Paris, Sarajevo… are pure text labels).
-      const color = big ? "#ff3158" : "#c66bff";
+      const color = "#ff3158";
       const label = document.createElement("div");
       label.textContent = c.name;
       label.className = "oxi-city-label";
-      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:${big ? 13 : 11}px;letter-spacing:0.04em;color:rgba(255,255,255,0.95);text-shadow:0 0 8px ${color},0 0 4px #000,0 1px 3px #000;white-space:nowrap;`;
+      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:10px;letter-spacing:0;color:rgba(255,255,255,0.82);text-shadow:0 0 5px ${color},0 1px 3px #000;white-space:nowrap;`;
       wrap.appendChild(label);
       let pressTimer: number | null = null;
       let longPressed = false;
