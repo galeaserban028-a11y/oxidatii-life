@@ -84,7 +84,6 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
   const variants = useMemo(() => {
     if (lightweight) {
-      // Cheap fade only on low-end Android / reduced motion.
       return {
         enter: () => ({ opacity: 0 }),
         center: { opacity: 1 },
@@ -92,13 +91,15 @@ export function PageTransition({ children }: { children: ReactNode }) {
       };
     }
     return {
-      enter: (dir: number) => ({ x: dir > 0 ? "12%" : "-12%", opacity: 0 }),
-      center: { x: 0, opacity: 1 },
-      exit: (dir: number) => ({ x: dir > 0 ? "-6%" : "6%", opacity: 0 }),
+      enter: (dir: number) => ({ x: dir > 0 ? 40 : -40, opacity: 0, filter: "blur(8px)", scale: 0.985 }),
+      center: { x: 0, opacity: 1, filter: "blur(0px)", scale: 1 },
+      exit: (dir: number) => ({ x: dir > 0 ? -28 : 28, opacity: 0, filter: "blur(8px)", scale: 0.99 }),
     };
   }, [lightweight]);
 
-  const duration = lightweight ? 0.15 : 0.22;
+  const transition = lightweight
+    ? { duration: 0.18, ease: EASE }
+    : { type: "spring" as const, stiffness: 280, damping: 32, mass: 0.7, opacity: { duration: 0.3, ease: EASE }, filter: { duration: 0.32, ease: EASE } };
 
   return (
     <div
@@ -114,7 +115,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration, ease: EASE }}
+          transition={transition}
           onAnimationStart={() => setAnimating(true)}
           onAnimationComplete={() => setAnimating(false)}
           style={{
