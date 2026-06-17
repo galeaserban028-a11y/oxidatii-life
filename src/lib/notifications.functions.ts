@@ -18,6 +18,8 @@ export const notifyNewPartyInCity = createServerFn({ method: "POST" })
       .eq("id", data.partyId)
       .maybeSingle();
     if (!party) return { sent: 0 };
+    if (party.host_id !== userId) return { sent: 0 };
+
 
     // Determine city: prefer venue.city_id, else host.city_id
     let cityId: string | null = null;
