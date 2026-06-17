@@ -27,6 +27,31 @@ type Venue = {
 type City = { id: string; slug: string; name: string; lat: number; lng: number; chaos_level: number; country: string };
 const EMPTY_CITIES: City[] = [];
 
+function normalizeMapSettings(settings: any) {
+  return {
+    map_ghost: Boolean(settings?.map_ghost),
+    map_visibility: settings?.map_visibility ?? "friends",
+    map_precision: settings?.map_precision === "approx" || settings?.map_precision === "city" ? settings.map_precision : "exact",
+    map_auto_ghost_hours: Number(settings?.map_auto_ghost_hours ?? 8),
+  };
+}
+
+function applyLocationPrivacy(
+  lat: number,
+  lng: number,
+  settings: ReturnType<typeof normalizeMapSettings>,
+  cityCenter: { lat: number; lng: number } | null | undefined,
+) {
+  if (settings.map_precision === "approx") {
+    const j = 0.0018;
+    return { lat: lat + (Math.random() * 2 - 1) * j, lng: lng + (Math.random() * 2 - 1) * j, exact: false };
+  }
+  if (settings.map_precision === "city" && cityCenter) {
+    return { lat: cityCenter.lat, lng: cityCenter.lng, exact: false };
+  }
+  return { lat, lng, exact: true };
+}
+
 async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   const { data: rows } = await supabase
     .from("friendships")
@@ -138,6 +163,41 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
     });
   }
   return pins;
+}
+
+function getPrecisePosition(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("Browser-ul tău n-are GPS."));
+      return;
+    }
+
+    let best: GeolocationPosition | null = null;
+    let settled = false;
+    let watchId: number | null = null;
+
+    const finish = (pos?: GeolocationPosition) => {
+      if (settled) return;
+      settled = true;
+      if (watchId != null) navigator.geolocation.clearWatch(watchId);
+      if (pos ?? best) resolve((pos ?? best)!);
+      else reject(new Error("Nu am putut citi locația."));
+    };
+
+    watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        if (!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
+        if (pos.coords.accuracy <= 35) finish(pos);
+      },
+      (error) => {
+        if (best) finish(best);
+        else reject(error);
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 30_000 },
+    );
+
+    window.setTimeout(() => finish(), 12_000);
+  });
 }
 
 function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
