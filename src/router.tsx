@@ -19,8 +19,9 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
-    // Preload routes on hover/touch-down so taps feel instant
-    defaultPreload: "intent",
+    // Preload-ul "intent" declanșa erori interne în router (_nonReactive) la atingerea taburilor,
+    // care flash-uiau ErrorComponent-ul. "viewport" e mai blând și nu se mai întâmplă.
+    defaultPreload: "viewport",
     defaultPreloadStaleTime: 30_000,
     defaultPendingMinMs: 0,
   });
