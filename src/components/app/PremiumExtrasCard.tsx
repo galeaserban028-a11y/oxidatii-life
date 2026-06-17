@@ -1,6 +1,7 @@
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { PROFILE_THEMES } from "@/lib/premium-themes";
+import { PROFILE_THEMES, isThemeAvailable } from "@/lib/premium-themes";
+import { Lock } from "lucide-react";
 import { Music, Image as ImageIcon, Palette, Trash2, Loader2, Check } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -89,27 +90,47 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
       </div>
 
       {/* Themes */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
           <Palette size={14} className="text-foreground/70" />
-          <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">teme · VIP+</div>
+          <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">teme premium</div>
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {PROFILE_THEMES.map((t) => {
-            const active = currentTheme === t.id;
-            return (
-              <button
-                key={t.id}
-                onClick={() => setTheme(active ? null : t.id)}
-                disabled={busy === "theme"}
-                className={`h-14 rounded-xl border-2 transition active:scale-[0.97] ${active ? "ring-2 ring-foreground" : ""}`}
-                style={{ background: t.cardBg, borderColor: t.cardBorder }}
-              >
-                <div className="text-[10px] font-mono uppercase tracking-widest text-white drop-shadow">{t.name}</div>
-              </button>
-            );
-          })}
-        </div>
+        {(["vip_plus", "pro", "elite"] as const).map((tierGroup) => {
+          const list = PROFILE_THEMES.filter((t) => t.tier === tierGroup);
+          const label = tierGroup === "vip_plus" ? "VIP+" : tierGroup === "pro" ? "PRO" : "ELITE";
+          return (
+            <div key={tierGroup} className="space-y-1.5">
+              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70">{label}</div>
+              <div className="grid grid-cols-3 gap-2">
+                {list.map((t) => {
+                  const active = currentTheme === t.id;
+                  const allowed = isThemeAvailable(t, tier);
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => allowed && setTheme(active ? null : t.id)}
+                      disabled={busy === "theme" || !allowed}
+                      className={`relative h-16 rounded-xl border-2 transition active:scale-[0.97] overflow-hidden ${active ? "ring-2 ring-foreground" : ""} ${!allowed ? "opacity-50" : ""}`}
+                      style={{ background: t.cardBg, borderColor: t.cardBorder }}
+                      title={t.description}
+                    >
+                      <div className="absolute -top-3 -left-3 h-10 w-10 rounded-full blur-md" style={{ background: t.accent, opacity: 0.7 }} />
+                      <div className="absolute -bottom-3 -right-3 h-8 w-8 rounded-full blur-md" style={{ background: t.cardBorder, opacity: 0.6 }} />
+                      <div className="relative h-full flex items-end p-1.5">
+                        <div className="text-[10px] font-mono uppercase tracking-widest text-white drop-shadow">{t.name}</div>
+                      </div>
+                      {!allowed && (
+                        <div className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/60 flex items-center justify-center">
+                          <Lock size={10} className="text-white/80" />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Pro-only: music + bg */}
