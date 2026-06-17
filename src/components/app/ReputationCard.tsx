@@ -176,40 +176,40 @@ export function ReputationCard(props: Props) {
           }}
         >
           <div
-            className="relative rounded-2xl px-3.5 py-2.5 flex items-center gap-3 overflow-hidden backdrop-blur-xl"
+            className="relative rounded-2xl px-3.5 py-2.5 flex items-center gap-3 backdrop-blur-xl"
             style={{ background: "rgba(10,10,21,0.92)" }}
           >
-            {/* radial neon wash behind progress */}
-            <div
-              aria-hidden
-              className="absolute inset-y-0 left-0 pointer-events-none"
-              style={{
-                width: `${rep.score}%`,
-                background: `linear-gradient(90deg, ${rep.tier.color}33, transparent)`,
-              }}
-            />
+            {/* radial neon wash behind progress (clipped) */}
+            <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+              <div
+                aria-hidden
+                className="absolute inset-y-0 left-0"
+                style={{
+                  width: `${rep.score}%`,
+                  background: `linear-gradient(90deg, ${rep.tier.color}26, transparent)`,
+                }}
+              />
+            </div>
 
             {/* circular score badge */}
-            <div className="relative shrink-0">
+            <div className="relative shrink-0 w-11 h-11">
               <div
                 className="w-11 h-11 rounded-full flex items-center justify-center"
                 style={{
-                  background: `radial-gradient(circle at 30% 30%, ${rep.tier.color}40, transparent 70%), #050510`,
+                  background: `radial-gradient(circle at 30% 30%, ${rep.tier.color}33, transparent 70%), #050510`,
                   border: `1.5px solid ${rep.tier.color}`,
-                  boxShadow: `0 0 14px ${rep.tier.color}88, inset 0 0 10px ${rep.tier.color}33`,
+                  boxShadow: `0 0 10px ${rep.tier.color}66`,
                 }}
               >
                 <span
-                  className="font-display font-black leading-none text-[18px] tabular-nums tracking-tight"
+                  className="font-display font-black leading-none text-[16px] tabular-nums tracking-tight"
                   style={{ color: rep.tier.color, textShadow: `0 0 6px ${rep.tier.color}99` }}
                 >
                   {rep.score}
                 </span>
               </div>
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[7px] font-mono uppercase text-white/50">
-                /100
-              </div>
             </div>
+
 
             {/* tier + bar */}
             <div className="relative flex-1 min-w-0">
