@@ -6,6 +6,7 @@ import {
   ChevronLeft, ChevronRight, Globe2, Lock, MapPin, Bell,
   ShieldOff, UserPlus, Pencil, LogOut, Trash2, MessageSquare,
   Building2, Loader2, ExternalLink, Bug, FileText, ScrollText, Cookie, ShieldCheck,
+  Search, X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
