@@ -34,140 +34,132 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <main className="relative min-h-[100svh] mx-auto max-w-md flex flex-col overflow-hidden">
-      {/* ambient glow */}
-      <div
-        className="absolute -top-32 -right-24 w-[80vmin] h-[80vmin] rounded-full pointer-events-none blur-3xl"
-        style={{ background: "radial-gradient(circle, oklch(0.72 0.22 35 / 45%), transparent 65%)" }}
-      />
-      <div
-        className="absolute -bottom-40 -left-20 w-[70vmin] h-[70vmin] rounded-full pointer-events-none blur-3xl"
-        style={{ background: "radial-gradient(circle, oklch(0.55 0.25 350 / 35%), transparent 70%)" }}
-      />
+    <main className="relative min-h-[100svh] mx-auto max-w-md flex flex-col overflow-hidden bg-[#0d0907] text-white">
+      {/* ambient glows */}
+      <div className="absolute top-[10%] right-0 w-[60vmin] h-[60vmin] rounded-full pointer-events-none blur-[100px] bg-orange-600/20" />
+      <div className="absolute bottom-[20%] -left-20 w-[50vmin] h-[50vmin] rounded-full pointer-events-none blur-[100px] bg-pink-600/15" />
 
-      {/* fake status bar */}
-      <div className="relative z-10 flex items-center justify-between px-5 pt-3 pb-1 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-        <span>22:48</span>
-        <span className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 rounded-full bg-sunset-orange animate-pulse" />
-          live
-        </span>
-      </div>
-
-      {/* app header */}
-      <header className="relative z-10 flex items-center justify-between px-5 pt-2 pb-3">
-        <div className="flex items-center gap-2">
-          <img src={logoLight} alt="Logo OXIDAȚII — aplicația de șpriț" className="h-14 w-14 object-contain drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]" />
-          <div className="leading-tight">
-            <div className="font-display uppercase text-base tracking-[0.06em]">Oxidații</div>
-            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground">1.2k online</div>
+      {/* Header */}
+      <header className="relative z-10 flex items-center justify-between px-6 py-6">
+        <div className="flex items-center gap-3">
+          <img src={logoLight} alt="Logo OXIDAȚII" className="w-11 h-11 object-contain drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]" />
+          <div>
+            <h1 className="text-sm font-extrabold tracking-widest uppercase">Oxidații</h1>
+            <p className="font-mono text-[10px] text-orange-500/80 font-medium uppercase tracking-tight">1.2k Online Now</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button aria-label="Caută" className="h-9 w-9 grid place-items-center rounded-full border border-border bg-card/60 backdrop-blur">
-            <Search className="h-4 w-4" />
+        <div className="flex gap-2">
+          <button aria-label="Caută" className="p-2.5 rounded-full bg-white/5 border border-white/10 active:scale-95 transition">
+            <Search className="w-4 h-4 text-white/70" />
           </button>
-          <button aria-label="Notificări" className="h-9 w-9 grid place-items-center rounded-full border border-border bg-card/60 backdrop-blur relative">
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-sunset-orange" />
+          <button aria-label="Notificări" className="p-2.5 rounded-full bg-white/5 border border-white/10 relative active:scale-95 transition">
+            <Bell className="w-4 h-4 text-white/70" />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full border-2 border-[#0d0907]" />
           </button>
         </div>
       </header>
 
-      {/* hero card */}
-      <section className="relative z-10 mx-5 mt-2 rounded-3xl border border-border bg-card/60 backdrop-blur p-5 overflow-hidden">
-        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-primary/40 bg-primary/10 mb-3">
-          <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-primary">sezonul șprițului · 2026</span>
-        </div>
-        <h1 className="font-display uppercase text-[clamp(2.2rem,9vw,3rem)] leading-[0.85] tracking-[-0.03em]">
-          <span className="block">Hai la</span>
-          <span className="block text-gradient-chaos">șpriț</span>
-        </h1>
-        <p className="mt-3 text-sm leading-snug text-foreground/85">
-          Unde se bea șpriț <b>acum</b>. Cu cine. Și cine-i <span className="text-sunset-orange">rege la masă</span>.
-        </p>
-
-        <div className="mt-4 flex flex-col gap-2">
-          <Link
-            to="/signup"
-            className="font-display uppercase text-sm tracking-[0.12em] px-5 py-3.5 rounded-xl text-primary-foreground text-center shadow-lg shadow-primary/30 active:scale-[0.98] transition"
-            style={{ background: "var(--gradient-sunset)" }}
-          >
-            Intră în haos →
-          </Link>
-          <Link
-            to="/login"
-            className="font-mono text-[11px] uppercase tracking-[0.2em] py-3 rounded-xl border border-border text-center hover:border-primary hover:text-primary transition"
-          >
-            Am cont
-          </Link>
-        </div>
-      </section>
-
-      {/* app tiles */}
-      <section className="relative z-10 px-5 mt-5">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">ce găsești în app</h2>
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">4 zone</span>
-        </div>
-        <div className="grid grid-cols-2 gap-2.5">
-          <Tile to="/app/map" icon={<MapPin className="h-5 w-5" />} label="Hartă" sub="Locuri live" tone="orange" />
-          <Tile to="/app/faze" icon={<Flame className="h-5 w-5" />} label="Faze" sub="Postează seara" tone="magenta" />
-          <Tile to="/app/top" icon={<Trophy className="h-5 w-5" />} label="Top" sub="Clasament zeu" tone="amber" />
-          <Tile to="/app/squad" icon={<Users className="h-5 w-5" />} label="Haita" sub="Oxidații tăi" tone="indigo" />
-        </div>
-      </section>
-
-      {/* now serving strip */}
-      <section className="relative z-10 mx-5 mt-5 rounded-2xl border border-border bg-card/40 backdrop-blur p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Beer className="h-4 w-4 text-sunset-orange" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">se bea acum</span>
+      {/* Hero */}
+      <section className="relative z-10 px-4 mb-6">
+        <div className="relative p-7 rounded-[32px] overflow-hidden border border-white/10 bg-gradient-to-b from-white/[0.08] to-transparent backdrop-blur-sm">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-orange-600/30 blur-3xl pointer-events-none" />
+          <div className="inline-block px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 mb-4">
+            <span className="font-mono text-[10px] font-bold tracking-widest text-orange-400 uppercase">Sezonul Șprițului • 2026</span>
           </div>
-          <Link to="/app" className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary flex items-center gap-0.5">
-            vezi tot <ChevronRight className="h-3 w-3" />
-          </Link>
+          <h2 className="font-display text-[clamp(2.6rem,12vw,3.5rem)] font-extrabold leading-[0.85] tracking-tighter mb-4 uppercase">
+            Hai la<br />
+            <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">Șpriț</span>
+          </h2>
+          <p className="text-sm text-white/60 leading-relaxed mb-7 max-w-[260px]">
+            Unde se bea șpriț <span className="text-white font-bold">acum</span>. Cu cine. Și cine-i <span className="text-orange-400">rege la masă</span>.
+          </p>
+          <div className="space-y-3">
+            <Link
+              to="/signup"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 font-extrabold text-sm uppercase tracking-widest shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 group active:scale-[0.98] transition text-white"
+            >
+              Intră în haos
+              <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              to="/login"
+              className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 font-bold text-xs uppercase tracking-widest text-white/70 flex items-center justify-center active:scale-[0.98] transition"
+            >
+              Am cont
+            </Link>
+          </div>
         </div>
-        <ul className="space-y-2">
-          {[
-            { city: "Pitești", spot: "Terasa Trivale", n: 23 },
-            { city: "București", spot: "Energiei", n: 41 },
-            { city: "Cluj", spot: "Strada Piezișă", n: 17 },
-          ].map((r) => (
-            <li key={r.city} className="flex items-center justify-between text-sm">
-              <span className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-sunset-orange animate-pulse" />
-                <span className="font-display uppercase tracking-wide">{r.city}</span>
-                <span className="text-muted-foreground">· {r.spot}</span>
-              </span>
-              <span className="font-mono text-[11px] text-foreground/80">{r.n} oxi</span>
-            </li>
-          ))}
-        </ul>
       </section>
 
-      {/* spacer for bottom dock */}
-      <div className="h-20" />
-
-      {/* bottom app dock (preview/CTA) */}
-      <nav className="fixed bottom-2 left-1/2 -translate-x-1/2 z-20 w-[calc(100%-1rem)] max-w-md">
-        <div className="mx-2 rounded-xl border border-border bg-background/85 backdrop-blur-xl shadow-2xl shadow-black/40 px-1.5 py-1.5 flex items-center justify-between">
-          <DockItem to="/app" icon={<MapPin className="h-3.5 w-3.5" />} label="Hartă" />
-          <DockItem to="/app/faze" icon={<Flame className="h-3.5 w-3.5" />} label="Faze" />
-          <Link
-            to="/signup"
-            aria-label="Adaugă spot"
-            className="h-10 w-10 -mt-4 grid place-items-center rounded-full text-primary-foreground shadow-lg shadow-primary/40 active:scale-95 transition"
-            style={{ background: "var(--gradient-sunset)" }}
-          >
-            <Plus className="h-4 w-4" />
-          </Link>
-          <DockItem to="/app/top" icon={<Trophy className="h-3.5 w-3.5" />} label="Top" />
-          <DockItem to="/login" icon={<Users className="h-3.5 w-3.5" />} label="Eu" />
+      {/* Features Grid */}
+      <section className="relative z-10 px-4 mb-8">
+        <div className="flex justify-between items-center mb-4 px-2">
+          <span className="font-mono text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase">Ce găsești în app</span>
+          <span className="font-mono text-[10px] text-orange-500/60">4 ZONE</span>
         </div>
-      </nav>
+        <div className="grid grid-cols-2 gap-3">
+          <Tile to="/app/map" icon={<MapPin className="w-5 h-5" />} label="Hartă" sub="Locuri Live" tone="orange" />
+          <Tile to="/app/faze" icon={<Flame className="w-5 h-5" />} label="Faze" sub="Postează seara" tone="pink" />
+          <Tile to="/app/top" icon={<Trophy className="w-5 h-5" />} label="Top" sub="Clasament zeu" tone="amber" />
+          <Tile to="/app/squad" icon={<Users className="w-5 h-5" />} label="Haita" sub="Oxidații tăi" tone="purple" />
+        </div>
+      </section>
 
+      {/* Live Activity */}
+      <section className="relative z-10 px-4 mb-28">
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
+          <div className="flex justify-between items-center mb-5">
+            <div className="flex items-center gap-2">
+              <Beer className="w-4 h-4 text-orange-400" />
+              <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em]">Se bea acum</span>
+            </div>
+            <Link to="/app" className="font-mono text-[10px] font-bold text-orange-400 uppercase tracking-widest flex items-center gap-1">
+              Vezi tot <ChevronRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <ul className="space-y-4 font-mono">
+            {[
+              { city: "PITEȘTI", spot: "Terasa Trivale", n: 23 },
+              { city: "BUCUREȘTI", spot: "Energiei", n: 41 },
+              { city: "CLUJ", spot: "Strada Piezișă", n: 17 },
+            ].map((r) => (
+              <li key={r.city} className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                  <span className="font-bold">{r.city}</span>
+                  <span className="text-white/30 font-light">• {r.spot}</span>
+                </div>
+                <span className="text-orange-400/80">{r.n} oxi</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* spacer */}
+      <div className="h-4" />
+
+      {/* Bottom Dock */}
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-30 w-full max-w-md p-4 bg-gradient-to-t from-[#0d0907] via-[#0d0907]/90 to-transparent pointer-events-none">
+        <nav className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-between px-5 py-2.5 pointer-events-auto">
+          <DockItem to="/app" icon={<MapPin className="w-5 h-5" />} label="Hartă" />
+          <DockItem to="/app/faze" icon={<Flame className="w-5 h-5" />} label="Faze" />
+          <div className="-mt-10">
+            <Link
+              to="/signup"
+              aria-label="Adaugă spot"
+              className="w-14 h-14 rounded-full bg-gradient-to-tr from-orange-500 to-pink-600 flex items-center justify-center shadow-xl shadow-orange-500/40 border-4 border-[#0d0907] active:scale-95 transition"
+            >
+              <Plus className="w-7 h-7 text-white" />
+            </Link>
+          </div>
+          <DockItem to="/app/top" icon={<Trophy className="w-5 h-5" />} label="Top" />
+          <DockItem to="/login" icon={<Users className="w-5 h-5" />} label="Eu" />
+        </nav>
+        <p className="text-center font-mono text-[8px] text-white/20 uppercase tracking-[0.2em] mt-3">
+          Alcoolul dăunează grav sănătății. Consumați responsabil.
+        </p>
+      </div>
 
       <AlcoholWarning />
     </main>
@@ -185,29 +177,29 @@ function Tile({
   icon: React.ReactNode;
   label: string;
   sub: string;
-  tone: "orange" | "magenta" | "amber" | "indigo";
+  tone: "orange" | "pink" | "amber" | "purple";
 }) {
-  const toneMap: Record<string, string> = {
-    orange: "from-sunset-orange/25 to-transparent text-sunset-orange",
-    magenta: "from-sunset-magenta/25 to-transparent text-sunset-magenta",
-    amber: "from-sunset-amber/25 to-transparent text-sunset-amber",
-    indigo: "from-sunset-indigo/25 to-transparent text-sunset-indigo",
+  const toneMap: Record<string, { bg: string; text: string }> = {
+    orange: { bg: "bg-orange-500/10", text: "text-orange-400" },
+    pink: { bg: "bg-pink-500/10", text: "text-pink-400" },
+    amber: { bg: "bg-amber-500/10", text: "text-amber-400" },
+    purple: { bg: "bg-purple-500/10", text: "text-purple-400" },
   };
+  const t = toneMap[tone];
   return (
     <Link
       to={to}
-      className="relative rounded-2xl border border-border bg-card/60 backdrop-blur p-3.5 overflow-hidden active:scale-[0.98] transition"
+      className="p-4 rounded-2xl bg-white/5 border border-white/5 flex flex-col justify-between aspect-square active:scale-[0.97] transition hover:bg-white/[0.08]"
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${toneMap[tone]} opacity-70 pointer-events-none`} />
-      <div className="relative flex items-center justify-between">
-        <span className={`h-9 w-9 grid place-items-center rounded-xl bg-background/60 border border-border ${toneMap[tone].split(" ").pop()}`}>
+      <div className="flex justify-between items-start">
+        <div className={`w-10 h-10 rounded-xl ${t.bg} flex items-center justify-center ${t.text}`}>
           {icon}
-        </span>
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <ChevronRight className="w-4 h-4 text-white/20" />
       </div>
-      <div className="relative mt-3">
-        <div className="font-display uppercase text-sm tracking-[0.06em]">{label}</div>
-        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{sub}</div>
+      <div>
+        <h3 className="font-black text-sm uppercase tracking-wider mb-0.5">{label}</h3>
+        <p className="font-mono text-[10px] text-white/40 uppercase tracking-tight">{sub}</p>
       </div>
     </Link>
   );
@@ -217,10 +209,10 @@ function DockItem({ to, icon, label }: { to: string; icon: React.ReactNode; labe
   return (
     <Link
       to={to}
-      className="flex-1 flex flex-col items-center gap-0 py-1 text-muted-foreground hover:text-foreground transition"
+      className="flex flex-col items-center gap-0.5 py-1 px-2 text-white/40 hover:text-white transition"
     >
       {icon}
-      <span className="font-mono text-[8px] uppercase tracking-[0.2em] leading-none mt-0.5">{label}</span>
+      <span className="font-mono text-[8px] uppercase tracking-[0.2em] leading-none">{label}</span>
     </Link>
   );
 }
