@@ -1518,6 +1518,7 @@ export type Database = {
           profile_bg_url: string | null
           profile_theme_id: string | null
           rank: Database["public"]["Enums"]["balkan_rank"]
+          theme_intensity: Json | null
           tutorial_seen: boolean
           updated_at: string
         }
@@ -1554,6 +1555,7 @@ export type Database = {
           profile_bg_url?: string | null
           profile_theme_id?: string | null
           rank?: Database["public"]["Enums"]["balkan_rank"]
+          theme_intensity?: Json | null
           tutorial_seen?: boolean
           updated_at?: string
         }
@@ -1590,6 +1592,7 @@ export type Database = {
           profile_bg_url?: string | null
           profile_theme_id?: string | null
           rank?: Database["public"]["Enums"]["balkan_rank"]
+          theme_intensity?: Json | null
           tutorial_seen?: boolean
           updated_at?: string
         }
