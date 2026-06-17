@@ -48,7 +48,9 @@ function AppLayout() {
       <div className="mx-auto w-full max-w-[480px] min-w-0">
         <InstallBanner />
         <AppHeader />
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </div>
       <BottomTabBar />
       <TutorialOverlay />
