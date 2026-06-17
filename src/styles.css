@@ -387,3 +387,13 @@
 
 html, body { overscroll-behavior-x: none; }
 
+
+/* ── Bottom nav press animations ── */
+.tab-press { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.tab-press:active { transform: scale(0.88) translateY(0); transition: transform 0.08s ease-out; }
+.tab-press:active > div > svg { filter: drop-shadow(0 0 12px currentColor); }
+.tab-press-center { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.tab-press-center:active > div {
+  transform: scale(0.9);
+  box-shadow: 0 4px 14px rgba(255,82,82,0.6), 0 0 0 4px rgba(15,13,28,0.78), 0 0 30px rgba(255,82,82,0.5) !important;
+}
