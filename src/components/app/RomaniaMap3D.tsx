@@ -129,7 +129,7 @@ const VOYAGER_STYLE = {
       type: "line",
       source: "omt",
       "source-layer": "transportation",
-      filter: ["!", ["in", ["get", "class"], "ferry", "rail"]],
+      filter: ["!", ["in", ["get", "class"], ["literal", ["ferry", "rail"]]]],
       paint: {
         "line-color": "rgba(212,175,55,0.22)",
         "line-width": ["interpolate", ["linear"], ["zoom"], 4, 1.2, 8, 3, 12, 6, 16, 14],
@@ -141,7 +141,7 @@ const VOYAGER_STYLE = {
       type: "line",
       source: "omt",
       "source-layer": "transportation",
-      filter: ["!", ["in", ["get", "class"], "ferry", "rail"]],
+      filter: ["!", ["in", ["get", "class"], ["literal", ["ferry", "rail"]]]],
       paint: {
         "line-color": "rgba(232,196,90,0.55)",
         "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.4, 8, 0.8, 12, 1.4, 16, 2.4],
