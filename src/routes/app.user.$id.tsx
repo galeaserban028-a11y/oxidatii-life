@@ -515,6 +515,7 @@ function UserPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </div>
   );
 }
 
