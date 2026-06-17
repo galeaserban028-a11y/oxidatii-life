@@ -450,12 +450,12 @@ function MapPage() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const publishPosition = async (pos: GeolocationPosition, ensureLive = false) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setGeo({ lat, lng });
-        setFocusCity({ lat, lng, zoom: 16 });
-        if (!user) return;
+  const publishPosition = useCallback(async (pos: GeolocationPosition, ensureLive = false) => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    setGeo({ lat, lng });
+    setFocusCity({ lat, lng, zoom: 16 });
+    if (!user) return;
 
         if (ensureLive) {
           await supabase
@@ -498,8 +498,8 @@ function MapPage() {
           },
           { onConflict: "user_id" },
         );
-        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
-  };
+    qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+  }, [privacyQ.data?.cityCenter, privacyQ.data?.privateLocs, privacyQ.data?.settings, qc, refreshProfile, user]);
 
   const requestGeo = () => {
     getPrecisePosition()
@@ -512,7 +512,7 @@ function MapPage() {
     if (privacyQ.data?.settings?.map_ghost || privacyQ.data?.settings?.map_visibility === "nobody") return;
     setAutoLocated(true);
     getPrecisePosition().then((pos) => publishPosition(pos)).catch(() => {});
-  }, [autoLocated, privacyQ.isLoading, privacyQ.data?.settings?.map_ghost, privacyQ.data?.settings?.map_visibility, profile?.location_consent, user]);
+  }, [autoLocated, privacyQ.isLoading, privacyQ.data?.settings?.map_ghost, privacyQ.data?.settings?.map_visibility, profile?.location_consent, publishPosition, user]);
 
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
