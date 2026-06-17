@@ -335,28 +335,31 @@ export function RomaniaMap3D({
       ];
       for (const [name, color, emoji] of pinTypes) {
         if (!map.hasImage(name)) {
-          try { map.addImage(name, makePinImage(color, emoji), { pixelRatio: 2 }); } catch {}
+          try { map.addImage(name, makePinImage(color, emoji, isSmall), { pixelRatio: 2 }); } catch {}
         }
       }
 
-      // Outer wide aura behind clusters
-      map.addLayer({
-        id: "venues-clusters-aura",
-        type: "circle",
-        source: VENUES_SRC,
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": [
-            "step", ["get", "point_count"],
-            "rgba(255,43,214,0.42)", 80,
-            "rgba(255,255,255,0.28)", 240,
-            "rgba(255,140,90,0.42)",
-          ],
-          "circle-radius": ["step", ["get", "point_count"], 64, 80, 78, 240, 92],
-          "circle-blur": 1,
-          "circle-opacity": 0.55,
-        },
-      });
+      // Outer wide aura behind clusters — desktop only (expensive blur on mobile GPUs)
+      if (!isSmall) {
+        map.addLayer({
+          id: "venues-clusters-aura",
+          type: "circle",
+          source: VENUES_SRC,
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-color": [
+              "step", ["get", "point_count"],
+              "rgba(255,43,214,0.42)", 80,
+              "rgba(255,255,255,0.28)", 240,
+              "rgba(255,140,90,0.42)",
+            ],
+            "circle-radius": ["step", ["get", "point_count"], 64, 80, 78, 240, 92],
+            "circle-blur": 1,
+            "circle-opacity": 0.55,
+          },
+        });
+      }
+
       map.addLayer({
         id: "venues-clusters-glow",
         type: "circle",
