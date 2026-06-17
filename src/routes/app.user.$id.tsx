@@ -99,6 +99,13 @@ function UserPage() {
   const profile = data?.profile as any;
   const id = profile?.id ?? (isUuid ? slug : "");
   const isMe = !!user && !!id && user.id === id;
+
+  // Track profile visit (debounced server-side to 1/hour)
+  useEffect(() => {
+    if (!user || !id || isMe) return;
+    supabase.rpc("record_profile_visit", { _profile_id: id }).then(() => {});
+  }, [user?.id, id, isMe]);
+
   const handle = profile?.handle ?? profile?.display_name ?? "anonim";
   const isPublic = profile?.is_public ?? true;
 
