@@ -29,6 +29,7 @@ function SettingsPage() {
   const [savingConsent, setSavingConsent] = useState(false);
   const [savingCity, setSavingCity] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
+  const [citySearch, setCitySearch] = useState("");
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
