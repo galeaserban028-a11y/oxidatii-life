@@ -259,23 +259,34 @@ export function RomaniaMap3D({
         }
       }
 
-      // cluster bubbles — softer, smaller, less screaming
+      // cluster bubbles — dark fills with a strong neon magenta halo
+      // (matches the reference: white count number, glowing pink ring).
+      map.addLayer({
+        id: "venues-clusters-glow",
+        type: "circle",
+        source: VENUES_SRC,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": "rgba(255,49,134,0.18)",
+          "circle-radius": ["step", ["get", "point_count"], 24, 10, 30, 50, 36],
+          "circle-blur": 0.8,
+        },
+      });
       map.addLayer({
         id: "venues-clusters",
         type: "circle",
         source: VENUES_SRC,
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": [
+          "circle-color": "rgba(10,8,20,0.92)",
+          "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 50, 24],
+          "circle-stroke-width": 2,
+          "circle-stroke-color": [
             "step", ["get", "point_count"],
-            "rgba(255,176,0,0.85)", 10,
-            "rgba(255,138,61,0.9)", 50,
-            "rgba(255,49,88,0.95)",
+            "#ff3186", 10,
+            "#c66bff", 50,
+            "#ffb000",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 11, 10, 15, 50, 20],
-          "circle-opacity": 0.85,
-          "circle-stroke-width": 1,
-          "circle-stroke-color": "rgba(0,0,0,0.55)",
         },
       });
       map.addLayer({
@@ -285,13 +296,13 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-size": 10,
+          "text-size": 12,
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
         },
-        paint: { "text-color": "#0a0a0a" },
+        paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.6)", "text-halo-width": 1 },
       });
 
-      // unclustered points → little bottle silhouettes
+      // unclustered points → neon glowing emoji pins
       map.addLayer({
         id: "venues-points",
         type: "symbol",
@@ -300,18 +311,18 @@ export function RomaniaMap3D({
         layout: {
           "icon-image": [
             "match", ["get", "type"],
-            "club", "bottle-club",
-            "bar", "bottle-bar",
-            "pub", "bottle-pub",
-            "terasa", "bottle-terasa",
-            "terasă", "bottle-terasa",
-            "after", "bottle-after",
-            "bottle-bar",
+            "club", "pin-club",
+            "bar", "pin-bar",
+            "pub", "pin-pub",
+            "terasa", "pin-terasa",
+            "terasă", "pin-terasa",
+            "after", "pin-after",
+            "pin-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 6, 0.18, 10, 0.32, 14, 0.55, 17, 0.75],
-          "icon-allow-overlap": false,
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 10, 0.7, 14, 0.95, 17, 1.15],
+          "icon-allow-overlap": true,
           "icon-ignore-placement": false,
-          "icon-anchor": "bottom",
+          "icon-anchor": "center",
           "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
         },
       });
