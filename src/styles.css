@@ -265,8 +265,16 @@
     color: transparent;
   }
 
-  /* Legacy glow utilities → soft elevated shadow so existing markup stays clean */
-  .glow-purple, .glow-blue, .glow-green, .glow-crimson { box-shadow: var(--shadow-card); }
+  /* Real neon glow utilities */
+  .glow-purple, .glow-violet { box-shadow: var(--glow-violet); }
+  .glow-blue, .glow-cyan { box-shadow: var(--glow-cyan); }
+  .glow-green { box-shadow: var(--glow-cyan); }
+  .glow-crimson, .glow-pink { box-shadow: var(--glow-pink); }
+  .glow-yellow { box-shadow: var(--glow-yellow); }
+
+  .text-glow-pink { text-shadow: 0 0 12px oklch(0.68 0.26 0 / 70%), 0 0 4px oklch(0.68 0.26 0 / 90%); }
+  .text-glow-cyan { text-shadow: 0 0 12px oklch(0.85 0.16 215 / 70%), 0 0 4px oklch(0.85 0.16 215 / 90%); }
+  .text-glow-violet { text-shadow: 0 0 12px oklch(0.60 0.30 310 / 70%), 0 0 4px oklch(0.60 0.30 310 / 90%); }
 
   .glass {
     background: oklch(0.21 0.018 30 / 75%);
