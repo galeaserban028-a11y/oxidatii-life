@@ -91,15 +91,15 @@ export function PageTransition({ children }: { children: ReactNode }) {
       };
     }
     return {
-      enter: (dir: number) => ({ x: dir > 0 ? 24 : -24, opacity: 0 }),
-      center: { x: 0, opacity: 1 },
-      exit: (dir: number) => ({ x: dir > 0 ? -16 : 16, opacity: 0 }),
+      enter: (dir: number) => ({ x: dir > 0 ? 32 : -32, opacity: 0, filter: "blur(6px)" }),
+      center: { x: 0, opacity: 1, filter: "blur(0px)" },
+      exit: (dir: number) => ({ x: dir > 0 ? -20 : 20, opacity: 0, filter: "blur(6px)" }),
     };
   }, [lightweight]);
 
   const transition = lightweight
-    ? { duration: 0.14, ease: EASE }
-    : { duration: 0.22, ease: EASE };
+    ? { duration: 0.16, ease: EASE }
+    : { duration: 0.32, ease: EASE };
 
   return (
     <div
