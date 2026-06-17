@@ -308,20 +308,39 @@ function MePage() {
           <div className="fixed inset-0 bg-cover bg-center opacity-40 pointer-events-none z-0" style={{ backgroundImage: `url(${bgUrl})` }} />
         )
       )}
-      {/* Premium themed atmosphere */}
+      {/* Premium themed atmosphere — WOW edition */}
       {theme && (
         <>
           {/* base wash from preset */}
           {iGradient > 0 && (
             <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.base, opacity: iGradient }} />
           )}
-          {/* aurora halos from preset */}
+
+          {/* rotating conic beams (premium light rays) */}
+          {iAurora > 0 && (
+            <div
+              className="fixed pointer-events-none z-0"
+              style={{
+                top: "-40%",
+                left: "-30%",
+                width: "160vmax",
+                height: "160vmax",
+                background: `conic-gradient(from 0deg, transparent 0deg, ${theme.accent}22 30deg, transparent 60deg, ${theme.accent}33 180deg, transparent 210deg, ${theme.cardBorder}22 330deg, transparent 360deg)`,
+                filter: "blur(60px)",
+                opacity: 0.55 * iAurora,
+                animation: "themeBeams 45s linear infinite",
+                mixBlendMode: "screen",
+              }}
+            />
+          )}
+
+          {/* aurora halos from preset — now drifting, not just pulsing */}
           {iAurora > 0 && theme.aurora.map((a, i) => {
             const [px, py] = a.pos.split(" ");
             return (
               <div
                 key={i}
-                className="fixed rounded-full pointer-events-none z-0 animate-pulse"
+                className="fixed rounded-full pointer-events-none z-0"
                 style={{
                   left: px,
                   top: py,
@@ -330,13 +349,34 @@ function MePage() {
                   filter: `blur(${a.blur}px)`,
                   opacity: a.opacity * iAurora,
                   background: `radial-gradient(circle, ${a.color} 0%, transparent 70%)`,
-                  animationDuration: `${a.duration}s`,
-                  animationDelay: a.delay ? `${a.delay}s` : undefined,
+                  animation: `themeDrift${i % 3} ${a.duration * 2}s ease-in-out infinite, themeBreathe ${a.duration}s ease-in-out infinite`,
+                  animationDelay: a.delay ? `${a.delay}s, ${a.delay}s` : undefined,
+                  mixBlendMode: "screen",
                 }}
               />
             );
           })}
-          {/* sheen (optional) */}
+
+          {/* floating orbs — extra theme accent */}
+          {iAurora > 0 && [0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={`orb-${i}`}
+              className="fixed rounded-full pointer-events-none z-0"
+              style={{
+                left: `${10 + i * 18}%`,
+                top: `${15 + ((i * 37) % 70)}%`,
+                width: 6 + (i % 3) * 4,
+                height: 6 + (i % 3) * 4,
+                background: i % 2 === 0 ? theme.accent : theme.cardBorder,
+                boxShadow: `0 0 ${20 + i * 6}px ${theme.accent}`,
+                opacity: 0.35 * iAurora,
+                animation: `themeFloat ${8 + i * 2}s ease-in-out ${i * 0.7}s infinite`,
+                filter: "blur(0.5px)",
+              }}
+            />
+          ))}
+
+          {/* sheen (optional) — diagonal sweep */}
           {theme.sheen && iSheen > 0 && (
             <div
               className="fixed inset-0 pointer-events-none z-0 mix-blend-overlay"
@@ -348,6 +388,22 @@ function MePage() {
               }}
             />
           )}
+
+          {/* shimmer scan line */}
+          {iSheen > 0 && (
+            <div
+              className="fixed inset-0 pointer-events-none z-0"
+              style={{
+                background: `linear-gradient(180deg, transparent 0%, ${theme.accent}22 50%, transparent 100%)`,
+                backgroundSize: "100% 30%",
+                backgroundRepeat: "no-repeat",
+                opacity: 0.45 * iSheen,
+                animation: "themeScan 9s linear infinite",
+                mixBlendMode: "screen",
+              }}
+            />
+          )}
+
           {/* grain */}
           {theme.grain > 0 && iGrain > 0 && (
             <div
@@ -359,11 +415,22 @@ function MePage() {
               }}
             />
           )}
+
           {/* vignette */}
           {iVignette > 0 && (
             <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.vignette, opacity: iVignette }} />
           )}
-          <style>{`@keyframes themeSheen { 0% { background-position: 0% 0%; } 100% { background-position: 200% 200%; } }`}</style>
+
+          <style>{`
+            @keyframes themeSheen { 0% { background-position: 0% 0%; } 100% { background-position: 200% 200%; } }
+            @keyframes themeBeams { to { transform: rotate(360deg); } }
+            @keyframes themeBreathe { 0%, 100% { opacity: var(--o, 0.5); } 50% { opacity: calc(var(--o, 0.5) * 0.55); } }
+            @keyframes themeDrift0 { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(6vw, 4vh) scale(1.08); } }
+            @keyframes themeDrift1 { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-7vw, 5vh) scale(1.12); } }
+            @keyframes themeDrift2 { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(4vw, -6vh) scale(0.95); } }
+            @keyframes themeFloat { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(0, -40px); } }
+            @keyframes themeScan { 0% { background-position: 0% -30%; } 100% { background-position: 0% 130%; } }
+          `}</style>
         </>
       )}
       <div className="relative z-10" style={theme ? ({ ["--theme-accent" as any]: theme.accent, ["--theme-border" as any]: theme.cardBorder }) : undefined}>
