@@ -3,4 +3,4 @@
 export const VAPID_PUBLIC_KEY =
   "BIpOysHBuJoMBPtIkT5v3cTXm-oFg6p6Cfb0KqnFDbXQzo8uFMmfpt0U9r8bGWDAMvKZLZTm9ZuBSWPSShMk0Ns";
 
-export const VAPID_SUBJECT = "mailto:contact@oxidatii.app";
+export const VAPID_SUBJECT = "mailto:contact@oxidatii.life";
