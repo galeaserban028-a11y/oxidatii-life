@@ -208,7 +208,7 @@ function EditUserSheet({
       } else {
         patch.premium_until = null;
       }
-      const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
+      const { error } = await supabase.from("profiles").update(patch as any).eq("id", user.id);
       if (error) throw error;
       toast.success("Profil actualizat");
       onSaved();
