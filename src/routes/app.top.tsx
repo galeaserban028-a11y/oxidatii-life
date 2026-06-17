@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useMemo, useState } from "react";
 import { Flame, Camera, MapPin, Trophy, Globe2, ChevronDown } from "lucide-react";
+import { SpritzOfDayStrip } from "@/components/app/SpritzOfDayStrip";
 
 export const Route = createFileRoute("/app/top")({
   head: () => ({ meta: [{ title: "Top · OXIDAȚII" }] }),
