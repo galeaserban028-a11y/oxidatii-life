@@ -613,7 +613,7 @@ function UploadSheet({ onClose }: { onClose: () => void }) {
 
   async function submit() {
     if (!user) { toast.error("Trebuie să fii logat."); return; }
-    if (!file) { toast.error("Alege o poză."); return; }
+    if (!file) { toast.error("Alege o poză sau un clip."); return; }
     if (!selectedVenue) { toast.error("Alege locația."); return; }
     setUploading(true);
     try {
@@ -648,17 +648,21 @@ function UploadSheet({ onClose }: { onClose: () => void }) {
           <button onClick={onClose} className="text-muted-foreground text-2xl leading-none w-8 h-8 grid place-items-center">×</button>
         </div>
 
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        <input ref={fileRef} type="file" accept="image/*,video/mp4,video/webm,video/quicktime" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         <button
           onClick={() => fileRef.current?.click()}
           className="w-full aspect-[4/3] rounded-2xl border border-dashed border-foreground/20 flex items-center justify-center overflow-hidden bg-foreground/[0.04]"
         >
           {file ? (
-            <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
+            file.type.startsWith("video/") ? (
+              <video src={URL.createObjectURL(file)} className="h-full w-full object-cover" playsInline muted autoPlay loop />
+            ) : (
+              <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
+            )
           ) : (
             <div className="text-center space-y-1 text-muted-foreground">
-              <div className="text-3xl">📸</div>
-              <div className="text-[10px] uppercase tracking-widest" style={archivo}>alege poza</div>
+              <div className="text-3xl">📸 🎬</div>
+              <div className="text-[10px] uppercase tracking-widest" style={archivo}>alege poză sau clip</div>
             </div>
           )}
         </button>
