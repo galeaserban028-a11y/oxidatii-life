@@ -29,56 +29,56 @@ const TYPE_COLOR: Record<string, string> = {
   after: "#ff3158",
 };
 
-// Render a tiny wine-bottle silhouette onto a canvas and register it as a map
-// image. One image per type/color. Replaces the "fat dot" markers with elegant
-// little bottles — instantly readable ("astea sunt locuri de băut") and far
-// less visually noisy when many venues share the same area.
-function makeBottleImage(color: string): ImageData {
-  const W = 22, H = 56;
+const TYPE_EMOJI: Record<string, string> = {
+  club: "🔊",
+  bar: "🍸",
+  pub: "🍺",
+  terasa: "🪑",
+  "terasă": "🪑",
+  after: "🎉",
+};
+
+// Render a glowing neon "pin" — a dark circle with a colored halo and the
+// type emoji inside. Matches the reference: small icon-bubble with strong
+// outer glow, not a bottle silhouette.
+function makePinImage(color: string, emoji: string): ImageData {
+  const W = 64, H = 64;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
-  // Glow halo
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 7;
+  const cx = W / 2, cy = H / 2;
 
-  // Wine bottle body — long narrow neck, sloped shoulders, tall body
+  // Outer glow halo
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 16;
   ctx.fillStyle = color;
+  ctx.globalAlpha = 0.55;
   ctx.beginPath();
-  ctx.moveTo(9, 4);                          // neck top L
-  ctx.lineTo(13, 4);                         // neck top R
-  ctx.lineTo(13, 22);                        // neck R (long)
-  ctx.bezierCurveTo(13, 24, 18, 26, 18, 32); // shoulder R
-  ctx.lineTo(18, 50);                        // body R
-  ctx.quadraticCurveTo(18, 54, 14, 54);      // base R
-  ctx.lineTo(8, 54);                         // base
-  ctx.quadraticCurveTo(4, 54, 4, 50);        // base L
-  ctx.lineTo(4, 32);                         // body L
-  ctx.bezierCurveTo(4, 26, 9, 24, 9, 22);    // shoulder L
-  ctx.closePath();
+  ctx.arc(cx, cy, 18, 0, Math.PI * 2);
   ctx.fill();
 
+  // Solid neon ring
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 16, 0, Math.PI * 2);
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = color;
+  ctx.stroke();
+
+  // Inner dark fill
   ctx.shadowBlur = 0;
+  ctx.fillStyle = "rgba(8,6,18,0.95)";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+  ctx.fill();
 
-  // Red foil wrap on the neck
-  ctx.fillStyle = "#7a0a16";
-  ctx.fillRect(8, 2, 6, 10);
-  ctx.fillStyle = "rgba(255,255,255,0.25)";
-  ctx.fillRect(9, 3, 1, 8);
-
-  // White wine label
-  ctx.fillStyle = "rgba(245,240,225,0.92)";
-  ctx.fillRect(5, 38, 12, 11);
-  // Label lines
-  ctx.fillStyle = "rgba(0,0,0,0.45)";
-  ctx.fillRect(6, 40, 10, 1);
-  ctx.fillRect(7, 43, 8, 1);
-  ctx.fillRect(7, 46, 8, 1);
-
-  // Glass shine on body
-  ctx.fillStyle = "rgba(255,255,255,0.18)";
-  ctx.fillRect(6, 26, 1, 24);
+  // Emoji glyph
+  ctx.font = "16px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',system-ui";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(emoji, cx, cy + 1);
 
   return ctx.getImageData(0, 0, W, H);
 }
@@ -245,37 +245,48 @@ export function RomaniaMap3D({
         },
       });
 
-      // Register one bottle icon per venue type (different tints).
-      const bottleTypes: Array<[string, string]> = [
-        ["bottle-club", TYPE_COLOR.club],
-        ["bottle-bar", TYPE_COLOR.bar],
-        ["bottle-pub", TYPE_COLOR.pub],
-        ["bottle-terasa", TYPE_COLOR.terasa],
-        ["bottle-after", TYPE_COLOR.after],
+      // Register one neon pin icon per venue type.
+      const pinTypes: Array<[string, string, string]> = [
+        ["pin-club", TYPE_COLOR.club, TYPE_EMOJI.club],
+        ["pin-bar", TYPE_COLOR.bar, TYPE_EMOJI.bar],
+        ["pin-pub", TYPE_COLOR.pub, TYPE_EMOJI.pub],
+        ["pin-terasa", TYPE_COLOR.terasa, TYPE_EMOJI.terasa],
+        ["pin-after", TYPE_COLOR.after, TYPE_EMOJI.after],
       ];
-      for (const [name, color] of bottleTypes) {
+      for (const [name, color, emoji] of pinTypes) {
         if (!map.hasImage(name)) {
-          try { map.addImage(name, makeBottleImage(color), { pixelRatio: 2 }); } catch {}
+          try { map.addImage(name, makePinImage(color, emoji), { pixelRatio: 2 }); } catch {}
         }
       }
 
-      // cluster bubbles — softer, smaller, less screaming
+      // cluster bubbles — dark fills with a strong neon magenta halo
+      // (matches the reference: white count number, glowing pink ring).
+      map.addLayer({
+        id: "venues-clusters-glow",
+        type: "circle",
+        source: VENUES_SRC,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": "rgba(255,49,134,0.18)",
+          "circle-radius": ["step", ["get", "point_count"], 24, 10, 30, 50, 36],
+          "circle-blur": 0.8,
+        },
+      });
       map.addLayer({
         id: "venues-clusters",
         type: "circle",
         source: VENUES_SRC,
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": [
+          "circle-color": "rgba(10,8,20,0.92)",
+          "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 50, 24],
+          "circle-stroke-width": 2,
+          "circle-stroke-color": [
             "step", ["get", "point_count"],
-            "rgba(255,176,0,0.85)", 10,
-            "rgba(255,138,61,0.9)", 50,
-            "rgba(255,49,88,0.95)",
+            "#ff3186", 10,
+            "#c66bff", 50,
+            "#ffb000",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 11, 10, 15, 50, 20],
-          "circle-opacity": 0.85,
-          "circle-stroke-width": 1,
-          "circle-stroke-color": "rgba(0,0,0,0.55)",
         },
       });
       map.addLayer({
@@ -285,13 +296,13 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-size": 10,
+          "text-size": 12,
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
         },
-        paint: { "text-color": "#0a0a0a" },
+        paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.6)", "text-halo-width": 1 },
       });
 
-      // unclustered points → little bottle silhouettes
+      // unclustered points → neon glowing emoji pins
       map.addLayer({
         id: "venues-points",
         type: "symbol",
@@ -300,18 +311,18 @@ export function RomaniaMap3D({
         layout: {
           "icon-image": [
             "match", ["get", "type"],
-            "club", "bottle-club",
-            "bar", "bottle-bar",
-            "pub", "bottle-pub",
-            "terasa", "bottle-terasa",
-            "terasă", "bottle-terasa",
-            "after", "bottle-after",
-            "bottle-bar",
+            "club", "pin-club",
+            "bar", "pin-bar",
+            "pub", "pin-pub",
+            "terasa", "pin-terasa",
+            "terasă", "pin-terasa",
+            "after", "pin-after",
+            "pin-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 6, 0.18, 10, 0.32, 14, 0.55, 17, 0.75],
-          "icon-allow-overlap": false,
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 10, 0.7, 14, 0.95, 17, 1.15],
+          "icon-allow-overlap": true,
           "icon-ignore-placement": false,
-          "icon-anchor": "bottom",
+          "icon-anchor": "center",
           "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
         },
       });
@@ -739,12 +750,14 @@ export function RomaniaMap3D({
         live · {friends.length} oxidați activi
       </div>
 
-      <div className="absolute bottom-2 left-2 right-2 z-10 rounded-xl bg-black/80 backdrop-blur border border-foreground/10 px-3 py-2 pointer-events-none flex items-center justify-between gap-2">
-        <div className="font-display font-black text-xs leading-none">{venues.length} sticle · {cities.length} orașe</div>
-        <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-          <span style={{color:"#c66bff"}}>🍾 club</span>
-          <span style={{color:"#ffb000"}}>🍸 bar</span>
-          <span style={{color:"#39ff88"}}>🍷 terasă</span>
+      <div className="absolute bottom-2 left-2 right-2 z-10 rounded-xl bg-black/85 backdrop-blur border border-white/10 px-3 py-2 pointer-events-none flex items-center justify-between gap-2">
+        <div className="font-display font-black text-xs leading-none tracking-tight text-white">
+          {venues.length.toLocaleString("ro-RO")} <span className="text-white/50 font-mono text-[10px] uppercase tracking-widest">sticle · {cities.length} orașe</span>
+        </div>
+        <div className="font-mono text-[9px] uppercase tracking-widest flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border" style={{ color: "#c66bff", borderColor: "rgba(198,107,255,0.45)", boxShadow: "0 0 8px rgba(198,107,255,0.4)" }}>🔊 club</span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border" style={{ color: "#ffb000", borderColor: "rgba(255,176,0,0.45)", boxShadow: "0 0 8px rgba(255,176,0,0.35)" }}>🍸 bar</span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border" style={{ color: "#39ff88", borderColor: "rgba(57,255,136,0.45)", boxShadow: "0 0 8px rgba(57,255,136,0.4)" }}>🪑 terasă</span>
         </div>
       </div>
     </div>
