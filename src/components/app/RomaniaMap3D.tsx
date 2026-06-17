@@ -31,12 +31,12 @@ const TYPE_COLOR: Record<string, string> = {
 };
 
 const TYPE_EMOJI: Record<string, string> = {
-  club: "🔊",
-  bar: "🍸",
-  pub: "🍺",
-  terasa: "🪑",
-  "terasă": "🪑",
-  after: "🎉",
+  club: "🍷",
+  bar: "🍷",
+  pub: "🍷",
+  terasa: "🍷",
+  "terasă": "🍷",
+  after: "🍷",
 };
 
 // Neon glowing emoji pin — big bright emoji with a wide multi-stop halo so
@@ -49,20 +49,19 @@ function makePinImage(color: string, emoji: string, lowEnd = false): ImageData {
   const cx = W / 2, cy = H / 2;
   const s = W / 160; // scale factor
 
-  // wide outer aura
-  const aura = ctx.createRadialGradient(cx, cy, 4 * s, cx, cy, 78 * s);
-  aura.addColorStop(0, color + "ee");
-  aura.addColorStop(0.18, color + "aa");
-  aura.addColorStop(0.4, color + "55");
-  aura.addColorStop(0.7, color + "1c");
+  // tight outer aura — smaller, more focused glow
+  const aura = ctx.createRadialGradient(cx, cy, 2 * s, cx, cy, 52 * s);
+  aura.addColorStop(0, color + "cc");
+  aura.addColorStop(0.22, color + "77");
+  aura.addColorStop(0.55, color + "22");
   aura.addColorStop(1, color + "00");
   ctx.fillStyle = aura;
   ctx.fillRect(0, 0, W, H);
 
   if (!lowEnd) {
-    const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30 * s);
+    const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 22 * s);
     core.addColorStop(0, color);
-    core.addColorStop(0.6, color + "66");
+    core.addColorStop(0.6, color + "44");
     core.addColorStop(1, color + "00");
     ctx.globalCompositeOperation = "lighter";
     ctx.fillStyle = core;
@@ -71,11 +70,11 @@ function makePinImage(color: string, emoji: string, lowEnd = false): ImageData {
   }
 
   ctx.shadowColor = color;
-  ctx.shadowBlur = (lowEnd ? 14 : 24) * s;
+  ctx.shadowBlur = (lowEnd ? 10 : 18) * s;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 3.5 * s;
+  ctx.lineWidth = 3 * s;
   ctx.beginPath();
-  ctx.arc(cx, cy, 34 * s, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 26 * s, 0, Math.PI * 2);
   ctx.stroke();
 
   ctx.shadowColor = color;
@@ -83,7 +82,7 @@ function makePinImage(color: string, emoji: string, lowEnd = false): ImageData {
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `${Math.round(50 * s)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+  ctx.font = `${Math.round(38 * s)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
   ctx.fillText(emoji, cx, cy + 2 * s);
   if (!lowEnd) {
     ctx.shadowBlur = 32 * s;
@@ -434,7 +433,7 @@ export function RomaniaMap3D({
             "after", "pin-after",
             "pin-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.28, 6, 0.38, 10, 0.5, 14, 0.62, 17, 0.75],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.16, 6, 0.22, 10, 0.3, 14, 0.4, 17, 0.5],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
