@@ -631,8 +631,8 @@ function MapPage() {
           </button>
         )}
 
-        {/* Map block — cinema bento card */}
-        <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-[#111] shadow-[0_4px_24px_-12px_rgba(0,0,0,0.8)]">
+        {/* Map block — clean reference-style map, no dashboard chrome over it. */}
+        <div className="relative overflow-hidden border-y border-white/10 bg-[#080a12] -mx-4">
 
           {isLoading ? (
             <div className="aspect-[5/4] animate-pulse bg-white/5" />
@@ -673,9 +673,6 @@ function MapPage() {
               </button>
             </div>
           )}
-          {/* Top CTA — "fă-ți localul vizibil", dismissible */}
-          {!activeCity && <BusinessVisibilityCTA />}
-
           {/* Map settings button — top-right (safe-area aware) */}
           {user && (
             <button
@@ -685,7 +682,7 @@ function MapPage() {
                 top: "calc(env(safe-area-inset-top) + 0.75rem)",
                 right: "calc(env(safe-area-inset-right) + 0.75rem)",
               }}
-              className="absolute z-20 h-9 w-9 grid place-items-center rounded-full backdrop-blur-xl bg-black/50 border border-white/10 text-white/80 active:scale-95 transition"
+              className="absolute z-20 h-8 w-8 grid place-items-center rounded-full backdrop-blur-xl bg-black/45 border border-white/10 text-white/70 active:scale-95 transition"
             >
               {privacyQ.data?.settings?.map_ghost ? (
                 <Ghost size={15} className="text-[#e84393]" />
@@ -695,8 +692,6 @@ function MapPage() {
             </button>
           )}
 
-          {/* Floating promo banner — bottom of map, dismissible */}
-          <PromoBanner promotedMeta={promotedMeta} />
         </div>
 
         <MapSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />

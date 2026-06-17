@@ -29,64 +29,116 @@ const TYPE_COLOR: Record<string, string> = {
   after: "#ff3158",
 };
 
-const TYPE_EMOJI: Record<string, string> = {
-  club: "🔊",
-  bar: "🍸",
-  pub: "🍺",
-  terasa: "🪑",
-  "terasă": "🪑",
-  after: "🎉",
-};
+function drawPinGlyph(ctx: CanvasRenderingContext2D, kind: string, cx: number, cy: number, color: string) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
 
-// Neon glowing pin — large dark disc, thick colored neon ring, soft outer
-// halo, big emoji glyph centered. Matches the reference (Aarhus speaker,
-// Praha cocktail, etc.).
-function makePinImage(color: string, emoji: string): ImageData {
-  const W = 128, H = 128;
+  if (kind === "club") {
+    ctx.fillRect(cx - 15, cy - 8, 7, 16);
+    ctx.beginPath();
+    ctx.moveTo(cx - 8, cy - 8);
+    ctx.lineTo(cx + 2, cy - 15);
+    ctx.lineTo(cx + 2, cy + 15);
+    ctx.lineTo(cx - 8, cy + 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx + 7, cy, 8, -0.8, 0.8);
+    ctx.arc(cx + 12, cy, 14, -0.7, 0.7);
+    ctx.stroke();
+  } else if (kind === "bar") {
+    ctx.beginPath();
+    ctx.moveTo(cx - 16, cy - 14);
+    ctx.lineTo(cx + 16, cy - 14);
+    ctx.lineTo(cx, cy + 3);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + 3);
+    ctx.lineTo(cx, cy + 17);
+    ctx.moveTo(cx - 10, cy + 17);
+    ctx.lineTo(cx + 10, cy + 17);
+    ctx.stroke();
+  } else if (kind === "pub") {
+    ctx.strokeRect(cx - 11, cy - 8, 16, 21);
+    ctx.beginPath();
+    ctx.moveTo(cx + 5, cy - 2);
+    ctx.quadraticCurveTo(cx + 17, cy - 2, cx + 15, cy + 8);
+    ctx.quadraticCurveTo(cx + 15, cy + 15, cx + 5, cy + 13);
+    ctx.moveTo(cx - 8, cy - 13);
+    ctx.lineTo(cx + 2, cy - 13);
+    ctx.stroke();
+  } else if (kind === "terasa" || kind === "terasă") {
+    ctx.beginPath();
+    ctx.arc(cx, cy - 10, 16, Math.PI, 0);
+    ctx.moveTo(cx, cy - 10);
+    ctx.lineTo(cx, cy + 16);
+    ctx.moveTo(cx - 10, cy + 16);
+    ctx.lineTo(cx + 10, cy + 16);
+    ctx.moveTo(cx - 14, cy - 10);
+    ctx.lineTo(cx + 14, cy - 10);
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(cx - 16, cy + 9);
+    ctx.lineTo(cx - 11, cy - 11);
+    ctx.lineTo(cx - 2, cy + 3);
+    ctx.lineTo(cx + 8, cy - 13);
+    ctx.lineTo(cx + 15, cy + 9);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - 13, cy + 14);
+    ctx.lineTo(cx + 13, cy + 14);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// Clean neon pin — compact transparent halo, dark glass circle and a simple
+// line glyph. No emoji blobs, so the map stays crisp like the reference.
+function makePinImage(color: string, kind: string): ImageData {
+  const W = 96, H = 96;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
   const cx = W / 2, cy = H / 2;
 
-  // Outer soft halo — wide, low alpha
-  const halo = ctx.createRadialGradient(cx, cy, 18, cx, cy, 60);
-  halo.addColorStop(0, color + "cc");
-  halo.addColorStop(0.4, color + "55");
+  const halo = ctx.createRadialGradient(cx, cy, 15, cx, cy, 44);
+  halo.addColorStop(0, color + "99");
+  halo.addColorStop(0.55, color + "2f");
   halo.addColorStop(1, color + "00");
   ctx.fillStyle = halo;
   ctx.fillRect(0, 0, W, H);
 
-  // Strong inner glow
   ctx.shadowColor = color;
-  ctx.shadowBlur = 28;
-  ctx.fillStyle = color;
-  ctx.globalAlpha = 0.9;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 34, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Thick neon ring
-  ctx.globalAlpha = 1;
-  ctx.shadowBlur = 18;
-  ctx.lineWidth = 5;
+  ctx.shadowBlur = 16;
   ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.arc(cx, cy, 32, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 27, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Inner dark fill
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = "#0a0814";
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = "rgba(8,10,20,0.86)";
   ctx.beginPath();
-  ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 23, 0, Math.PI * 2);
   ctx.fill();
 
-  // Big emoji glyph
-  ctx.font = "36px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',system-ui";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(emoji, cx, cy + 2);
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = "rgba(255,255,255,0.18)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+  ctx.stroke();
+
+  drawPinGlyph(ctx, kind, cx, cy, color);
 
   return ctx.getImageData(0, 0, W, H);
 }
@@ -98,9 +150,9 @@ const VOYAGER_STYLE = {
     "carto-dark": {
       type: "raster",
       tiles: [
-        "https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
       ],
       tileSize: 256,
       attribution: "© CARTO, © OpenStreetMap contributors",
@@ -108,8 +160,8 @@ const VOYAGER_STYLE = {
     },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#0a0420" } },
-    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 0.85, "raster-saturation": 0.4, "raster-contrast": 0.25, "raster-brightness-min": 0.05, "raster-brightness-max": 0.7, "raster-hue-rotate": 250 } },
+    { id: "background", type: "background", paint: { "background-color": "#080a12" } },
+    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 0.98, "raster-saturation": -0.12, "raster-contrast": 0.18, "raster-brightness-min": 0.08, "raster-brightness-max": 0.92 } },
   ],
   sky: {
     "sky-color": "#03040a",
@@ -192,26 +244,8 @@ export function RomaniaMap3D({
       return;
     }
 
-    // Globe projection — desktop only. Software WebGL on mobile chokes on it.
-    if (!isSmall) {
-      try { (map as any).setProjection({ type: "globe" }); } catch {}
-    }
-
-
-
-
-
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "bottom-right");
-    map.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true,
-        showUserLocation: true,
-      }),
-      "bottom-right"
-    );
-    map.touchZoomRotate.enableRotation();
-    map.dragRotate.enable();
+    map.touchZoomRotate.disableRotation();
+    map.dragRotate.disable();
 
     map.on("load", () => {
       loadedRef.current = true;
@@ -221,13 +255,11 @@ export function RomaniaMap3D({
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
         cluster: true,
-        clusterRadius: 60,
-        clusterMaxZoom: 13,
+        clusterRadius: 86,
+        clusterMaxZoom: 11,
       });
 
-      // Live "energy" heatmap — separate (unclustered) source so the heat
-      // gradient is smooth across the whole map. Pulses via animated paint
-      // properties below for a living, breathing feel.
+      // Very subtle energy source; kept low so the basemap roads/labels stay clean.
       map.addSource(HEAT_SRC, {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
@@ -238,33 +270,32 @@ export function RomaniaMap3D({
         source: HEAT_SRC,
         maxzoom: 13,
         paint: {
-          "heatmap-weight": ["interpolate", ["linear"], ["get", "w"], 0, 0.2, 5, 1.2],
-          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.6, 9, 1.4, 13, 2.2],
+          "heatmap-weight": ["interpolate", ["linear"], ["get", "w"], 0, 0.08, 5, 0.55],
+          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.18, 9, 0.45, 13, 0.75],
           "heatmap-color": [
             "interpolate", ["linear"], ["heatmap-density"],
             0, "rgba(3,4,10,0)",
-            0.15, "rgba(57,255,136,0.35)",
-            0.35, "rgba(198,107,255,0.55)",
-            0.6, "rgba(255,176,0,0.75)",
-            0.85, "rgba(255,49,88,0.9)",
-            1, "rgba(255,255,255,0.95)",
+            0.18, "rgba(57,255,210,0.16)",
+            0.45, "rgba(198,107,255,0.22)",
+            0.75, "rgba(255,176,0,0.24)",
+            1, "rgba(255,49,134,0.28)",
           ],
-          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 6, 22, 11, 50, 13, 80],
-          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 6, 0.55, 11, 0.4, 13, 0.15],
+          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 6, 18, 11, 34, 13, 48],
+          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.22, 10, 0.16, 13, 0.05],
         },
       });
 
       // Register one neon pin icon per venue type.
       const pinTypes: Array<[string, string, string]> = [
-        ["pin-club", TYPE_COLOR.club, TYPE_EMOJI.club],
-        ["pin-bar", TYPE_COLOR.bar, TYPE_EMOJI.bar],
-        ["pin-pub", TYPE_COLOR.pub, TYPE_EMOJI.pub],
-        ["pin-terasa", TYPE_COLOR.terasa, TYPE_EMOJI.terasa],
-        ["pin-after", TYPE_COLOR.after, TYPE_EMOJI.after],
+        ["pin-club", TYPE_COLOR.club, "club"],
+        ["pin-bar", TYPE_COLOR.bar, "bar"],
+        ["pin-pub", TYPE_COLOR.pub, "pub"],
+        ["pin-terasa", TYPE_COLOR.terasa, "terasa"],
+        ["pin-after", TYPE_COLOR.after, "after"],
       ];
-      for (const [name, color, emoji] of pinTypes) {
+      for (const [name, color, kind] of pinTypes) {
         if (!map.hasImage(name)) {
-          try { map.addImage(name, makePinImage(color, emoji), { pixelRatio: 2 }); } catch {}
+          try { map.addImage(name, makePinImage(color, kind), { pixelRatio: 2 }); } catch {}
         }
       }
 
@@ -276,12 +307,12 @@ export function RomaniaMap3D({
         paint: {
           "circle-color": [
             "step", ["get", "point_count"],
-            "rgba(255,49,134,0.35)", 50,
-            "rgba(198,107,255,0.35)", 200,
-            "rgba(255,176,0,0.35)",
+            "rgba(255,49,134,0.18)", 80,
+            "rgba(198,107,255,0.20)", 240,
+            "rgba(255,176,0,0.18)",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 40, 50, 52, 200, 64],
-          "circle-blur": 1,
+          "circle-radius": ["step", ["get", "point_count"], 26, 80, 34, 240, 42],
+          "circle-blur": 0.75,
         },
       });
       map.addLayer({
@@ -290,13 +321,13 @@ export function RomaniaMap3D({
         source: VENUES_SRC,
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": "rgba(10,5,22,0.95)",
-          "circle-radius": ["step", ["get", "point_count"], 26, 50, 32, 200, 40],
-          "circle-stroke-width": 3.5,
+          "circle-color": "rgba(12,14,24,0.82)",
+          "circle-radius": ["step", ["get", "point_count"], 18, 80, 23, 240, 29],
+          "circle-stroke-width": 2,
           "circle-stroke-color": [
             "step", ["get", "point_count"],
-            "#ff3186", 50,
-            "#c66bff", 200,
+            "#ff3186", 80,
+            "#c66bff", 240,
             "#ffb000",
           ],
         },
@@ -308,11 +339,11 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-size": ["step", ["get", "point_count"], 18, 50, 20, 200, 24],
+          "text-size": ["step", ["get", "point_count"], 13, 80, 15, 240, 17],
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
           "text-allow-overlap": true,
         },
-        paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.85)", "text-halo-width": 1.5 },
+        paint: { "text-color": "rgba(255,255,255,0.94)", "text-halo-color": "rgba(0,0,0,0.7)", "text-halo-width": 1 },
       });
 
       // unclustered points → neon glowing emoji pins
@@ -332,7 +363,7 @@ export function RomaniaMap3D({
             "after", "pin-after",
             "pin-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.55, 6, 0.7, 10, 0.9, 14, 1.05, 17, 1.2],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.22, 6, 0.32, 10, 0.46, 14, 0.64, 17, 0.78],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
@@ -441,7 +472,7 @@ export function RomaniaMap3D({
     if (loadedRef.current) apply(); else map.once("load", apply);
   }, [venues, promotedMeta, retryKey]);
 
-  // Pulse the heatmap intensity so the map feels alive (breathing energy).
+  // Subtle pulse only; keep the reference-style road network readable.
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
     let raf = 0;
@@ -449,7 +480,7 @@ export function RomaniaMap3D({
     const tick = (t: number) => {
       if (!map.getLayer("venues-heat")) { raf = requestAnimationFrame(tick); return; }
       const k = (Math.sin((t - start) / 1400) + 1) / 2; // 0..1
-      const intensity = 0.7 + k * 0.5;
+      const intensity = 0.16 + k * 0.1;
       try { map.setPaintProperty("venues-heat", "heatmap-intensity", intensity); } catch {}
       raf = requestAnimationFrame(tick);
     };
@@ -485,14 +516,14 @@ export function RomaniaMap3D({
         }
         const theme = meta.theme || "#ff3158";
         const wrap = document.createElement("div");
-        wrap.style.cssText = "position:relative;width:40px;height:40px;cursor:pointer;transform:translateY(-50%);z-index:5;";
+        wrap.style.cssText = "position:relative;width:32px;height:32px;cursor:pointer;transform:translateY(-50%);z-index:5;";
 
         const pulse = document.createElement("div");
         pulse.style.cssText = `position:absolute;inset:-3px;border-radius:9999px;background:${theme};opacity:0.18;animation:oxi-pulse-strong 2.4s ease-out infinite;pointer-events:none;`;
         wrap.appendChild(pulse);
 
         const ring = document.createElement("div");
-        ring.style.cssText = `position:relative;width:40px;height:40px;border-radius:9999px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 12px ${theme}99,0 4px 12px rgba(0,0,0,0.6);`;
+        ring.style.cssText = `position:relative;width:32px;height:32px;border-radius:9999px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 10px ${theme}88,0 4px 10px rgba(0,0,0,0.55);`;
         if (meta.cover) {
           const img = document.createElement("img");
           img.src = meta.cover; img.alt = "";
@@ -508,8 +539,8 @@ export function RomaniaMap3D({
         wrap.appendChild(ring);
 
         const badge = document.createElement("div");
-        badge.textContent = "AD";
-        badge.style.cssText = `position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);padding:0 5px;border-radius:9999px;background:${theme};color:#06070a;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:7px;letter-spacing:0.14em;border:1.5px solid #06070a;white-space:nowrap;line-height:11px;`;
+        badge.textContent = "";
+        badge.style.cssText = `position:absolute;bottom:1px;right:1px;width:7px;height:7px;border-radius:9999px;background:${theme};border:1.5px solid #06070a;box-shadow:0 0 8px ${theme};`;
         wrap.appendChild(badge);
 
         // X dismiss button (top-right). Stops propagation so click doesn't
@@ -518,7 +549,7 @@ export function RomaniaMap3D({
         close.type = "button";
         close.setAttribute("aria-label", "Ascunde reclama");
         close.textContent = "×";
-        close.style.cssText = `position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:9999px;background:#06070a;color:#fff;border:1.5px solid ${theme};font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;`;
+        close.style.cssText = `position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.78;`;
         close.onclick = (e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -556,25 +587,27 @@ export function RomaniaMap3D({
   }, [venues, promotedMeta, retryKey]);
 
 
-  // CITIES → DOM markers (small count, re-render OK)
+  // CITIES → only the hottest cities get a tiny label; the basemap provides
+  // the clean city/country typography, avoiding the previous label pile-up.
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
     cityMarkers.current.forEach(m => m.remove());
     cityMarkers.current = [];
     for (const c of cities) {
       if (!isValidLngLat(c.lng, c.lat)) continue;
-      const big = c.chaos_level >= 8;
+      const big = c.chaos_level >= 9;
+      if (!big) continue;
       const wrap = document.createElement("button");
       wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:0;padding:0;transform:translate(-50%,-50%);";
       wrap.title = c.name;
       // City labels only — no marker icon. The neon emoji venue pins +
       // cluster bubbles from the GPU layer carry the visual weight, exactly
       // like the reference (Praha, Paris, Sarajevo… are pure text labels).
-      const color = big ? "#ff3158" : "#c66bff";
+      const color = "#ff3158";
       const label = document.createElement("div");
       label.textContent = c.name;
       label.className = "oxi-city-label";
-      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:${big ? 13 : 11}px;letter-spacing:0.04em;color:rgba(255,255,255,0.95);text-shadow:0 0 8px ${color},0 0 4px #000,0 1px 3px #000;white-space:nowrap;`;
+      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:10px;letter-spacing:0;color:rgba(255,255,255,0.82);text-shadow:0 0 5px ${color},0 1px 3px #000;white-space:nowrap;`;
       wrap.appendChild(label);
       let pressTimer: number | null = null;
       let longPressed = false;
@@ -651,15 +684,15 @@ export function RomaniaMap3D({
       wrap.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);z-index:10;";
 
       const accent = f.is_me ? "#ff3158" : "#39ff88";
-      const ringSize = f.is_me ? 52 : 44;
-      const pulseSize = f.is_me ? 64 : 54;
+      const ringSize = f.is_me ? 44 : 34;
+      const pulseSize = f.is_me ? 54 : 42;
 
       const pulse = document.createElement("div");
       pulse.style.cssText = `position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:${pulseSize}px;height:${pulseSize}px;border-radius:9999px;background:${accent};opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;`;
       wrap.appendChild(pulse);
 
       const ring = document.createElement("div");
-      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:9999px;border:3px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3158,#c66bff);box-shadow:0 0 22px ${accent},0 4px 14px rgba(0,0,0,0.6);`;
+      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:9999px;border:2px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3158,#c66bff);box-shadow:0 0 14px ${accent},0 4px 12px rgba(0,0,0,0.55);`;
       if (f.avatar_url) {
         const img = document.createElement("img");
         img.src = f.avatar_url; img.alt = "";
@@ -668,26 +701,26 @@ export function RomaniaMap3D({
       } else {
         const ini = document.createElement("div");
         ini.textContent = ((f.handle ?? f.display_name ?? "?")[0] ?? "?").toUpperCase();
-        ini.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:'Space Grotesk',sans-serif;font-size:18px;";
+        ini.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:'Space Grotesk',sans-serif;font-size:14px;";
         ring.appendChild(ini);
       }
       wrap.appendChild(ring);
 
       const live = document.createElement("div");
-      live.style.cssText = `position:absolute;top:-2px;right:-2px;width:12px;height:12px;border-radius:9999px;background:${accent};border:2px solid #06070a;box-shadow:0 0 8px ${accent};`;
+      live.style.cssText = `position:absolute;top:-1px;right:-1px;width:9px;height:9px;border-radius:9999px;background:${accent};border:2px solid #06070a;box-shadow:0 0 8px ${accent};`;
       ring.appendChild(live);
 
       if (f.is_me) {
         const crown = document.createElement("div");
         crown.textContent = "TU";
-        crown.style.cssText = "position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:1px 6px;border-radius:9999px;background:#ff3158;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:9px;letter-spacing:0.12em;border:2px solid #06070a;box-shadow:0 0 10px #ff3158;";
+        crown.style.cssText = "position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:9999px;background:#ff3158;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.08em;border:1.5px solid #06070a;box-shadow:0 0 8px #ff3158;";
         wrap.appendChild(crown);
       }
 
       const labelText = f.display_name ?? (f.handle ? `@${f.handle}` : (f.is_me ? "tu" : "live"));
       const pill = document.createElement("div");
       pill.textContent = labelText;
-      pill.style.cssText = `margin-top:4px;padding:2px 7px;border-radius:9999px;background:rgba(6,7,10,0.92);color:${accent};font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:10px;letter-spacing:0.04em;white-space:nowrap;border:1px solid ${accent};max-width:120px;overflow:hidden;text-overflow:ellipsis;`;
+      pill.style.cssText = `display:none;`;
       wrap.appendChild(pill);
 
       wrap.onclick = (e) => { e.stopPropagation(); navRef.current({ to: "/app/user/$id", params: { id: f.user_id } }); };
@@ -706,7 +739,7 @@ export function RomaniaMap3D({
   }, [friends, retryKey]);
 
   return (
-    <div className="relative w-full h-[54vh] min-h-[400px] max-h-[560px] rounded-3xl overflow-hidden border border-neon-purple/40 bg-[#03040a] shadow-[0_0_80px_-20px_var(--neon-purple),inset_0_0_120px_rgba(0,0,0,0.9)]">
+    <div className="relative w-full h-[54vh] min-h-[400px] max-h-[560px] overflow-hidden bg-[#080a12]">
       <style>{`
         @keyframes oxi-pulse-strong { 0% { transform: translateX(-50%) scale(0.6); opacity: 0.7; } 80% { transform: translateX(-50%) scale(1.5); opacity: 0; } 100% { opacity: 0; } }
         @keyframes oxi-scan { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
@@ -742,31 +775,9 @@ export function RomaniaMap3D({
         </div>
       )}
 
-      {/* Deep space vignette — frames the globe like a tiny planet */}
+      {/* Soft vignette only — no decorative blobs over the map. */}
       <div className="pointer-events-none absolute inset-0 z-[1]"
-           style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 22%, rgba(3,4,10,0.55) 55%, rgba(3,4,10,0.98) 95%)" }} />
-      {/* Aurora drift — subtle living halos */}
-      <div className="pointer-events-none absolute -inset-10 z-[1] opacity-40 blur-3xl mix-blend-screen"
-           style={{
-             background: "radial-gradient(circle at 30% 30%, rgba(57,255,136,0.18), transparent 50%), radial-gradient(circle at 75% 70%, rgba(255,49,88,0.20), transparent 55%)",
-             animation: "oxi-aurora-drift 18s ease-in-out infinite",
-           }} />
-
-      <div className="absolute top-2 left-2 z-10 px-2.5 py-1 rounded-md bg-black/80 backdrop-blur font-mono text-[9px] uppercase tracking-widest text-neon-green pointer-events-none border border-neon-green/30">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-neon-green animate-pulse mr-1.5 align-middle" />
-        live · {friends.length} oxidați activi
-      </div>
-
-      <div className="absolute bottom-2 left-2 right-2 z-10 rounded-xl bg-black/85 backdrop-blur border border-white/10 px-3 py-2 pointer-events-none flex items-center justify-between gap-2">
-        <div className="font-display font-black text-xs leading-none tracking-tight text-white">
-          {venues.length.toLocaleString("ro-RO")} <span className="text-white/50 font-mono text-[10px] uppercase tracking-widest">sticle · {cities.length} orașe</span>
-        </div>
-        <div className="font-mono text-[9px] uppercase tracking-widest flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border" style={{ color: "#c66bff", borderColor: "rgba(198,107,255,0.45)", boxShadow: "0 0 8px rgba(198,107,255,0.4)" }}>🔊 club</span>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border" style={{ color: "#ffb000", borderColor: "rgba(255,176,0,0.45)", boxShadow: "0 0 8px rgba(255,176,0,0.35)" }}>🍸 bar</span>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border" style={{ color: "#39ff88", borderColor: "rgba(57,255,136,0.45)", boxShadow: "0 0 8px rgba(57,255,136,0.4)" }}>🪑 terasă</span>
-        </div>
-      </div>
+           style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(3,4,10,0.28) 74%, rgba(3,4,10,0.82) 100%)" }} />
     </div>
   );
 }
