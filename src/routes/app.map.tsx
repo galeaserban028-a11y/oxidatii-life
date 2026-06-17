@@ -701,7 +701,7 @@ function MapPage() {
                 return;
               }
                 getPrecisePosition()
-                  .then((pos) => publishPosition(pos, true))
+                  .then((pos) => publishPosition(pos, true, true))
                   .catch(() => alert("Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
             }}
             className="w-full flex items-center gap-3 rounded-2xl border border-[#ff3d8b]/40 bg-gradient-to-r from-[#ff3d8b]/15 to-[#c724ff]/10 px-4 py-3 text-left active:scale-[0.99] transition"
