@@ -10,13 +10,14 @@ import { toast } from "sonner";
 type CatKey = "respect" | "reliability" | "energy" | "friendliness" | "contribution" | "trust";
 
 const CATS: { key: CatKey; label: string; short: string; icon: any; color: string }[] = [
-  { key: "respect",      label: "Respect",       short: "respect",  icon: Shield,     color: "var(--neon-purple)" },
-  { key: "reliability",  label: "Fiabilitate",   short: "fiabil",   icon: Clock,      color: "var(--neon-green)" },
-  { key: "energy",       label: "Energie",       short: "energie",  icon: Zap,        color: "var(--sunset-orange)" },
-  { key: "friendliness", label: "Prietenie",     short: "prieten",  icon: Smile,      color: "var(--sunset-magenta)" },
-  { key: "contribution", label: "Aport la fază", short: "aport",    icon: GlassWater, color: "var(--neon-crimson)" },
-  { key: "trust",        label: "Încredere",     short: "trust",    icon: Lock,       color: "var(--neon-green)" },
+  { key: "respect",      label: "Respect",       short: "respect",  icon: Shield,     color: "#c724ff" },
+  { key: "reliability",  label: "Fiabilitate",   short: "fiabil",   icon: Clock,      color: "#00e5ff" },
+  { key: "energy",       label: "Energie",       short: "energie",  icon: Zap,        color: "#ffea00" },
+  { key: "friendliness", label: "Prietenie",     short: "prieten",  icon: Smile,      color: "#ff3d8b" },
+  { key: "contribution", label: "Aport la fază", short: "aport",    icon: GlassWater, color: "#c724ff" },
+  { key: "trust",        label: "Încredere",     short: "trust",    icon: Lock,       color: "#00e5ff" },
 ];
+
 
 // ---------- Calcul ----------
 type SelfInputs = {
