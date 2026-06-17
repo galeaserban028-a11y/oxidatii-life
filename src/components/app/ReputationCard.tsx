@@ -88,18 +88,20 @@ function usePeerAgg(userId?: string | null) {
   return useQuery({
     queryKey: ["rep-agg", userId],
     enabled: !!userId,
-    queryFn: async (): Promise<PeerAgg> => {
+    queryFn: async (): Promise<{ agg: PeerAgg; uniqueRaters: number }> => {
       const { data } = await supabase
         .from("user_ratings" as any)
-        .select("category, value")
+        .select("category, value, rater_id")
         .eq("rated_id", userId!);
       const out: PeerAgg = {};
-      for (const r of ((data ?? []) as unknown) as Array<{ category: CatKey; value: number }>) {
+      const raters = new Set<string>();
+      for (const r of ((data ?? []) as unknown) as Array<{ category: CatKey; value: number; rater_id: string }>) {
         const cur = out[r.category] ?? { avg: 0, n: 0 };
         const n = cur.n + 1;
         out[r.category] = { avg: (cur.avg * cur.n + r.value) / n, n };
+        if (r.rater_id) raters.add(r.rater_id);
       }
-      return out;
+      return { agg: out, uniqueRaters: raters.size };
     },
   });
 }
@@ -144,7 +146,9 @@ type Props = {
 export function ReputationCard(props: Props) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const { data: peers } = usePeerAgg(props.userId);
+  const { data: peerData } = usePeerAgg(props.userId);
+  const peers = peerData?.agg ?? {};
+  const uniqueRaters = peerData?.uniqueRaters ?? 0;
 
   const days = props.createdAt
     ? Math.max(0, Math.floor((Date.now() - +new Date(props.createdAt)) / 86_400_000))
@@ -160,7 +164,7 @@ export function ReputationCard(props: Props) {
     hasAvatar: props.hasAvatar,
     hasBio: props.hasBio,
     accountAgeDays: days,
-  }, peers ?? {});
+  }, peers);
 
   const canRate = !!props.allowRating && !!user && user.id !== props.userId;
 
@@ -225,10 +229,10 @@ export function ReputationCard(props: Props) {
                   {rep.tier.name}
                 </span>
                 <span className="text-[9px] font-mono uppercase text-white/45 flex items-center gap-1 shrink-0">
-                  {rep.totalPeerN > 0 ? (
+                  {uniqueRaters > 0 ? (
                     <>
                       <Star size={9} className="fill-current" style={{ color: rep.tier.color }} />
-                      {rep.totalPeerN} voturi
+                      {uniqueRaters} {uniqueRaters === 1 ? "vot" : "voturi"}
                     </>
                   ) : (
                     <>reputație</>
@@ -273,7 +277,8 @@ export function ReputationCard(props: Props) {
       >
         <ReputationDetail
           rep={rep}
-          peers={peers ?? {}}
+          peers={peers}
+          uniqueRaters={uniqueRaters}
           targetUserId={props.userId}
           canRate={canRate}
           onClose={() => setOpen(false)}
@@ -286,10 +291,11 @@ export function ReputationCard(props: Props) {
 
 // ---------- Sheet conținut ----------
 function ReputationDetail({
-  rep, peers, targetUserId, canRate, onClose,
+  rep, peers, uniqueRaters, targetUserId, canRate, onClose,
 }: {
   rep: ReturnType<typeof computeReputation>;
   peers: PeerAgg;
+  uniqueRaters: number;
   targetUserId: string;
   canRate: boolean;
   onClose: () => void;
@@ -389,8 +395,8 @@ function ReputationDetail({
               <div className="flex items-start gap-2 text-[10px] font-mono uppercase tracking-wider text-white/55 leading-snug">
                 <TrendingUp size={11} className="shrink-0 mt-px" style={{ color: rep.tier.color }} />
                 <span>
-                  {rep.totalPeerN > 0
-                    ? <>{rep.totalPeerN} voturi din comunitate + activitatea ta</>
+                  {uniqueRaters > 0
+                    ? <>{uniqueRaters} {uniqueRaters === 1 ? "vot" : "voturi"} din comunitate + activitatea ta</>
                     : <>doar activitatea ta — nimeni nu te-a votat încă</>}
                 </span>
               </div>
