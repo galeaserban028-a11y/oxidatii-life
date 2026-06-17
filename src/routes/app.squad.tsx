@@ -89,6 +89,24 @@ function SquadPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["squad-joins"] }),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (partyId: string) => {
+      if (!user) throw new Error("login");
+      const { error } = await supabase.from("parties").delete().eq("id", partyId).eq("host_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["squad-live-parties"] });
+      qc.invalidateQueries({ queryKey: ["parties"] });
+    },
+  });
+
+  const handleDelete = (partyId: string, title: string) => {
+    if (confirm(`Ștergi șprițul "${title}"? Nu se mai poate recupera.`)) {
+      deleteMutation.mutate(partyId);
+    }
+  };
+
 
   // Friends list = haita ta
   const { data: friends = [], isLoading } = useQuery({
