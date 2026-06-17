@@ -23,9 +23,6 @@ export const getRouter = () => {
     // care flash-uiau ErrorComponent-ul. "viewport" e mai blând și nu se mai întâmplă.
     defaultPreload: "intent",
     defaultPreloadStaleTime: 30_000,
-    // Keep the previous page on screen while the next route's loader runs,
-    // so we never flash an empty/loading page during navigation.
-    defaultPendingMs: 2000,
     defaultPendingMinMs: 0,
   });
 
