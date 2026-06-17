@@ -399,26 +399,27 @@ function PremiumPage() {
               <button
                 key={p.id}
                 onClick={() => handleCoins(p)}
-                className="w-full p-4 rounded-xl flex items-center justify-between transition-colors text-left relative overflow-hidden"
+                className="w-full p-4 rounded-xl grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 transition-colors text-left relative overflow-hidden"
                 style={{
                   background: "rgba(255,255,255,0.04)",
                   border: `1px solid ${p.popular ? `${p.neon}55` : "rgba(255,255,255,0.1)"}`,
+                  paddingTop: p.popular ? 22 : 16,
                 }}
               >
                 {p.popular && (
                   <span
-                    className="absolute top-0 right-0 text-[8px] font-black px-2 py-0.5 rounded-bl uppercase tracking-wider"
+                    className="absolute top-0 left-0 right-0 text-[8px] font-black px-2 py-0.5 uppercase tracking-wider text-center"
                     style={{ background: p.neon, color: "#050510" }}
                   >
                     ales de mulți
                   </span>
                 )}
                 <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-black uppercase tracking-wider" style={{ color: p.neon }}>
+                  <span className="text-sm font-black uppercase tracking-wider truncate" style={{ color: p.neon }}>
                     {p.label}
                   </span>
                   <span
-                    className="text-[12px] italic text-white/55 mt-0.5"
+                    className="text-[12px] italic text-white/55 mt-0.5 truncate"
                     style={{ fontFamily: "'Instrument Serif', serif" }}
                   >
                     {p.coins} {p.coins === 1 ? "șpriț" : "șprițuri"}
@@ -429,13 +430,14 @@ function PremiumPage() {
                     </span>
                   )}
                 </div>
-                <div className="text-right shrink-0 ml-3">
-                  <div className="font-display text-lg font-black tabular-nums leading-none">{p.price}</div>
+                <div className="text-right shrink-0">
+                  <div className="font-display text-lg font-black tabular-nums leading-none whitespace-nowrap">{p.price}</div>
                   <div className="text-[9px] uppercase tracking-widest text-white/40 mt-1">Lei</div>
                 </div>
               </button>
             ))}
           </div>
+
         </section>
 
         {/* Manage subscription + boost */}
