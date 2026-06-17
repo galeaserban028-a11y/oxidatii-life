@@ -170,11 +170,13 @@ function getPrecisePosition(): Promise<GeolocationPosition> {
     let best: GeolocationPosition | null = null;
     let settled = false;
     let watchId: number | null = null;
+    let timeoutId: number | null = null;
 
     const finish = (pos?: GeolocationPosition) => {
       if (settled) return;
       settled = true;
       if (watchId != null) navigator.geolocation.clearWatch(watchId);
+      if (timeoutId != null) window.clearTimeout(timeoutId);
       if (pos ?? best) resolve((pos ?? best)!);
       else reject(new Error("Nu am putut citi locația."));
     };
@@ -186,12 +188,17 @@ function getPrecisePosition(): Promise<GeolocationPosition> {
       },
       (error) => {
         if (best) finish(best);
-        else reject(error);
+        else {
+          settled = true;
+          if (watchId != null) navigator.geolocation.clearWatch(watchId);
+          if (timeoutId != null) window.clearTimeout(timeoutId);
+          reject(error);
+        }
       },
       { enableHighAccuracy: true, maximumAge: 0, timeout: 30_000 },
     );
 
-    window.setTimeout(() => finish(), 12_000);
+    timeoutId = window.setTimeout(() => finish(), 12_000);
   });
 }
 
