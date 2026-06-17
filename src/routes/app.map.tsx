@@ -510,11 +510,27 @@ function MapPage() {
   };
 
   useEffect(() => {
-    if (!user || !profile?.location_consent || autoLocated || privacyQ.isLoading) return;
-    if (privacyQ.data?.settings?.map_ghost || privacyQ.data?.settings?.map_visibility === "nobody") return;
+    if (autoLocated) return;
     setAutoLocated(true);
-    getPrecisePosition().then((pos) => publishPosition(pos)).catch(() => {});
-  }, [autoLocated, privacyQ.isLoading, privacyQ.data?.settings?.map_ghost, privacyQ.data?.settings?.map_visibility, profile?.location_consent, publishPosition, user]);
+    getPrecisePosition()
+      .then((pos) => {
+        // Always show the local "tu ești aici" pin, even without consent.
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setGeo({ lat, lng });
+        setFocusCity({ lat, lng, zoom: 16 });
+        // Only broadcast to friends if consent + not ghost/hidden.
+        if (
+          user &&
+          profile?.location_consent &&
+          !privacyQ.data?.settings?.map_ghost &&
+          privacyQ.data?.settings?.map_visibility !== "nobody"
+        ) {
+          publishPosition(pos).catch(() => {});
+        }
+      })
+      .catch(() => {});
+  }, [autoLocated, privacyQ.data?.settings?.map_ghost, privacyQ.data?.settings?.map_visibility, profile?.location_consent, publishPosition, user]);
 
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
