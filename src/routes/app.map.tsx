@@ -106,13 +106,12 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   const userIds = new Set<string>([...liveMap.keys(), ...checkinMap.keys()]);
   const pins: FriendPin[] = [];
 
-  // Fallback for self: if no live row and no active check-in, use the most
-  // recent (even expired) live_location, then last check-in venue, then city.
+  // Fallback for self: use only a previous GPS/live row or a check-in.
+  // Never place "tu ești aici" on the city center — it feels imprecise.
   if (!userIds.has(userId)) {
-    const [{ data: lastLive }, { data: lastCheckin }, { data: meProfile }] = await Promise.all([
+    const [{ data: lastLive }, { data: lastCheckin }] = await Promise.all([
       supabase.from("live_locations").select("lat, lng").eq("user_id", userId).order("updated_at", { ascending: false }).limit(1).maybeSingle(),
       supabase.from("check_ins").select("venue_id, lat, lng").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("profiles").select("city_id").eq("id", userId).maybeSingle(),
     ]);
     let lat: number | null = null, lng: number | null = null;
     if (lastLive) { lat = Number((lastLive as any).lat); lng = Number((lastLive as any).lng); }
@@ -123,10 +122,6 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
         const { data: v } = await supabase.from("venues").select("lat,lng").eq("id", ck.venue_id).maybeSingle();
         if (v?.lat != null && v?.lng != null) { lat = Number(v.lat); lng = Number(v.lng); }
       }
-    }
-    if ((lat == null || lng == null) && (meProfile as any)?.city_id) {
-      const { data: city } = await supabase.from("cities").select("lat,lng").eq("id", (meProfile as any).city_id).maybeSingle();
-      if (city) { lat = Number(city.lat); lng = Number(city.lng); }
     }
     if (lat != null && lng != null && isFinite(lat) && isFinite(lng)) {
       const me: any = profMap.get(userId);
