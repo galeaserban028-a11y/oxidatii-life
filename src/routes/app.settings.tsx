@@ -249,7 +249,7 @@ function SettingsPage() {
           />
           <RowExternalLink
             icon={<FileText size={16} />}
-            href="mailto:privacy@oxidatii.app"
+            href="mailto:privacy@oxidatii.life"
             label="Cere ștergerea datelor"
             hint="Trimite-ne un email și răspundem în 30 de zile"
           />
@@ -263,7 +263,16 @@ function SettingsPage() {
             hint="Trimite un bug sau o sugestie către echipă"
             onClick={() => setBugOpen(true)}
           />
-          <RowExternal href="https://lovable.app" label="Suport & feedback" />
+          <RowExternal
+            href="mailto:suport@oxidatii.life?subject=Suport%20%26%20feedback%20OXIDA%C8%9AII&body=Salut%20echipa%20OXIDA%C8%9AII%2C%0A%0A"
+            label="Suport & feedback"
+          />
+          <RowExternalLink
+            icon={<FileText size={16} />}
+            href="mailto:contact@oxidatii.life"
+            label="Contact echipă"
+            hint="Răspundem în maxim 2 zile lucrătoare"
+          />
           <div className="px-4 py-3 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
             <span>Versiune</span>
             <span>oxidatii · v1.0</span>
