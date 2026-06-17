@@ -507,7 +507,7 @@ function MapPage() {
         />
 
         {/* Country chips */}
-        <div className="-mx-4 px-4 overflow-x-auto scrollbar-thin scrollbar-thumb-[#ff3d8b]/40 scrollbar-track-transparent">
+        <div className="-mx-4 px-4 overflow-x-auto oxi-scrollbar">
           <div className="flex items-center gap-2 pb-3">
             <button
               onClick={() => { setCountry("all"); setCityId("all"); }}
