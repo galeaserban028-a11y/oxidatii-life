@@ -183,8 +183,15 @@ function UserPage() {
     .sort((a, b) => b[1].count - a[1].count)
     .slice(0, 5);
 
+  const pageTheme = profile ? getTheme(profile.profile_theme_id) : null;
+
   return (
-    <div className="px-5 pt-5 pb-10 max-w-xl mx-auto space-y-5">
+    <div className="relative min-h-screen">
+      {pageTheme && <ThemeAtmosphere theme={pageTheme} intensity={(profile as any)?.theme_intensity} />}
+      {pageTheme && profile?.handle && (
+        <SignatureReveal theme={pageTheme} handle={profile.handle} storageKey={`u:${profile.handle}`} />
+      )}
+      <div className="relative z-10 px-5 pt-5 pb-10 max-w-xl mx-auto space-y-5">
       <Link to="/app/top" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
         <ArrowLeft size={14} /> înapoi
       </Link>
