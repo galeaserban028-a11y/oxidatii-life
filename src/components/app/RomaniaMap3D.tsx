@@ -516,14 +516,14 @@ export function RomaniaMap3D({
         }
         const theme = meta.theme || "#ff3158";
         const wrap = document.createElement("div");
-        wrap.style.cssText = "position:relative;width:40px;height:40px;cursor:pointer;transform:translateY(-50%);z-index:5;";
+        wrap.style.cssText = "position:relative;width:32px;height:32px;cursor:pointer;transform:translateY(-50%);z-index:5;";
 
         const pulse = document.createElement("div");
         pulse.style.cssText = `position:absolute;inset:-3px;border-radius:9999px;background:${theme};opacity:0.18;animation:oxi-pulse-strong 2.4s ease-out infinite;pointer-events:none;`;
         wrap.appendChild(pulse);
 
         const ring = document.createElement("div");
-        ring.style.cssText = `position:relative;width:40px;height:40px;border-radius:9999px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 12px ${theme}99,0 4px 12px rgba(0,0,0,0.6);`;
+        ring.style.cssText = `position:relative;width:32px;height:32px;border-radius:9999px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 10px ${theme}88,0 4px 10px rgba(0,0,0,0.55);`;
         if (meta.cover) {
           const img = document.createElement("img");
           img.src = meta.cover; img.alt = "";
@@ -539,8 +539,8 @@ export function RomaniaMap3D({
         wrap.appendChild(ring);
 
         const badge = document.createElement("div");
-        badge.textContent = "AD";
-        badge.style.cssText = `position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);padding:0 5px;border-radius:9999px;background:${theme};color:#06070a;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:7px;letter-spacing:0.14em;border:1.5px solid #06070a;white-space:nowrap;line-height:11px;`;
+        badge.textContent = "";
+        badge.style.cssText = `position:absolute;bottom:1px;right:1px;width:7px;height:7px;border-radius:9999px;background:${theme};border:1.5px solid #06070a;box-shadow:0 0 8px ${theme};`;
         wrap.appendChild(badge);
 
         // X dismiss button (top-right). Stops propagation so click doesn't
@@ -549,7 +549,7 @@ export function RomaniaMap3D({
         close.type = "button";
         close.setAttribute("aria-label", "Ascunde reclama");
         close.textContent = "×";
-        close.style.cssText = `position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:9999px;background:#06070a;color:#fff;border:1.5px solid ${theme};font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;`;
+        close.style.cssText = `position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.78;`;
         close.onclick = (e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -684,15 +684,15 @@ export function RomaniaMap3D({
       wrap.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);z-index:10;";
 
       const accent = f.is_me ? "#ff3158" : "#39ff88";
-      const ringSize = f.is_me ? 52 : 44;
-      const pulseSize = f.is_me ? 64 : 54;
+      const ringSize = f.is_me ? 44 : 34;
+      const pulseSize = f.is_me ? 54 : 42;
 
       const pulse = document.createElement("div");
       pulse.style.cssText = `position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:${pulseSize}px;height:${pulseSize}px;border-radius:9999px;background:${accent};opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;`;
       wrap.appendChild(pulse);
 
       const ring = document.createElement("div");
-      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:9999px;border:3px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3158,#c66bff);box-shadow:0 0 22px ${accent},0 4px 14px rgba(0,0,0,0.6);`;
+      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:9999px;border:2px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3158,#c66bff);box-shadow:0 0 14px ${accent},0 4px 12px rgba(0,0,0,0.55);`;
       if (f.avatar_url) {
         const img = document.createElement("img");
         img.src = f.avatar_url; img.alt = "";
@@ -701,26 +701,26 @@ export function RomaniaMap3D({
       } else {
         const ini = document.createElement("div");
         ini.textContent = ((f.handle ?? f.display_name ?? "?")[0] ?? "?").toUpperCase();
-        ini.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:'Space Grotesk',sans-serif;font-size:18px;";
+        ini.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:'Space Grotesk',sans-serif;font-size:14px;";
         ring.appendChild(ini);
       }
       wrap.appendChild(ring);
 
       const live = document.createElement("div");
-      live.style.cssText = `position:absolute;top:-2px;right:-2px;width:12px;height:12px;border-radius:9999px;background:${accent};border:2px solid #06070a;box-shadow:0 0 8px ${accent};`;
+      live.style.cssText = `position:absolute;top:-1px;right:-1px;width:9px;height:9px;border-radius:9999px;background:${accent};border:2px solid #06070a;box-shadow:0 0 8px ${accent};`;
       ring.appendChild(live);
 
       if (f.is_me) {
         const crown = document.createElement("div");
         crown.textContent = "TU";
-        crown.style.cssText = "position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:1px 6px;border-radius:9999px;background:#ff3158;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:9px;letter-spacing:0.12em;border:2px solid #06070a;box-shadow:0 0 10px #ff3158;";
+        crown.style.cssText = "position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:9999px;background:#ff3158;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.08em;border:1.5px solid #06070a;box-shadow:0 0 8px #ff3158;";
         wrap.appendChild(crown);
       }
 
       const labelText = f.display_name ?? (f.handle ? `@${f.handle}` : (f.is_me ? "tu" : "live"));
       const pill = document.createElement("div");
       pill.textContent = labelText;
-      pill.style.cssText = `margin-top:4px;padding:2px 7px;border-radius:9999px;background:rgba(6,7,10,0.92);color:${accent};font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:10px;letter-spacing:0.04em;white-space:nowrap;border:1px solid ${accent};max-width:120px;overflow:hidden;text-overflow:ellipsis;`;
+      pill.style.cssText = `display:none;`;
       wrap.appendChild(pill);
 
       wrap.onclick = (e) => { e.stopPropagation(); navRef.current({ to: "/app/user/$id", params: { id: f.user_id } }); };
