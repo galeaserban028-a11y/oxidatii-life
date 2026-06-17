@@ -39,55 +39,79 @@ const TYPE_EMOJI: Record<string, string> = {
   after: "🍷",
 };
 
-// Neon glowing emoji pin — big bright emoji with a wide multi-stop halo so
-// each pin reads as a glowing orb on the dark map (matches reference).
-function makePinImage(color: string, emoji: string, lowEnd = false): ImageData {
-  const W = lowEnd ? 96 : 144, H = W;
+// Compact neon wine-bottle pin. Vector shape ensures consistent rendering
+// across OSes (no emoji font fallbacks) and reads small on the map.
+function makePinImage(color: string, _emoji: string, lowEnd = false): ImageData {
+  const W = lowEnd ? 64 : 96, H = W;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
   const cx = W / 2, cy = H / 2;
-  const s = W / 160; // scale factor
+  const s = W / 96;
 
-  // tight outer aura — smaller, more focused glow
-  const aura = ctx.createRadialGradient(cx, cy, 2 * s, cx, cy, 52 * s);
-  aura.addColorStop(0, color + "cc");
-  aura.addColorStop(0.22, color + "77");
-  aura.addColorStop(0.55, color + "22");
+  // tight halo
+  const aura = ctx.createRadialGradient(cx, cy, 1 * s, cx, cy, 34 * s);
+  aura.addColorStop(0, color + "aa");
+  aura.addColorStop(0.35, color + "44");
   aura.addColorStop(1, color + "00");
   ctx.fillStyle = aura;
   ctx.fillRect(0, 0, W, H);
 
-  if (!lowEnd) {
-    const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 22 * s);
-    core.addColorStop(0, color);
-    core.addColorStop(0.6, color + "44");
-    core.addColorStop(1, color + "00");
-    ctx.globalCompositeOperation = "lighter";
-    ctx.fillStyle = core;
-    ctx.fillRect(0, 0, W, H);
-    ctx.globalCompositeOperation = "source-over";
-  }
-
+  // wine bottle silhouette, centered
+  ctx.save();
+  ctx.translate(cx, cy);
   ctx.shadowColor = color;
-  ctx.shadowBlur = (lowEnd ? 10 : 18) * s;
+  ctx.shadowBlur = (lowEnd ? 6 : 12) * s;
+
+  // body
+  ctx.fillStyle = "#06070a";
   ctx.strokeStyle = color;
-  ctx.lineWidth = 3 * s;
+  ctx.lineWidth = 2 * s;
   ctx.beginPath();
-  ctx.arc(cx, cy, 26 * s, 0, Math.PI * 2);
+  // bottle outline (cap → neck → shoulders → body → bottom)
+  const u = s;
+  ctx.moveTo(-3 * u, -22 * u);
+  ctx.lineTo(3 * u, -22 * u);
+  ctx.lineTo(3 * u, -18 * u);
+  ctx.lineTo(2.4 * u, -16 * u);
+  ctx.lineTo(2.4 * u, -8 * u);
+  ctx.bezierCurveTo(9 * u, -5 * u, 9 * u, 4 * u, 9 * u, 12 * u);
+  ctx.lineTo(9 * u, 20 * u);
+  ctx.quadraticCurveTo(9 * u, 22 * u, 7 * u, 22 * u);
+  ctx.lineTo(-7 * u, 22 * u);
+  ctx.quadraticCurveTo(-9 * u, 22 * u, -9 * u, 20 * u);
+  ctx.lineTo(-9 * u, 12 * u);
+  ctx.bezierCurveTo(-9 * u, 4 * u, -9 * u, -5 * u, -2.4 * u, -8 * u);
+  ctx.lineTo(-2.4 * u, -16 * u);
+  ctx.lineTo(-3 * u, -18 * u);
+  ctx.closePath();
+  ctx.fill();
   ctx.stroke();
 
-  ctx.shadowColor = color;
-  ctx.shadowBlur = (lowEnd ? 12 : 22) * s;
-  ctx.fillStyle = "#fff";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = `${Math.round(38 * s)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-  ctx.fillText(emoji, cx, cy + 2 * s);
-  if (!lowEnd) {
-    ctx.shadowBlur = 32 * s;
-    ctx.fillText(emoji, cx, cy + 2 * s);
-  }
+  // wine fill (lower portion)
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.85;
+  ctx.beginPath();
+  ctx.moveTo(-8.2 * u, 6 * u);
+  ctx.bezierCurveTo(-8.2 * u, 4 * u, -8.2 * u, 4 * u, -8.2 * u, 12 * u);
+  ctx.lineTo(-8.2 * u, 20 * u);
+  ctx.quadraticCurveTo(-8.2 * u, 21 * u, -7 * u, 21 * u);
+  ctx.lineTo(7 * u, 21 * u);
+  ctx.quadraticCurveTo(8.2 * u, 21 * u, 8.2 * u, 20 * u);
+  ctx.lineTo(8.2 * u, 12 * u);
+  ctx.bezierCurveTo(8.2 * u, 4 * u, 8.2 * u, 4 * u, 8.2 * u, 6 * u);
+  ctx.closePath();
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // label band
+  ctx.fillStyle = "#ffffff";
+  ctx.globalAlpha = 0.85;
+  ctx.fillRect(-7 * u, 9 * u, 14 * u, 3 * u);
+  ctx.globalAlpha = 1;
+
+  ctx.restore();
 
   return ctx.getImageData(0, 0, W, H);
 }
@@ -329,16 +353,17 @@ export function RomaniaMap3D({
 
       // Register one neon pin icon per venue type (emoji glyph + neon halo).
       const pinTypes: Array<[string, string, string]> = [
-        ["pin-club", TYPE_COLOR.club, TYPE_EMOJI.club],
-        ["pin-bar", TYPE_COLOR.bar, TYPE_EMOJI.bar],
-        ["pin-pub", TYPE_COLOR.pub, TYPE_EMOJI.pub],
-        ["pin-terasa", TYPE_COLOR.terasa, TYPE_EMOJI.terasa],
-        ["pin-after", TYPE_COLOR.after, TYPE_EMOJI.after],
+        ["pin-v2-club", TYPE_COLOR.club, TYPE_EMOJI.club],
+        ["pin-v2-bar", TYPE_COLOR.bar, TYPE_EMOJI.bar],
+        ["pin-v2-pub", TYPE_COLOR.pub, TYPE_EMOJI.pub],
+        ["pin-v2-terasa", TYPE_COLOR.terasa, TYPE_EMOJI.terasa],
+        ["pin-v2-after", TYPE_COLOR.after, TYPE_EMOJI.after],
       ];
       for (const [name, color, emoji] of pinTypes) {
-        if (!map.hasImage(name)) {
-          try { map.addImage(name, makePinImage(color, emoji, isSmall), { pixelRatio: 2 }); } catch {}
-        }
+        try {
+          if (map.hasImage(name)) map.removeImage(name);
+          map.addImage(name, makePinImage(color, emoji, isSmall), { pixelRatio: 2 });
+        } catch {}
       }
 
       // Outer wide aura behind clusters — desktop only (expensive blur on mobile GPUs)
@@ -425,13 +450,13 @@ export function RomaniaMap3D({
         layout: {
           "icon-image": [
             "match", ["get", "type"],
-            "club", "pin-club",
-            "bar", "pin-bar",
-            "pub", "pin-pub",
-            "terasa", "pin-terasa",
-            "terasă", "pin-terasa",
-            "after", "pin-after",
-            "pin-bar",
+            "club", "pin-v2-club",
+            "bar", "pin-v2-bar",
+            "pub", "pin-v2-pub",
+            "terasa", "pin-v2-terasa",
+            "terasă", "pin-v2-terasa",
+            "after", "pin-v2-after",
+            "pin-v2-bar",
           ],
           "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.16, 6, 0.22, 10, 0.3, 14, 0.4, 17, 0.5],
           "icon-allow-overlap": true,
