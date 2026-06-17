@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
@@ -27,7 +27,14 @@ type Venue = {
 type City = { id: string; slug: string; name: string; lat: number; lng: number; chaos_level: number; country: string };
 const EMPTY_CITIES: City[] = [];
 
-function normalizeMapSettings(settings: any) {
+type RawMapSettings = {
+  map_ghost?: boolean | null;
+  map_visibility?: string | null;
+  map_precision?: string | null;
+  map_auto_ghost_hours?: number | null;
+};
+
+function normalizeMapSettings(settings: RawMapSettings | null | undefined) {
   return {
     map_ghost: Boolean(settings?.map_ghost),
     map_visibility: settings?.map_visibility ?? "friends",
