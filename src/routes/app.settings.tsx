@@ -422,6 +422,46 @@ function SettingsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Support / Contact message */}
+      <Dialog open={!!msgKind} onOpenChange={(v) => { if (!v) setMsgKind(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-display uppercase flex items-center gap-2">
+              {msgKind === "support" ? <><ExternalLink size={16} /> Suport & feedback</> : <><FileText size={16} /> Contact echipă</>}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <input
+              autoFocus
+              value={msgSubject}
+              onChange={(e) => setMsgSubject(e.target.value)}
+              placeholder="Subiect (scurt)"
+              maxLength={200}
+              className="w-full bg-foreground/5 rounded-md px-3 py-2.5 text-sm border border-foreground/10 focus:border-foreground/30 outline-none"
+            />
+            <textarea
+              value={msgBody}
+              onChange={(e) => setMsgBody(e.target.value)}
+              placeholder={msgKind === "support" ? "Cu ce te ajutăm? Ce nu merge? Idei?" : "Scrie-ne mesajul tău…"}
+              maxLength={4000}
+              rows={6}
+              className="w-full bg-foreground/5 rounded-md px-3 py-2.5 text-sm border border-foreground/10 focus:border-foreground/30 outline-none resize-none"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Mesajul ajunge în panoul echipei. Atașăm și emailul tău ca să te poată contacta.
+            </p>
+          </div>
+          <DialogFooter>
+            <button onClick={() => setMsgKind(null)} disabled={msgSending} className="px-4 py-2 rounded-lg border border-foreground/15 text-sm">Renunță</button>
+            <button onClick={sendMessage} disabled={msgSending} className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-semibold flex items-center gap-1.5">
+              {msgSending && <Loader2 size={14} className="animate-spin" />} Trimite
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
+
       {/* Confirm logout */}
       <Dialog open={confirmLogout} onOpenChange={setConfirmLogout}>
         <DialogContent className="max-w-sm">
