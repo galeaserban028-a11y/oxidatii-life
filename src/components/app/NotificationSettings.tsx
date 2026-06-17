@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { Bell, BellOff, Smartphone, Loader2 } from "lucide-react";
+import { Bell, BellOff, Smartphone, Loader2, Send } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { sendTestPush } from "@/lib/push-test.functions";
 import {
   enablePush,
   disablePush,
@@ -82,6 +84,22 @@ export function NotificationSettings() {
     await supabase.from("notification_prefs").upsert({ user_id: user.id, ...next }, { onConflict: "user_id" });
   }
 
+  const runTest = useServerFn(sendTestPush);
+  const [testMsg, setTestMsg] = useState<string | null>(null);
+  async function sendTest() {
+    setTestMsg(null);
+    setBusy(true);
+    try {
+      const res = await runTest({});
+      if (res.sent > 0) setTestMsg("Trimis! Verifică notificarea.");
+      else setTestMsg("Niciun dispozitiv abonat. Activează push mai întâi.");
+    } catch (e: any) {
+      setTestMsg(e?.message ?? "Eroare la trimitere.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (!user) return null;
 
   return (
@@ -147,6 +165,24 @@ export function NotificationSettings() {
           </li>
         ))}
       </ul>
+
+      {subscribed && (
+        <div className="p-4 border-t border-foreground/10 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="font-display text-[13px]">Test notificare</div>
+            <div className="text-[10px] text-muted-foreground truncate">
+              {testMsg ?? "Trimite-ți o notificare ca să verifici."}
+            </div>
+          </div>
+          <button
+            onClick={sendTest}
+            disabled={busy}
+            className="h-9 px-3 rounded-full text-[11px] font-display font-bold uppercase bg-foreground/10 text-foreground inline-flex items-center gap-1.5 disabled:opacity-40"
+          >
+            <Send size={12} /> Test
+          </button>
+        </div>
+      )}
 
       {permission === "denied" && (
         <div className="px-4 py-3 text-[11px] text-muted-foreground border-t border-foreground/10">
