@@ -169,59 +169,108 @@ export function ReputationCard(props: Props) {
       <SheetTrigger asChild>
         <button
           type="button"
-          className="group relative w-full rounded-full bg-foreground/[0.04] hover:bg-foreground/[0.07] active:scale-[0.985] transition border border-foreground/10 px-3 py-2 flex items-center gap-3 overflow-hidden"
+          className="group relative w-full rounded-2xl active:scale-[0.985] transition overflow-hidden p-[1px]"
           aria-label="Vezi reputația"
+          style={{
+            background: `linear-gradient(135deg, ${rep.tier.color}66, transparent 50%, ${rep.tier.color}33)`,
+          }}
         >
-          {/* glow în spate */}
           <div
-            className="absolute inset-y-0 left-0 w-[var(--w)] opacity-[0.18] blur-[18px] pointer-events-none"
-            style={{ background: rep.tier.color, ['--w' as any]: `${rep.score}%` }}
-          />
-          {/* scor */}
-          <div className="relative flex items-baseline gap-1 shrink-0">
+            className="relative rounded-2xl px-3.5 py-2.5 flex items-center gap-3 overflow-hidden backdrop-blur-xl"
+            style={{ background: "rgba(10,10,21,0.92)" }}
+          >
+            {/* radial neon wash behind progress */}
             <div
-              className="font-display font-black leading-none text-[22px] tabular-nums tracking-tight"
-              style={{ color: rep.tier.color }}
-            >
-              {rep.score}
-            </div>
-            <div className="text-[9px] font-mono uppercase text-muted-foreground">/100</div>
-          </div>
+              aria-hidden
+              className="absolute inset-y-0 left-0 pointer-events-none"
+              style={{
+                width: `${rep.score}%`,
+                background: `linear-gradient(90deg, ${rep.tier.color}33, transparent)`,
+              }}
+            />
 
-          {/* tier + bar */}
-          <div className="relative flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-1">
-              <span
-                className="text-[9px] font-mono font-bold uppercase tracking-[0.18em]"
-                style={{ color: rep.tier.color }}
-              >
-                {rep.tier.name}
-              </span>
-              <span className="text-[9px] font-mono uppercase text-muted-foreground flex items-center gap-1">
-                {rep.totalPeerN > 0 ? (
-                  <><Star size={9} className="fill-current" /> {rep.totalPeerN} voturi</>
-                ) : (
-                  <>reputație</>
-                )}
-              </span>
-            </div>
-            <div className="h-1 rounded-full bg-foreground/10 overflow-hidden">
+            {/* circular score badge */}
+            <div className="relative shrink-0">
               <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${rep.score}%`, background: rep.tier.color }}
-              />
+                className="w-11 h-11 rounded-full flex items-center justify-center"
+                style={{
+                  background: `radial-gradient(circle at 30% 30%, ${rep.tier.color}40, transparent 70%), #050510`,
+                  border: `1.5px solid ${rep.tier.color}`,
+                  boxShadow: `0 0 14px ${rep.tier.color}88, inset 0 0 10px ${rep.tier.color}33`,
+                }}
+              >
+                <span
+                  className="font-display font-black leading-none text-[18px] tabular-nums tracking-tight"
+                  style={{ color: rep.tier.color, textShadow: `0 0 6px ${rep.tier.color}99` }}
+                >
+                  {rep.score}
+                </span>
+              </div>
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[7px] font-mono uppercase text-white/50">
+                /100
+              </div>
             </div>
-          </div>
 
-          {canRate && (
-            <div className="relative shrink-0 ml-1 h-7 px-2.5 rounded-full bg-neon-crimson text-white text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1">
-              <Star size={11} className="fill-current" /> votează
+            {/* tier + bar */}
+            <div className="relative flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1.5 gap-2">
+                <span
+                  className="text-[10px] font-mono font-black uppercase tracking-[0.22em] px-1.5 py-0.5 rounded-sm truncate"
+                  style={{
+                    color: rep.tier.color,
+                    background: `${rep.tier.color}1a`,
+                    textShadow: `0 0 6px ${rep.tier.color}66`,
+                  }}
+                >
+                  {rep.tier.name}
+                </span>
+                <span className="text-[9px] font-mono uppercase text-white/45 flex items-center gap-1 shrink-0">
+                  {rep.totalPeerN > 0 ? (
+                    <>
+                      <Star size={9} className="fill-current" style={{ color: rep.tier.color }} />
+                      {rep.totalPeerN} voturi
+                    </>
+                  ) : (
+                    <>reputație</>
+                  )}
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${rep.score}%`,
+                    background: `linear-gradient(90deg, ${rep.tier.color}, ${rep.tier.color}cc)`,
+                    boxShadow: `0 0 8px ${rep.tier.color}`,
+                  }}
+                />
+              </div>
             </div>
-          )}
+
+            {canRate && (
+              <div
+                className="relative shrink-0 ml-1 h-7 px-2.5 rounded-full text-[10px] font-mono font-black uppercase tracking-wider flex items-center gap-1"
+                style={{
+                  background: "#ff3d8b",
+                  color: "#050510",
+                  boxShadow: "0 0 14px #ff3d8b99",
+                }}
+              >
+                <Star size={11} className="fill-current" /> votează
+              </div>
+            )}
+          </div>
         </button>
       </SheetTrigger>
 
-      <SheetContent side="bottom" className="rounded-t-3xl max-h-[90vh] overflow-y-auto px-0">
+      <SheetContent
+        side="bottom"
+        className="rounded-t-3xl max-h-[90vh] overflow-y-auto px-0 border-t"
+        style={{
+          background: "#050510",
+          borderColor: `${rep.tier.color}55`,
+        }}
+      >
         <ReputationDetail
           rep={rep}
           peers={peers ?? {}}
@@ -233,6 +282,7 @@ export function ReputationCard(props: Props) {
     </Sheet>
   );
 }
+
 
 // ---------- Sheet conținut ----------
 function ReputationDetail({
