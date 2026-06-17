@@ -301,9 +301,9 @@ function MePage() {
           <div className="fixed inset-0 bg-cover bg-center opacity-30 pointer-events-none z-0" style={{ backgroundImage: `url(${bgUrl})` }} />
         )
       )}
-      {/* Theme tint (VIP+) */}
+      {/* Theme tint (VIP+) — full profile */}
       {theme && (
-        <div className="absolute inset-x-0 top-0 h-[420px] pointer-events-none z-0" style={{ background: theme.cardBg, borderBottom: `1px solid ${theme.cardBorder}` }} />
+        <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.cardBg }} />
       )}
       <div className="relative z-10">
       {/* Top bar — sunset glass */}
