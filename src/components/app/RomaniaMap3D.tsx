@@ -244,26 +244,8 @@ export function RomaniaMap3D({
       return;
     }
 
-    // Globe projection — desktop only. Software WebGL on mobile chokes on it.
-    if (!isSmall) {
-      try { (map as any).setProjection({ type: "globe" }); } catch {}
-    }
-
-
-
-
-
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), "bottom-right");
-    map.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true,
-        showUserLocation: true,
-      }),
-      "bottom-right"
-    );
-    map.touchZoomRotate.enableRotation();
-    map.dragRotate.enable();
+    map.touchZoomRotate.disableRotation();
+    map.dragRotate.disable();
 
     map.on("load", () => {
       loadedRef.current = true;
@@ -381,7 +363,7 @@ export function RomaniaMap3D({
             "after", "pin-after",
             "pin-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.28, 6, 0.4, 10, 0.56, 14, 0.76, 17, 0.9],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.22, 6, 0.32, 10, 0.46, 14, 0.64, 17, 0.78],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
