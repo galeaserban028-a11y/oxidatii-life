@@ -127,44 +127,61 @@ function AppFeed() {
           </span>
         </h1>
 
-        {/* Bento quick actions */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Primary actions — bold editorial duo */}
+        <div className="grid grid-cols-5 gap-3">
           <Link
             to="/app/scan"
-            className="row-span-2 rounded-3xl border border-white/5 bg-[#121212] p-5 flex flex-col justify-between min-h-[156px] active:scale-[0.98] transition-all"
+            className="col-span-3 relative overflow-hidden rounded-3xl p-5 min-h-[170px] flex flex-col justify-between active:scale-[0.98] transition-all"
+            style={{
+              background:
+                "linear-gradient(135deg, #ff6b35 0%, #e84393 55%, #6c5ce7 100%)",
+              boxShadow:
+                "0 18px 40px -18px rgba(255,107,53,0.55), inset 0 1px 0 rgba(255,255,255,0.18)",
+            }}
           >
-            <div className="w-10 h-10 rounded-2xl bg-[#ff6b35]/15 flex items-center justify-center text-[#ff6b35]">
-              <Plus size={22} strokeWidth={2.6} />
+            <div
+              aria-hidden
+              className="absolute -top-10 -right-10 h-32 w-32 rounded-full opacity-40 blur-2xl"
+              style={{ background: "radial-gradient(circle, rgba(255,255,255,0.4), transparent 70%)" }}
+            />
+            <div className="relative w-11 h-11 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-white">
+              <Plus size={24} strokeWidth={2.8} />
             </div>
-            <span className="text-[13px] font-bold uppercase tracking-wider leading-tight">
-              Deschide
-              <br />
-              șpriț
-            </span>
+            <div className="relative">
+              <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/75">
+                postează acum
+              </div>
+              <div
+                className="text-[28px] leading-[0.95] text-white mt-1"
+                style={{ fontFamily: "'Instrument Serif', serif" }}
+              >
+                Deschide <span className="italic">șpriț</span>
+              </div>
+            </div>
           </Link>
 
           <Link
             to="/app/faze"
-            className="rounded-3xl border border-white/5 bg-[#121212] p-4 flex flex-col gap-3 active:scale-[0.98] transition-all"
+            className="col-span-2 relative overflow-hidden rounded-3xl border border-white/10 bg-[#0f0f10] p-4 min-h-[170px] flex flex-col justify-between active:scale-[0.98] transition-all"
           >
-            <div className="w-8 h-8 rounded-xl bg-[#f7931e]/15 flex items-center justify-center text-base leading-none">
-              🎬
+            <div
+              aria-hidden
+              className="absolute -bottom-8 -left-8 h-28 w-28 rounded-full opacity-30 blur-2xl"
+              style={{ background: "radial-gradient(circle, #f7931e, transparent 70%)" }}
+            />
+            <div className="relative flex items-center gap-2">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#f7931e] animate-pulse" style={{ boxShadow: "0 0 8px #f7931e" }} />
+              <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#f7931e]">live</span>
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">
-              Faze din teren
-            </span>
-          </Link>
-
-          <Link
-            to="/app/squad"
-            className="rounded-3xl border border-white/5 bg-[#121212] p-4 flex flex-col gap-3 active:scale-[0.98] transition-all"
-          >
-            <div className="w-8 h-8 rounded-xl bg-[#6c5ce7]/15 flex items-center justify-center text-[#6c5ce7]">
-              <Users size={16} strokeWidth={2.4} />
+            <div className="relative">
+              <div className="text-3xl leading-none mb-2">🎬</div>
+              <div
+                className="text-[20px] leading-[0.95] text-white"
+                style={{ fontFamily: "'Instrument Serif', serif" }}
+              >
+                Faze din <span className="italic">teren</span>
+              </div>
             </div>
-            <span className="text-[11px] font-bold uppercase tracking-wider leading-tight">
-              Haita ta
-            </span>
           </Link>
         </div>
       </header>
