@@ -39,7 +39,7 @@ function AppLayout() {
 
   return (
     <main
-      className="min-h-screen bg-background text-foreground"
+      className="min-h-screen bg-background text-foreground overflow-x-hidden"
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)" }}
     >
       {/* iOS status-bar tint — solid background under the Dynamic Island / notch
@@ -49,14 +49,19 @@ function AppLayout() {
         className="fixed top-0 inset-x-0 z-30 bg-background pointer-events-none"
         style={{ height: "env(safe-area-inset-top)" }}
       />
-      <InstallBanner />
-      <AppHeader />
-      <PageTransition>
-        <Outlet />
-      </PageTransition>
+      {/* Centered phone-width column: on desktop the app looks like a phone column,
+          on actual phones it fills the whole screen. */}
+      <div className="mx-auto w-full max-w-[480px] min-w-0">
+        <InstallBanner />
+        <AppHeader />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
+      </div>
       <BottomTabBar />
       <TutorialOverlay />
     </main>
   );
 }
+
 
