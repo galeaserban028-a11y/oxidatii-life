@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM } from "@/lib/chat";
 import { useNavigate } from "@tanstack/react-router";
-import { Users, Plus, MessageCircle, MapPin, Clock, Flame } from "lucide-react";
+import { Users, Plus, MessageCircle, MapPin, Clock, Flame, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/app/squad")({
   head: () => ({ meta: [{ title: "Organizare șpriț · OXIDAȚII" }] }),
