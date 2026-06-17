@@ -42,7 +42,7 @@ const TIERS: Tier[] = [
     id: "vip", index: "I", name: "VIP", italic: "discret",
     price: 2.99, coins: 5, neon: NEON.yellow, textOnNeon: "#050510",
     blurb: "Pentru cei care vor doar să arate că au gust. Fără paradă.",
-    perks: ["Insignă VIP auriu", "5 șprițuri pe lună", "Reacții doar pentru club"],
+    perks: ["Insignă VIP auriu", "5 șprițuri pe lună"],
   },
   {
     id: "vip_plus", index: "II", name: "VIP+", italic: "curat",
