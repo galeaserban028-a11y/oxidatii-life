@@ -735,6 +735,23 @@ export function RomaniaMap3D({
       seen.add(f.user_id);
       const existing = friendMarkers.current.get(f.user_id);
       if (existing) {
+        // Sync avatar if it became available (or changed) after the marker was created.
+        const el = existing.getElement();
+        const img = el.querySelector("img") as HTMLImageElement | null;
+        if (f.avatar_url) {
+          if (img) {
+            if (img.src !== f.avatar_url) img.src = f.avatar_url;
+          } else {
+            const ring = el.querySelector("div[style*='border-radius:9999px'][style*='overflow:hidden']") as HTMLElement | null;
+            if (ring) {
+              ring.innerHTML = "";
+              const ni = document.createElement("img");
+              ni.src = f.avatar_url; ni.alt = "";
+              ni.style.cssText = "width:100%;height:100%;object-fit:cover;";
+              ring.appendChild(ni);
+            }
+          }
+        }
         const cur = existing.getLngLat();
         if (Math.abs(cur.lng - f.lng) < 1e-7 && Math.abs(cur.lat - f.lat) < 1e-7) continue;
         const fromLng = cur.lng, fromLat = cur.lat;
@@ -745,7 +762,6 @@ export function RomaniaMap3D({
         if (prev) cancelAnimationFrame(prev);
         const tick = (t: number) => {
           const k = Math.min(1, (t - start) / dur);
-          // ease in-out
           const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
           existing.setLngLat([fromLng + (toLng - fromLng) * e, fromLat + (toLat - fromLat) * e]);
           if (k < 1) friendAnims.current.set(f.user_id, requestAnimationFrame(tick));
