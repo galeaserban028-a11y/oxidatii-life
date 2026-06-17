@@ -30,86 +30,60 @@ const TYPE_COLOR: Record<string, string> = {
   after: "#ff3d8b",
 };
 
-const TYPE_EMOJI: Record<string, string> = {
-  club: "🍷",
-  bar: "🍷",
-  pub: "🍷",
-  terasa: "🍷",
-  "terasă": "🍷",
-  after: "🍷",
-};
-
-// Compact neon wine-bottle pin. Vector shape ensures consistent rendering
-// across OSes (no emoji font fallbacks) and reads small on the map.
-function makePinImage(color: string, _emoji: string, lowEnd = false): ImageData {
-  const W = lowEnd ? 64 : 96, H = W;
+// Compact vector wine bottle. Kept non-circular so it reads as a bottle,
+// not as the old glowing dots/clusters.
+function makePinImage(color: string, lowEnd = false): ImageData {
+  const W = lowEnd ? 80 : 112, H = W;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
   const cx = W / 2, cy = H / 2;
   const s = W / 96;
 
-  // tight halo
-  const aura = ctx.createRadialGradient(cx, cy, 1 * s, cx, cy, 34 * s);
-  aura.addColorStop(0, color + "aa");
-  aura.addColorStop(0.35, color + "44");
-  aura.addColorStop(1, color + "00");
-  ctx.fillStyle = aura;
-  ctx.fillRect(0, 0, W, H);
-
-  // wine bottle silhouette, centered
   ctx.save();
   ctx.translate(cx, cy);
   ctx.shadowColor = color;
-  ctx.shadowBlur = (lowEnd ? 6 : 12) * s;
+  ctx.shadowBlur = (lowEnd ? 5 : 9) * s;
 
-  // body
-  ctx.fillStyle = "#06070a";
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2 * s;
-  ctx.beginPath();
-  // bottle outline (cap → neck → shoulders → body → bottom)
   const u = s;
-  ctx.moveTo(-3 * u, -22 * u);
-  ctx.lineTo(3 * u, -22 * u);
-  ctx.lineTo(3 * u, -18 * u);
-  ctx.lineTo(2.4 * u, -16 * u);
-  ctx.lineTo(2.4 * u, -8 * u);
-  ctx.bezierCurveTo(9 * u, -5 * u, 9 * u, 4 * u, 9 * u, 12 * u);
-  ctx.lineTo(9 * u, 20 * u);
-  ctx.quadraticCurveTo(9 * u, 22 * u, 7 * u, 22 * u);
-  ctx.lineTo(-7 * u, 22 * u);
-  ctx.quadraticCurveTo(-9 * u, 22 * u, -9 * u, 20 * u);
-  ctx.lineTo(-9 * u, 12 * u);
-  ctx.bezierCurveTo(-9 * u, 4 * u, -9 * u, -5 * u, -2.4 * u, -8 * u);
-  ctx.lineTo(-2.4 * u, -16 * u);
-  ctx.lineTo(-3 * u, -18 * u);
+  ctx.fillStyle = "#170711";
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 3.2 * u;
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  ctx.moveTo(-6 * u, -31 * u);
+  ctx.lineTo(6 * u, -31 * u);
+  ctx.lineTo(6 * u, -18 * u);
+  ctx.bezierCurveTo(6 * u, -13 * u, 17 * u, -10 * u, 17 * u, 2 * u);
+  ctx.lineTo(17 * u, 27 * u);
+  ctx.quadraticCurveTo(17 * u, 33 * u, 11 * u, 33 * u);
+  ctx.lineTo(-11 * u, 33 * u);
+  ctx.quadraticCurveTo(-17 * u, 33 * u, -17 * u, 27 * u);
+  ctx.lineTo(-17 * u, 2 * u);
+  ctx.bezierCurveTo(-17 * u, -10 * u, -6 * u, -13 * u, -6 * u, -18 * u);
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
 
-  // wine fill (lower portion)
+  // cap + colored wine body make the silhouette readable at small sizes.
   ctx.shadowBlur = 0;
   ctx.fillStyle = color;
-  ctx.globalAlpha = 0.85;
-  ctx.beginPath();
-  ctx.moveTo(-8.2 * u, 6 * u);
-  ctx.bezierCurveTo(-8.2 * u, 4 * u, -8.2 * u, 4 * u, -8.2 * u, 12 * u);
-  ctx.lineTo(-8.2 * u, 20 * u);
-  ctx.quadraticCurveTo(-8.2 * u, 21 * u, -7 * u, 21 * u);
-  ctx.lineTo(7 * u, 21 * u);
-  ctx.quadraticCurveTo(8.2 * u, 21 * u, 8.2 * u, 20 * u);
-  ctx.lineTo(8.2 * u, 12 * u);
-  ctx.bezierCurveTo(8.2 * u, 4 * u, 8.2 * u, 4 * u, 8.2 * u, 6 * u);
-  ctx.closePath();
-  ctx.fill();
-  ctx.globalAlpha = 1;
+  ctx.fillRect(-7 * u, -37 * u, 14 * u, 7 * u);
+  ctx.fillRect(-13 * u, 12 * u, 26 * u, 16 * u);
 
   // label band
   ctx.fillStyle = "#ffffff";
-  ctx.globalAlpha = 0.85;
-  ctx.fillRect(-7 * u, 9 * u, 14 * u, 3 * u);
-  ctx.globalAlpha = 1;
+  ctx.fillRect(-12 * u, -1 * u, 24 * u, 10 * u);
+  ctx.fillStyle = color;
+  ctx.fillRect(-6 * u, 3 * u, 12 * u, 2.4 * u);
+
+  // glass highlight
+  ctx.strokeStyle = "rgba(255,255,255,0.72)";
+  ctx.lineWidth = 2 * u;
+  ctx.beginPath();
+  ctx.moveTo(-8 * u, -22 * u);
+  ctx.lineTo(-8 * u, 25 * u);
+  ctx.stroke();
 
   ctx.restore();
 
