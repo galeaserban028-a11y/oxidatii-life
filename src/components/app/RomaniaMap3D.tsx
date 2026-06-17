@@ -552,22 +552,16 @@ export function RomaniaMap3D({
       if (!isValidLngLat(c.lng, c.lat)) continue;
       const big = c.chaos_level >= 8;
       const wrap = document.createElement("button");
-      wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:0;padding:0;transform:translateY(-50%);";
+      wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:0;padding:0;transform:translate(-50%,-50%);";
       wrap.title = c.name;
+      // City labels only — no marker icon. The neon emoji venue pins +
+      // cluster bubbles from the GPU layer carry the visual weight, exactly
+      // like the reference (Praha, Paris, Sarajevo… are pure text labels).
       const color = big ? "#ff3158" : "#c66bff";
-      const size = big ? 22 : 16;
-      const bottle = document.createElement("div");
-      bottle.style.cssText = `width:${size * 0.5}px;height:${size}px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 6px ${color});`;
-      bottle.innerHTML = `<svg viewBox="0 0 22 56" width="${size * 0.5}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-        <path d="M9 4 L13 4 L13 22 C13 24 18 26 18 32 L18 50 Q18 54 14 54 L8 54 Q4 54 4 50 L4 32 C4 26 9 24 9 22 Z" fill="${color}" stroke="rgba(255,255,255,0.7)" stroke-width="0.8"/>
-        <rect x="8" y="2" width="6" height="10" fill="#7a0a16"/>
-        <rect x="5" y="38" width="12" height="11" fill="rgba(245,240,225,0.95)"/>
-      </svg>`;
-      wrap.appendChild(bottle);
       const label = document.createElement("div");
       label.textContent = c.name;
       label.className = "oxi-city-label";
-      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:${big ? 11 : 9}px;letter-spacing:0.06em;color:rgba(255,255,255,0.95);text-shadow:0 0 6px #000,0 1px 3px #000;white-space:nowrap;margin-top:2px;`;
+      label.style.cssText = `font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:${big ? 13 : 11}px;letter-spacing:0.04em;color:rgba(255,255,255,0.95);text-shadow:0 0 8px ${color},0 0 4px #000,0 1px 3px #000;white-space:nowrap;`;
       wrap.appendChild(label);
       let pressTimer: number | null = null;
       let longPressed = false;
