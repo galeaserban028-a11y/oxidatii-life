@@ -101,19 +101,19 @@ export const triageBugReport = createServerFn({ method: "POST" })
 
     // Use admin client to override RLS on resolution columns (reporter can't normally set them)
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const updatePayload: Record<string, unknown> = {
-      resolution_note: resolutionNote,
-    };
-    if (autoResolve) {
-      updatePayload.status = "resolved";
-      updatePayload.resolved_at = new Date().toISOString();
-    } else {
-      updatePayload.status = severity === "critical" || severity === "high" ? "urgent" : "triaged";
-    }
+    const nextStatus = autoResolve
+      ? "resolved"
+      : severity === "critical" || severity === "high"
+        ? "urgent"
+        : "triaged";
 
     const { error: updErr } = await supabaseAdmin
       .from("reports")
-      .update(updatePayload)
+      .update({
+        resolution_note: resolutionNote,
+        status: nextStatus,
+        resolved_at: autoResolve ? new Date().toISOString() : null,
+      })
       .eq("id", data.reportId);
 
     if (updErr) {
