@@ -308,6 +308,15 @@ function MapPage() {
     refetchInterval: 30_000,
   });
 
+  const mapFriendPins = useMemo(() => {
+    if (!user || !geo) return friendPins;
+    const me = friendPins.find((f) => f.is_me);
+    return [
+      { ...(me ?? { user_id: user.id, handle: profile?.handle ?? null, display_name: profile?.display_name ?? "tu", avatar_url: profile?.avatar_url ?? null }), lat: geo.lat, lng: geo.lng, venue_name: "tu ești aici", is_me: true },
+      ...friendPins.filter((f) => f.user_id !== user.id),
+    ];
+  }, [friendPins, geo, profile?.avatar_url, profile?.display_name, profile?.handle, user]);
+
   // Realtime: refresh on check-ins AND live GPS updates from friends
   const qc = useQueryClient();
   useEffect(() => {
