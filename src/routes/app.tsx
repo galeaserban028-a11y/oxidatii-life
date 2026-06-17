@@ -28,7 +28,7 @@ function AppLayout() {
 
   if (loading || !user) {
     return (
-      <main className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+      <main className="min-h-screen bg-[#050505] flex flex-col items-center justify-center gap-4">
         <img src={logoSticker} alt="Oxidații" className="h-24 w-24 object-contain animate-pulse drop-shadow-[0_4px_22px_rgba(198,107,255,0.5)]" />
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
           o secundă
@@ -39,14 +39,14 @@ function AppLayout() {
 
   return (
     <main
-      className="min-h-screen bg-background text-foreground"
+      className="min-h-screen bg-[#050505] text-foreground"
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)" }}
     >
       {/* iOS status-bar tint — solid background under the Dynamic Island / notch
           so the area never shows transparent content. Sits behind the sticky header. */}
       <div
         aria-hidden
-        className="fixed top-0 inset-x-0 z-30 bg-background pointer-events-none"
+        className="fixed top-0 inset-x-0 z-30 bg-[#050505] pointer-events-none"
         style={{ height: "env(safe-area-inset-top)" }}
       />
       <InstallBanner />
