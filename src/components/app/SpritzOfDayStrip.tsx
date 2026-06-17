@@ -114,6 +114,28 @@ function SpritzViewer({
 }: { tiles: SpritzTile[]; index: number; onClose: () => void; onIndex: (i: number) => void }) {
   const t = tiles[index];
   const progressRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const isMine = !!user && !!t && user.id === t.user_id;
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!user || !t || !isMine) return;
+    if (!confirm("Sigur vrei să ștergi acest șpriț?")) return;
+    setDeleting(true);
+    try {
+      await supabase.from("sprit_proofs").delete().eq("id", t.id).eq("user_id", user.id);
+      await supabase.from("venue_photos").delete().eq("user_id", user.id).eq("photo_url", t.photo_url);
+      toast.success("Șters");
+      queryClient.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
+      queryClient.invalidateQueries({ queryKey: ["app-feed"] });
+      onClose();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Nu s-a putut șterge");
+    } finally {
+      setDeleting(false);
+    }
+  }
   useEffect(() => {
     if (!progressRef.current) return;
     progressRef.current.style.transition = "none";
