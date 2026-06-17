@@ -653,34 +653,9 @@ function MapPage() {
                 alert("Browser-ul tău n-are GPS.");
                 return;
               }
-              navigator.geolocation.getCurrentPosition(
-                async (pos) => {
-                  await supabase
-                    .from("profiles")
-                    .update({ location_consent: true, map_ghost: false } as any)
-                    .eq("id", user.id);
-                  await refreshProfile();
-                  qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
-                  setGeo({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                  setFocusCity({ lat: pos.coords.latitude, lng: pos.coords.longitude, zoom: 13 });
-                  // Push an immediate live row so friends see us right away.
-                  await supabase.from("live_locations").upsert(
-                    {
-                      user_id: user.id,
-                      lat: pos.coords.latitude,
-                      lng: pos.coords.longitude,
-                      accuracy: pos.coords.accuracy ?? null,
-                      heading: pos.coords.heading ?? null,
-                      updated_at: new Date().toISOString(),
-                      expires_at: new Date(Date.now() + 8 * 60 * 60_000).toISOString(),
-                    },
-                    { onConflict: "user_id" },
-                  );
-                  qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
-                },
-                () => alert("Nu am putut citi locația. Verifică permisiunile browserului."),
-                { enableHighAccuracy: true, timeout: 8000 },
-              );
+                getPrecisePosition()
+                  .then((pos) => publishPosition(pos, true))
+                  .catch(() => alert("Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
             }}
             className="w-full flex items-center gap-3 rounded-2xl border border-[#ff3d8b]/40 bg-gradient-to-r from-[#ff3d8b]/15 to-[#c724ff]/10 px-4 py-3 text-left active:scale-[0.99] transition"
           >
