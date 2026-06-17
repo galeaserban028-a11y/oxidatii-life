@@ -108,7 +108,7 @@ export async function launchCampaignForBusiness(options: {
     cta_text: text(campaign.cta_text, 15) ?? "Vezi detalii",
     cta_url: url(campaign.cta_url),
     image_urls: imageUrls(campaign.image_urls),
-    theme_color: text(campaign.theme_color, 20) ?? "#FF2D55",
+    theme_color: text(campaign.theme_color, 20) ?? "#ff3d8b",
     video_url: url(campaign.video_url),
     event_starts_at: isoDate(campaign.event_starts_at),
     entry_kind: ["free", "paid"].includes(entryKindRaw) ? entryKindRaw : null,

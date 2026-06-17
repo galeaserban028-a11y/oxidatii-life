@@ -228,7 +228,7 @@ export function BottomTabBar() {
               height: centerSize,
               borderRadius: shrunk ? 16 : 18,
               marginTop: centerMargin,
-              background: "linear-gradient(135deg, #ff3d8b, #ff3d8b, #9b51e0)",
+              background: "linear-gradient(135deg, #ff3d8b, #ff3d8b, #c724ff)",
               backgroundSize: "200% 200%",
               animation: "gradient-shift 5s ease infinite",
               boxShadow:

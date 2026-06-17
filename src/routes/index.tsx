@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <main className="relative min-h-[100svh] mx-auto max-w-md flex flex-col overflow-hidden bg-[#0d0907] text-white">
+    <main className="relative min-h-[100svh] mx-auto max-w-md flex flex-col overflow-hidden bg-[#050510] text-white">
       {/* ambient glows */}
       <div className="absolute top-[10%] right-0 w-[60vmin] h-[60vmin] rounded-full pointer-events-none blur-[100px] bg-orange-600/20" />
       <div className="absolute bottom-[20%] -left-20 w-[50vmin] h-[50vmin] rounded-full pointer-events-none blur-[100px] bg-pink-600/15" />
@@ -54,7 +54,7 @@ function Index() {
           </button>
           <button aria-label="Notificări" className="p-2.5 rounded-full bg-white/5 border border-white/10 relative active:scale-95 transition">
             <Bell className="w-4 h-4 text-white/70" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full border-2 border-[#0d0907]" />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full border-2 border-[#050510]" />
           </button>
         </div>
       </header>
@@ -140,7 +140,7 @@ function Index() {
       <div className="h-4" />
 
       {/* Bottom Dock */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-30 w-full max-w-md p-4 bg-gradient-to-t from-[#0d0907] via-[#0d0907]/90 to-transparent pointer-events-none">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-30 w-full max-w-md p-4 bg-gradient-to-t from-[#050510] via-[#050510]/90 to-transparent pointer-events-none">
         <nav className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-between px-5 py-2.5 pointer-events-auto">
           <DockItem to="/app" icon={<MapPin className="w-5 h-5" />} label="Hartă" />
           <DockItem to="/app/faze" icon={<Flame className="w-5 h-5" />} label="Faze" />
@@ -148,7 +148,7 @@ function Index() {
             <Link
               to="/signup"
               aria-label="Adaugă spot"
-              className="w-14 h-14 rounded-full bg-gradient-to-tr from-orange-500 to-pink-600 flex items-center justify-center shadow-xl shadow-orange-500/40 border-4 border-[#0d0907] active:scale-95 transition"
+              className="w-14 h-14 rounded-full bg-gradient-to-tr from-orange-500 to-pink-600 flex items-center justify-center shadow-xl shadow-orange-500/40 border-4 border-[#050510] active:scale-95 transition"
             >
               <Plus className="w-7 h-7 text-white" />
             </Link>

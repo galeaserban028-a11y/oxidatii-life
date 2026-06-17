@@ -69,13 +69,13 @@ function AdminDashboard() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         <Stat icon={<Users size={14} />} label="Useri" value={data.users} sub={`+${data.newUsers7d} / 7z`} />
-        <Stat icon={<PartyPopper size={14} />} label="Petreceri" value={data.parties} sub={`${data.activeParties} active`} accent="#FF2D55" />
-        <Stat icon={<Flame size={14} />} label="Sprits" value={data.proofs} sub={`+${data.proofs24h} / 24h`} accent="#FF8A00" />
-        <Stat icon={<Building2 size={14} />} label="Businesses" value={data.businesses} sub={`${data.verifiedBiz} verificate`} accent="#00C2FF" />
-        <Stat icon={<Megaphone size={14} />} label="Campanii" value={data.campaigns} sub={`${data.activeCamps} active`} accent="#C66BFF" />
+        <Stat icon={<PartyPopper size={14} />} label="Petreceri" value={data.parties} sub={`${data.activeParties} active`} accent="#ff3d8b" />
+        <Stat icon={<Flame size={14} />} label="Sprits" value={data.proofs} sub={`+${data.proofs24h} / 24h`} accent="#ff3d8b" />
+        <Stat icon={<Building2 size={14} />} label="Businesses" value={data.businesses} sub={`${data.verifiedBiz} verificate`} accent="#00e5ff" />
+        <Stat icon={<Megaphone size={14} />} label="Campanii" value={data.campaigns} sub={`${data.activeCamps} active`} accent="#c724ff" />
         <Stat icon={<MapPin size={14} />} label="Locații" value={data.venues} sub={`${data.cities} orașe`} />
-        <Stat icon={<Wallet size={14} />} label="Wallet total" value={`${(data.totalWallet / 100).toFixed(0)} RON`} sub="în business-uri" accent="#00FF95" />
-        <Stat icon={<Flag size={14} />} label="Rapoarte" value={data.reports} sub={`${data.openReports} deschise`} accent={data.openReports > 0 ? "#FF2D55" : undefined} />
+        <Stat icon={<Wallet size={14} />} label="Wallet total" value={`${(data.totalWallet / 100).toFixed(0)} RON`} sub="în business-uri" accent="#00e5ff" />
+        <Stat icon={<Flag size={14} />} label="Rapoarte" value={data.reports} sub={`${data.openReports} deschise`} accent={data.openReports > 0 ? "#ff3d8b" : undefined} />
       </div>
 
       <div className="rounded-2xl border border-foreground/10 p-4 space-y-2">

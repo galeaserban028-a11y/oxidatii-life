@@ -14,9 +14,9 @@ export const Route = createFileRoute("/app/biz")({
 // Cele trei pachete simple. Atât. Plată one-shot pentru o postare.
 type TierId = "t500" | "t1000" | "t2500";
 const TIERS: { id: TierId; priceRon: number; days: number; label: string; color: string }[] = [
-  { id: "t500",  priceRon: 500,  days: 2,  label: "2 zile",  color: "#00D4FF" },
-  { id: "t1000", priceRon: 1000, days: 5,  label: "5 zile",  color: "#FF2D55" },
-  { id: "t2500", priceRon: 2500, days: 30, label: "30 zile", color: "#FFD700" },
+  { id: "t500",  priceRon: 500,  days: 2,  label: "2 zile",  color: "#00e5ff" },
+  { id: "t1000", priceRon: 1000, days: 5,  label: "5 zile",  color: "#ff3d8b" },
+  { id: "t2500", priceRon: 2500, days: 30, label: "30 zile", color: "#ffea00" },
 ];
 
 async function loadBiz(userId: string) {

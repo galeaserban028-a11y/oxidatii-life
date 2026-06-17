@@ -755,7 +755,7 @@ export function RomaniaMap3D({
       const wrap = document.createElement("div");
       wrap.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);z-index:10;";
 
-      const accent = f.is_me ? "#ff3d8b" : "#39ff88";
+      const accent = f.is_me ? "#ff3d8b" : "#00e5ff";
       const ringSize = f.is_me ? 44 : 34;
       const pulseSize = f.is_me ? 54 : 42;
 

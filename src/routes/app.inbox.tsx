@@ -178,7 +178,7 @@ function InboxPage() {
                 }`}
               >
                 {c.unread && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-lime-400 rounded-r-full shadow-[0_0_10px_#a3e635]" />
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-lime-400 rounded-r-full shadow-[0_0_10px_#00e5ff]" />
                 )}
                 <div className="relative shrink-0">
                   <div className="h-14 w-14 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden">

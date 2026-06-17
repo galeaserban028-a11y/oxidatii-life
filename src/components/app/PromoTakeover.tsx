@@ -161,7 +161,7 @@ export function PromoTakeover() {
   if (isPremium) return null;
   if (!payload || phase === "hidden" || phase === "gone") return null;
   const { campaign, biz } = payload;
-  const color = campaign.theme_color || "#FF2D55";
+  const color = campaign.theme_color || "#ff3d8b";
   const img = campaign.image_urls?.[0];
 
   if (phase === "full") {
