@@ -1,15 +1,19 @@
-import { useEffect, useRef, useState } from "react";
-import type { ProfileTheme } from "@/lib/premium-themes";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { precomputeTheme, type ProfileTheme } from "@/lib/premium-themes";
 
 type Intensity = { gradient?: number; aurora?: number; sheen?: number; grain?: number; vignette?: number };
+
+const GRAIN_DATA_URI =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")";
 
 /**
  * ThemeAtmosphere — full-page premium atmosphere.
  * Performance:
- *  - parallax via CSS vars on a single container (avoids re-rendering every layer)
+ *  - all gradient/glow strings precomputed once per theme (cached in premium-themes)
+ *  - parallax via CSS vars on one container (single style update vs N elements)
  *  - rAF-throttled scroll + deviceorientation
- *  - respects prefers-reduced-motion (disables motion, keeps static glow)
- *  - GPU-promoted layers, pointer-events: none, no layout reads
+ *  - prefers-reduced-motion respected
+ *  - GPU-promoted layers, contain: strict, pointer-events: none
  */
 export function ThemeAtmosphere({
   theme,
@@ -20,6 +24,8 @@ export function ThemeAtmosphere({
   intensity?: Intensity | null;
   parallax?: boolean;
 }) {
+  const pre = useMemo(() => precomputeTheme(theme), [theme]);
+
   const ti = intensity ?? {};
   const iGradient = Math.max(0, Math.min(1.5, ti.gradient ?? 1));
   const iAurora = Math.max(0, Math.min(1.5, ti.aurora ?? 1));
@@ -56,13 +62,9 @@ export function ThemeAtmosphere({
       scheduled = true;
       requestAnimationFrame(apply);
     };
-    const onScroll = () => {
-      scrollY = window.scrollY;
-      schedule();
-    };
+    const onScroll = () => { scrollY = window.scrollY; schedule(); };
     const onTilt = (e: DeviceOrientationEvent) => {
-      const gx = Math.max(-1, Math.min(1, (e.gamma ?? 0) / 45));
-      tiltX = gx * 24;
+      tiltX = Math.max(-1, Math.min(1, (e.gamma ?? 0) / 45)) * 24;
       schedule();
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -73,34 +75,27 @@ export function ThemeAtmosphere({
     };
   }, [parallax, reduced]);
 
-  // When reduced motion is on, freeze animations but keep static glow.
-  const animSheen = reduced ? "none" : undefined;
-  const animBeams = reduced ? "none" : "themeBeams 45s linear infinite";
-  const animScan = reduced ? "none" : "themeScan 9s linear infinite";
-
   return (
     <div
       ref={rootRef}
+      data-theme-atmosphere
       className="fixed inset-0 pointer-events-none z-0"
       style={{ ["--px" as any]: "0px", ["--py" as any]: "0px", contain: "strict" as any }}
       aria-hidden="true"
     >
       {iGradient > 0 && (
-        <div className="absolute inset-0" style={{ background: theme.base, opacity: iGradient }} />
+        <div className="absolute inset-0" style={{ background: pre.base, opacity: iGradient }} />
       )}
 
       {iAurora > 0 && (
         <div
           className="absolute"
           style={{
-            top: "-40%",
-            left: "-30%",
-            width: "160vmax",
-            height: "160vmax",
-            background: `conic-gradient(from 0deg, transparent 0deg, ${theme.accent}22 30deg, transparent 60deg, ${theme.accent}33 180deg, transparent 210deg, ${theme.cardBorder}22 330deg, transparent 360deg)`,
+            top: "-40%", left: "-30%", width: "160vmax", height: "160vmax",
+            background: pre.beamsGradient,
             filter: "blur(60px)",
             opacity: 0.5 * iAurora,
-            animation: animBeams,
+            animation: reduced ? "none" : "themeBeams 45s linear infinite",
             mixBlendMode: "screen",
             willChange: reduced ? undefined : "transform",
             transform: "translateZ(0)",
@@ -108,64 +103,53 @@ export function ThemeAtmosphere({
         />
       )}
 
-      {iAurora > 0 && theme.aurora.map((a, i) => {
-        const [ax, ay] = a.pos.split(" ");
-        const driftAnim = reduced ? "none" : `themeDrift${i % 3} ${a.duration * 2}s ease-in-out infinite`;
-        return (
-          <div
-            key={i}
-            className="absolute rounded-full"
-            style={{
-              left: ax,
-              top: ay,
-              height: a.size,
-              width: a.size,
-              filter: `blur(${a.blur}px)`,
-              opacity: a.opacity * iAurora,
-              background: `radial-gradient(circle, ${a.color} 0%, transparent 70%)`,
-              // Parallax via shared CSS vars — compositor only
-              ["--mx" as any]: `calc(var(--px) * ${(i + 1) * 0.35})`,
-              ["--my" as any]: `calc(var(--py) * ${i % 2 ? 0.6 : 0.3})`,
-              transform: "translate3d(var(--mx,0), var(--my,0), 0)",
-              animation: driftAnim,
-              animationDelay: a.delay ? `${a.delay}s` : undefined,
-              mixBlendMode: "screen",
-              willChange: reduced ? undefined : "transform",
-            }}
-          />
-        );
-      })}
+      {iAurora > 0 && pre.aurora.map((a, i) => (
+        <div
+          key={i}
+          className="absolute rounded-full"
+          style={{
+            left: a.left, top: a.top,
+            height: a.size, width: a.size,
+            filter: `blur(${a.blur}px)`,
+            opacity: a.opacity * iAurora,
+            background: a.background,
+            ["--mx" as any]: `calc(var(--px) * ${(i + 1) * 0.35})`,
+            ["--my" as any]: `calc(var(--py) * ${i % 2 ? 0.6 : 0.3})`,
+            transform: "translate3d(var(--mx,0), var(--my,0), 0)",
+            animation: reduced ? "none" : `themeDrift${i % 3} ${a.duration * 2}s ease-in-out ${a.delay}s infinite`,
+            mixBlendMode: "screen",
+            willChange: reduced ? undefined : "transform",
+          }}
+        />
+      ))}
 
-      {/* Floating orbs — fewer + only if not reduced motion */}
-      {iAurora > 0 && !reduced && [0, 1, 2, 3].map((i) => (
+      {iAurora > 0 && !reduced && pre.orbs.map((o, i) => (
         <div
           key={`orb-${i}`}
           className="absolute rounded-full"
           style={{
-            left: `${12 + i * 22}%`,
-            top: `${18 + ((i * 37) % 64)}%`,
-            width: 6 + (i % 3) * 4,
-            height: 6 + (i % 3) * 4,
-            background: i % 2 === 0 ? theme.accent : theme.cardBorder,
-            boxShadow: `0 0 ${18 + i * 6}px ${theme.accent}`,
-            opacity: 0.32 * iAurora,
+            left: o.left, top: o.top,
+            width: o.size, height: o.size,
+            background: o.background,
+            boxShadow: o.boxShadow,
+            opacity: o.opacity * iAurora,
             ["--mx" as any]: `calc(var(--px) * 0.5)`,
             ["--my" as any]: `calc(var(--py) * 0.25)`,
             transform: "translate3d(var(--mx,0), var(--my,0), 0)",
-            animation: `themeFloat ${9 + i * 2}s ease-in-out ${i * 0.8}s infinite`,
+            animation: `themeFloat ${o.duration}s ease-in-out ${o.delay}s infinite`,
             willChange: "transform",
           }}
         />
       ))}
 
-      {theme.sheen && iSheen > 0 && (
+      {pre.sheenGradient && iSheen > 0 && (
         <div
           className="absolute inset-0 mix-blend-overlay"
           style={{
-            opacity: theme.sheen.opacity * iSheen,
-            background: `linear-gradient(120deg, transparent 30%, ${theme.sheen.color} 50%, transparent 70%)`,
+            opacity: pre.sheenOpacity * iSheen,
+            background: pre.sheenGradient,
             backgroundSize: "200% 200%",
-            animation: reduced ? animSheen : `themeSheen ${theme.sheen.duration}s linear infinite`,
+            animation: reduced ? "none" : `themeSheen ${pre.sheenDuration}s linear infinite`,
             willChange: reduced ? undefined : "background-position",
           }}
         />
@@ -175,30 +159,26 @@ export function ThemeAtmosphere({
         <div
           className="absolute inset-0"
           style={{
-            background: `linear-gradient(180deg, transparent 0%, ${theme.accent}22 50%, transparent 100%)`,
+            background: pre.scanGradient,
             backgroundSize: "100% 30%",
             backgroundRepeat: "no-repeat",
             opacity: 0.4 * iSheen,
-            animation: animScan,
+            animation: "themeScan 9s linear infinite",
             mixBlendMode: "screen",
             willChange: "background-position",
           }}
         />
       )}
 
-      {theme.grain > 0 && iGrain > 0 && (
+      {pre.grain > 0 && iGrain > 0 && (
         <div
           className="absolute inset-0 mix-blend-overlay"
-          style={{
-            opacity: theme.grain * iGrain,
-            backgroundImage:
-              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
-          }}
+          style={{ opacity: pre.grain * iGrain, backgroundImage: GRAIN_DATA_URI }}
         />
       )}
 
       {iVignette > 0 && (
-        <div className="absolute inset-0" style={{ background: theme.vignette, opacity: iVignette }} />
+        <div className="absolute inset-0" style={{ background: pre.vignette, opacity: iVignette }} />
       )}
 
       <style>{`
@@ -209,9 +189,6 @@ export function ThemeAtmosphere({
         @keyframes themeDrift2 { 0%, 100% { translate: 0 0; } 50% { translate: 4vw -6vh; } }
         @keyframes themeFloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -36px; } }
         @keyframes themeScan { 0% { background-position: 0% -30%; } 100% { background-position: 0% 130%; } }
-        @media (prefers-reduced-motion: reduce) {
-          [data-theme-atmosphere] * { animation: none !important; }
-        }
       `}</style>
     </div>
   );
