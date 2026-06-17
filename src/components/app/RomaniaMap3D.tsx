@@ -268,17 +268,20 @@ export function RomaniaMap3D({
         }
       }
 
-      // cluster bubbles — dark fills with a strong neon magenta halo
-      // (matches the reference: white count number, glowing pink ring).
       map.addLayer({
         id: "venues-clusters-glow",
         type: "circle",
         source: VENUES_SRC,
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": "rgba(255,49,134,0.18)",
-          "circle-radius": ["step", ["get", "point_count"], 24, 10, 30, 50, 36],
-          "circle-blur": 0.8,
+          "circle-color": [
+            "step", ["get", "point_count"],
+            "rgba(255,49,134,0.35)", 50,
+            "rgba(198,107,255,0.35)", 200,
+            "rgba(255,176,0,0.35)",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 40, 50, 52, 200, 64],
+          "circle-blur": 1,
         },
       });
       map.addLayer({
@@ -287,13 +290,13 @@ export function RomaniaMap3D({
         source: VENUES_SRC,
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": "rgba(10,8,20,0.92)",
-          "circle-radius": ["step", ["get", "point_count"], 16, 10, 20, 50, 24],
-          "circle-stroke-width": 2,
+          "circle-color": "rgba(10,5,22,0.95)",
+          "circle-radius": ["step", ["get", "point_count"], 26, 50, 32, 200, 40],
+          "circle-stroke-width": 3.5,
           "circle-stroke-color": [
             "step", ["get", "point_count"],
-            "#ff3186", 10,
-            "#c66bff", 50,
+            "#ff3186", 50,
+            "#c66bff", 200,
             "#ffb000",
           ],
         },
@@ -305,10 +308,11 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-size": 12,
+          "text-size": ["step", ["get", "point_count"], 18, 50, 20, 200, 24],
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-allow-overlap": true,
         },
-        paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.6)", "text-halo-width": 1 },
+        paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.85)", "text-halo-width": 1.5 },
       });
 
       // unclustered points → neon glowing emoji pins
@@ -328,9 +332,9 @@ export function RomaniaMap3D({
             "after", "pin-after",
             "pin-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 6, 0.5, 10, 0.7, 14, 0.95, 17, 1.15],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.55, 6, 0.7, 10, 0.9, 14, 1.05, 17, 1.2],
           "icon-allow-overlap": true,
-          "icon-ignore-placement": false,
+          "icon-ignore-placement": true,
           "icon-anchor": "center",
           "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
         },
