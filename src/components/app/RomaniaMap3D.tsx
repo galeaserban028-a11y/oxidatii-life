@@ -29,64 +29,116 @@ const TYPE_COLOR: Record<string, string> = {
   after: "#ff3158",
 };
 
-const TYPE_EMOJI: Record<string, string> = {
-  club: "🔊",
-  bar: "🍸",
-  pub: "🍺",
-  terasa: "🪑",
-  "terasă": "🪑",
-  after: "🎉",
-};
+function drawPinGlyph(ctx: CanvasRenderingContext2D, kind: string, cx: number, cy: number, color: string) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 3;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
 
-// Neon glowing pin — large dark disc, thick colored neon ring, soft outer
-// halo, big emoji glyph centered. Matches the reference (Aarhus speaker,
-// Praha cocktail, etc.).
-function makePinImage(color: string, emoji: string): ImageData {
-  const W = 128, H = 128;
+  if (kind === "club") {
+    ctx.fillRect(cx - 15, cy - 8, 7, 16);
+    ctx.beginPath();
+    ctx.moveTo(cx - 8, cy - 8);
+    ctx.lineTo(cx + 2, cy - 15);
+    ctx.lineTo(cx + 2, cy + 15);
+    ctx.lineTo(cx - 8, cy + 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx + 7, cy, 8, -0.8, 0.8);
+    ctx.arc(cx + 12, cy, 14, -0.7, 0.7);
+    ctx.stroke();
+  } else if (kind === "bar") {
+    ctx.beginPath();
+    ctx.moveTo(cx - 16, cy - 14);
+    ctx.lineTo(cx + 16, cy - 14);
+    ctx.lineTo(cx, cy + 3);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + 3);
+    ctx.lineTo(cx, cy + 17);
+    ctx.moveTo(cx - 10, cy + 17);
+    ctx.lineTo(cx + 10, cy + 17);
+    ctx.stroke();
+  } else if (kind === "pub") {
+    ctx.strokeRect(cx - 11, cy - 8, 16, 21);
+    ctx.beginPath();
+    ctx.moveTo(cx + 5, cy - 2);
+    ctx.quadraticCurveTo(cx + 17, cy - 2, cx + 15, cy + 8);
+    ctx.quadraticCurveTo(cx + 15, cy + 15, cx + 5, cy + 13);
+    ctx.moveTo(cx - 8, cy - 13);
+    ctx.lineTo(cx + 2, cy - 13);
+    ctx.stroke();
+  } else if (kind === "terasa" || kind === "terasă") {
+    ctx.beginPath();
+    ctx.arc(cx, cy - 10, 16, Math.PI, 0);
+    ctx.moveTo(cx, cy - 10);
+    ctx.lineTo(cx, cy + 16);
+    ctx.moveTo(cx - 10, cy + 16);
+    ctx.lineTo(cx + 10, cy + 16);
+    ctx.moveTo(cx - 14, cy - 10);
+    ctx.lineTo(cx + 14, cy - 10);
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(cx - 16, cy + 9);
+    ctx.lineTo(cx - 11, cy - 11);
+    ctx.lineTo(cx - 2, cy + 3);
+    ctx.lineTo(cx + 8, cy - 13);
+    ctx.lineTo(cx + 15, cy + 9);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx - 13, cy + 14);
+    ctx.lineTo(cx + 13, cy + 14);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// Clean neon pin — compact transparent halo, dark glass circle and a simple
+// line glyph. No emoji blobs, so the map stays crisp like the reference.
+function makePinImage(color: string, kind: string): ImageData {
+  const W = 96, H = 96;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
   const cx = W / 2, cy = H / 2;
 
-  // Outer soft halo — wide, low alpha
-  const halo = ctx.createRadialGradient(cx, cy, 18, cx, cy, 60);
-  halo.addColorStop(0, color + "cc");
-  halo.addColorStop(0.4, color + "55");
+  const halo = ctx.createRadialGradient(cx, cy, 15, cx, cy, 44);
+  halo.addColorStop(0, color + "99");
+  halo.addColorStop(0.55, color + "2f");
   halo.addColorStop(1, color + "00");
   ctx.fillStyle = halo;
   ctx.fillRect(0, 0, W, H);
 
-  // Strong inner glow
   ctx.shadowColor = color;
-  ctx.shadowBlur = 28;
-  ctx.fillStyle = color;
-  ctx.globalAlpha = 0.9;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 34, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Thick neon ring
-  ctx.globalAlpha = 1;
-  ctx.shadowBlur = 18;
-  ctx.lineWidth = 5;
+  ctx.shadowBlur = 16;
   ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.arc(cx, cy, 32, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 27, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Inner dark fill
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = "#0a0814";
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 10;
+  ctx.fillStyle = "rgba(8,10,20,0.86)";
   ctx.beginPath();
-  ctx.arc(cx, cy, 28, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 23, 0, Math.PI * 2);
   ctx.fill();
 
-  // Big emoji glyph
-  ctx.font = "36px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',system-ui";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(emoji, cx, cy + 2);
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = "rgba(255,255,255,0.18)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+  ctx.stroke();
+
+  drawPinGlyph(ctx, kind, cx, cy, color);
 
   return ctx.getImageData(0, 0, W, H);
 }
@@ -98,9 +150,9 @@ const VOYAGER_STYLE = {
     "carto-dark": {
       type: "raster",
       tiles: [
-        "https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png",
+        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
       ],
       tileSize: 256,
       attribution: "© CARTO, © OpenStreetMap contributors",
@@ -108,8 +160,8 @@ const VOYAGER_STYLE = {
     },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#0a0420" } },
-    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 0.85, "raster-saturation": 0.4, "raster-contrast": 0.25, "raster-brightness-min": 0.05, "raster-brightness-max": 0.7, "raster-hue-rotate": 250 } },
+    { id: "background", type: "background", paint: { "background-color": "#080a12" } },
+    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 0.98, "raster-saturation": -0.12, "raster-contrast": 0.18, "raster-brightness-min": 0.08, "raster-brightness-max": 0.92 } },
   ],
   sky: {
     "sky-color": "#03040a",
