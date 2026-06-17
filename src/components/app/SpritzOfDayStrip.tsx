@@ -151,9 +151,21 @@ function SpritzViewer({
             {t.venue_name && <div className="text-[10px] text-white/60 truncate">{t.venue_name}</div>}
           </div>
         </Link>
-        <button onClick={onClose} className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center text-white">
-          <X size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          {isMine && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="h-9 px-3 rounded-full bg-red-500/15 text-red-300 flex items-center gap-1.5 text-xs font-semibold disabled:opacity-50"
+            >
+              <Trash2 size={14} />
+              {deleting ? "..." : "Șterge"}
+            </button>
+          )}
+          <button onClick={onClose} className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center text-white">
+            <X size={18} />
+          </button>
+        </div>
       </div>
       <div className="flex-1 relative" onClick={(e) => {
         const r = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
