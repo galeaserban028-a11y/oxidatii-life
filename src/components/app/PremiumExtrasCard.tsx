@@ -1,6 +1,7 @@
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { PROFILE_THEMES } from "@/lib/premium-themes";
+import { PROFILE_THEMES, isThemeAvailable } from "@/lib/premium-themes";
+import { Lock } from "lucide-react";
 import { Music, Image as ImageIcon, Palette, Trash2, Loader2, Check } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
