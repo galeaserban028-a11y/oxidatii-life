@@ -98,9 +98,9 @@ const VOYAGER_STYLE = {
     "carto-dark": {
       type: "raster",
       tiles: [
-        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://a.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png",
       ],
       tileSize: 256,
       attribution: "© CARTO, © OpenStreetMap contributors",
@@ -108,8 +108,8 @@ const VOYAGER_STYLE = {
     },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#03040a" } },
-    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 0.85, "raster-saturation": -0.2, "raster-contrast": 0.15, "raster-brightness-max": 0.75 } },
+    { id: "background", type: "background", paint: { "background-color": "#0a0418" } },
+    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 0.55, "raster-saturation": -0.95, "raster-contrast": 0.4, "raster-brightness-min": 0.05, "raster-brightness-max": 0.55, "raster-hue-rotate": 230 } },
   ],
   sky: {
     "sky-color": "#03040a",
