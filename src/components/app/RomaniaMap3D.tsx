@@ -750,12 +750,14 @@ export function RomaniaMap3D({
         live · {friends.length} oxidați activi
       </div>
 
-      <div className="absolute bottom-2 left-2 right-2 z-10 rounded-xl bg-black/80 backdrop-blur border border-foreground/10 px-3 py-2 pointer-events-none flex items-center justify-between gap-2">
-        <div className="font-display font-black text-xs leading-none">{venues.length} sticle · {cities.length} orașe</div>
-        <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-          <span style={{color:"#c66bff"}}>🍾 club</span>
-          <span style={{color:"#ffb000"}}>🍸 bar</span>
-          <span style={{color:"#39ff88"}}>🍷 terasă</span>
+      <div className="absolute bottom-2 left-2 right-2 z-10 rounded-xl bg-black/85 backdrop-blur border border-white/10 px-3 py-2 pointer-events-none flex items-center justify-between gap-2">
+        <div className="font-display font-black text-xs leading-none tracking-tight text-white">
+          {venues.length.toLocaleString("ro-RO")} <span className="text-white/50 font-mono text-[10px] uppercase tracking-widest">sticle · {cities.length} orașe</span>
+        </div>
+        <div className="font-mono text-[9px] uppercase tracking-widest flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border" style={{ color: "#c66bff", borderColor: "rgba(198,107,255,0.45)", boxShadow: "0 0 8px rgba(198,107,255,0.4)" }}>🔊 club</span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border" style={{ color: "#ffb000", borderColor: "rgba(255,176,0,0.45)", boxShadow: "0 0 8px rgba(255,176,0,0.35)" }}>🍸 bar</span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border" style={{ color: "#39ff88", borderColor: "rgba(57,255,136,0.45)", boxShadow: "0 0 8px rgba(57,255,136,0.4)" }}>🪑 terasă</span>
         </div>
       </div>
     </div>
