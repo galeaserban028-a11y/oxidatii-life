@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { PremiumBadge, type PremiumTier } from "@/components/app/PremiumBadge";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
 import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
+import { CrystalBallCard } from "@/components/app/CrystalBallCard";
 import { createPremiumPortalSession } from "@/lib/premium.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { toast } from "sonner";
