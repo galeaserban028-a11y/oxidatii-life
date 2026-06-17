@@ -294,52 +294,106 @@ function ReputationDetail({
   canRate: boolean;
   onClose: () => void;
 }) {
+  // Circular ring config
+  const RING = 120;
+  const STROKE = 8;
+  const R = (RING - STROKE) / 2;
+  const C = 2 * Math.PI * R;
+  const dash = (rep.score / 100) * C;
+
   return (
-    <div>
-      <SheetHeader className="px-5 pt-2 pb-4 text-left">
+    <div className="text-white">
+      <SheetHeader className="px-5 pt-4 pb-4 text-left">
         <SheetTitle className="sr-only">Reputație</SheetTitle>
 
-        {/* Hero score */}
-        <div className="relative rounded-3xl border border-foreground/10 overflow-hidden">
+        {/* Hero — circular gauge */}
+        <div
+          className="relative rounded-3xl overflow-hidden p-5"
+          style={{
+            background: "rgba(10,10,21,0.85)",
+            border: `1px solid ${rep.tier.color}55`,
+            boxShadow: `inset 0 0 40px ${rep.tier.color}1f`,
+          }}
+        >
+          {/* corner glows */}
           <div
-            className="absolute inset-0 opacity-[0.18]"
-            style={{ background: `radial-gradient(120% 80% at 0% 0%, ${rep.tier.color}, transparent 60%)` }}
+            aria-hidden
+            className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl pointer-events-none"
+            style={{ background: rep.tier.color, opacity: 0.2 }}
           />
-          <div className="relative p-5">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles size={12} style={{ color: rep.tier.color }} />
-              <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground">
-                Reputație globală
-              </span>
-            </div>
-            <div className="flex items-end gap-3">
-              <div
-                className="font-display font-black leading-none text-[72px] tracking-tighter tabular-nums"
-                style={{ color: rep.tier.color, textShadow: `0 0 28px ${rep.tier.color}55` }}
-              >
-                {rep.score}
-              </div>
-              <div className="pb-3 text-xs text-muted-foreground">/ 100</div>
-              <div className="ml-auto pb-2">
-                <div
-                  className="px-2.5 py-1 rounded-md border text-[10px] font-mono uppercase tracking-widest"
-                  style={{ color: rep.tier.color, borderColor: `${rep.tier.color}55`, background: `${rep.tier.color}10` }}
+          <div
+            aria-hidden
+            className="absolute -bottom-20 -left-12 w-44 h-44 rounded-full blur-3xl pointer-events-none"
+            style={{ background: rep.tier.color, opacity: 0.12 }}
+          />
+
+          <div className="relative flex items-center gap-5">
+            {/* Ring */}
+            <div className="relative shrink-0" style={{ width: RING, height: RING }}>
+              <svg width={RING} height={RING} className="-rotate-90">
+                <circle
+                  cx={RING / 2}
+                  cy={RING / 2}
+                  r={R}
+                  fill="none"
+                  stroke="rgba(255,255,255,0.08)"
+                  strokeWidth={STROKE}
+                />
+                <circle
+                  cx={RING / 2}
+                  cy={RING / 2}
+                  r={R}
+                  fill="none"
+                  stroke={rep.tier.color}
+                  strokeWidth={STROKE}
+                  strokeLinecap="round"
+                  strokeDasharray={`${dash} ${C}`}
+                  style={{
+                    filter: `drop-shadow(0 0 6px ${rep.tier.color})`,
+                    transition: "stroke-dasharray 0.6s ease",
+                  }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span
+                  className="font-display font-black leading-none text-[40px] tabular-nums tracking-tighter"
+                  style={{ color: rep.tier.color, textShadow: `0 0 18px ${rep.tier.color}aa` }}
                 >
-                  {rep.tier.name}
-                </div>
+                  {rep.score}
+                </span>
+                <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/40 mt-0.5">
+                  / 100
+                </span>
               </div>
             </div>
-            <div className="mt-3 h-1.5 rounded-full bg-foreground/10 overflow-hidden">
+
+            {/* Tier + meta */}
+            <div className="flex-1 min-w-0 flex flex-col gap-2">
+              <div className="flex items-center gap-1.5">
+                <Sparkles size={11} style={{ color: rep.tier.color }} />
+                <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-white/50">
+                  Reputație globală
+                </span>
+              </div>
               <div
-                className="h-full rounded-full transition-all"
-                style={{ width: `${rep.score}%`, background: rep.tier.color }}
-              />
-            </div>
-            <div className="mt-3 flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-              <TrendingUp size={11} />
-              {rep.totalPeerN > 0
-                ? <>{rep.totalPeerN} voturi din comunitate + activitatea ta</>
-                : <>doar activitatea ta — nimeni nu te-a votat încă</>}
+                className="inline-flex w-fit items-center px-2.5 py-1 rounded-md font-mono text-[11px] font-black uppercase tracking-widest"
+                style={{
+                  color: rep.tier.color,
+                  background: `${rep.tier.color}1a`,
+                  border: `1px solid ${rep.tier.color}66`,
+                  textShadow: `0 0 8px ${rep.tier.color}88`,
+                }}
+              >
+                {rep.tier.name}
+              </div>
+              <div className="flex items-start gap-2 text-[10px] font-mono uppercase tracking-wider text-white/55 leading-snug">
+                <TrendingUp size={11} className="shrink-0 mt-px" style={{ color: rep.tier.color }} />
+                <span>
+                  {rep.totalPeerN > 0
+                    ? <>{rep.totalPeerN} voturi din comunitate + activitatea ta</>
+                    : <>doar activitatea ta — nimeni nu te-a votat încă</>}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -347,35 +401,66 @@ function ReputationDetail({
 
       {/* Metrici */}
       <div className="px-5 pb-2">
-        <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground mb-2.5">
+        <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/45 mb-3 flex items-center gap-2">
+          <span className="h-px flex-1 bg-white/10" />
           Categorii
+          <span className="h-px flex-1 bg-white/10" />
         </div>
-        <div className="space-y-2.5">
+        <div className="grid grid-cols-2 gap-2.5">
           {CATS.map(({ key, label, icon: Icon, color }) => {
             const v = rep.metrics[key];
             const p = peers[key];
             return (
-              <div key={key} className="flex items-center gap-3">
+              <div
+                key={key}
+                className="relative rounded-2xl p-3 overflow-hidden min-w-0"
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: `1px solid ${color}33`,
+                }}
+              >
                 <div
-                  className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: `${color}18`, color }}
-                >
-                  <Icon size={14} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[12px] font-semibold">{label}</span>
-                    <span className="text-[11px] font-mono tabular-nums" style={{ color }}>{v}</span>
+                  aria-hidden
+                  className="absolute -top-6 -right-6 w-16 h-16 rounded-full blur-2xl pointer-events-none"
+                  style={{ background: color, opacity: 0.18 }}
+                />
+                <div className="relative flex items-center justify-between mb-2 gap-2">
+                  <div
+                    className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0"
+                    style={{
+                      background: `${color}1f`,
+                      color,
+                      boxShadow: `0 0 10px ${color}55, inset 0 0 6px ${color}22`,
+                    }}
+                  >
+                    <Icon size={13} />
                   </div>
-                  <div className="h-1.5 rounded-full bg-foreground/10 overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${v}%`, background: color }} />
-                  </div>
-                  {p && p.n > 0 && (
-                    <div className="text-[9px] font-mono uppercase text-muted-foreground mt-0.5">
-                      ★ {p.avg.toFixed(1)} · {p.n} {p.n === 1 ? "vot" : "voturi"}
-                    </div>
-                  )}
+                  <span
+                    className="text-base font-display font-black tabular-nums leading-none"
+                    style={{ color, textShadow: `0 0 8px ${color}88` }}
+                  >
+                    {v}
+                  </span>
                 </div>
+                <div className="relative text-[11px] font-bold text-white/85 truncate mb-1.5">
+                  {label}
+                </div>
+                <div className="relative h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${v}%`,
+                      background: color,
+                      boxShadow: `0 0 6px ${color}`,
+                    }}
+                  />
+                </div>
+                {p && p.n > 0 && (
+                  <div className="relative text-[9px] font-mono uppercase text-white/40 mt-1.5 flex items-center gap-1">
+                    <Star size={8} className="fill-current" style={{ color }} />
+                    {p.avg.toFixed(1)} · {p.n} {p.n === 1 ? "vot" : "voturi"}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -383,17 +468,26 @@ function ReputationDetail({
       </div>
 
       {canRate && (
-        <div className="mt-4 px-5 pb-6">
-          <div className="text-[10px] font-mono uppercase tracking-[0.22em] text-muted-foreground mb-2.5">
+        <div className="mt-5 px-5 pb-6">
+          <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/45 mb-3 flex items-center gap-2">
+            <span className="h-px flex-1 bg-white/10" />
             Acordă rating
+            <span className="h-px flex-1 bg-white/10" />
           </div>
           <RatingEditor targetUserId={targetUserId} onSaved={onClose} />
         </div>
       )}
 
       {!canRate && (
-        <div className="px-5 pb-6 pt-2">
-          <div className="rounded-2xl border border-dashed border-foreground/15 p-4 text-[11px] text-muted-foreground text-center">
+        <div className="px-5 pb-6 pt-3">
+          <div
+            className="rounded-2xl p-4 text-[11px] text-white/60 text-center italic"
+            style={{
+              fontFamily: "'Instrument Serif', serif",
+              background: "rgba(255,255,255,0.03)",
+              border: "1px dashed rgba(255,255,255,0.12)",
+            }}
+          >
             Nu te poți auto-vota. Mergi pe profilul cuiva și acordă-i stele.
           </div>
         </div>
@@ -401,6 +495,7 @@ function ReputationDetail({
     </div>
   );
 }
+
 
 // ---------- Editor rating (stele 1..5 pe 6 categorii) ----------
 function RatingEditor({ targetUserId, onSaved }: { targetUserId: string; onSaved: () => void }) {
