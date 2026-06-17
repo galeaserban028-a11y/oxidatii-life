@@ -321,8 +321,8 @@ export function RomaniaMap3D({
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
         cluster: true,
-        clusterRadius: 86,
-        clusterMaxZoom: 11,
+        clusterRadius: 20,
+        clusterMaxZoom: 2,
       });
 
       // Very subtle energy source; kept low so the basemap roads/labels stay clean.
@@ -380,9 +380,9 @@ export function RomaniaMap3D({
               "rgba(255,255,255,0.28)", 240,
               "rgba(255,140,90,0.42)",
             ],
-            "circle-radius": ["step", ["get", "point_count"], 64, 80, 78, 240, 92],
-            "circle-blur": 1,
-            "circle-opacity": 0.55,
+            "circle-radius": ["step", ["get", "point_count"], 18, 80, 22, 240, 26],
+            "circle-blur": 0.65,
+            "circle-opacity": 0.32,
           },
         });
       }
@@ -399,8 +399,8 @@ export function RomaniaMap3D({
             "rgba(255,255,255,0.38)", 240,
             "rgba(255,140,90,0.55)",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 40, 80, 50, 240, 60],
-          "circle-blur": 0.7,
+          "circle-radius": ["step", ["get", "point_count"], 14, 80, 17, 240, 20],
+          "circle-blur": 0.45,
         },
       });
 
@@ -416,8 +416,8 @@ export function RomaniaMap3D({
             "rgba(20,14,26,0.92)", 240,
             "rgba(48,28,22,0.92)",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 22, 80, 28, 240, 34],
-          "circle-stroke-width": 3,
+          "circle-radius": ["step", ["get", "point_count"], 10, 80, 12, 240, 14],
+          "circle-stroke-width": 1.6,
           "circle-stroke-color": [
             "step", ["get", "point_count"],
             "#c724ff", 80,
@@ -434,7 +434,7 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-size": ["step", ["get", "point_count"], 16, 80, 19, 240, 22],
+          "text-size": ["step", ["get", "point_count"], 10, 80, 11, 240, 12],
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
           "text-allow-overlap": true,
         },
@@ -458,7 +458,7 @@ export function RomaniaMap3D({
             "after", "pin-v2-after",
             "pin-v2-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.16, 6, 0.22, 10, 0.3, 14, 0.4, 17, 0.5],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.1, 6, 0.14, 10, 0.2, 14, 0.28, 17, 0.36],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
