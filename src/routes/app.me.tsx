@@ -472,9 +472,26 @@ function MePage() {
         )}
 
         <div className="mt-8 space-y-3">
-          
           <ProfileBoostCard />
-          <PremiumExtrasCard />
+          {editingPremium ? (
+            <PremiumExtrasCard onClose={() => setEditingPremium(false)} />
+          ) : (
+            (profile as any).premium_tier && (
+              <button
+                onClick={() => setEditingPremium(true)}
+                className="w-full flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 active:scale-[0.99] transition"
+              >
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#c724ff]/30 to-[#ff3d8b]/20 flex items-center justify-center">
+                  <Pencil size={16} className="text-white" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div style={instrument} className="text-base text-white leading-tight">Editează profil premium</div>
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-white/40 mt-0.5">temă · muzică · background</div>
+                </div>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-white/40">deschide →</span>
+              </button>
+            )
+          )}
         </div>
 
         <div className="mt-8">
