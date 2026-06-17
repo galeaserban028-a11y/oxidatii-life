@@ -131,6 +131,17 @@
 .tier-glow-elite { animation: tier-pulse 2.4s ease-in-out infinite; }
 .tier-glow-exclusive { animation: tier-exclusive-shimmer 3s ease-in-out infinite; }
 
+/* ── Bottom Nav Animations ── */
+@keyframes pulse-waves {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(3); opacity: 0; }
+}
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 /* Light theme — opt-in via .light class on <html> */
 .light {
   --background: oklch(0.99 0.005 80);
