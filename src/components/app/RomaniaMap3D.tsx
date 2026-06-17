@@ -21,12 +21,12 @@ export type FriendPin = {
 };
 
 const TYPE_COLOR: Record<string, string> = {
-  club: "#ff2bd6",
-  bar: "#ffb000",
-  pub: "#ff8a3d",
-  terasa: "#39ffd2",
-  "terasă": "#39ffd2",
-  after: "#ff3158",
+  club: "#c724ff",
+  bar: "#ffea00",
+  pub: "#ff3d8b",
+  terasa: "#00e5ff",
+  "terasă": "#00e5ff",
+  after: "#ff3d8b",
 };
 
 const TYPE_EMOJI: Record<string, string> = {
@@ -393,9 +393,9 @@ export function RomaniaMap3D({
           "circle-stroke-width": 3,
           "circle-stroke-color": [
             "step", ["get", "point_count"],
-            "#ff2bd6", 80,
+            "#c724ff", 80,
             "#ffffff", 240,
-            "#ffae6b",
+            "#ff3d8b",
           ],
         },
       });
@@ -454,7 +454,7 @@ export function RomaniaMap3D({
         const coords = (f.geometry as any).coordinates.slice();
         const cover = p.cover_url ? `<img src="${p.cover_url}" alt="" style="width:100%;height:120px;object-fit:cover;display:block;" loading="lazy"/>` : "";
         const addr = p.address ? `<div style="font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;color:#aaa;margin-top:2px;">${p.address}</div>` : "";
-        const typeColor = TYPE_COLOR[p.type] ?? "#ffb000";
+        const typeColor = TYPE_COLOR[p.type] ?? "#ffea00";
         const html = `<div style="width:220px;background:#06070a;color:#fff;border-radius:12px;overflow:hidden;border:1px solid ${typeColor}55;">
           ${cover}
           <div style="padding:10px 12px;">
@@ -586,7 +586,7 @@ export function RomaniaMap3D({
           existing.setLngLat([Number(v.lng), Number(v.lat)]);
           continue;
         }
-        const theme = meta.theme || "#ff3158";
+        const theme = meta.theme || "#ff3d8b";
         const wrap = document.createElement("div");
         wrap.style.cssText = "position:relative;width:32px;height:32px;cursor:pointer;transform:translateY(-50%);z-index:5;";
 
@@ -675,7 +675,7 @@ export function RomaniaMap3D({
       // City labels only — no marker icon. The neon emoji venue pins +
       // cluster bubbles from the GPU layer carry the visual weight, exactly
       // like the reference (Praha, Paris, Sarajevo… are pure text labels).
-      const color = "#ff3158";
+      const color = "#ff3d8b";
       const label = document.createElement("div");
       label.textContent = c.name;
       label.className = "oxi-city-label";
@@ -755,7 +755,7 @@ export function RomaniaMap3D({
       const wrap = document.createElement("div");
       wrap.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);z-index:10;";
 
-      const accent = f.is_me ? "#ff3158" : "#39ff88";
+      const accent = f.is_me ? "#ff3d8b" : "#39ff88";
       const ringSize = f.is_me ? 44 : 34;
       const pulseSize = f.is_me ? 54 : 42;
 
@@ -764,7 +764,7 @@ export function RomaniaMap3D({
       wrap.appendChild(pulse);
 
       const ring = document.createElement("div");
-      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:9999px;border:2px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3158,#c66bff);box-shadow:0 0 14px ${accent},0 4px 12px rgba(0,0,0,0.55);`;
+      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:9999px;border:2px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3d8b,#c724ff);box-shadow:0 0 14px ${accent},0 4px 12px rgba(0,0,0,0.55);`;
       if (f.avatar_url) {
         const img = document.createElement("img");
         img.src = f.avatar_url; img.alt = "";
@@ -785,7 +785,7 @@ export function RomaniaMap3D({
       if (f.is_me) {
         const crown = document.createElement("div");
         crown.textContent = "TU";
-        crown.style.cssText = "position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:9999px;background:#ff3158;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.08em;border:1.5px solid #06070a;box-shadow:0 0 8px #ff3158;";
+        crown.style.cssText = "position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:9999px;background:#ff3d8b;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.08em;border:1.5px solid #06070a;box-shadow:0 0 8px #ff3d8b;";
         wrap.appendChild(crown);
       }
 
