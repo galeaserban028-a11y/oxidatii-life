@@ -291,6 +291,12 @@ function MePage() {
   const theme = getTheme((profile as any)?.profile_theme_id);
   const bgUrl = (profile as any)?.profile_bg_url as string | undefined;
   const isVideoBg = bgUrl ? /\.(mp4|webm|mov)$/i.test(bgUrl) : false;
+  const ti = (profile as any)?.theme_intensity ?? {};
+  const iGradient = Math.max(0, Math.min(1.5, ti.gradient ?? 1));
+  const iAurora = Math.max(0, Math.min(1.5, ti.aurora ?? 1));
+  const iSheen = Math.max(0, Math.min(1.5, ti.sheen ?? 1));
+  const iGrain = Math.max(0, Math.min(1.5, ti.grain ?? 1));
+  const iVignette = Math.max(0, Math.min(1.5, ti.vignette ?? 1));
 
   return (
     <div className="relative pb-3 bg-[#050505] min-h-screen text-white overflow-hidden">
@@ -306,9 +312,11 @@ function MePage() {
       {theme && (
         <>
           {/* base wash from preset */}
-          <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.base }} />
+          {iGradient > 0 && (
+            <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.base, opacity: iGradient }} />
+          )}
           {/* aurora halos from preset */}
-          {theme.aurora.map((a, i) => {
+          {iAurora > 0 && theme.aurora.map((a, i) => {
             const [px, py] = a.pos.split(" ");
             return (
               <div
@@ -320,7 +328,7 @@ function MePage() {
                   height: a.size,
                   width: a.size,
                   filter: `blur(${a.blur}px)`,
-                  opacity: a.opacity,
+                  opacity: a.opacity * iAurora,
                   background: `radial-gradient(circle, ${a.color} 0%, transparent 70%)`,
                   animationDuration: `${a.duration}s`,
                   animationDelay: a.delay ? `${a.delay}s` : undefined,
@@ -329,11 +337,11 @@ function MePage() {
             );
           })}
           {/* sheen (optional) */}
-          {theme.sheen && (
+          {theme.sheen && iSheen > 0 && (
             <div
               className="fixed inset-0 pointer-events-none z-0 mix-blend-overlay"
               style={{
-                opacity: theme.sheen.opacity,
+                opacity: theme.sheen.opacity * iSheen,
                 background: `linear-gradient(120deg, transparent 30%, ${theme.sheen.color} 50%, transparent 70%)`,
                 backgroundSize: "200% 200%",
                 animation: `themeSheen ${theme.sheen.duration}s linear infinite`,
@@ -341,18 +349,20 @@ function MePage() {
             />
           )}
           {/* grain */}
-          {theme.grain > 0 && (
+          {theme.grain > 0 && iGrain > 0 && (
             <div
               className="fixed inset-0 pointer-events-none z-0 mix-blend-overlay"
               style={{
-                opacity: theme.grain,
+                opacity: theme.grain * iGrain,
                 backgroundImage:
                   "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
               }}
             />
           )}
           {/* vignette */}
-          <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.vignette }} />
+          {iVignette > 0 && (
+            <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.vignette, opacity: iVignette }} />
+          )}
           <style>{`@keyframes themeSheen { 0% { background-position: 0% 0%; } 100% { background-position: 200% 200%; } }`}</style>
         </>
       )}

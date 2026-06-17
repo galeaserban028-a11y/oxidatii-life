@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PROFILE_THEMES, isThemeAvailable } from "@/lib/premium-themes";
 import { Lock } from "lucide-react";
 import { Music, Image as ImageIcon, Palette, Trash2, Loader2, Check } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 
 /**
@@ -75,6 +75,34 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
     refreshProfile();
   }
 
+  // Theme intensity sliders (live preview + debounced save)
+  type Intensity = { gradient: number; aurora: number; sheen: number; grain: number; vignette: number };
+  const defaultIntensity: Intensity = { gradient: 1, aurora: 1, sheen: 1, grain: 1, vignette: 1 };
+  const initialIntensity: Intensity = {
+    ...defaultIntensity,
+    ...((profile as any)?.theme_intensity ?? {}),
+  };
+  const [intensity, setIntensity] = useState<Intensity>(initialIntensity);
+  useEffect(() => {
+    setIntensity({ ...defaultIntensity, ...((profile as any)?.theme_intensity ?? {}) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [(profile as any)?.theme_intensity, profile?.id]);
+
+  async function saveIntensity(next: Intensity) {
+    if (!user) return;
+    const { error } = await supabase.from("profiles").update({ theme_intensity: next } as any).eq("id", user.id);
+    if (error) return toast.error(error.message);
+    refreshProfile();
+  }
+
+  function updateIntensity(key: keyof Intensity, value: number) {
+    const next = { ...intensity, [key]: value };
+    setIntensity(next);
+    // Debounce DB write so dragging doesn't spam
+    if ((window as any).__intensityTimer) clearTimeout((window as any).__intensityTimer);
+    (window as any).__intensityTimer = setTimeout(() => saveIntensity(next), 400);
+  }
+
   if (!isVipPlus) return null;
   const currentTheme = profile?.profile_theme_id ?? null;
 
@@ -132,6 +160,43 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
           );
         })}
       </div>
+
+      {/* Intensity sliders — only when a theme is active */}
+      {currentTheme && (
+        <div className="space-y-2.5 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-3">
+          <div className="flex items-center justify-between">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">intensitate</div>
+            <button
+              onClick={() => { setIntensity(defaultIntensity); saveIntensity(defaultIntensity); }}
+              className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/80 hover:text-foreground"
+            >reset</button>
+          </div>
+          {([
+            ["gradient", "Gradient"],
+            ["aurora", "Auroră"],
+            ["sheen", "Sheen"],
+            ["grain", "Grain"],
+            ["vignette", "Vignette"],
+          ] as Array<[keyof Intensity, string]>).map(([key, label]) => (
+            <label key={key} className="block">
+              <div className="flex items-center justify-between text-[11px] mb-0.5">
+                <span className="text-foreground/80">{label}</span>
+                <span className="font-mono text-foreground/50 tabular-nums">{Math.round(intensity[key] * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={1.5}
+                step={0.05}
+                value={intensity[key]}
+                onChange={(e) => updateIntensity(key, parseFloat(e.target.value))}
+                className="w-full h-1.5 accent-foreground"
+              />
+            </label>
+          ))}
+        </div>
+      )}
+
 
       {/* Pro-only: music + bg */}
       {isPro ? (
