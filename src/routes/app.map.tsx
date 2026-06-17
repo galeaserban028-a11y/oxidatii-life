@@ -684,7 +684,7 @@ function MapPage() {
               cities={citiesScoped}
               venues={filtered}
               promotedMeta={promotedMeta}
-              friends={friendPins}
+              friends={mapFriendPins}
               focusCity={focusCity}
               fitBounds={fitBounds}
               onCityClick={(c) => {
