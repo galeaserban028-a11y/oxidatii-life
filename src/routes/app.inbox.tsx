@@ -146,9 +146,12 @@ function InboxPage() {
         <div className="py-14 text-center space-y-3">
           <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-neon-crimson via-neon-purple to-neon-green opacity-90 flex items-center justify-center text-2xl">💬</div>
           <div className="font-display font-black text-base">
-            {tab === "prieteni" ? "Niciun prieten încă" : "Liniște deplină"}
+            {tab === "prieteni" ? "Niciun prieten încă" : tab === "grupuri" ? "Niciun grup încă" : "Liniște deplină"}
           </div>
-          <div className="text-xs text-muted-foreground">Începe o conversație nouă cu cineva din gașcă.</div>
+          <div className="text-xs text-muted-foreground">
+            {tab === "grupuri" ? "Fă un grup cu trupa ca să țineți noaptea împreună." : "Începe o conversație nouă cu cineva din gașcă."}
+          </div>
+
           <button onClick={() => setShowNew(true)} className="mt-2 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-gradient-to-br from-neon-crimson via-neon-purple to-neon-purple text-white font-display font-black text-xs shadow-[0_8px_22px_-8px_theme(colors.neon-purple/0.7)] active:scale-[0.97] transition">
             <PenSquare size={14} /> Mesaj nou
           </button>
