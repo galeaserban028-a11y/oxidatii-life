@@ -26,10 +26,12 @@ export const Route = createFileRoute("/app/")({
 });
 
 async function loadFeed() {
+  const cutoff = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
   const { data: proofs } = await supabase
     .from("sprit_proofs")
     .select("id, photo_url, media_type, created_at, user_id, venue_id, ai_verified")
     .eq("ai_verified", true)
+    .gte("created_at", cutoff)
     .order("created_at", { ascending: false })
     .limit(30);
 

@@ -87,7 +87,7 @@ function TopPage() {
 
         const [photoRes, checkinRes] = await Promise.all([
           needPhotos
-            ? supabase.from("venue_photos").select("user_id").in("user_id", ids).gte("taken_at", monthStart)
+            ? supabase.from("sprit_proofs").select("user_id").in("user_id", ids).gte("created_at", monthStart)
             : Promise.resolve({ data: [] as any[] }),
           needCheckins
             ? supabase.from("check_ins").select("user_id").in("user_id", ids).gte("created_at", monthStart)
