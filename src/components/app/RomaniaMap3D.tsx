@@ -38,50 +38,59 @@ const TYPE_EMOJI: Record<string, string> = {
   after: "🎉",
 };
 
-// Render a glowing neon "pin" — a dark circle with a colored halo and the
-// type emoji inside. Matches the reference: small icon-bubble with strong
-// outer glow, not a bottle silhouette.
+// Neon glowing pin — large dark disc, thick colored neon ring, soft outer
+// halo, big emoji glyph centered. Matches the reference (Aarhus speaker,
+// Praha cocktail, etc.).
 function makePinImage(color: string, emoji: string): ImageData {
-  const W = 64, H = 64;
+  const W = 128, H = 128;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
   const cx = W / 2, cy = H / 2;
 
-  // Outer glow halo
+  // Outer soft halo — wide, low alpha
+  const halo = ctx.createRadialGradient(cx, cy, 18, cx, cy, 60);
+  halo.addColorStop(0, color + "cc");
+  halo.addColorStop(0.4, color + "55");
+  halo.addColorStop(1, color + "00");
+  ctx.fillStyle = halo;
+  ctx.fillRect(0, 0, W, H);
+
+  // Strong inner glow
   ctx.shadowColor = color;
-  ctx.shadowBlur = 16;
+  ctx.shadowBlur = 28;
   ctx.fillStyle = color;
-  ctx.globalAlpha = 0.55;
+  ctx.globalAlpha = 0.9;
   ctx.beginPath();
-  ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 34, 0, Math.PI * 2);
   ctx.fill();
 
-  // Solid neon ring
+  // Thick neon ring
   ctx.globalAlpha = 1;
-  ctx.shadowBlur = 10;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 16, 0, Math.PI * 2);
-  ctx.lineWidth = 2.5;
+  ctx.shadowBlur = 18;
+  ctx.lineWidth = 5;
   ctx.strokeStyle = color;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 32, 0, Math.PI * 2);
   ctx.stroke();
 
   // Inner dark fill
   ctx.shadowBlur = 0;
-  ctx.fillStyle = "rgba(8,6,18,0.95)";
+  ctx.fillStyle = "#0a0814";
   ctx.beginPath();
-  ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 28, 0, Math.PI * 2);
   ctx.fill();
 
-  // Emoji glyph
-  ctx.font = "16px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',system-ui";
+  // Big emoji glyph
+  ctx.font = "36px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',system-ui";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(emoji, cx, cy + 1);
+  ctx.fillText(emoji, cx, cy + 2);
 
   return ctx.getImageData(0, 0, W, H);
 }
+
 
 const VOYAGER_STYLE = {
   version: 8,
