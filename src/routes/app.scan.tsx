@@ -23,6 +23,7 @@ function ScanPage() {
   const [venueQuery, setVenueQuery] = useState("");
   const [selectedVenue, setSelectedVenue] = useState<{ id: string; name: string; city?: any } | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [postToProfile, setPostToProfile] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [newVenueName, setNewVenueName] = useState("");
   const [newVenueType, setNewVenueType] = useState<"club" | "bar" | "terasa">("club");
@@ -61,15 +62,17 @@ function ScanPage() {
       const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, { contentType: file.type });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
-      const { error: insErr } = await supabase.from("venue_photos").insert({
-        venue_id: selectedVenue.id,
-        user_id: user.id,
-        photo_url: pub.publicUrl,
-        media_type: isVideo ? "video" : "image",
-        caption: caption.trim() || null,
-      });
-      if (insErr) throw insErr;
-      // Also create a sprit_proof so it shows up on the main /app feed
+      if (postToProfile) {
+        const { error: insErr } = await supabase.from("venue_photos").insert({
+          venue_id: selectedVenue.id,
+          user_id: user.id,
+          photo_url: pub.publicUrl,
+          media_type: isVideo ? "video" : "image",
+          caption: caption.trim() || null,
+        });
+        if (insErr) throw insErr;
+      }
+      // Always create a sprit_proof so it shows up on the main /app feed (auto-deletes after 12h)
       const { error: proofErr } = await supabase.from("sprit_proofs").insert({
         user_id: user.id,
         venue_id: selectedVenue.id,
@@ -269,6 +272,28 @@ function ScanPage() {
             placeholder="caption (opțional)"
             className="w-full px-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
+
+          {/* Publish to profile toggle */}
+          <button
+            type="button"
+            onClick={() => setPostToProfile((v) => !v)}
+            className="w-full flex items-center justify-between p-3 rounded-2xl bg-card border border-border text-left active:scale-[0.99] transition"
+          >
+            <div className="min-w-0 pr-3">
+              <div className="text-sm font-semibold">publică și pe contul tău</div>
+              <div className="text-[11px] text-muted-foreground">
+                apare pe profil. dacă e off, șprițul intră doar în feed-ul live (12h).
+              </div>
+            </div>
+            <div className={`shrink-0 w-11 h-6 rounded-full p-0.5 transition ${postToProfile ? "bg-primary" : "bg-secondary border border-border"}`}>
+              <div className={`h-5 w-5 rounded-full bg-white shadow transition ${postToProfile ? "translate-x-5" : "translate-x-0"}`} />
+            </div>
+          </button>
+
+          <p className="text-[10px] text-center text-muted-foreground">
+            șprițurile din feed se șterg automat după 12 ore.
+          </p>
+
 
           {/* Submit */}
           <button
