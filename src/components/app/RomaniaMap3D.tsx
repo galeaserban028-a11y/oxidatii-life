@@ -40,15 +40,16 @@ const TYPE_EMOJI: Record<string, string> = {
 
 // Neon glowing emoji pin — big bright emoji with a wide multi-stop halo so
 // each pin reads as a glowing orb on the dark map (matches reference).
-function makePinImage(color: string, emoji: string): ImageData {
-  const W = 160, H = 160;
+function makePinImage(color: string, emoji: string, lowEnd = false): ImageData {
+  const W = lowEnd ? 96 : 144, H = W;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
   const cx = W / 2, cy = H / 2;
+  const s = W / 160; // scale factor
 
   // wide outer aura
-  const aura = ctx.createRadialGradient(cx, cy, 4, cx, cy, 78);
+  const aura = ctx.createRadialGradient(cx, cy, 4 * s, cx, cy, 78 * s);
   aura.addColorStop(0, color + "ee");
   aura.addColorStop(0.18, color + "aa");
   aura.addColorStop(0.4, color + "55");
@@ -57,38 +58,40 @@ function makePinImage(color: string, emoji: string): ImageData {
   ctx.fillStyle = aura;
   ctx.fillRect(0, 0, W, H);
 
-  // bright inner core glow
-  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
-  core.addColorStop(0, color);
-  core.addColorStop(0.6, color + "66");
-  core.addColorStop(1, color + "00");
-  ctx.globalCompositeOperation = "lighter";
-  ctx.fillStyle = core;
-  ctx.fillRect(0, 0, W, H);
-  ctx.globalCompositeOperation = "source-over";
+  if (!lowEnd) {
+    const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30 * s);
+    core.addColorStop(0, color);
+    core.addColorStop(0.6, color + "66");
+    core.addColorStop(1, color + "00");
+    ctx.globalCompositeOperation = "lighter";
+    ctx.fillStyle = core;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "source-over";
+  }
 
-  // neon ring
   ctx.shadowColor = color;
-  ctx.shadowBlur = 28;
+  ctx.shadowBlur = (lowEnd ? 14 : 24) * s;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 3.5;
+  ctx.lineWidth = 3.5 * s;
   ctx.beginPath();
-  ctx.arc(cx, cy, 34, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 34 * s, 0, Math.PI * 2);
   ctx.stroke();
 
-  // emoji glyph — stroke twice for punch
   ctx.shadowColor = color;
-  ctx.shadowBlur = 24;
+  ctx.shadowBlur = (lowEnd ? 12 : 22) * s;
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = '50px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-  ctx.fillText(emoji, cx, cy + 2);
-  ctx.shadowBlur = 36;
-  ctx.fillText(emoji, cx, cy + 2);
+  ctx.font = `${Math.round(50 * s)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+  ctx.fillText(emoji, cx, cy + 2 * s);
+  if (!lowEnd) {
+    ctx.shadowBlur = 32 * s;
+    ctx.fillText(emoji, cx, cy + 2 * s);
+  }
 
   return ctx.getImageData(0, 0, W, H);
 }
+
 
 
 
