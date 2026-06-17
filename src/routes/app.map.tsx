@@ -507,8 +507,8 @@ function MapPage() {
         />
 
         {/* Country chips */}
-        <div className="-mx-4 px-4 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-2 pb-1">
+        <div className="-mx-4 px-4 overflow-x-auto oxi-scrollbar">
+          <div className="flex items-center gap-2 pb-3">
             <button
               onClick={() => { setCountry("all"); setCityId("all"); }}
               className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === "all" ? "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white border-transparent shadow-lg shadow-[#ff3d8b]/25" : "bg-white/5 border-white/10 text-white/60"}`}

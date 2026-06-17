@@ -383,6 +383,12 @@
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Visible thin scrollbar for horizontal chip lists */
+  .oxi-scrollbar::-webkit-scrollbar { height: 4px; }
+  .oxi-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .oxi-scrollbar::-webkit-scrollbar-thumb { background: oklch(0.68 0.26 0 / 0.45); border-radius: 999px; }
+  .oxi-scrollbar { scrollbar-width: thin; scrollbar-color: oklch(0.68 0.26 0 / 0.45) transparent; }
 }
 
 @layer utilities {
