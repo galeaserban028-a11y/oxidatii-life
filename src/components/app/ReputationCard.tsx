@@ -88,18 +88,20 @@ function usePeerAgg(userId?: string | null) {
   return useQuery({
     queryKey: ["rep-agg", userId],
     enabled: !!userId,
-    queryFn: async (): Promise<PeerAgg> => {
+    queryFn: async (): Promise<{ agg: PeerAgg; uniqueRaters: number }> => {
       const { data } = await supabase
         .from("user_ratings" as any)
-        .select("category, value")
+        .select("category, value, rater_id")
         .eq("rated_id", userId!);
       const out: PeerAgg = {};
-      for (const r of ((data ?? []) as unknown) as Array<{ category: CatKey; value: number }>) {
+      const raters = new Set<string>();
+      for (const r of ((data ?? []) as unknown) as Array<{ category: CatKey; value: number; rater_id: string }>) {
         const cur = out[r.category] ?? { avg: 0, n: 0 };
         const n = cur.n + 1;
         out[r.category] = { avg: (cur.avg * cur.n + r.value) / n, n };
+        if (r.rater_id) raters.add(r.rater_id);
       }
-      return out;
+      return { agg: out, uniqueRaters: raters.size };
     },
   });
 }
