@@ -44,9 +44,11 @@
   --color-neon-crimson: var(--sunset-orange);
   --color-neon-chrome: var(--foreground);
 
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  /* Unified type: a single family across the whole app (display, body, mono) */
   --font-sans: 'DM Sans', system-ui, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-display: var(--font-sans);
+  --font-mono: var(--font-sans);
+
 }
 
 :root {
