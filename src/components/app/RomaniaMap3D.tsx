@@ -811,6 +811,14 @@ export function RomaniaMap3D({
     }
   }, [friends, retryKey]);
 
+  const mePin = friends.find(f => f.is_me);
+
+  const handleRecenter = useCallback(() => {
+    const map = mapRef.current;
+    if (!map || !mePin) return;
+    map.flyTo({ center: [mePin.lng, mePin.lat], zoom: 13.5, duration: 900, essential: true });
+  }, [mePin]);
+
   return (
     <div className="relative w-full h-[54vh] min-h-[400px] max-h-[560px] overflow-hidden bg-[#0d0b1e]">
       <style>{`
