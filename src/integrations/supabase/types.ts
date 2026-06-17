@@ -2092,6 +2092,7 @@ export type Database = {
         Returns: Json
       }
       claim_profile_boost: { Args: never; Returns: Json }
+      cleanup_old_spritz: { Args: never; Returns: undefined }
       compute_business_score: {
         Args: { _business_id: string }
         Returns: number
