@@ -62,15 +62,17 @@ function ScanPage() {
       const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, { contentType: file.type });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
-      const { error: insErr } = await supabase.from("venue_photos").insert({
-        venue_id: selectedVenue.id,
-        user_id: user.id,
-        photo_url: pub.publicUrl,
-        media_type: isVideo ? "video" : "image",
-        caption: caption.trim() || null,
-      });
-      if (insErr) throw insErr;
-      // Also create a sprit_proof so it shows up on the main /app feed
+      if (postToProfile) {
+        const { error: insErr } = await supabase.from("venue_photos").insert({
+          venue_id: selectedVenue.id,
+          user_id: user.id,
+          photo_url: pub.publicUrl,
+          media_type: isVideo ? "video" : "image",
+          caption: caption.trim() || null,
+        });
+        if (insErr) throw insErr;
+      }
+      // Always create a sprit_proof so it shows up on the main /app feed (auto-deletes after 12h)
       const { error: proofErr } = await supabase.from("sprit_proofs").insert({
         user_id: user.id,
         venue_id: selectedVenue.id,
