@@ -320,9 +320,7 @@ export function RomaniaMap3D({
       map.addSource(VENUES_SRC, {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
-        cluster: true,
-        clusterRadius: 20,
-        clusterMaxZoom: 2,
+        cluster: false,
       });
 
       // Very subtle energy source; kept low so the basemap roads/labels stay clean.
@@ -458,7 +456,7 @@ export function RomaniaMap3D({
             "after", "pin-v2-after",
             "pin-v2-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.1, 6, 0.14, 10, 0.2, 14, 0.28, 17, 0.36],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.08, 6, 0.11, 10, 0.16, 14, 0.24, 17, 0.32],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
