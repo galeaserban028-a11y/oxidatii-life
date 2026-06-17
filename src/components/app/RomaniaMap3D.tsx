@@ -284,8 +284,7 @@ export function RomaniaMap3D({
 
     map.touchZoomRotate.disableRotation();
     map.dragRotate.disable();
-    map.dragPan.disable();
-    map.scrollZoom.disable();
+    // dragPan + scrollZoom rămân activate ca să se poată naviga și da zoom
 
     map.on("load", () => {
       loadedRef.current = true;
