@@ -53,8 +53,12 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
       const path = `${user.id}/${field}-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("profile-media").upload(path, file, { upsert: true, contentType: file.type });
       if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from("profile-media").getPublicUrl(path);
-      const { error } = await supabase.from("profiles").update({ [field]: pub.publicUrl } as any).eq("id", user.id);
+      // Bucket is private — use a long-lived signed URL (10 years)
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("profile-media")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      if (signErr) throw signErr;
+      const { error } = await supabase.from("profiles").update({ [field]: signed.signedUrl } as any).eq("id", user.id);
       if (error) throw error;
       toast.success(`${kind} actualizat`);
       refreshProfile();
