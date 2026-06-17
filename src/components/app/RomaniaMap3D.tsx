@@ -429,7 +429,7 @@ export function RomaniaMap3D({
             "after", "pin-bottle-v3-after",
             "pin-bottle-v3-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.16, 6, 0.22, 10, 0.32, 14, 0.46, 17, 0.6],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.5, 6, 0.7, 10, 0.95, 14, 1.2, 17, 1.5],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
