@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PROFILE_THEMES, isThemeAvailable } from "@/lib/premium-themes";
 import { Lock } from "lucide-react";
 import { Music, Image as ImageIcon, Palette, Trash2, Loader2, Check } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 
 /**
