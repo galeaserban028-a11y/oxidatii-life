@@ -18,7 +18,7 @@ function InboxPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const [showNew, setShowNew] = useState(false);
-  const [tab, setTab] = useState<Tab>("pentru-tine");
+  const [tab, setTab] = useState<Tab>("mesaje");
 
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["inbox", user?.id],
