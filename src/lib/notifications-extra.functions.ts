@@ -56,10 +56,11 @@ export const notifyChatMessage = createServerFn({ method: "POST" })
       .select("user_id")
       .eq("conversation_id", data.conversationId);
 
-    const targets = (members ?? [])
-      .map((m) => m.user_id)
-      .filter((id) => id && id !== userId);
+    const memberIds = (members ?? []).map((m) => m.user_id);
+    if (!memberIds.includes(userId)) return { sent: 0 };
+    const targets = memberIds.filter((id) => id && id !== userId);
     if (!targets.length) return { sent: 0 };
+
 
     const { data: me } = await supabaseAdmin
       .from("profiles")
