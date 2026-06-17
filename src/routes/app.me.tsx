@@ -262,13 +262,13 @@ function MePage() {
     <div className="pb-3 bg-[#050505] min-h-screen text-white">
       {/* Top bar — sunset glass */}
       <header className="sticky top-0 z-30 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5 px-3 h-12 flex items-center justify-between">
-        <Link to="/app/scan" className="p-1.5 -ml-1.5 active:scale-95 transition text-white/80 hover:text-[#f7931e]" aria-label="Adaugă">
+        <Link to="/app/scan" className="p-1.5 -ml-1.5 active:scale-95 transition text-white/80 hover:text-[#ffea00]" aria-label="Adaugă">
           <Plus size={24} strokeWidth={2.2} />
         </Link>
 
         <div className="flex-1 flex justify-center">
           <span style={instrument} className="text-xl tracking-tight">
-            @{profile.handle ?? "—"}<span className="text-[#f7931e]">.</span>
+            @{profile.handle ?? "—"}<span className="text-[#ffea00]">.</span>
           </span>
         </div>
 
@@ -281,29 +281,29 @@ function MePage() {
             <button className="p-1.5 -mr-1.5 active:scale-95 transition relative text-white/80" aria-label="Meniu">
               <Menu size={24} strokeWidth={2.2} />
               {pendingCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-[#e84393] animate-pulse" />
+                <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-[#c724ff] animate-pulse" />
               )}
             </button>
           </SheetTrigger>
           <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0 bg-[#0a0a0a] border-l border-white/10 text-white">
             <SheetHeader className="px-4 py-3 border-b border-white/10 text-left">
-              <SheetTitle style={instrument} className="text-2xl text-white">Meniu<span className="text-[#f7931e]">.</span></SheetTitle>
+              <SheetTitle style={instrument} className="text-2xl text-white">Meniu<span className="text-[#ffea00]">.</span></SheetTitle>
             </SheetHeader>
             <nav className="py-2">
-              <MenuItem to="/app/settings" icon={<Settings size={16} className="text-[#f7931e]" />} onSelect={() => setMenuOpen(false)} label="Setări" />
-              <MenuItem to="/app/premium" icon={<Gem size={16} className="text-[#e84393]" />} onSelect={() => setMenuOpen(false)} label="Șpriț Premium ✨" />
+              <MenuItem to="/app/settings" icon={<Settings size={16} className="text-[#ffea00]" />} onSelect={() => setMenuOpen(false)} label="Setări" />
+              <MenuItem to="/app/premium" icon={<Gem size={16} className="text-[#c724ff]" />} onSelect={() => setMenuOpen(false)} label="Șpriț Premium ✨" />
               {["vip_plus", "pro", "elite"].includes((profile as any)?.premium_tier ?? "") && (
                 <MenuItem to="/app/me/raters" icon={<Gem size={16} className="text-rose-400" />} onSelect={() => setMenuOpen(false)} label="Cine ți-a dat rating" />
               )}
               {["pro", "elite"].includes((profile as any)?.premium_tier ?? "") && (
                 <MenuItem to="/app/me/reputation" icon={<Gem size={16} className="text-emerald-400" />} onSelect={() => setMenuOpen(false)} label="Reputation analytics" />
               )}
-              <MenuItem to="/app/biz" icon={<Rocket size={16} className="text-[#6c5ce7]" />} onSelect={() => setMenuOpen(false)} label="Business · Promovare" />
+              <MenuItem to="/app/biz" icon={<Rocket size={16} className="text-[#00e5ff]" />} onSelect={() => setMenuOpen(false)} label="Business · Promovare" />
               {isStaff && (
-                <MenuItem to="/app/admin" icon={<ShieldAlert size={16} className="text-[#e84393]" />} onSelect={() => setMenuOpen(false)} label={isAdmin ? "Panou Admin" : "Panou Moderator"} />
+                <MenuItem to="/app/admin" icon={<ShieldAlert size={16} className="text-[#c724ff]" />} onSelect={() => setMenuOpen(false)} label={isAdmin ? "Panou Admin" : "Panou Moderator"} />
               )}
               <div className="my-1 border-t border-white/10" />
-              <MenuItem to="/app/me/archive" icon={<Bookmark size={16} className="text-[#f7931e]" />} onSelect={() => setMenuOpen(false)} label="Arhiva ta" />
+              <MenuItem to="/app/me/archive" icon={<Bookmark size={16} className="text-[#ffea00]" />} onSelect={() => setMenuOpen(false)} label="Arhiva ta" />
               <MenuItem to="/app/notifications" icon={<Bell size={16} className="text-white/70" />} onSelect={() => setMenuOpen(false)} label="Notificări" />
               <MenuItem to="/app/requests" icon={<UserPlus size={16} className="text-white/70" />} onSelect={() => setMenuOpen(false)}
                 label="Cereri urmărire" badge={pendingCount > 0 ? pendingCount : undefined} />
@@ -315,9 +315,9 @@ function MePage() {
                 disabled={savingPrivacy}
                 className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition text-left"
               >
-                {profile.is_public ? <Globe2 size={16} className="text-[#f7931e]" /> : <Lock size={16} className="text-[#e84393]" />}
+                {profile.is_public ? <Globe2 size={16} className="text-[#ffea00]" /> : <Lock size={16} className="text-[#c724ff]" />}
                 <span className="text-sm flex-1">
-                  Cont: <span className={profile.is_public ? "text-[#f7931e]" : "text-[#e84393]"}>{profile.is_public ? "public" : "privat"}</span>
+                  Cont: <span className={profile.is_public ? "text-[#ffea00]" : "text-[#c724ff]"}>{profile.is_public ? "public" : "privat"}</span>
                 </span>
                 <span className="text-[10px] font-mono uppercase text-white/40">schimbă</span>
               </button>
@@ -331,7 +331,7 @@ function MePage() {
               <div className="my-2 border-t border-white/10" />
               <button
                 onClick={handleDoSignOut}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#e84393]/10 transition text-left text-[#e84393]"
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#c724ff]/10 transition text-left text-[#c724ff]"
               >
                 <LogOut size={16} />
                 <span className="text-sm">Logout</span>
@@ -348,7 +348,7 @@ function MePage() {
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="relative h-[92px] w-[92px] rounded-full p-[2.5px] bg-gradient-to-br from-[#ff6b35] via-[#f7931e] to-[#e84393] shadow-[0_0_28px_rgba(232,67,147,0.4)] shrink-0 active:scale-95 transition"
+            className="relative h-[92px] w-[92px] rounded-full p-[2.5px] bg-gradient-to-br from-[#ff3d8b] via-[#ffea00] to-[#c724ff] shadow-[0_0_28px_rgba(199,36,255,0.4)] shrink-0 active:scale-95 transition"
             aria-label="Schimbă poza de profil"
           >
             <div className={`h-full w-full rounded-full overflow-hidden bg-[#0a0a0a] flex items-center justify-center text-3xl ${activeFrame?.css_class ?? ""}`} style={instrument}>
@@ -400,7 +400,7 @@ function MePage() {
           )}
           {moments?.city && (
             <div className="text-[12px] text-white/40 pt-1 flex items-center gap-1.5">
-              <span className="h-1 w-1 rounded-full bg-[#f7931e]" />
+              <span className="h-1 w-1 rounded-full bg-[#ffea00]" />
               din <span className="text-white/90">{moments.city.name}</span>
             </div>
           )}
@@ -410,17 +410,17 @@ function MePage() {
         {!(profile as any).premium_tier && (
           <Link
             to="/app/premium"
-            className="mt-8 relative flex items-center gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-[#ff6b35]/15 via-[#e84393]/10 to-transparent p-4 active:scale-[0.99] transition group overflow-hidden"
+            className="mt-8 relative flex items-center gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-[#ff3d8b]/15 via-[#c724ff]/10 to-transparent p-4 active:scale-[0.99] transition group overflow-hidden"
           >
-            <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-[#e84393]/20 blur-2xl pointer-events-none" />
-            <div className="relative h-11 w-11 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#e84393] flex items-center justify-center shadow-[0_0_20px_rgba(232,67,147,0.4)]">
+            <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-[#c724ff]/20 blur-2xl pointer-events-none" />
+            <div className="relative h-11 w-11 rounded-xl bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center shadow-[0_0_20px_rgba(199,36,255,0.4)]">
               <Gem size={18} className="text-white" />
             </div>
             <div className="relative flex-1 min-w-0">
-              <div style={instrument} className="text-lg leading-tight text-white">Devino <em className="text-[#f7931e] not-italic">VIP, PRO sau ELITE</em></div>
+              <div style={instrument} className="text-lg leading-tight text-white">Devino <em className="text-[#ffea00] not-italic">VIP, PRO sau ELITE</em></div>
               <div className="text-[10px] text-white/50 mt-0.5">Badge, frame, teme, șprițuri · de la 2.99 lei</div>
             </div>
-            <span className="relative text-[10px] font-mono uppercase tracking-wider text-white/50 group-hover:text-[#f7931e] transition-colors">Vezi →</span>
+            <span className="relative text-[10px] font-mono uppercase tracking-wider text-white/50 group-hover:text-[#ffea00] transition-colors">Vezi →</span>
           </Link>
         )}
 
@@ -448,10 +448,10 @@ function MePage() {
         <div className="mt-8 grid grid-cols-2 gap-3">
           <Link
             to="/app/discover"
-            className="p-4 rounded-2xl bg-[#0d0d0d] border border-white/10 flex flex-col gap-3 hover:border-[#e84393]/40 active:scale-[0.99] transition group"
+            className="p-4 rounded-2xl bg-[#0d0d0d] border border-white/10 flex flex-col gap-3 hover:border-[#c724ff]/40 active:scale-[0.99] transition group"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#e84393]/20 to-[#ff6b35]/10 flex items-center justify-center">
-              <svg className="w-5 h-5 text-[#e84393] group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#c724ff]/20 to-[#ff3d8b]/10 flex items-center justify-center">
+              <svg className="w-5 h-5 text-[#c724ff] group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
               </svg>
             </div>
@@ -462,10 +462,10 @@ function MePage() {
           </Link>
           <Link
             to="/app/shop"
-            className="p-4 rounded-2xl bg-[#0d0d0d] border border-white/10 flex flex-col gap-3 hover:border-[#f7931e]/40 active:scale-[0.99] transition group"
+            className="p-4 rounded-2xl bg-[#0d0d0d] border border-white/10 flex flex-col gap-3 hover:border-[#ffea00]/40 active:scale-[0.99] transition group"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f7931e]/20 to-[#ff6b35]/10 flex items-center justify-center">
-              <Gem size={18} className="text-[#f7931e] group-hover:scale-110 transition-transform" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#ffea00]/20 to-[#ff3d8b]/10 flex items-center justify-center">
+              <Gem size={18} className="text-[#ffea00] group-hover:scale-110 transition-transform" />
             </div>
             <div>
               <div style={instrument} className="text-lg leading-none">Bar</div>
@@ -485,7 +485,7 @@ function MePage() {
             }
           }}>
             <DialogTrigger asChild>
-              <button className="h-12 rounded-xl bg-gradient-to-r from-[#ff6b35] to-[#e84393] hover:shadow-[0_8px_24px_-8px_rgba(232,67,147,0.6)] active:scale-[0.98] transition flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white">
+              <button className="h-12 rounded-xl bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] hover:shadow-[0_8px_24px_-8px_rgba(199,36,255,0.6)] active:scale-[0.98] transition flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white">
                 <Pencil size={13} /> Editează
               </button>
             </DialogTrigger>
@@ -548,18 +548,18 @@ function MePage() {
 
           <button
             onClick={shareProfile}
-            className="h-12 rounded-xl bg-white/5 border border-white/10 hover:border-[#f7931e]/40 hover:bg-white/10 active:scale-[0.98] transition flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white"
+            className="h-12 rounded-xl bg-white/5 border border-white/10 hover:border-[#ffea00]/40 hover:bg-white/10 active:scale-[0.98] transition flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest text-white"
           >
             <Share2 size={13} /> Distribuie
           </button>
           <Link
             to="/app/notifications"
-            className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 hover:border-[#e84393]/40 hover:bg-white/10 active:scale-[0.98] transition flex items-center justify-center relative text-white"
+            className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 hover:border-[#c724ff]/40 hover:bg-white/10 active:scale-[0.98] transition flex items-center justify-center relative text-white"
             aria-label="Notificări"
           >
             <Bell size={16} />
             {pendingCount > 0 && (
-              <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-[#e84393] text-white text-[9px] flex items-center justify-center font-mono">
+              <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-[#c724ff] text-white text-[9px] flex items-center justify-center font-mono">
                 {pendingCount}
               </span>
             )}
@@ -570,9 +570,9 @@ function MePage() {
         {pendingCount > 0 && (
           <Link
             to="/app/requests"
-            className="mt-3 flex items-center gap-2.5 p-3 rounded-2xl border border-[#e84393]/40 bg-gradient-to-r from-[#e84393]/15 to-transparent active:scale-[0.99] transition"
+            className="mt-3 flex items-center gap-2.5 p-3 rounded-2xl border border-[#c724ff]/40 bg-gradient-to-r from-[#c724ff]/15 to-transparent active:scale-[0.99] transition"
           >
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#e84393] text-white flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(232,67,147,0.5)]">
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] text-white flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(199,36,255,0.5)]">
               <UserPlus size={14} strokeWidth={2.6} />
             </div>
             <div className="flex-1 min-w-0">
@@ -605,7 +605,7 @@ function MePage() {
         >
           <Grid3x3 size={14} />
           Postări <span className="font-mono text-[10px] opacity-70">{postsCount}</span>
-          {tab === "posts" && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[2px] bg-gradient-to-r from-[#ff6b35] to-[#e84393]" />}
+          {tab === "posts" && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[2px] bg-gradient-to-r from-[#ff3d8b] to-[#c724ff]" />}
         </button>
         <button
           onClick={() => setTab("reposts")}
@@ -615,7 +615,7 @@ function MePage() {
         >
           <Share2 size={14} />
           Reposturi <span className="font-mono text-[10px] opacity-70">{repostsCount}</span>
-          {tab === "reposts" && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[2px] bg-gradient-to-r from-[#ff6b35] to-[#e84393]" />}
+          {tab === "reposts" && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[2px] bg-gradient-to-r from-[#ff3d8b] to-[#c724ff]" />}
         </button>
       </div>
 
@@ -631,7 +631,7 @@ function MePage() {
               ? "Când dai repost la o fază din feed, apare aici."
               : "Nu inventăm istorii. Când postezi o poză sau scanezi un șpriț, apare aici."}
           </p>
-          <Link to={tab === "reposts" ? "/app/faze" : "/app/scan"} className="inline-flex mt-2 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-full bg-gradient-to-r from-[#ff6b35] to-[#e84393] text-white">
+          <Link to={tab === "reposts" ? "/app/faze" : "/app/scan"} className="inline-flex mt-2 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-full bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white">
             {tab === "reposts" ? "vezi fazele →" : "scanează primul șpriț →"}
           </Link>
         </div>
@@ -649,19 +649,19 @@ function MePage() {
               >
                 <img src={m.photo_url} alt={m.caption ?? ""} className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition" loading="lazy" />
                 {isProof && (
-                  <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#f7931e]/50">
-                    <span className="font-mono text-[8px] uppercase text-[#f7931e]">verificat</span>
+                  <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#ffea00]/50">
+                    <span className="font-mono text-[8px] uppercase text-[#ffea00]">verificat</span>
                   </div>
                 )}
                 {tab === "reposts" && (
-                  <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#e84393]/50">
-                    <span className="font-mono text-[8px] uppercase text-[#e84393]">↻ repost</span>
+                  <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#c724ff]/50">
+                    <span className="font-mono text-[8px] uppercase text-[#c724ff]">↻ repost</span>
                   </div>
                 )}
                 {m.venue?.name && (
                   <div className="absolute bottom-0 inset-x-0 p-1.5 bg-gradient-to-t from-black/90 to-transparent">
                     <div className="font-mono text-[9px] uppercase tracking-wider text-white truncate flex items-center gap-1">
-                      <span className="h-1 w-1 rounded-full bg-[#f7931e]" />
+                      <span className="h-1 w-1 rounded-full bg-[#ffea00]" />
                       {m.venue.name}
                     </div>
                   </div>
