@@ -56,10 +56,11 @@ export const notifyChatMessage = createServerFn({ method: "POST" })
       .select("user_id")
       .eq("conversation_id", data.conversationId);
 
-    const targets = (members ?? [])
-      .map((m) => m.user_id)
-      .filter((id) => id && id !== userId);
+    const memberIds = (members ?? []).map((m) => m.user_id);
+    if (!memberIds.includes(userId)) return { sent: 0 };
+    const targets = memberIds.filter((id) => id && id !== userId);
     if (!targets.length) return { sent: 0 };
+
 
     const { data: me } = await supabaseAdmin
       .from("profiles")
@@ -89,6 +90,15 @@ export const notifyPartyJoinRequest = createServerFn({ method: "POST" })
       .eq("id", data.partyId)
       .maybeSingle();
     if (!party || party.host_id === userId) return { sent: 0 };
+    // Verify caller actually submitted a join request
+    const { data: req } = await supabaseAdmin
+      .from("party_joins")
+      .select("user_id")
+      .eq("party_id", data.partyId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!req) return { sent: 0 };
+
 
     const { data: me } = await supabaseAdmin
       .from("profiles")

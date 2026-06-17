@@ -18,6 +18,8 @@ export const notifyNewPartyInCity = createServerFn({ method: "POST" })
       .eq("id", data.partyId)
       .maybeSingle();
     if (!party) return { sent: 0 };
+    if (party.host_id !== userId) return { sent: 0 };
+
 
     // Determine city: prefer venue.city_id, else host.city_id
     let cityId: string | null = null;
@@ -60,6 +62,15 @@ export const notifyPartyJoin = createServerFn({ method: "POST" })
       .eq("id", data.partyId)
       .maybeSingle();
     if (!party || party.host_id === userId) return { sent: 0 };
+    // Verify caller actually joined the party
+    const { data: join } = await supabaseAdmin
+      .from("party_joins")
+      .select("user_id")
+      .eq("party_id", data.partyId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!join) return { sent: 0 };
+
 
     const { data: joiner } = await supabaseAdmin
       .from("profiles")

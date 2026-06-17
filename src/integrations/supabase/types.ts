@@ -2073,6 +2073,8 @@ export type Database = {
         Returns: number
       }
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      buy_boost: { Args: { _kind: string; _target_id?: string }; Returns: Json }
+      buy_frame: { Args: { _frame_id: string }; Returns: Json }
       can_view_live_location: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean

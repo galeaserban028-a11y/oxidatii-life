@@ -64,24 +64,13 @@ function ShopPage() {
     },
   });
 
-  async function spend(amount: number, kind: string, refId?: string) {
-    const { data, error } = await supabase.rpc("spend_coins", {
-      _amount: amount, _kind: kind, _ref_id: refId,
-    });
-    if (error) throw new Error(error.message);
-    return data as number;
-  }
-
   async function buyProfileBoost() {
     if (!user) return;
     setBusy("profile-boost");
     try {
-      const newBal = await spend(5, "boost_profile");
-      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-      const { error } = await supabase.from("coin_boosts").insert({
-        user_id: user.id, kind: "profile", expires_at: expires, cost_coins: 5,
-      });
+      const { data, error } = await supabase.rpc("buy_boost", { _kind: "profile" });
       if (error) throw error;
+      const newBal = (data as any)?.balance ?? 0;
       toast.success(`Profil boostat 24h! Mai ai ${drink(newBal)}`);
       await refreshProfile();
       qc.invalidateQueries({ queryKey: ["discover-suggestions"] });
@@ -94,12 +83,9 @@ function ShopPage() {
     if (!user) return;
     setBusy(`party-${partyId}`);
     try {
-      const newBal = await spend(15, "boost_party", partyId);
-      const expires = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
-      const { error } = await supabase.from("coin_boosts").insert({
-        user_id: user.id, kind: "party", target_id: partyId, expires_at: expires, cost_coins: 15,
-      });
+      const { data, error } = await supabase.rpc("buy_boost", { _kind: "party", _target_id: partyId });
       if (error) throw error;
+      const newBal = (data as any)?.balance ?? 0;
       toast.success(`Petrecere boostată 12h! Mai ai ${drink(newBal)}`);
       await refreshProfile();
     } catch (e: any) {
@@ -118,10 +104,9 @@ function ShopPage() {
     }
     setBusy(`frame-${frame.id}`);
     try {
-      const newBal = await spend(frame.price_coins, "frame", frame.id);
-      const { error: e1 } = await supabase.from("user_frames").insert({ user_id: user.id, frame_id: frame.id });
-      if (e1) throw e1;
-      await supabase.from("profiles").update({ active_frame_id: frame.id }).eq("id", user.id);
+      const { data, error } = await supabase.rpc("buy_frame", { _frame_id: frame.id });
+      if (error) throw error;
+      const newBal = (data as any)?.balance ?? 0;
       toast.success(`Ai luat „${frame.name}"! Mai ai ${drink(newBal)}`);
       await refreshProfile();
       qc.invalidateQueries({ queryKey: ["owned-frames"] });
@@ -129,6 +114,7 @@ function ShopPage() {
       toast.error(e.message || "Eroare");
     } finally { setBusy(null); }
   }
+
 
   async function deactivateFrame() {
     if (!user) return;
