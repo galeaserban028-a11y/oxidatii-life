@@ -296,15 +296,16 @@ export function RomaniaMap3D({
             "rgba(48,28,22,0.92)",
           ],
           "circle-radius": ["step", ["get", "point_count"], 22, 80, 28, 240, 34],
-          "circle-stroke-width": 2.5,
+          "circle-stroke-width": 3,
           "circle-stroke-color": [
             "step", ["get", "point_count"],
             "#ff2bd6", 80,
             "#ffffff", 240,
-            "#a86b4a",
+            "#ffae6b",
           ],
         },
       });
+
       map.addLayer({
         id: "venues-cluster-count",
         type: "symbol",
