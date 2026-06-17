@@ -161,6 +161,43 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
         })}
       </div>
 
+      {/* Intensity sliders — only when a theme is active */}
+      {currentTheme && (
+        <div className="space-y-2.5 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-3">
+          <div className="flex items-center justify-between">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">intensitate</div>
+            <button
+              onClick={() => { setIntensity(defaultIntensity); saveIntensity(defaultIntensity); }}
+              className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/80 hover:text-foreground"
+            >reset</button>
+          </div>
+          {([
+            ["gradient", "Gradient"],
+            ["aurora", "Auroră"],
+            ["sheen", "Sheen"],
+            ["grain", "Grain"],
+            ["vignette", "Vignette"],
+          ] as Array<[keyof Intensity, string]>).map(([key, label]) => (
+            <label key={key} className="block">
+              <div className="flex items-center justify-between text-[11px] mb-0.5">
+                <span className="text-foreground/80">{label}</span>
+                <span className="font-mono text-foreground/50 tabular-nums">{Math.round(intensity[key] * 100)}%</span>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={1.5}
+                step={0.05}
+                value={intensity[key]}
+                onChange={(e) => updateIntensity(key, parseFloat(e.target.value))}
+                className="w-full h-1.5 accent-foreground"
+              />
+            </label>
+          ))}
+        </div>
+      )}
+
+
       {/* Pro-only: music + bg */}
       {isPro ? (
         <>
