@@ -380,9 +380,6 @@ function formatCount(n: number) {
 function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venue: any }) {
   const handle = profile?.display_name ?? profile?.handle ?? "Anonim";
   const badge = pickFeedBadge(item.id, item.kind === "proof");
-  const likes = pseudoCount(item.id, 13, 1800);
-  const comments = pseudoCount(item.id, 41, 200);
-  const reposts = pseudoCount(item.id, 89, 80);
   return (
     <article className="rounded-2xl border border-foreground/10 bg-card/40 overflow-hidden">
       {/* Header */}
@@ -426,24 +423,8 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
 
       {/* Caption */}
       {item.caption && (
-        <div className="px-4 pt-3 text-sm leading-snug">{item.caption}</div>
+        <div className="px-4 pb-3 pt-3 text-sm leading-snug">{item.caption}</div>
       )}
-
-      {/* Actions */}
-      <div className="flex items-center gap-1 px-2 py-2">
-        <Link to="/app/faze" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition">
-          <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
-          <span className="font-mono text-xs tabular-nums">{formatCount(likes)}</span>
-        </Link>
-        <Link to="/app/faze" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition">
-          <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12z"/></svg>
-          <span className="font-mono text-xs tabular-nums">{formatCount(comments)}</span>
-        </Link>
-        <Link to="/app/faze" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full hover:bg-foreground/[0.05] active:scale-95 transition">
-          <svg viewBox="0 0 24 24" className="size-[18px] fill-none stroke-foreground/80" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
-          <span className="font-mono text-xs tabular-nums">{formatCount(reposts)}</span>
-        </Link>
-      </div>
     </article>
   );
 }
