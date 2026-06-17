@@ -223,7 +223,7 @@ export function BottomTabBar() {
       style={{
         bottom: `calc(${shrunk ? 10 : 16}px + env(safe-area-inset-bottom))`,
         transition: "bottom 0.3s cubic-bezier(0.4,0,0.2,1)",
-        contain: "layout paint",
+        contain: "layout",
       }}
     >
       {/* Alcohol Warning Pill */}
