@@ -2,12 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, Trash2 } from "lucide-react";
+import { Check, X, Trash2, Bug, LifeBuoy, Mail, Flag } from "lucide-react";
+import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/app/admin/reports")({
   component: AdminReports,
 });
+
+const TYPE_META: Record<string, { label: string; icon: any; color: string }> = {
+  support_feedback: { label: "Suport & feedback", icon: LifeBuoy, color: "text-neon-mint" },
+  contact_team:     { label: "Contact echipă",    icon: Mail,     color: "text-neon-cyan" },
+  bug_report:       { label: "Bug",               icon: Bug,      color: "text-neon-crimson" },
+};
+
 
 function AdminReports() {
   const qc = useQueryClient();
