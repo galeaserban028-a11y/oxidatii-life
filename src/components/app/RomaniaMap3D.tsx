@@ -38,47 +38,58 @@ const TYPE_EMOJI: Record<string, string> = {
   after: "🎉",
 };
 
-// Neon glowing emoji pin — matches the reference (big bright emoji floating on
-// a transparent neon halo, no dark glass disk, no line glyph).
+// Neon glowing emoji pin — big bright emoji with a wide multi-stop halo so
+// each pin reads as a glowing orb on the dark map (matches reference).
 function makePinImage(color: string, emoji: string): ImageData {
-  const W = 128, H = 128;
+  const W = 160, H = 160;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
   const cx = W / 2, cy = H / 2;
 
-  // soft outer halo
-  const halo = ctx.createRadialGradient(cx, cy, 8, cx, cy, 58);
-  halo.addColorStop(0, color + "cc");
-  halo.addColorStop(0.35, color + "55");
-  halo.addColorStop(0.7, color + "1a");
-  halo.addColorStop(1, color + "00");
-  ctx.fillStyle = halo;
+  // wide outer aura
+  const aura = ctx.createRadialGradient(cx, cy, 4, cx, cy, 78);
+  aura.addColorStop(0, color + "ee");
+  aura.addColorStop(0.18, color + "aa");
+  aura.addColorStop(0.4, color + "55");
+  aura.addColorStop(0.7, color + "1c");
+  aura.addColorStop(1, color + "00");
+  ctx.fillStyle = aura;
   ctx.fillRect(0, 0, W, H);
 
-  // thin neon ring
+  // bright inner core glow
+  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
+  core.addColorStop(0, color);
+  core.addColorStop(0.6, color + "66");
+  core.addColorStop(1, color + "00");
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = core;
+  ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = "source-over";
+
+  // neon ring
   ctx.shadowColor = color;
-  ctx.shadowBlur = 22;
+  ctx.shadowBlur = 28;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 3.5;
   ctx.beginPath();
-  ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 34, 0, Math.PI * 2);
   ctx.stroke();
 
-  // emoji glyph, glowing
+  // emoji glyph — stroke twice for punch
   ctx.shadowColor = color;
-  ctx.shadowBlur = 18;
+  ctx.shadowBlur = 24;
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = '44px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  ctx.font = '50px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
   ctx.fillText(emoji, cx, cy + 2);
-  // re-stroke for extra punch
-  ctx.shadowBlur = 28;
+  ctx.shadowBlur = 36;
   ctx.fillText(emoji, cx, cy + 2);
 
   return ctx.getImageData(0, 0, W, H);
 }
+
 
 
 
@@ -237,6 +248,24 @@ export function RomaniaMap3D({
         }
       }
 
+      // Outer wide aura behind clusters
+      map.addLayer({
+        id: "venues-clusters-aura",
+        type: "circle",
+        source: VENUES_SRC,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": [
+            "step", ["get", "point_count"],
+            "rgba(255,43,214,0.42)", 80,
+            "rgba(255,255,255,0.28)", 240,
+            "rgba(255,140,90,0.42)",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 64, 80, 78, 240, 92],
+          "circle-blur": 1,
+          "circle-opacity": 0.55,
+        },
+      });
       map.addLayer({
         id: "venues-clusters-glow",
         type: "circle",
@@ -245,14 +274,15 @@ export function RomaniaMap3D({
         paint: {
           "circle-color": [
             "step", ["get", "point_count"],
-            "rgba(255,43,214,0.32)", 80,
-            "rgba(255,255,255,0.18)", 240,
-            "rgba(140,90,70,0.32)",
+            "rgba(255,43,214,0.55)", 80,
+            "rgba(255,255,255,0.38)", 240,
+            "rgba(255,140,90,0.55)",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 36, 80, 46, 240, 56],
-          "circle-blur": 0.9,
+          "circle-radius": ["step", ["get", "point_count"], 40, 80, 50, 240, 60],
+          "circle-blur": 0.7,
         },
       });
+
       map.addLayer({
         id: "venues-clusters",
         type: "circle",
@@ -266,15 +296,16 @@ export function RomaniaMap3D({
             "rgba(48,28,22,0.92)",
           ],
           "circle-radius": ["step", ["get", "point_count"], 22, 80, 28, 240, 34],
-          "circle-stroke-width": 2.5,
+          "circle-stroke-width": 3,
           "circle-stroke-color": [
             "step", ["get", "point_count"],
             "#ff2bd6", 80,
             "#ffffff", 240,
-            "#a86b4a",
+            "#ffae6b",
           ],
         },
       });
+
       map.addLayer({
         id: "venues-cluster-count",
         type: "symbol",
@@ -306,7 +337,7 @@ export function RomaniaMap3D({
             "after", "pin-after",
             "pin-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.42, 6, 0.55, 10, 0.72, 14, 0.92, 17, 1.05],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.55, 6, 0.7, 10, 0.88, 14, 1.05, 17, 1.2],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
