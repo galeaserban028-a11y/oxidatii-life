@@ -115,7 +115,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration, ease: EASE }}
+          transition={transition}
           onAnimationStart={() => setAnimating(true)}
           onAnimationComplete={() => setAnimating(false)}
           style={{
