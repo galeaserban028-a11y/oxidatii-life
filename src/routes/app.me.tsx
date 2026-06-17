@@ -297,16 +297,48 @@ function MePage() {
       {/* Animated profile background (Pro+) */}
       {bgUrl && (
         isVideoBg ? (
-          <video src={bgUrl} autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover opacity-30 pointer-events-none z-0" />
+          <video src={bgUrl} autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover opacity-40 pointer-events-none z-0" />
         ) : (
-          <div className="fixed inset-0 bg-cover bg-center opacity-30 pointer-events-none z-0" style={{ backgroundImage: `url(${bgUrl})` }} />
+          <div className="fixed inset-0 bg-cover bg-center opacity-40 pointer-events-none z-0" style={{ backgroundImage: `url(${bgUrl})` }} />
         )
       )}
-      {/* Theme tint (VIP+) — full profile */}
+      {/* Premium themed atmosphere */}
       {theme && (
-        <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.cardBg }} />
+        <>
+          {/* base wash */}
+          <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.cardBg }} />
+          {/* aurora halos */}
+          <div
+            className="fixed -top-32 -left-20 h-[420px] w-[420px] rounded-full pointer-events-none z-0 blur-[90px] opacity-70 animate-pulse"
+            style={{ background: `radial-gradient(circle, ${theme.accent} 0%, transparent 70%)`, animationDuration: "6s" }}
+          />
+          <div
+            className="fixed top-[40%] -right-24 h-[360px] w-[360px] rounded-full pointer-events-none z-0 blur-[100px] opacity-60 animate-pulse"
+            style={{ background: `radial-gradient(circle, ${theme.cardBorder} 0%, transparent 70%)`, animationDuration: "8s", animationDelay: "1.5s" }}
+          />
+          {/* moving sheen across the page */}
+          <div
+            className="fixed inset-0 pointer-events-none z-0 mix-blend-overlay opacity-40"
+            style={{
+              background: `linear-gradient(120deg, transparent 30%, ${theme.accent}33 50%, transparent 70%)`,
+              backgroundSize: "200% 200%",
+              animation: "themeSheen 9s linear infinite",
+            }}
+          />
+          {/* grain */}
+          <div
+            className="fixed inset-0 pointer-events-none z-0 opacity-[0.06] mix-blend-overlay"
+            style={{
+              backgroundImage:
+                "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
+            }}
+          />
+          {/* top vignette so header stays legible */}
+          <div className="fixed inset-x-0 top-0 h-32 pointer-events-none z-0 bg-gradient-to-b from-black/60 to-transparent" />
+          <style>{`@keyframes themeSheen { 0% { background-position: 0% 0%; } 100% { background-position: 200% 200%; } }`}</style>
+        </>
       )}
-      <div className="relative z-10">
+      <div className="relative z-10" style={theme ? ({ ["--theme-accent" as any]: theme.accent, ["--theme-border" as any]: theme.cardBorder }) : undefined}>
       {/* Top bar — sunset glass */}
       <header className="sticky top-0 z-30 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5 px-3 h-12 flex items-center justify-between">
         <Link to="/app/scan" className="p-1.5 -ml-1.5 active:scale-95 transition text-white/80 hover:text-[#ffea00]" aria-label="Adaugă">
