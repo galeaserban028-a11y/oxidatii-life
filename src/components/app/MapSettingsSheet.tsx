@@ -139,21 +139,6 @@ export function MapSettingsSheet({ open, onOpenChange }: { open: boolean; onOpen
             </p>
           </Section>
 
-          {/* Auto-ghost */}
-          <Section title="Auto-ghost după inactivitate" icon={<Clock size={14} />}>
-            <div className="flex items-center gap-3">
-              <Slider
-                value={[local.map_auto_ghost_hours]}
-                min={1}
-                max={24}
-                step={1}
-                onValueChange={(v) => setLocal((s) => ({ ...s, map_auto_ghost_hours: v[0] }))}
-                onValueCommit={(v) => save.mutate({ map_auto_ghost_hours: v[0] })}
-              />
-              <div className="font-mono text-xs w-10 text-right">{local.map_auto_ghost_hours}h</div>
-            </div>
-            <p className="mt-2 text-[11px] text-muted-foreground">dacă nu deschizi aplicația, dispari automat după atâtea ore.</p>
-          </Section>
 
           {/* Private locations */}
           <Section title="Locații private" icon={<MapPin size={14} />}>
