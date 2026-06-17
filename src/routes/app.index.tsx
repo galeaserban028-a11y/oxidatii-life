@@ -27,17 +27,28 @@ export const Route = createFileRoute("/app/")({
 
 async function loadFeed() {
   const cutoff = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
-  const { data: proofs } = await supabase
-    .from("sprit_proofs")
-    .select("id, photo_url, media_type, created_at, user_id, venue_id, ai_verified")
-    .eq("ai_verified", true)
-    .gte("created_at", cutoff)
-    .order("created_at", { ascending: false })
-    .limit(30);
+  const [{ data: proofs }, { data: photos }] = await Promise.all([
+    supabase
+      .from("sprit_proofs")
+      .select("id, photo_url, media_type, created_at, user_id, venue_id, ai_verified")
+      .eq("ai_verified", true)
+      .gte("created_at", cutoff)
+      .order("created_at", { ascending: false })
+      .limit(30),
+    supabase
+      .from("venue_photos")
+      .select("id, photo_url, media_type, caption, created_at, user_id, venue_id")
+      .gte("created_at", cutoff)
+      .order("created_at", { ascending: false })
+      .limit(30),
+  ]);
+
+  // De-dupe: a Șpriț post writes to both tables with same photo_url.
+  // Prefer the sprit_proofs row (kind="proof") so it keeps its Live badge.
+  const proofUrls = new Set((proofs ?? []).map((p: any) => p.photo_url));
 
   const items: FeedItem[] = [
     ...(proofs ?? []).map((p) => ({
-
       id: `sp-${p.id}`,
       kind: "proof" as const,
       created_at: p.created_at,
@@ -47,6 +58,18 @@ async function loadFeed() {
       user_id: p.user_id,
       venue_id: p.venue_id,
     })),
+    ...(photos ?? [])
+      .filter((p: any) => !proofUrls.has(p.photo_url))
+      .map((p: any) => ({
+        id: `vp-${p.id}`,
+        kind: "photo" as const,
+        created_at: p.created_at,
+        photo_url: p.photo_url,
+        media_type: (p.media_type ?? "image") as "image" | "video",
+        caption: p.caption ?? null,
+        user_id: p.user_id,
+        venue_id: p.venue_id,
+      })),
   ].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
 
   const userIds = Array.from(new Set(items.map((i) => i.user_id)));
