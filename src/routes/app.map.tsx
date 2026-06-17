@@ -422,7 +422,7 @@ function MapPage() {
         if (c) cityCenter = { lat: Number(c.lat), lng: Number(c.lng) };
       }
       return {
-        settings: (pRes.data ?? { map_ghost: false, map_visibility: "friends", map_precision: "exact", map_auto_ghost_hours: 8 }) as any,
+        settings: normalizeMapSettings(pRes.data),
         privateLocs: (locRes.data ?? []) as { lat: number; lng: number; radius_m: number }[],
         cityCenter,
       };
@@ -431,17 +431,23 @@ function MapPage() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const requestGeo = () => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+  const publishPosition = async (pos: GeolocationPosition, ensureLive = false) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
         setGeo({ lat, lng });
-        setFocusCity({ lat, lng, zoom: 13 });
+        setFocusCity({ lat, lng, zoom: 16 });
         if (!user) return;
 
-        const s = privacyQ.data?.settings;
+        if (ensureLive) {
+          await supabase
+            .from("profiles")
+            .update({ location_consent: true, map_ghost: false, map_precision: "exact" } as any)
+            .eq("id", user.id);
+          await refreshProfile();
+          qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
+        }
+
+        const s = ensureLive ? normalizeMapSettings({ map_precision: "exact", map_auto_ghost_hours: 8 }) : normalizeMapSettings(privacyQ.data?.settings);
         // Ghost mode or fully hidden → wipe and skip publishing.
         if (s?.map_ghost || s?.map_visibility === "nobody") {
           await supabase.from("live_locations").delete().eq("user_id", user.id);
@@ -459,34 +465,27 @@ function MapPage() {
           return;
         }
         // Apply precision.
-        let outLat = lat, outLng = lng;
-        if (s?.map_precision === "approx") {
-          // ±~200m random jitter (1 deg lat ≈ 111km)
-          const j = 0.0018;
-          outLat = lat + (Math.random() * 2 - 1) * j;
-          outLng = lng + (Math.random() * 2 - 1) * j;
-        } else if (s?.map_precision === "city" && privacyQ.data?.cityCenter) {
-          outLat = privacyQ.data.cityCenter.lat;
-          outLng = privacyQ.data.cityCenter.lng;
-        }
+        const out = applyLocationPrivacy(lat, lng, s, privacyQ.data?.cityCenter);
         const hours = Math.max(1, Math.min(24, s?.map_auto_ghost_hours ?? 8));
         await supabase.from("live_locations").upsert(
           {
             user_id: user.id,
-            lat: outLat,
-            lng: outLng,
-            accuracy: s?.map_precision === "exact" ? (pos.coords.accuracy ?? null) : null,
-            heading: s?.map_precision === "exact" ? (pos.coords.heading ?? null) : null,
+            lat: out.lat,
+            lng: out.lng,
+            accuracy: out.exact ? (pos.coords.accuracy ?? null) : null,
+            heading: out.exact ? (pos.coords.heading ?? null) : null,
             updated_at: new Date().toISOString(),
             expires_at: new Date(Date.now() + hours * 60 * 60_000).toISOString(),
           },
           { onConflict: "user_id" },
         );
         qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
-      },
-      () => alert("Nu am putut citi locația. Verifică permisiunile."),
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
+  };
+
+  const requestGeo = () => {
+    getPrecisePosition()
+      .then((pos) => publishPosition(pos))
+      .catch(() => alert("Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
   };
 
 
