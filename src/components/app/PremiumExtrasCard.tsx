@@ -1,14 +1,14 @@
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { PROFILE_THEMES } from "@/lib/premium-themes";
-import { Music, Image as ImageIcon, Palette, Trash2, Loader2 } from "lucide-react";
+import { Music, Image as ImageIcon, Palette, Trash2, Loader2, Check } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 /**
  * Premium customization: profile theme (VIP+), music clip (Pro+), animated bg (Pro+).
  */
-export function PremiumExtrasCard() {
+export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
   const { user, profile, refreshProfile } = useAuth();
   const tier = profile?.premium_tier;
   const isVipPlus = tier === "vip_plus" || tier === "pro" || tier === "elite";
