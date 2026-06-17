@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import maplibregl, { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { Crosshair } from "lucide-react";
 
 type City = { id: string; slug: string; name: string; lat: number; lng: number; chaos_level: number };
 type Venue = {
