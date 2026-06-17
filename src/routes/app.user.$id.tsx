@@ -81,7 +81,7 @@ function UserPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["user-detail", slug],
     queryFn: async () => {
-      const sel = "id, handle, display_name, avatar_url, bio, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, premium_tier, premium_until, profile_theme_id, music_clip_url, profile_bg_url, boost_until, city:cities(name, slug)";
+      const sel = "id, handle, display_name, avatar_url, bio, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, premium_tier, premium_until, profile_theme_id, theme_intensity, music_clip_url, profile_bg_url, boost_until, city:cities(name, slug)";
       const q = supabase.from("profiles").select(sel);
       const res = isUuid
         ? await q.eq("id", slug).maybeSingle()
