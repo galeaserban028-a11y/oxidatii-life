@@ -37,11 +37,13 @@ function SettingsPage() {
   const [bugDetails, setBugDetails] = useState("");
   const [bugSending, setBugSending] = useState(false);
 
+  const triage = useServerFn(triageBugReport);
+
   async function sendBugReport() {
     if (!bugReason.trim()) return toast.error("Spune pe scurt ce nu merge");
     setBugSending(true);
     try {
-      const { error } = await supabase.from("reports").insert({
+      const { data: inserted, error } = await supabase.from("reports").insert({
         reporter_id: user!.id,
         target_type: "bug_report",
         target_id: user!.id,
@@ -54,9 +56,21 @@ function SettingsPage() {
           `screen: ${window.innerWidth}x${window.innerHeight}`,
           `user: ${user!.email ?? user!.id}`,
         ].filter(Boolean).join("\n"),
-      });
+      }).select("id").single();
       if (error) throw error;
-      toast.success("Mulțumim! Raportul a ajuns la echipă.");
+
+      // Fire-and-await AI triage so the user gets the auto-reply right away
+      try {
+        const res = await triage({ data: { reportId: inserted.id } });
+        if (res?.ok && "reply" in res && res.reply) {
+          toast.success(res.reply, { duration: 8000 });
+        } else {
+          toast.success("Mulțumim! Raportul a ajuns la echipă.");
+        }
+      } catch {
+        toast.success("Mulțumim! Raportul a ajuns la echipă.");
+      }
+
       setBugOpen(false);
       setBugReason("");
       setBugDetails("");
