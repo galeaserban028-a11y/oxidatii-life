@@ -38,8 +38,43 @@ function SettingsPage() {
   const [bugReason, setBugReason] = useState("");
   const [bugDetails, setBugDetails] = useState("");
   const [bugSending, setBugSending] = useState(false);
+  const [msgKind, setMsgKind] = useState<null | "support" | "contact">(null);
+  const [msgSubject, setMsgSubject] = useState("");
+  const [msgBody, setMsgBody] = useState("");
+  const [msgSending, setMsgSending] = useState(false);
 
   const triage = useServerFn(triageBugReport);
+
+  async function sendMessage() {
+    if (!msgKind) return;
+    if (!msgSubject.trim()) return toast.error("Adaugă un subiect scurt");
+    if (!msgBody.trim()) return toast.error("Scrie mesajul");
+    setMsgSending(true);
+    try {
+      const { error } = await supabase.from("reports").insert({
+        reporter_id: user!.id,
+        target_type: msgKind === "support" ? "support_feedback" : "contact_team",
+        target_id: user!.id,
+        reason: msgSubject.trim().slice(0, 200),
+        details: [
+          msgBody.trim().slice(0, 4000),
+          `--- context ---`,
+          `kind: ${msgKind}`,
+          `url: ${window.location.href}`,
+          `user: ${user!.email ?? user!.id}`,
+        ].join("\n"),
+      });
+      if (error) throw error;
+      toast.success("Mesaj trimis către echipă. Mulțumim!");
+      setMsgKind(null);
+      setMsgSubject("");
+      setMsgBody("");
+    } catch (e: any) {
+      toast.error(e.message ?? "Nu s-a putut trimite");
+    } finally {
+      setMsgSending(false);
+    }
+  }
 
   async function sendBugReport() {
     if (!bugReason.trim()) return toast.error("Spune pe scurt ce nu merge");
