@@ -856,6 +856,17 @@ export function RomaniaMap3D({
         </div>
       )}
 
+      {/* Re-centrează button — fly to user's pin */}
+      {mePin && (
+        <button
+          onClick={handleRecenter}
+          aria-label="Re-centrează pe poziția mea"
+          className="absolute bottom-3 right-3 z-20 h-10 w-10 grid place-items-center rounded-full backdrop-blur-xl bg-black/60 border border-white/15 text-white/90 active:scale-95 transition shadow-lg shadow-black/40"
+        >
+          <Crosshair size={18} />
+        </button>
+      )}
+
       {/* Soft vignette only — no decorative blobs over the map. */}
       <div className="pointer-events-none absolute inset-0 z-[1]"
            style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(3,4,10,0.28) 74%, rgba(3,4,10,0.82) 100%)" }} />
