@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Settings, ArrowUpRight, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Settings, ArrowUpRight, Plus, Minus, Check, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { PremiumBadge, type PremiumTier } from "@/components/app/PremiumBadge";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
@@ -117,7 +117,42 @@ function PremiumPage() {
         {currentTier && <div className="ml-auto"><PremiumBadge tier={currentTier} size="sm" asLink={false} /></div>}
       </header>
 
-      <div className="w-full max-w-[420px] mx-auto px-6 flex flex-col gap-12 pt-10">
+      <div className="w-full max-w-[420px] mx-auto px-4 sm:px-6 flex flex-col gap-12 pt-10 min-w-0">
+
+        {/* ACTIVE PLAN BANNER */}
+        {currentTier && (() => {
+          const active = TIERS.find((t) => t.id === currentTier);
+          if (!active) return null;
+          return (
+            <div
+              className="relative rounded-2xl p-4 flex items-center gap-3 overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, ${active.neon}22, transparent 70%)`,
+                border: `1px solid ${active.neon}66`,
+                boxShadow: `0 0 24px ${active.neon}33`,
+              }}
+            >
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: active.neon, boxShadow: `0 0 16px ${active.neon}99` }}
+              >
+                <Sparkles size={18} strokeWidth={2.5} style={{ color: active.textOnNeon }} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p
+                  className="text-[9px] uppercase tracking-[0.3em] font-bold"
+                  style={{ color: active.neon }}
+                >
+                  Planul tău activ
+                </p>
+                <p className="text-sm font-black uppercase truncate">
+                  {active.name} <span className="text-white/50 font-normal italic" style={{ fontFamily: "'Instrument Serif', serif" }}>· {active.coins} șprițuri/lună</span>
+                </p>
+              </div>
+            </div>
+          );
+        })()}
+
 
         {/* HERO */}
         <section className="text-center space-y-4">
@@ -188,35 +223,53 @@ function PremiumPage() {
                 {/* outer glow */}
                 <div
                   aria-hidden
-                  className="absolute -inset-0.5 rounded-2xl blur-xl opacity-25 group-hover:opacity-45 transition pointer-events-none"
-                  style={{ background: tier.neon }}
+                  className="absolute -inset-0.5 rounded-2xl blur-xl pointer-events-none transition"
+                  style={{
+                    background: tier.neon,
+                    opacity: isCurrent ? 0.45 : 0.22,
+                  }}
                 />
                 {/* glass card */}
                 <div
-                  className="relative rounded-2xl p-6 flex flex-col gap-6 backdrop-blur-xl"
+                  className="relative rounded-2xl p-5 sm:p-6 flex flex-col gap-5 backdrop-blur-xl min-w-0"
                   style={{
                     background: "rgba(10,10,21,0.85)",
-                    border: `1px solid ${tier.neon}55`,
+                    border: `1px solid ${tier.neon}${isCurrent ? "cc" : "55"}`,
+                    boxShadow: isCurrent ? `inset 0 0 24px ${tier.neon}22` : undefined,
                   }}
                 >
-                  {tier.badge && (
-                    <div
-                      className="absolute -top-3 left-6 text-[9px] px-3 py-1 font-black uppercase tracking-widest rounded-full"
-                      style={{ background: tier.neon, color: tier.textOnNeon }}
-                    >
-                      {tier.badge}
+                  {/* top badges row — flexible, never overflows */}
+                  {(tier.badge || isCurrent) && (
+                    <div className="absolute -top-3 left-4 right-4 flex items-center gap-2 pointer-events-none">
+                      {isCurrent && (
+                        <span
+                          className="text-[9px] px-2.5 py-1 font-black uppercase tracking-widest rounded-full inline-flex items-center gap-1 max-w-full truncate"
+                          style={{ background: tier.neon, color: tier.textOnNeon, boxShadow: `0 0 12px ${tier.neon}88` }}
+                        >
+                          <Check size={10} strokeWidth={3} /> Planul tău
+                        </span>
+                      )}
+                      {tier.badge && !isCurrent && (
+                        <span
+                          className="text-[9px] px-2.5 py-1 font-black uppercase tracking-widest rounded-full max-w-full truncate"
+                          style={{ background: tier.neon, color: tier.textOnNeon }}
+                        >
+                          {tier.badge}
+                        </span>
+                      )}
                     </div>
                   )}
 
-                  <div className="flex justify-between items-start gap-3">
-                    <div>
+                  {/* title + price row — grid keeps it safe on 320px and landscape */}
+                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                    <div className="min-w-0">
                       <p
-                        className="text-[10px] uppercase tracking-[0.3em] font-bold"
+                        className="text-[10px] uppercase tracking-[0.3em] font-bold truncate"
                         style={{ color: tier.neon }}
                       >
                         Tier {tier.index}
                       </p>
-                      <h3 className="font-display text-3xl font-black uppercase mt-1">
+                      <h3 className="font-display text-2xl sm:text-3xl font-black uppercase mt-1 truncate">
                         {tier.name === "VIP+" ? (
                           <>VIP<span style={{ color: tier.neon }}>+</span></>
                         ) : (
@@ -224,22 +277,22 @@ function PremiumPage() {
                         )}
                       </h3>
                       <p
-                        className="italic text-base text-white/55 mt-1"
+                        className="italic text-sm sm:text-base text-white/55 mt-1 truncate"
                         style={{ fontFamily: "'Instrument Serif', serif" }}
                       >
                         &amp; {tier.italic}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-display text-3xl font-black tabular-nums leading-none">
+                      <p className="font-display text-2xl sm:text-3xl font-black tabular-nums leading-none">
                         {price}
                       </p>
-                      <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1 whitespace-nowrap">
                         Lei / {annual ? "an" : "lună"}
                       </p>
                       {annualSaved && (
                         <p
-                          className="text-[10px] italic mt-1 text-white/55"
+                          className="text-[10px] italic mt-1 text-white/55 whitespace-nowrap"
                           style={{ fontFamily: "'Instrument Serif', serif" }}
                         >
                           −{annualSaved} lei
@@ -249,20 +302,38 @@ function PremiumPage() {
                   </div>
 
                   <p
-                    className="italic text-lg leading-snug"
+                    className="italic text-base sm:text-lg leading-snug break-words"
                     style={{ fontFamily: "'Instrument Serif', serif", color: `${tier.neon}cc` }}
                   >
                     „{tier.blurb}"
                   </p>
 
+                  {/* perks — for the active tier, framed as "Beneficiile tale incluse" with checks */}
+                  {isCurrent && (
+                    <p
+                      className="text-[10px] font-bold uppercase tracking-[0.3em] -mb-1"
+                      style={{ color: tier.neon }}
+                    >
+                      Beneficiile tale incluse
+                    </p>
+                  )}
                   <ul className="space-y-2.5">
                     {tier.perks.map((p) => (
-                      <li key={p} className="flex items-start gap-3 text-[13px] text-white/80">
-                        <span
-                          className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
-                          style={{ background: tier.neon, boxShadow: `0 0 6px ${tier.neon}` }}
-                        />
-                        <span className="leading-snug">{p}</span>
+                      <li key={p} className="flex items-start gap-3 text-[13px] text-white/85 min-w-0">
+                        {isCurrent ? (
+                          <span
+                            className="mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+                            style={{ background: tier.neon, boxShadow: `0 0 8px ${tier.neon}99` }}
+                          >
+                            <Check size={10} strokeWidth={3} style={{ color: tier.textOnNeon }} />
+                          </span>
+                        ) : (
+                          <span
+                            className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
+                            style={{ background: tier.neon, boxShadow: `0 0 6px ${tier.neon}` }}
+                          />
+                        )}
+                        <span className="leading-snug break-words min-w-0">{p}</span>
                       </li>
                     ))}
                   </ul>
@@ -270,10 +341,14 @@ function PremiumPage() {
                   <button
                     onClick={() => handleBuy(tier)}
                     disabled={isCurrent}
-                    className="w-full py-4 font-black uppercase tracking-widest text-xs rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-4 font-black uppercase tracking-widest text-[11px] rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:cursor-not-allowed"
                     style={
                       isCurrent
-                        ? { background: "transparent", border: `1px solid ${tier.neon}55`, color: tier.neon }
+                        ? {
+                            background: `${tier.neon}1a`,
+                            border: `1px solid ${tier.neon}88`,
+                            color: tier.neon,
+                          }
                         : {
                             background: tier.neon,
                             color: tier.textOnNeon,
@@ -281,7 +356,11 @@ function PremiumPage() {
                           }
                     }
                   >
-                    {isCurrent ? "Ești deja aici" : (
+                    {isCurrent ? (
+                      <>
+                        <Check size={14} strokeWidth={3} /> Activ
+                      </>
+                    ) : (
                       <>
                         Devino {tier.name}
                         <ArrowUpRight size={14} strokeWidth={2.5} />
@@ -291,6 +370,7 @@ function PremiumPage() {
                 </div>
               </div>
             );
+
           })}
         </div>
 
@@ -319,26 +399,27 @@ function PremiumPage() {
               <button
                 key={p.id}
                 onClick={() => handleCoins(p)}
-                className="w-full p-4 rounded-xl flex items-center justify-between transition-colors text-left relative overflow-hidden"
+                className="w-full p-4 rounded-xl grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 transition-colors text-left relative overflow-hidden"
                 style={{
                   background: "rgba(255,255,255,0.04)",
                   border: `1px solid ${p.popular ? `${p.neon}55` : "rgba(255,255,255,0.1)"}`,
+                  paddingTop: p.popular ? 22 : 16,
                 }}
               >
                 {p.popular && (
                   <span
-                    className="absolute top-0 right-0 text-[8px] font-black px-2 py-0.5 rounded-bl uppercase tracking-wider"
+                    className="absolute top-0 left-0 right-0 text-[8px] font-black px-2 py-0.5 uppercase tracking-wider text-center"
                     style={{ background: p.neon, color: "#050510" }}
                   >
                     ales de mulți
                   </span>
                 )}
                 <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-black uppercase tracking-wider" style={{ color: p.neon }}>
+                  <span className="text-sm font-black uppercase tracking-wider truncate" style={{ color: p.neon }}>
                     {p.label}
                   </span>
                   <span
-                    className="text-[12px] italic text-white/55 mt-0.5"
+                    className="text-[12px] italic text-white/55 mt-0.5 truncate"
                     style={{ fontFamily: "'Instrument Serif', serif" }}
                   >
                     {p.coins} {p.coins === 1 ? "șpriț" : "șprițuri"}
@@ -349,13 +430,14 @@ function PremiumPage() {
                     </span>
                   )}
                 </div>
-                <div className="text-right shrink-0 ml-3">
-                  <div className="font-display text-lg font-black tabular-nums leading-none">{p.price}</div>
+                <div className="text-right shrink-0">
+                  <div className="font-display text-lg font-black tabular-nums leading-none whitespace-nowrap">{p.price}</div>
                   <div className="text-[9px] uppercase tracking-widest text-white/40 mt-1">Lei</div>
                 </div>
               </button>
             ))}
           </div>
+
         </section>
 
         {/* Manage subscription + boost */}
@@ -408,9 +490,9 @@ function PremiumPage() {
                 <div key={i}>
                   <button
                     onClick={() => setOpenFaq(open ? null : i)}
-                    className="w-full py-5 flex items-center justify-between gap-4 text-left group"
+                    className="w-full py-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 text-left group"
                   >
-                    <span className="text-sm font-medium text-white/85 group-hover:text-white transition">
+                    <span className="text-sm font-medium text-white/85 group-hover:text-white transition min-w-0 break-words">
                       {f.q}
                     </span>
                     <span
@@ -420,6 +502,7 @@ function PremiumPage() {
                       {open ? <Minus size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
                     </span>
                   </button>
+
                   {open && (
                     <div
                       className="pb-5 pr-8 text-[13px] text-white/65 leading-relaxed italic"
