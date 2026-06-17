@@ -444,8 +444,7 @@ function MapPage() {
   const mapFriendPins = useMemo(() => {
     if (!user) return friendPins;
     const me = friendPins.find((f) => f.is_me);
-    const fallback = privacyQ.data?.cityCenter;
-    const pos = geo ?? (me ? { lat: me.lat, lng: me.lng } : fallback);
+    const pos = geo ?? (me ? { lat: me.lat, lng: me.lng } : null);
     if (!pos) return friendPins;
     return [
       {
@@ -457,7 +456,7 @@ function MapPage() {
       },
       ...friendPins.filter((f) => f.user_id !== user.id),
     ];
-  }, [friendPins, geo, privacyQ.data?.cityCenter, profile?.avatar_url, profile?.display_name, profile?.handle, user]);
+  }, [friendPins, geo, profile?.avatar_url, profile?.display_name, profile?.handle, user]);
 
   const publishPosition = useCallback(async (pos: GeolocationPosition, ensureLive = false, recenter = false) => {
     const lat = pos.coords.latitude;
@@ -514,7 +513,7 @@ function MapPage() {
 
   const requestGeo = () => {
     getPrecisePosition()
-      .then((pos) => publishPosition(pos, false, true))
+      .then((pos) => publishPosition(pos, true, true))
       .catch(() => alert("Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
   };
 
