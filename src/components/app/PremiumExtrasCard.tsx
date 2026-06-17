@@ -1,14 +1,14 @@
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { PROFILE_THEMES } from "@/lib/premium-themes";
-import { Music, Image as ImageIcon, Palette, Trash2, Loader2 } from "lucide-react";
+import { Music, Image as ImageIcon, Palette, Trash2, Loader2, Check } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 /**
  * Premium customization: profile theme (VIP+), music clip (Pro+), animated bg (Pro+).
  */
-export function PremiumExtrasCard() {
+export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
   const { user, profile, refreshProfile } = useAuth();
   const tier = profile?.premium_tier;
   const isVipPlus = tier === "vip_plus" || tier === "pro" || tier === "elite";
@@ -79,7 +79,14 @@ export function PremiumExtrasCard() {
 
   return (
     <div className="rounded-2xl border border-foreground/15 p-4 bg-foreground/[0.03] space-y-5">
-      <div className="font-display uppercase text-sm tracking-wide">Personalizare profil</div>
+      <div className="flex items-center justify-between">
+        <div className="font-display uppercase text-sm tracking-wide">Personalizare profil</div>
+        {onClose && (
+          <button onClick={onClose} className="h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-mono uppercase tracking-widest flex items-center gap-1.5 active:scale-95">
+            <Check size={12} /> Salvează
+          </button>
+        )}
+      </div>
 
       {/* Themes */}
       <div>

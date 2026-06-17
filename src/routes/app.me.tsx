@@ -62,6 +62,7 @@ function MePage() {
   const [tab, setTab] = useState<"posts" | "reposts">("posts");
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [editingPremium, setEditingPremium] = useState(false);
 
   async function handleDelete(m: any) {
     if (!user) return;
@@ -301,9 +302,9 @@ function MePage() {
           <div className="fixed inset-0 bg-cover bg-center opacity-30 pointer-events-none z-0" style={{ backgroundImage: `url(${bgUrl})` }} />
         )
       )}
-      {/* Theme tint (VIP+) */}
+      {/* Theme tint (VIP+) — full profile */}
       {theme && (
-        <div className="absolute inset-x-0 top-0 h-[420px] pointer-events-none z-0" style={{ background: theme.cardBg, borderBottom: `1px solid ${theme.cardBorder}` }} />
+        <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.cardBg }} />
       )}
       <div className="relative z-10">
       {/* Top bar — sunset glass */}
@@ -471,9 +472,26 @@ function MePage() {
         )}
 
         <div className="mt-8 space-y-3">
-          
           <ProfileBoostCard />
-          <PremiumExtrasCard />
+          {editingPremium ? (
+            <PremiumExtrasCard onClose={() => setEditingPremium(false)} />
+          ) : (
+            (profile as any).premium_tier && (
+              <button
+                onClick={() => setEditingPremium(true)}
+                className="w-full flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 active:scale-[0.99] transition"
+              >
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#c724ff]/30 to-[#ff3d8b]/20 flex items-center justify-center">
+                  <Pencil size={16} className="text-white" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div style={instrument} className="text-base text-white leading-tight">Editează profil premium</div>
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-white/40 mt-0.5">temă · muzică · background</div>
+                </div>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-white/40">deschide →</span>
+              </button>
+            )
+          )}
         </div>
 
         <div className="mt-8">
