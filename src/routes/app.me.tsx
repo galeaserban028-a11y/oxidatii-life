@@ -18,6 +18,7 @@ import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
 import { PremiumExtrasCard } from "@/components/app/PremiumExtrasCard";
+import { getTheme } from "@/lib/premium-themes";
 
 
 
@@ -286,9 +287,25 @@ function MePage() {
   };
 
   const instrument = { fontFamily: '"Instrument Serif", "Work Sans", serif' };
+  const theme = getTheme((profile as any)?.profile_theme_id);
+  const bgUrl = (profile as any)?.profile_bg_url as string | undefined;
+  const isVideoBg = bgUrl ? /\.(mp4|webm|mov)$/i.test(bgUrl) : false;
 
   return (
-    <div className="pb-3 bg-[#050505] min-h-screen text-white">
+    <div className="relative pb-3 bg-[#050505] min-h-screen text-white overflow-hidden">
+      {/* Animated profile background (Pro+) */}
+      {bgUrl && (
+        isVideoBg ? (
+          <video src={bgUrl} autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover opacity-30 pointer-events-none z-0" />
+        ) : (
+          <div className="fixed inset-0 bg-cover bg-center opacity-30 pointer-events-none z-0" style={{ backgroundImage: `url(${bgUrl})` }} />
+        )
+      )}
+      {/* Theme tint (VIP+) */}
+      {theme && (
+        <div className="absolute inset-x-0 top-0 h-[420px] pointer-events-none z-0" style={{ background: theme.cardBg, borderBottom: `1px solid ${theme.cardBorder}` }} />
+      )}
+      <div className="relative z-10">
       {/* Top bar — sunset glass */}
       <header className="sticky top-0 z-30 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5 px-3 h-12 flex items-center justify-between">
         <Link to="/app/scan" className="p-1.5 -ml-1.5 active:scale-95 transition text-white/80 hover:text-[#ffea00]" aria-label="Adaugă">
@@ -717,6 +734,7 @@ function MePage() {
       <p className="text-[10px] font-mono text-center text-white/30 pt-4">
         OXIDAȚII · construit pe oameni reali · made in Balcani
       </p>
+      </div>
     </div>
   );
 }
