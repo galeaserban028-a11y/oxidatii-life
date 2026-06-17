@@ -11,14 +11,14 @@ export const Route = createFileRoute("/app/inbox")({
   component: InboxPage,
 });
 
-type Tab = "pentru-tine" | "prieteni";
+type Tab = "mesaje" | "grupuri" | "prieteni";
 
 function InboxPage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const qc = useQueryClient();
   const [showNew, setShowNew] = useState(false);
-  const [tab, setTab] = useState<Tab>("pentru-tine");
+  const [tab, setTab] = useState<Tab>("mesaje");
 
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["inbox", user?.id],
@@ -76,7 +76,7 @@ function InboxPage() {
   const dms = useMemo(() => conversations.filter((c: any) => c.kind === "dm"), [conversations]);
   const groups = useMemo(() => conversations.filter((c: any) => c.kind !== "dm"), [conversations]);
 
-  const filtered = tab === "prieteni" ? [] : conversations;
+  const filtered = tab === "prieteni" ? [] : tab === "grupuri" ? groups : dms;
 
   return (
     <div className="px-5 pt-6 pb-8 space-y-7 max-w-2xl mx-auto">
@@ -103,8 +103,8 @@ function InboxPage() {
         <p className="text-[10px] text-zinc-500 uppercase tracking-widest">DM-uri și grupuri cu trupa.</p>
       </header>
 
-      {/* Friends row (story-style) — only on Pentru tine */}
-      {tab === "pentru-tine" && conversations.length > 0 && (
+      {/* Friends row (story-style) — only on Mesaje */}
+      {tab === "mesaje" && conversations.length > 0 && (
         <FriendsRow onPick={async (peerId) => {
           if (!user) return;
           const cid = await openOrCreateDM(user.id, peerId);
@@ -115,7 +115,8 @@ function InboxPage() {
       {/* Tab bar — text style with underline indicator */}
       <div className="flex gap-6 text-[13px] font-black uppercase tracking-wide border-b border-zinc-800/50">
         {([
-          ["pentru-tine", "Pentru tine"],
+          ["mesaje", "Mesaje"],
+          ["grupuri", "Grupuri"],
           ["prieteni", "Prieteni"],
         ] as const).map(([k, label]) => (
           <button
@@ -135,6 +136,7 @@ function InboxPage() {
         ))}
       </div>
 
+
       {isLoading ? (
         <div className="py-10 flex flex-col items-center gap-2">
           <div className="h-7 w-7 rounded-full border-2 border-foreground/15 border-t-foreground animate-spin" />
@@ -144,9 +146,12 @@ function InboxPage() {
         <div className="py-14 text-center space-y-3">
           <div className="mx-auto h-16 w-16 rounded-full bg-gradient-to-br from-neon-crimson via-neon-purple to-neon-green opacity-90 flex items-center justify-center text-2xl">💬</div>
           <div className="font-display font-black text-base">
-            {tab === "prieteni" ? "Niciun prieten încă" : "Liniște deplină"}
+            {tab === "prieteni" ? "Niciun prieten încă" : tab === "grupuri" ? "Niciun grup încă" : "Liniște deplină"}
           </div>
-          <div className="text-xs text-muted-foreground">Începe o conversație nouă cu cineva din gașcă.</div>
+          <div className="text-xs text-muted-foreground">
+            {tab === "grupuri" ? "Fă un grup cu trupa ca să țineți noaptea împreună." : "Începe o conversație nouă cu cineva din gașcă."}
+          </div>
+
           <button onClick={() => setShowNew(true)} className="mt-2 inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-gradient-to-br from-neon-crimson via-neon-purple to-neon-purple text-white font-display font-black text-xs shadow-[0_8px_22px_-8px_theme(colors.neon-purple/0.7)] active:scale-[0.97] transition">
             <PenSquare size={14} /> Mesaj nou
           </button>
