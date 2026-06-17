@@ -76,7 +76,7 @@ function InboxPage() {
   const dms = useMemo(() => conversations.filter((c: any) => c.kind === "dm"), [conversations]);
   const groups = useMemo(() => conversations.filter((c: any) => c.kind !== "dm"), [conversations]);
 
-  const filtered = tab === "prieteni" ? [] : conversations;
+  const filtered = tab === "prieteni" ? [] : tab === "grupuri" ? groups : dms;
 
   return (
     <div className="px-5 pt-6 pb-8 space-y-7 max-w-2xl mx-auto">
