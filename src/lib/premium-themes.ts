@@ -225,9 +225,13 @@ export const PROFILE_THEMES: ProfileTheme[] = [
   },
 ];
 
+// ===== Lookup + precomputed render cache =====
+
+const themeById = new Map<string, ProfileTheme>(PROFILE_THEMES.map(t => [t.id, t]));
+
 export function getTheme(id: string | null | undefined): ProfileTheme | null {
   if (!id) return null;
-  return PROFILE_THEMES.find(t => t.id === id) ?? null;
+  return themeById.get(id) ?? null;
 }
 
 export function isThemeAvailable(theme: ProfileTheme, tier: string | null | undefined): boolean {
@@ -236,3 +240,78 @@ export function isThemeAvailable(theme: ProfileTheme, tier: string | null | unde
   const t = order.indexOf(theme.tier);
   return u >= 0 && u >= t;
 }
+
+export type PrecomputedAuroraLayer = {
+  left: string; top: string; size: number; blur: number; opacity: number;
+  background: string; duration: number; delay: number;
+};
+
+export type PrecomputedOrb = {
+  left: string; top: string; size: number;
+  background: string; boxShadow: string; opacity: number; duration: number; delay: number;
+};
+
+export type PrecomputedTheme = {
+  id: string;
+  base: string;
+  beamsGradient: string;
+  aurora: PrecomputedAuroraLayer[];
+  orbs: PrecomputedOrb[];
+  sheenGradient: string | null;
+  sheenDuration: number;
+  sheenOpacity: number;
+  scanGradient: string;
+  vignette: string;
+  grain: number;
+};
+
+const precomputeCache = new Map<string, PrecomputedTheme>();
+
+export function precomputeTheme(theme: ProfileTheme): PrecomputedTheme {
+  const cached = precomputeCache.get(theme.id);
+  if (cached) return cached;
+
+  const aurora: PrecomputedAuroraLayer[] = theme.aurora.map(a => {
+    const [left, top] = a.pos.split(" ");
+    return {
+      left, top,
+      size: a.size,
+      blur: a.blur,
+      opacity: a.opacity,
+      background: `radial-gradient(circle, ${a.color} 0%, transparent 70%)`,
+      duration: a.duration,
+      delay: a.delay ?? 0,
+    };
+  });
+
+  const orbs: PrecomputedOrb[] = [0, 1, 2, 3].map(i => ({
+    left: `${12 + i * 22}%`,
+    top: `${18 + ((i * 37) % 64)}%`,
+    size: 6 + (i % 3) * 4,
+    background: i % 2 === 0 ? theme.accent : theme.cardBorder,
+    boxShadow: `0 0 ${18 + i * 6}px ${theme.accent}`,
+    opacity: 0.32,
+    duration: 9 + i * 2,
+    delay: i * 0.8,
+  }));
+
+  const built: PrecomputedTheme = Object.freeze({
+    id: theme.id,
+    base: theme.base,
+    beamsGradient: `conic-gradient(from 0deg, transparent 0deg, ${theme.accent}22 30deg, transparent 60deg, ${theme.accent}33 180deg, transparent 210deg, ${theme.cardBorder}22 330deg, transparent 360deg)`,
+    aurora: Object.freeze(aurora) as PrecomputedAuroraLayer[],
+    orbs: Object.freeze(orbs) as PrecomputedOrb[],
+    sheenGradient: theme.sheen ? `linear-gradient(120deg, transparent 30%, ${theme.sheen.color} 50%, transparent 70%)` : null,
+    sheenDuration: theme.sheen?.duration ?? 0,
+    sheenOpacity: theme.sheen?.opacity ?? 0,
+    scanGradient: `linear-gradient(180deg, transparent 0%, ${theme.accent}22 50%, transparent 100%)`,
+    vignette: theme.vignette,
+    grain: theme.grain,
+  });
+
+  precomputeCache.set(theme.id, built);
+  return built;
+}
+
+// Warm the cache eagerly so the first themed profile render is instant.
+for (const t of PROFILE_THEMES) precomputeTheme(t);
