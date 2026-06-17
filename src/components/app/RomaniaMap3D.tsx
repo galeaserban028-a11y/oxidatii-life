@@ -21,127 +21,65 @@ export type FriendPin = {
 };
 
 const TYPE_COLOR: Record<string, string> = {
-  club: "#c66bff",
+  club: "#ff2bd6",
   bar: "#ffb000",
   pub: "#ff8a3d",
-  terasa: "#39ff88",
-  "terasă": "#39ff88",
+  terasa: "#39ffd2",
+  "terasă": "#39ffd2",
   after: "#ff3158",
 };
 
-function drawPinGlyph(ctx: CanvasRenderingContext2D, kind: string, cx: number, cy: number, color: string) {
-  ctx.save();
-  ctx.strokeStyle = color;
-  ctx.fillStyle = color;
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
+const TYPE_EMOJI: Record<string, string> = {
+  club: "🔊",
+  bar: "🍸",
+  pub: "🍺",
+  terasa: "🪑",
+  "terasă": "🪑",
+  after: "🎉",
+};
 
-  if (kind === "club") {
-    ctx.fillRect(cx - 15, cy - 8, 7, 16);
-    ctx.beginPath();
-    ctx.moveTo(cx - 8, cy - 8);
-    ctx.lineTo(cx + 2, cy - 15);
-    ctx.lineTo(cx + 2, cy + 15);
-    ctx.lineTo(cx - 8, cy + 8);
-    ctx.closePath();
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx + 7, cy, 8, -0.8, 0.8);
-    ctx.arc(cx + 12, cy, 14, -0.7, 0.7);
-    ctx.stroke();
-  } else if (kind === "bar") {
-    ctx.beginPath();
-    ctx.moveTo(cx - 16, cy - 14);
-    ctx.lineTo(cx + 16, cy - 14);
-    ctx.lineTo(cx, cy + 3);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx, cy + 3);
-    ctx.lineTo(cx, cy + 17);
-    ctx.moveTo(cx - 10, cy + 17);
-    ctx.lineTo(cx + 10, cy + 17);
-    ctx.stroke();
-  } else if (kind === "pub") {
-    ctx.strokeRect(cx - 11, cy - 8, 16, 21);
-    ctx.beginPath();
-    ctx.moveTo(cx + 5, cy - 2);
-    ctx.quadraticCurveTo(cx + 17, cy - 2, cx + 15, cy + 8);
-    ctx.quadraticCurveTo(cx + 15, cy + 15, cx + 5, cy + 13);
-    ctx.moveTo(cx - 8, cy - 13);
-    ctx.lineTo(cx + 2, cy - 13);
-    ctx.stroke();
-  } else if (kind === "terasa" || kind === "terasă") {
-    ctx.beginPath();
-    ctx.arc(cx, cy - 10, 16, Math.PI, 0);
-    ctx.moveTo(cx, cy - 10);
-    ctx.lineTo(cx, cy + 16);
-    ctx.moveTo(cx - 10, cy + 16);
-    ctx.lineTo(cx + 10, cy + 16);
-    ctx.moveTo(cx - 14, cy - 10);
-    ctx.lineTo(cx + 14, cy - 10);
-    ctx.stroke();
-  } else {
-    ctx.beginPath();
-    ctx.moveTo(cx - 16, cy + 9);
-    ctx.lineTo(cx - 11, cy - 11);
-    ctx.lineTo(cx - 2, cy + 3);
-    ctx.lineTo(cx + 8, cy - 13);
-    ctx.lineTo(cx + 15, cy + 9);
-    ctx.closePath();
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(cx - 13, cy + 14);
-    ctx.lineTo(cx + 13, cy + 14);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
-// Clean neon pin — compact transparent halo, dark glass circle and a simple
-// line glyph. No emoji blobs, so the map stays crisp like the reference.
-function makePinImage(color: string, kind: string): ImageData {
-  const W = 96, H = 96;
+// Neon glowing emoji pin — matches the reference (big bright emoji floating on
+// a transparent neon halo, no dark glass disk, no line glyph).
+function makePinImage(color: string, emoji: string): ImageData {
+  const W = 128, H = 128;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
-
   const cx = W / 2, cy = H / 2;
 
-  const halo = ctx.createRadialGradient(cx, cy, 15, cx, cy, 44);
-  halo.addColorStop(0, color + "99");
-  halo.addColorStop(0.55, color + "2f");
+  // soft outer halo
+  const halo = ctx.createRadialGradient(cx, cy, 8, cx, cy, 58);
+  halo.addColorStop(0, color + "cc");
+  halo.addColorStop(0.35, color + "55");
+  halo.addColorStop(0.7, color + "1a");
   halo.addColorStop(1, color + "00");
   ctx.fillStyle = halo;
   ctx.fillRect(0, 0, W, H);
 
+  // thin neon ring
   ctx.shadowColor = color;
-  ctx.shadowBlur = 16;
+  ctx.shadowBlur = 22;
   ctx.strokeStyle = color;
-  ctx.lineWidth = 2.5;
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.arc(cx, cy, 27, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 30, 0, Math.PI * 2);
   ctx.stroke();
 
+  // emoji glyph, glowing
   ctx.shadowColor = color;
-  ctx.shadowBlur = 10;
-  ctx.fillStyle = "rgba(8,10,20,0.86)";
-  ctx.beginPath();
-  ctx.arc(cx, cy, 23, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.shadowBlur = 0;
-  ctx.strokeStyle = "rgba(255,255,255,0.18)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.arc(cx, cy, 22, 0, Math.PI * 2);
-  ctx.stroke();
-
-  drawPinGlyph(ctx, kind, cx, cy, color);
+  ctx.shadowBlur = 18;
+  ctx.fillStyle = "#fff";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = '44px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  ctx.fillText(emoji, cx, cy + 2);
+  // re-stroke for extra punch
+  ctx.shadowBlur = 28;
+  ctx.fillText(emoji, cx, cy + 2);
 
   return ctx.getImageData(0, 0, W, H);
 }
+
 
 
 const VOYAGER_STYLE = {
@@ -285,17 +223,17 @@ export function RomaniaMap3D({
         },
       });
 
-      // Register one neon pin icon per venue type.
+      // Register one neon pin icon per venue type (emoji glyph + neon halo).
       const pinTypes: Array<[string, string, string]> = [
-        ["pin-club", TYPE_COLOR.club, "club"],
-        ["pin-bar", TYPE_COLOR.bar, "bar"],
-        ["pin-pub", TYPE_COLOR.pub, "pub"],
-        ["pin-terasa", TYPE_COLOR.terasa, "terasa"],
-        ["pin-after", TYPE_COLOR.after, "after"],
+        ["pin-club", TYPE_COLOR.club, TYPE_EMOJI.club],
+        ["pin-bar", TYPE_COLOR.bar, TYPE_EMOJI.bar],
+        ["pin-pub", TYPE_COLOR.pub, TYPE_EMOJI.pub],
+        ["pin-terasa", TYPE_COLOR.terasa, TYPE_EMOJI.terasa],
+        ["pin-after", TYPE_COLOR.after, TYPE_EMOJI.after],
       ];
-      for (const [name, color, kind] of pinTypes) {
+      for (const [name, color, emoji] of pinTypes) {
         if (!map.hasImage(name)) {
-          try { map.addImage(name, makePinImage(color, kind), { pixelRatio: 2 }); } catch {}
+          try { map.addImage(name, makePinImage(color, emoji), { pixelRatio: 2 }); } catch {}
         }
       }
 
@@ -307,12 +245,12 @@ export function RomaniaMap3D({
         paint: {
           "circle-color": [
             "step", ["get", "point_count"],
-            "rgba(255,49,134,0.18)", 80,
-            "rgba(198,107,255,0.20)", 240,
-            "rgba(255,176,0,0.18)",
+            "rgba(255,43,214,0.32)", 80,
+            "rgba(255,255,255,0.18)", 240,
+            "rgba(140,90,70,0.32)",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 26, 80, 34, 240, 42],
-          "circle-blur": 0.75,
+          "circle-radius": ["step", ["get", "point_count"], 36, 80, 46, 240, 56],
+          "circle-blur": 0.9,
         },
       });
       map.addLayer({
@@ -321,14 +259,19 @@ export function RomaniaMap3D({
         source: VENUES_SRC,
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": "rgba(12,14,24,0.82)",
-          "circle-radius": ["step", ["get", "point_count"], 18, 80, 23, 240, 29],
-          "circle-stroke-width": 2,
+          "circle-color": [
+            "step", ["get", "point_count"],
+            "rgba(10,6,18,0.92)", 80,
+            "rgba(20,14,26,0.92)", 240,
+            "rgba(48,28,22,0.92)",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 22, 80, 28, 240, 34],
+          "circle-stroke-width": 2.5,
           "circle-stroke-color": [
             "step", ["get", "point_count"],
-            "#ff3186", 80,
-            "#c66bff", 240,
-            "#ffb000",
+            "#ff2bd6", 80,
+            "#ffffff", 240,
+            "#a86b4a",
           ],
         },
       });
@@ -339,11 +282,11 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-size": ["step", ["get", "point_count"], 13, 80, 15, 240, 17],
+          "text-size": ["step", ["get", "point_count"], 16, 80, 19, 240, 22],
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
           "text-allow-overlap": true,
         },
-        paint: { "text-color": "rgba(255,255,255,0.94)", "text-halo-color": "rgba(0,0,0,0.7)", "text-halo-width": 1 },
+        paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.85)", "text-halo-width": 1.2 },
       });
 
       // unclustered points → neon glowing emoji pins
@@ -363,13 +306,14 @@ export function RomaniaMap3D({
             "after", "pin-after",
             "pin-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.22, 6, 0.32, 10, 0.46, 14, 0.64, 17, 0.78],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.42, 6, 0.55, 10, 0.72, 14, 0.92, 17, 1.05],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
           "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
         },
       });
+
 
       // click → zoom into cluster / navigate to venue
       map.on("click", "venues-clusters", (e) => {
