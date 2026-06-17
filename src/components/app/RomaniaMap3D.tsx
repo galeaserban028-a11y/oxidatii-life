@@ -82,7 +82,7 @@ function makePinImage(color: string, emoji: string, lowEnd = false): ImageData {
   ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `${Math.round(50 * s)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+  ctx.font = `${Math.round(38 * s)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
   ctx.fillText(emoji, cx, cy + 2 * s);
   if (!lowEnd) {
     ctx.shadowBlur = 32 * s;
