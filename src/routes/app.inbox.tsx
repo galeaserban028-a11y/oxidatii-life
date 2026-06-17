@@ -103,8 +103,8 @@ function InboxPage() {
         <p className="text-[10px] text-zinc-500 uppercase tracking-widest">DM-uri și grupuri cu trupa.</p>
       </header>
 
-      {/* Friends row (story-style) — only on Pentru tine */}
-      {tab === "pentru-tine" && conversations.length > 0 && (
+      {/* Friends row (story-style) — only on Mesaje */}
+      {tab === "mesaje" && conversations.length > 0 && (
         <FriendsRow onPick={async (peerId) => {
           if (!user) return;
           const cid = await openOrCreateDM(user.id, peerId);
@@ -115,7 +115,8 @@ function InboxPage() {
       {/* Tab bar — text style with underline indicator */}
       <div className="flex gap-6 text-[13px] font-black uppercase tracking-wide border-b border-zinc-800/50">
         {([
-          ["pentru-tine", "Pentru tine"],
+          ["mesaje", "Mesaje"],
+          ["grupuri", "Grupuri"],
           ["prieteni", "Prieteni"],
         ] as const).map(([k, label]) => (
           <button
@@ -134,6 +135,7 @@ function InboxPage() {
           </button>
         ))}
       </div>
+
 
       {isLoading ? (
         <div className="py-10 flex flex-col items-center gap-2">
