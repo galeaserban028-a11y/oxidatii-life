@@ -541,22 +541,25 @@ export function RomaniaMap3D({
     if (loadedRef.current) apply(); else map.once("load", apply);
   }, [venues, promotedMeta, retryKey]);
 
-  // Subtle pulse only; keep the reference-style road network readable.
+  // Heatmap pulse — desktop only, throttled to ~8fps to avoid forcing a full
+  // GL repaint every frame on phones.
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
-    let raf = 0;
+    const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
+    if (isSmall) return;
+    let timer: number | null = null;
     const start = performance.now();
-    const tick = (t: number) => {
-      if (!map.getLayer("venues-heat")) { raf = requestAnimationFrame(tick); return; }
-      const k = (Math.sin((t - start) / 1400) + 1) / 2; // 0..1
-      const intensity = 0.16 + k * 0.1;
-      try { map.setPaintProperty("venues-heat", "heatmap-intensity", intensity); } catch {}
-      raf = requestAnimationFrame(tick);
+    const tick = () => {
+      if (!map.getLayer("venues-heat")) { timer = window.setTimeout(tick, 250); return; }
+      const k = (Math.sin((performance.now() - start) / 1400) + 1) / 2;
+      try { map.setPaintProperty("venues-heat", "heatmap-intensity", 0.16 + k * 0.1); } catch {}
+      timer = window.setTimeout(tick, 120);
     };
-    const onLoad = () => { raf = requestAnimationFrame(tick); };
+    const onLoad = () => { tick(); };
     if (loadedRef.current) onLoad(); else map.once("load", onLoad);
-    return () => { if (raf) cancelAnimationFrame(raf); };
+    return () => { if (timer) clearTimeout(timer); };
   }, [retryKey]);
+
 
   // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
   // halo. Replaces the bottle silhouette so paying businesses are instantly
