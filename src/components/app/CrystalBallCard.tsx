@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 
 type Visitor = { user_id: string; handle: string | null; display_name: string | null; avatar_url: string | null; last_visit: string; visit_count?: number; last_seen?: string };
 
-const PRICE = 30; // șprițuri
+const PRICE = 15; // șprițuri
 
 export function CrystalBallCard() {
   const { user, profile } = useAuth();
