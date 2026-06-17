@@ -3,7 +3,6 @@ import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import logoBanner from "@/assets/logo-oxidatii.png";
 
-import { ThemeToggle } from "./ThemeToggle";
 import { GlobalSearch } from "./GlobalSearch";
 
 export function AppHeader() {
@@ -15,7 +14,7 @@ export function AppHeader() {
 
   return (
     <header
-      className="sticky top-0 z-40 flex items-center justify-between gap-2 pb-1.5 bg-[#050505]/70 backdrop-blur-md border-b border-foreground/5"
+      className="sticky top-0 z-40 flex items-center justify-between gap-2 pb-1.5 bg-background/70 backdrop-blur-md border-b border-foreground/5"
       style={{
         paddingTop: "calc(env(safe-area-inset-top) + 0.375rem)",
         paddingLeft: "calc(env(safe-area-inset-left) + 0.75rem)",
@@ -40,8 +39,6 @@ export function AppHeader() {
       </div>
       <div className="flex items-center gap-0.5">
         <GlobalSearch />
-        <ThemeToggle />
-        
       </div>
     </header>
   );
