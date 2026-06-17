@@ -270,7 +270,7 @@ export function RomaniaMap3D({
         pitch: 0,
         bearing: 0,
         attributionControl: { compact: true },
-        cooperativeGestures: false,
+        cooperativeGestures: true,
         renderWorldCopies: false,
         fadeDuration: 80,
         refreshExpiredTiles: false,
