@@ -29,56 +29,56 @@ const TYPE_COLOR: Record<string, string> = {
   after: "#ff3158",
 };
 
-// Render a tiny wine-bottle silhouette onto a canvas and register it as a map
-// image. One image per type/color. Replaces the "fat dot" markers with elegant
-// little bottles — instantly readable ("astea sunt locuri de băut") and far
-// less visually noisy when many venues share the same area.
-function makeBottleImage(color: string): ImageData {
-  const W = 22, H = 56;
+const TYPE_EMOJI: Record<string, string> = {
+  club: "🔊",
+  bar: "🍸",
+  pub: "🍺",
+  terasa: "🪑",
+  "terasă": "🪑",
+  after: "🎉",
+};
+
+// Render a glowing neon "pin" — a dark circle with a colored halo and the
+// type emoji inside. Matches the reference: small icon-bubble with strong
+// outer glow, not a bottle silhouette.
+function makePinImage(color: string, emoji: string): ImageData {
+  const W = 64, H = 64;
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
-  // Glow halo
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 7;
+  const cx = W / 2, cy = H / 2;
 
-  // Wine bottle body — long narrow neck, sloped shoulders, tall body
+  // Outer glow halo
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 16;
   ctx.fillStyle = color;
+  ctx.globalAlpha = 0.55;
   ctx.beginPath();
-  ctx.moveTo(9, 4);                          // neck top L
-  ctx.lineTo(13, 4);                         // neck top R
-  ctx.lineTo(13, 22);                        // neck R (long)
-  ctx.bezierCurveTo(13, 24, 18, 26, 18, 32); // shoulder R
-  ctx.lineTo(18, 50);                        // body R
-  ctx.quadraticCurveTo(18, 54, 14, 54);      // base R
-  ctx.lineTo(8, 54);                         // base
-  ctx.quadraticCurveTo(4, 54, 4, 50);        // base L
-  ctx.lineTo(4, 32);                         // body L
-  ctx.bezierCurveTo(4, 26, 9, 24, 9, 22);    // shoulder L
-  ctx.closePath();
+  ctx.arc(cx, cy, 18, 0, Math.PI * 2);
   ctx.fill();
 
+  // Solid neon ring
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 16, 0, Math.PI * 2);
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = color;
+  ctx.stroke();
+
+  // Inner dark fill
   ctx.shadowBlur = 0;
+  ctx.fillStyle = "rgba(8,6,18,0.95)";
+  ctx.beginPath();
+  ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+  ctx.fill();
 
-  // Red foil wrap on the neck
-  ctx.fillStyle = "#7a0a16";
-  ctx.fillRect(8, 2, 6, 10);
-  ctx.fillStyle = "rgba(255,255,255,0.25)";
-  ctx.fillRect(9, 3, 1, 8);
-
-  // White wine label
-  ctx.fillStyle = "rgba(245,240,225,0.92)";
-  ctx.fillRect(5, 38, 12, 11);
-  // Label lines
-  ctx.fillStyle = "rgba(0,0,0,0.45)";
-  ctx.fillRect(6, 40, 10, 1);
-  ctx.fillRect(7, 43, 8, 1);
-  ctx.fillRect(7, 46, 8, 1);
-
-  // Glass shine on body
-  ctx.fillStyle = "rgba(255,255,255,0.18)";
-  ctx.fillRect(6, 26, 1, 24);
+  // Emoji glyph
+  ctx.font = "16px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',system-ui";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(emoji, cx, cy + 1);
 
   return ctx.getImageData(0, 0, W, H);
 }
