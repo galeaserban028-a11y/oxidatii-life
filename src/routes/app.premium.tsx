@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowLeft, Settings, ArrowUpRight } from "lucide-react";
+import { ArrowLeft, Settings, ArrowUpRight, Plus, Minus } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { PremiumBadge, type PremiumTier } from "@/components/app/PremiumBadge";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
@@ -14,60 +14,61 @@ export const Route = createFileRoute("/app/premium")({
   component: PremiumPage,
 });
 
+type TierId = Exclude<PremiumTier, null | undefined>;
 type Tier = {
-  id: Exclude<PremiumTier, null | undefined>;
+  id: TierId;
   index: string;
   name: string;
-  italic: string; // serif word that becomes the "feel"
+  italic: string;
   price: number;
   coins: number;
   blurb: string;
   perks: string[];
-  hue: string;        // text/border accent (oklch via inline style)
-  surface: string;    // soft background tint
+  neon: string;        // hex neon accent
+  textOnNeon: string;  // text color when sitting on the neon swatch
   badge?: string;
 };
 
-const HUE = {
-  amber:   { fg: "oklch(0.85 0.13 75)",  bg: "oklch(0.85 0.13 75 / 0.06)" },
-  blush:   { fg: "oklch(0.80 0.13 15)",  bg: "oklch(0.80 0.13 15 / 0.07)" },
-  violet:  { fg: "oklch(0.78 0.13 305)", bg: "oklch(0.78 0.13 305 / 0.07)" },
-  glacier: { fg: "oklch(0.86 0.08 200)", bg: "oklch(0.86 0.08 200 / 0.07)" },
+const NEON = {
+  yellow: "#ffea00",
+  pink:   "#ff3d8b",
+  violet: "#c724ff",
+  cyan:   "#00e5ff",
 };
 
 const TIERS: Tier[] = [
   {
-    id: "vip", index: "I.", name: "VIP", italic: "discret",
-    price: 2.99, coins: 5, hue: HUE.amber.fg, surface: HUE.amber.bg,
+    id: "vip", index: "I", name: "VIP", italic: "discret",
+    price: 2.99, coins: 5, neon: NEON.yellow, textOnNeon: "#050510",
     blurb: "Pentru cei care vor doar să arate că au gust. Fără paradă.",
     perks: ["Insignă VIP auriu", "5 șprițuri pe lună", "Reacții doar pentru club"],
   },
   {
-    id: "vip_plus", index: "II.", name: "VIP+", italic: "curat",
-    price: 4.99, coins: 15, hue: HUE.blush.fg, surface: HUE.blush.bg, badge: "cel mai luat",
+    id: "vip_plus", index: "II", name: "VIP+", italic: "curat",
+    price: 4.99, coins: 15, neon: NEON.pink, textOnNeon: "#ffffff", badge: "cel mai luat",
     blurb: "Profilul tău începe să fie observat. Frame animat, teme, vederi.",
     perks: ["Tot din VIP", "Frame animat pe avatar", "5 teme exclusive de profil", "15 șprițuri pe lună", "Vezi cine ți-a dat rating"],
   },
   {
-    id: "pro", index: "III.", name: "Pro", italic: "serios",
-    price: 9.99, coins: 40, hue: HUE.violet.fg, surface: HUE.violet.bg,
+    id: "pro", index: "III", name: "Pro", italic: "serios",
+    price: 9.99, coins: 40, neon: NEON.violet, textOnNeon: "#ffffff",
     blurb: "Pentru regulari. Boost săptămânal, analytics, un music clip pe profil.",
     perks: ["Tot din VIP+", "1× Profile Boost / săptămână", "Reputation analytics complet", "Music clip 15s pe profil", "40 șprițuri pe lună", "Animated background"],
   },
   {
-    id: "elite", index: "IV.", name: "Elite", italic: "rar",
-    price: 14.99, coins: 120, hue: HUE.glacier.fg, surface: HUE.glacier.bg, badge: "100 locuri",
+    id: "elite", index: "IV", name: "Elite", italic: "rar",
+    price: 14.99, coins: 120, neon: NEON.cyan, textOnNeon: "#050510", badge: "100 locuri",
     blurb: "O sută de oameni pe an. Numele tău rămâne pe perete.",
     perks: ["Tot din Pro", "Diamond badge holografic", "Featured pe Discover", "Founder recognition pe vecie", "Cadou aniversar fizic", "120 șprițuri pe lună", "Acces beta features"],
   },
 ];
 
 const COIN_PACKS = [
-  { id: "coins_mic", coins: 5, price: 4.99, label: "Un rând" },
-  { id: "coins_mediu", coins: 15, price: 12.99, label: "Pentru gașcă", bonus: "+10%" },
-  { id: "coins_mare", coins: 40, price: 29.99, label: "Petrecere", bonus: "+20%", popular: true },
-  { id: "coins_boss", coins: 100, price: 69.99, label: "Toată haita", bonus: "+35%" },
-  { id: "coins_legenda", coins: 300, price: 179, label: "Legendă", bonus: "+50%" },
+  { id: "coins_mic",     coins: 5,   price: 4.99,  label: "Un rând",       neon: NEON.yellow },
+  { id: "coins_mediu",   coins: 15,  price: 12.99, label: "Pentru gașcă",  bonus: "+10%", neon: NEON.pink },
+  { id: "coins_mare",    coins: 40,  price: 29.99, label: "Petrecere",     bonus: "+20%", popular: true, neon: NEON.violet },
+  { id: "coins_boss",    coins: 100, price: 69.99, label: "Toată haita",   bonus: "+35%", neon: NEON.cyan },
+  { id: "coins_legenda", coins: 300, price: 179,   label: "Legendă",       bonus: "+50%", neon: NEON.pink },
 ];
 
 const FAQ = [
@@ -105,295 +106,345 @@ function PremiumPage() {
   };
 
   return (
-    <div className="pb-24" style={{ background: "oklch(0.14 0.012 30)" }}>
-      {/* Top bar — quiet */}
-      <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-foreground/10 px-3 h-12 flex items-center gap-2">
+    <div className="pb-24 min-h-screen text-white" style={{ background: "#050510" }}>
+      {/* Top bar */}
+      <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-white/10 px-3 h-12 flex items-center gap-2"
+        style={{ background: "rgba(5,5,16,0.7)" }}>
         <Link to="/app/me" className="p-1.5 -ml-1.5 active:scale-95 transition" aria-label="Înapoi">
           <ArrowLeft size={22} strokeWidth={2.2} />
         </Link>
-        <div className="font-mono uppercase text-[10px] tracking-[0.3em] text-muted-foreground">Membership</div>
+        <div className="font-mono uppercase text-[10px] tracking-[0.3em] text-white/50">Membership</div>
         {currentTier && <div className="ml-auto"><PremiumBadge tier={currentTier} size="sm" asLink={false} /></div>}
       </header>
 
-      {/* COVER — magazine cover */}
-      <section className="relative px-6 pt-10 pb-12 border-b border-foreground/15">
-        <div className="flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.4em] text-muted-foreground">
-          <span>Vol. 04</span>
-          <span className="flex items-center gap-2">
-            <span className="h-px w-8 bg-foreground/40" />
-            membership
-          </span>
-        </div>
+      <div className="w-full max-w-[420px] mx-auto px-6 flex flex-col gap-12 pt-10">
 
-        <h1 className="mt-10 leading-[0.78] tracking-[-0.04em]">
-          <span className="block font-display uppercase text-[clamp(2.8rem,13vw,5rem)] font-medium">Plătești</span>
-          <span className="block text-[clamp(3.2rem,15vw,5.8rem)] italic font-normal" style={{ fontFamily: "'Instrument Serif', serif", color: "oklch(0.85 0.13 75)" }}>
-            puțin.
-          </span>
-          <span className="block font-display uppercase text-[clamp(2.8rem,13vw,5rem)] font-medium mt-2">Arăți</span>
-          <span className="block text-[clamp(3.2rem,15vw,5.8rem)] italic font-normal" style={{ fontFamily: "'Instrument Serif', serif", color: "oklch(0.72 0.20 40)" }}>
-            mult.
-          </span>
-        </h1>
-
-        <p className="mt-8 text-[15px] leading-relaxed text-foreground/80 max-w-[28ch]">
-          Patru trepte. Niciuna nu-ți cumpără locul în top — doar
-          <span className="italic" style={{ fontFamily: "'Instrument Serif', serif" }}> stilul</span>,
-          <span className="italic" style={{ fontFamily: "'Instrument Serif', serif" }}> vizibilitatea</span> și câteva rânduri de aruncat pe masă.
-        </p>
-
-        {/* signature line */}
-        <div className="mt-8 flex items-end justify-between">
-          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/70">
-            de la 2,99 lei / lună
-          </div>
-          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-muted-foreground/70">
-            06 · 2026
-          </div>
-        </div>
-      </section>
-
-      {/* Billing toggle — minimal, inline */}
-      <section className="px-6 py-5 border-b border-foreground/10 flex items-center justify-between">
-        <div className="text-[11px] font-mono uppercase tracking-[0.25em] text-muted-foreground">Plătești</div>
-        <div className="inline-flex items-center rounded-full border border-foreground/15 p-[3px] text-[11px] font-mono uppercase tracking-wider">
-          <button
-            onClick={() => setAnnual(false)}
-            className={`px-3.5 py-1.5 rounded-full transition ${!annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
-          >Lunar</button>
-          <button
-            onClick={() => setAnnual(true)}
-            className={`px-3.5 py-1.5 rounded-full transition flex items-center gap-1.5 ${annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
+        {/* HERO */}
+        <section className="text-center space-y-4">
+          <div
+            className="inline-block px-3 py-1 border rounded-full text-[10px] tracking-[0.25em] uppercase font-bold"
+            style={{
+              borderColor: NEON.cyan,
+              color: NEON.cyan,
+              boxShadow: `0 0 12px ${NEON.cyan}55`,
+            }}
           >
-            Anual
-            <span className={`text-[8px] px-1.5 py-[1px] rounded-full ${annual ? "bg-background/20" : "bg-foreground/10 text-foreground/80"}`}>−17%</span>
-          </button>
-        </div>
-      </section>
+            Upgrade Membership
+          </div>
+          <h1 className="font-display text-5xl font-black tracking-tighter uppercase italic leading-none">
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
+              OXIDATE
+            </span>
+            <span style={{ color: NEON.pink, textShadow: `0 0 10px ${NEON.pink}` }}>+</span>
+          </h1>
+          <p
+            className="text-xl text-white/60 max-w-[280px] mx-auto italic"
+            style={{ fontFamily: "'Instrument Serif', serif" }}
+          >
+            Alege nivelul care îți definește prezența în club.
+          </p>
+        </section>
 
-      {/* TIERS — magazine spreads */}
-      <section>
-        {TIERS.map((tier, idx) => {
-          const isCurrent = currentTier === tier.id;
-          const price = annual ? (tier.price * 10).toFixed(2) : tier.price.toFixed(2);
-          const annualSaved = annual ? (tier.price * 12 - tier.price * 10).toFixed(2) : null;
-          return (
-            <article
-              key={tier.id}
-              className="relative border-b border-foreground/15 px-6 py-10"
-              style={{ background: `linear-gradient(180deg, transparent 0%, ${tier.surface} 100%)` }}
+        {/* BILLING TOGGLE */}
+        <div className="flex items-center justify-center">
+          <div className="p-1 rounded-full flex border border-white/10" style={{ background: "#10101a" }}>
+            <button
+              onClick={() => setAnnual(false)}
+              className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
+                !annual ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.25)]" : "text-white/50"
+              }`}
             >
-              {/* index + name row */}
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-muted-foreground/80">
-                    {tier.index} membership
-                  </div>
-                  <div className="mt-2 flex items-baseline gap-3 flex-wrap">
-                    <h2 className="font-display uppercase text-4xl tracking-tight" style={{ color: tier.hue }}>
-                      {tier.name}
-                    </h2>
-                    <span className="text-3xl italic" style={{ fontFamily: "'Instrument Serif', serif", color: "oklch(0.75 0.02 60)" }}>
-                      &amp; {tier.italic}
-                    </span>
-                  </div>
-                </div>
-                <div className="text-right shrink-0 pt-1">
-                  <div className="font-display text-3xl leading-none tabular-nums">
-                    {price}
-                  </div>
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mt-1">
-                    lei {annual ? "/ an" : "/ lună"}
-                  </div>
-                  {annualSaved && (
-                    <div className="text-[9px] italic mt-1 text-foreground/60" style={{ fontFamily: "'Instrument Serif', serif" }}>
-                      economisești {annualSaved} lei
+              Lunar
+            </button>
+            <button
+              onClick={() => setAnnual(true)}
+              className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${
+                annual ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.25)]" : "text-white/50"
+              }`}
+            >
+              Anual
+              <span
+                className="text-[9px] px-1.5 py-[1px] rounded-sm font-black"
+                style={{
+                  background: annual ? "#050510" : NEON.yellow,
+                  color: annual ? NEON.yellow : "#050510",
+                }}
+              >
+                −17%
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* TIERS */}
+        <div className="flex flex-col gap-8">
+          {TIERS.map((tier) => {
+            const isCurrent = currentTier === tier.id;
+            const price = annual ? (tier.price * 10).toFixed(2) : tier.price.toFixed(2);
+            const annualSaved = annual ? (tier.price * 12 - tier.price * 10).toFixed(2) : null;
+
+            return (
+              <div key={tier.id} className="relative group">
+                {/* outer glow */}
+                <div
+                  aria-hidden
+                  className="absolute -inset-0.5 rounded-2xl blur-xl opacity-25 group-hover:opacity-45 transition pointer-events-none"
+                  style={{ background: tier.neon }}
+                />
+                {/* glass card */}
+                <div
+                  className="relative rounded-2xl p-6 flex flex-col gap-6 backdrop-blur-xl"
+                  style={{
+                    background: "rgba(10,10,21,0.85)",
+                    border: `1px solid ${tier.neon}55`,
+                  }}
+                >
+                  {tier.badge && (
+                    <div
+                      className="absolute -top-3 left-6 text-[9px] px-3 py-1 font-black uppercase tracking-widest rounded-full"
+                      style={{ background: tier.neon, color: tier.textOnNeon }}
+                    >
+                      {tier.badge}
                     </div>
                   )}
-                </div>
-              </div>
 
-              {/* badges row */}
-              {(tier.badge || isCurrent) && (
-                <div className="mt-3 flex items-center gap-2">
-                  {tier.badge && (
-                    <span className="text-[9px] font-mono uppercase tracking-[0.2em] px-2 py-1 rounded-full border border-foreground/20 text-foreground/70">
-                      {tier.badge}
-                    </span>
-                  )}
-                  {isCurrent && (
-                    <span className="text-[9px] font-mono uppercase tracking-[0.2em] px-2 py-1 rounded-full" style={{ background: tier.hue, color: "oklch(0.15 0.02 30)" }}>
-                      planul tău
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* lead blurb */}
-              <p className="mt-5 text-[16px] leading-snug text-foreground/85 max-w-[34ch]"
-                style={{ fontFamily: "'Instrument Serif', serif", fontStyle: "italic" }}>
-                „{tier.blurb}"
-              </p>
-
-              {/* perks — two columns, hairline separator */}
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 border-t border-foreground/10 pt-4">
-                {tier.perks.map((p, i) => (
-                  <div key={p} className="flex items-baseline gap-3 py-1.5 border-b border-foreground/5 last:border-b-0">
-                    <span className="font-mono text-[9px] tabular-nums text-muted-foreground/60 w-5">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span className="text-[13px] text-foreground/90 leading-snug">{p}</span>
+                  <div className="flex justify-between items-start gap-3">
+                    <div>
+                      <p
+                        className="text-[10px] uppercase tracking-[0.3em] font-bold"
+                        style={{ color: tier.neon }}
+                      >
+                        Tier {tier.index}
+                      </p>
+                      <h3 className="font-display text-3xl font-black uppercase mt-1">
+                        {tier.name === "VIP+" ? (
+                          <>VIP<span style={{ color: tier.neon }}>+</span></>
+                        ) : (
+                          tier.name
+                        )}
+                      </h3>
+                      <p
+                        className="italic text-base text-white/55 mt-1"
+                        style={{ fontFamily: "'Instrument Serif', serif" }}
+                      >
+                        &amp; {tier.italic}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-display text-3xl font-black tabular-nums leading-none">
+                        {price}
+                      </p>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">
+                        Lei / {annual ? "an" : "lună"}
+                      </p>
+                      {annualSaved && (
+                        <p
+                          className="text-[10px] italic mt-1 text-white/55"
+                          style={{ fontFamily: "'Instrument Serif', serif" }}
+                        >
+                          −{annualSaved} lei
+                        </p>
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
 
-              {/* CTA — full bleed editorial button */}
-              <button
-                onClick={() => handleBuy(tier)}
-                disabled={isCurrent}
-                className={`mt-7 w-full h-12 rounded-full flex items-center justify-between px-5 transition active:scale-[0.985] ${
-                  isCurrent
-                    ? "border border-foreground/10 text-muted-foreground cursor-not-allowed"
-                    : "text-background"
-                }`}
-                style={!isCurrent ? { background: tier.hue } : undefined}
-              >
-                <span className="font-mono uppercase text-[11px] tracking-[0.25em]">
-                  {isCurrent ? "ești deja aici" : `Devino ${tier.name}`}
-                </span>
-                {!isCurrent && (
-                  <span className="flex items-center gap-2 font-mono uppercase text-[11px] tracking-[0.25em]">
-                    {price} lei
-                    <ArrowUpRight size={16} strokeWidth={2.2} />
-                  </span>
-                )}
-              </button>
-            </article>
-          );
-        })}
-      </section>
+                  <p
+                    className="italic text-lg leading-snug"
+                    style={{ fontFamily: "'Instrument Serif', serif", color: `${tier.neon}cc` }}
+                  >
+                    „{tier.blurb}"
+                  </p>
 
-      {/* DRINKS — bar tab spread */}
-      <section className="px-6 pt-12 pb-8 border-b border-foreground/15">
-        <div className="flex items-baseline justify-between mb-1">
-          <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-muted-foreground">V. bar</div>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70">tab la bar</div>
-        </div>
-        <h2 className="font-display uppercase text-3xl mt-2 leading-tight">
-          Șprițurile pe care le <span className="italic font-normal" style={{ fontFamily: "'Instrument Serif', serif", color: "oklch(0.85 0.13 75)" }}>arunci pe masă.</span>
-        </h2>
-        <p className="text-[13px] text-foreground/70 mt-3 max-w-[36ch]">
-          Cadouri, boost-uri, frame-uri. O dată plătite, le folosești când vrei. Nu expiră.
-        </p>
+                  <ul className="space-y-2.5">
+                    {tier.perks.map((p) => (
+                      <li key={p} className="flex items-start gap-3 text-[13px] text-white/80">
+                        <span
+                          className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
+                          style={{ background: tier.neon, boxShadow: `0 0 6px ${tier.neon}` }}
+                        />
+                        <span className="leading-snug">{p}</span>
+                      </li>
+                    ))}
+                  </ul>
 
-        <div className="mt-6">
-          {COIN_PACKS.map((p, idx) => (
-            <button
-              key={p.id}
-              onClick={() => handleCoins(p)}
-              className="w-full flex items-baseline gap-4 py-4 border-t border-foreground/15 last:border-b active:bg-foreground/[0.04] transition text-left group"
-            >
-              <div className="font-mono text-[10px] tabular-nums text-muted-foreground/70 w-8">
-                {String(idx + 1).padStart(2, "0")}.
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-3 flex-wrap">
-                  <span className="font-display uppercase text-lg tracking-tight">{p.label}</span>
-                  <span className="text-lg italic text-muted-foreground/80" style={{ fontFamily: "'Instrument Serif', serif" }}>
-                    {p.coins} {p.coins === 1 ? "șpriț" : "șprițuri"}
-                  </span>
-                  {p.bonus && (
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300">{p.bonus} cadou</span>
-                  )}
-                  {p.popular && (
-                    <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-[2px] rounded-sm bg-foreground text-background">
-                      ales de mulți
-                    </span>
-                  )}
+                  <button
+                    onClick={() => handleBuy(tier)}
+                    disabled={isCurrent}
+                    className="w-full py-4 font-black uppercase tracking-widest text-xs rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={
+                      isCurrent
+                        ? { background: "transparent", border: `1px solid ${tier.neon}55`, color: tier.neon }
+                        : {
+                            background: tier.neon,
+                            color: tier.textOnNeon,
+                            boxShadow: `0 0 24px ${tier.neon}66`,
+                          }
+                    }
+                  >
+                    {isCurrent ? "Ești deja aici" : (
+                      <>
+                        Devino {tier.name}
+                        <ArrowUpRight size={14} strokeWidth={2.5} />
+                      </>
+                    )}
+                  </button>
                 </div>
-              </div>
-              <div className="text-right shrink-0">
-                <div className="font-display text-xl tabular-nums leading-none">{p.price}</div>
-                <div className="text-[9px] font-mono uppercase text-muted-foreground/70 mt-1">lei</div>
-              </div>
-              <ArrowUpRight size={14} className="text-muted-foreground/40 group-hover:text-foreground transition" />
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* MANIFESTO — pull quote */}
-      <section className="px-6 py-14 border-b border-foreground/15">
-        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-muted-foreground mb-5">
-          VI. manifest
-        </div>
-        <p className="text-[26px] leading-[1.15] tracking-tight"
-          style={{ fontFamily: "'Instrument Serif', serif" }}>
-          „Nu vindem locul <em>întâi</em>. Vindem doar cum arăți când <em>ajungi</em> acolo."
-        </p>
-        <div className="mt-6 h-px w-12 bg-foreground/30" />
-        <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
-          — echipa oxidații
-        </div>
-      </section>
-
-      {/* FAQ — accordion, hairlines */}
-      <section className="px-6 pt-10 pb-4">
-        <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-muted-foreground mb-5">
-          VII. întrebări
-        </div>
-        <div>
-          {FAQ.map((f, i) => {
-            const open = openFaq === i;
-            return (
-              <div key={i} className="border-t border-foreground/15 last:border-b">
-                <button
-                  onClick={() => setOpenFaq(open ? null : i)}
-                  className="w-full py-4 flex items-baseline justify-between gap-4 text-left active:bg-foreground/[0.03] transition"
-                >
-                  <span className="text-[15px] text-foreground/90" style={{ fontFamily: "'Instrument Serif', serif" }}>
-                    {f.q}
-                  </span>
-                  <span className="font-mono text-[18px] text-muted-foreground tabular-nums leading-none">
-                    {open ? "−" : "+"}
-                  </span>
-                </button>
-                {open && (
-                  <div className="pb-5 pr-8 text-[13px] text-foreground/70 leading-relaxed">
-                    {f.a}
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
-      </section>
 
-      {/* Manage subscription + boost */}
-      {currentTier && (
-        <div className="px-6 mt-6 space-y-3">
-          <ProfileBoostCard />
-          <button
-            onClick={handleManage}
-            disabled={openingPortal}
-            className="w-full flex items-center justify-center gap-2 h-11 rounded-full border border-foreground/20 font-mono uppercase text-[10px] tracking-[0.3em] disabled:opacity-50 active:scale-[0.99] transition"
+        {/* BAR — coin packs */}
+        <section className="space-y-6 pt-6">
+          <div className="flex flex-col gap-1">
+            <p
+              className="text-[10px] font-bold uppercase tracking-[0.4em]"
+              style={{ color: NEON.yellow }}
+            >
+              V. Bar
+            </p>
+            <h2 className="font-display text-3xl font-black uppercase leading-tight italic">
+              Șprițurile pe care le<br />
+              <span style={{ color: NEON.yellow, textShadow: `0 0 14px ${NEON.yellow}` }}>
+                arunci pe masă.
+              </span>
+            </h2>
+            <p className="text-[13px] text-white/60 mt-2 max-w-[34ch]">
+              Cadouri, boost-uri, frame-uri. O dată plătite, le folosești când vrei. Nu expiră.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {COIN_PACKS.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => handleCoins(p)}
+                className="w-full p-4 rounded-xl flex items-center justify-between transition-colors text-left relative overflow-hidden"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: `1px solid ${p.popular ? `${p.neon}55` : "rgba(255,255,255,0.1)"}`,
+                }}
+              >
+                {p.popular && (
+                  <span
+                    className="absolute top-0 right-0 text-[8px] font-black px-2 py-0.5 rounded-bl uppercase tracking-wider"
+                    style={{ background: p.neon, color: "#050510" }}
+                  >
+                    ales de mulți
+                  </span>
+                )}
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-black uppercase tracking-wider" style={{ color: p.neon }}>
+                    {p.label}
+                  </span>
+                  <span
+                    className="text-[12px] italic text-white/55 mt-0.5"
+                    style={{ fontFamily: "'Instrument Serif', serif" }}
+                  >
+                    {p.coins} {p.coins === 1 ? "șpriț" : "șprițuri"}
+                  </span>
+                  {p.bonus && (
+                    <span className="text-[10px] font-bold uppercase mt-1" style={{ color: p.neon }}>
+                      {p.bonus} cadou
+                    </span>
+                  )}
+                </div>
+                <div className="text-right shrink-0 ml-3">
+                  <div className="font-display text-lg font-black tabular-nums leading-none">{p.price}</div>
+                  <div className="text-[9px] uppercase tracking-widest text-white/40 mt-1">Lei</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Manage subscription + boost */}
+        {currentTier && (
+          <div className="space-y-3">
+            <ProfileBoostCard />
+            <button
+              onClick={handleManage}
+              disabled={openingPortal}
+              className="w-full flex items-center justify-center gap-2 h-11 rounded-full border border-white/20 font-mono uppercase text-[10px] tracking-[0.3em] disabled:opacity-50 active:scale-[0.99] transition text-white/80 hover:text-white"
+            >
+              <Settings size={13} />
+              {openingPortal ? "se deschide…" : "Gestionează abonament"}
+            </button>
+          </div>
+        )}
+
+        {/* MANIFESTO */}
+        <section className="py-10 border-y border-white/5">
+          <p
+            className="italic text-3xl leading-snug text-white/90"
+            style={{ fontFamily: "'Instrument Serif', serif" }}
           >
-            <Settings size={13} />
-            {openingPortal ? "se deschide…" : "Gestionează abonament"}
-          </button>
-        </div>
-      )}
+            „Nu vindem locul <span className="text-white">întâi</span>. Vindem doar cum arăți când{" "}
+            <span style={{ color: NEON.cyan, textShadow: `0 0 12px ${NEON.cyan}` }}>
+              ajungi acolo
+            </span>
+            ."
+          </p>
+          <div className="mt-6 flex items-center gap-4">
+            <div
+              className="h-px flex-1"
+              style={{ background: `linear-gradient(to right, ${NEON.cyan}, transparent)` }}
+            />
+            <p className="text-[9px] uppercase tracking-[0.4em] text-white/40 font-bold">
+              Echipa Oxidații
+            </p>
+          </div>
+        </section>
 
-      {/* Colophon */}
-      <footer className="px-6 mt-10 pt-6 border-t border-foreground/10">
-        <div className="font-mono text-[9px] uppercase tracking-[0.35em] text-muted-foreground/60 flex items-center justify-between">
-          <span>Oxidații Press</span>
-          <span>Vol. 04 · Nr. 06</span>
-        </div>
-        <p className="mt-3 text-[10px] text-muted-foreground/50 leading-relaxed max-w-[40ch]">
-          Toate plățile sunt securizate și finale. Anulezi abonamentul oricând, fără explicații.
-        </p>
-      </footer>
+        {/* FAQ */}
+        <section className="space-y-2">
+          <h4 className="text-xs font-black uppercase tracking-widest text-white/50 mb-2">
+            Întrebări Frecvente
+          </h4>
+          <div className="divide-y divide-white/10">
+            {FAQ.map((f, i) => {
+              const open = openFaq === i;
+              return (
+                <div key={i}>
+                  <button
+                    onClick={() => setOpenFaq(open ? null : i)}
+                    className="w-full py-5 flex items-center justify-between gap-4 text-left group"
+                  >
+                    <span className="text-sm font-medium text-white/85 group-hover:text-white transition">
+                      {f.q}
+                    </span>
+                    <span
+                      className="w-5 h-5 flex items-center justify-center shrink-0"
+                      style={{ color: NEON.pink }}
+                    >
+                      {open ? <Minus size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
+                    </span>
+                  </button>
+                  {open && (
+                    <div
+                      className="pb-5 pr-8 text-[13px] text-white/65 leading-relaxed italic"
+                      style={{ fontFamily: "'Instrument Serif', serif" }}
+                    >
+                      {f.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* Colophon */}
+        <footer className="pt-6 border-t border-white/10">
+          <div className="font-mono text-[9px] uppercase tracking-[0.35em] text-white/40 flex items-center justify-between">
+            <span>Oxidații Press</span>
+            <span>Vol. 04 · Nr. 06</span>
+          </div>
+          <p className="mt-3 text-[10px] text-white/40 leading-relaxed max-w-[40ch]">
+            Toate plățile sunt securizate și finale. Anulezi abonamentul oricând, fără explicații.
+          </p>
+        </footer>
+      </div>
 
       <PremiumCheckoutDialog
         priceId={checkout?.priceId ?? null}
