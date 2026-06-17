@@ -204,7 +204,7 @@
   }
 
   html, body {
-    background: #050510;
+    background-color: #050510;
     background-image:
       radial-gradient(ellipse 80% 50% at 20% 0%, oklch(0.30 0.18 310 / 0.25), transparent 60%),
       radial-gradient(ellipse 70% 40% at 80% 100%, oklch(0.32 0.20 215 / 0.20), transparent 60%);
@@ -218,12 +218,12 @@
     text-rendering: optimizeSpeed;
   }
 
-  html.light, html.light body {
-    background: oklch(0.99 0.005 80);
+  html.light,
+  html.light body {
+    background-color: oklch(0.99 0.005 80) !important;
     background-image:
       radial-gradient(ellipse 80% 50% at 20% 0%, oklch(0.85 0.10 35 / 0.18), transparent 60%),
-      radial-gradient(ellipse 70% 40% at 80% 100%, oklch(0.82 0.10 320 / 0.14), transparent 60%);
-    color: var(--foreground);
+      radial-gradient(ellipse 70% 40% at 80% 100%, oklch(0.82 0.10 320 / 0.14), transparent 60%) !important;
   }
 
   img, video {
