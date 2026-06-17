@@ -223,6 +223,7 @@ function MapPage() {
   const [visible, setVisible] = useState(40);
   const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
+  const [autoLocated, setAutoLocated] = useState(false);
 
   const { data: citiesData, isLoading } = useQuery({
     queryKey: ["cities"],
@@ -496,6 +497,13 @@ function MapPage() {
       .then((pos) => publishPosition(pos))
       .catch(() => alert("Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
   };
+
+  useEffect(() => {
+    if (!user || !profile?.location_consent || autoLocated || privacyQ.isLoading) return;
+    if (privacyQ.data?.settings?.map_ghost || privacyQ.data?.settings?.map_visibility === "nobody") return;
+    setAutoLocated(true);
+    getPrecisePosition().then((pos) => publishPosition(pos)).catch(() => {});
+  }, [autoLocated, privacyQ.isLoading, privacyQ.data?.settings?.map_ghost, privacyQ.data?.settings?.map_visibility, profile?.location_consent, user]);
 
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
