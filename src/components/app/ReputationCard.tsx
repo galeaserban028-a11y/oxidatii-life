@@ -72,12 +72,13 @@ export function computeReputation(self: SelfInputs, peers: PeerAgg = {}) {
   );
 
   const tier =
-    score >= 90 ? { name: "LEGEND",   color: "var(--sunset-orange)",   glow: "var(--sunset-orange)" } :
-    score >= 75 ? { name: "PLATINUM", color: "var(--sunset-magenta)",  glow: "var(--sunset-magenta)" } :
-    score >= 60 ? { name: "GOLD",     color: "var(--neon-purple)",     glow: "var(--neon-purple)" } :
-    score >= 40 ? { name: "SILVER",   color: "var(--neon-green)",      glow: "var(--neon-green)" } :
-    score >= 20 ? { name: "BRONZE",   color: "var(--muted-foreground)",glow: "var(--muted-foreground)" } :
-                  { name: "STARTER",  color: "var(--muted-foreground)",glow: "var(--muted-foreground)" };
+    score >= 90 ? { name: "LEGEND",   color: "#ffea00", glow: "#ffea00" } :
+    score >= 75 ? { name: "PLATINUM", color: "#00e5ff", glow: "#00e5ff" } :
+    score >= 60 ? { name: "GOLD",     color: "#ff3d8b", glow: "#ff3d8b" } :
+    score >= 40 ? { name: "SILVER",   color: "#c724ff", glow: "#c724ff" } :
+    score >= 20 ? { name: "BRONZE",   color: "#ff8c42", glow: "#ff8c42" } :
+                  { name: "STARTER",  color: "#9aa0b4", glow: "#9aa0b4" };
+
 
   return { score, tier, metrics, totalPeerN };
 }
