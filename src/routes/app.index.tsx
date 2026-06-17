@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Flame, MapPin, Users, Plus } from "lucide-react";
+import { Flame, MapPin, Users, Plus, MoreHorizontal, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { PromoTakeover } from "@/components/app/PromoTakeover";
 import { NightWrapCard } from "@/components/app/NightWrapCard";
@@ -380,6 +382,46 @@ function formatCount(n: number) {
 function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venue: any }) {
   const handle = profile?.display_name ?? profile?.handle ?? "Anonim";
   const badge = pickFeedBadge(item.id, item.kind === "proof");
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const isMine = user?.id === item.user_id;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [menuOpen]);
+
+  async function handleDelete() {
+    if (!user || !isMine) return;
+    if (!confirm("Sigur vrei să ștergi această postare?")) return;
+    setDeleting(true);
+    try {
+      const rawId = item.id.replace(/^sp-|^vp-/, "");
+      if (item.kind === "proof") {
+        await supabase.from("sprit_proofs").delete().eq("id", rawId).eq("user_id", user.id);
+        // also remove the companion venue_photos row sharing same photo_url
+        await supabase.from("venue_photos").delete().eq("user_id", user.id).eq("photo_url", item.photo_url);
+      } else {
+        await supabase.from("venue_photos").delete().eq("id", rawId).eq("user_id", user.id);
+      }
+      toast.success("Postare ștearsă");
+      queryClient.invalidateQueries({ queryKey: ["app-feed"] });
+      queryClient.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Nu s-a putut șterge");
+    } finally {
+      setDeleting(false);
+      setMenuOpen(false);
+    }
+  }
+
   return (
     <article className="rounded-2xl border border-foreground/10 bg-card/40 overflow-hidden">
       {/* Header */}
@@ -405,6 +447,29 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
         <span className={`shrink-0 inline-flex items-center px-2 py-[3px] rounded-md border text-[10px] font-mono uppercase tracking-[0.15em] ${badge.className}`}>
           {badge.label}
         </span>
+        {isMine && (
+          <div ref={menuRef} className="relative shrink-0">
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="h-8 w-8 rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10"
+              aria-label="Opțiuni"
+            >
+              <MoreHorizontal size={18} />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-1 z-20 min-w-[160px] rounded-xl border border-white/10 bg-[#15151a] shadow-2xl overflow-hidden">
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-red-400 hover:bg-red-500/10 disabled:opacity-50"
+                >
+                  <Trash2 size={15} />
+                  {deleting ? "Se șterge…" : "Șterge postarea"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Media */}

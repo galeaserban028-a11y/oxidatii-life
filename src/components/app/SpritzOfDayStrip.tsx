@@ -1,9 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "@tanstack/react-router";
-import { X } from "lucide-react";
+import { X, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 
 type SpritzTile = {
   id: string;
@@ -112,6 +114,28 @@ function SpritzViewer({
 }: { tiles: SpritzTile[]; index: number; onClose: () => void; onIndex: (i: number) => void }) {
   const t = tiles[index];
   const progressRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const isMine = !!user && !!t && user.id === t.user_id;
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!user || !t || !isMine) return;
+    if (!confirm("Sigur vrei să ștergi acest șpriț?")) return;
+    setDeleting(true);
+    try {
+      await supabase.from("sprit_proofs").delete().eq("id", t.id).eq("user_id", user.id);
+      await supabase.from("venue_photos").delete().eq("user_id", user.id).eq("photo_url", t.photo_url);
+      toast.success("Șters");
+      queryClient.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
+      queryClient.invalidateQueries({ queryKey: ["app-feed"] });
+      onClose();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Nu s-a putut șterge");
+    } finally {
+      setDeleting(false);
+    }
+  }
   useEffect(() => {
     if (!progressRef.current) return;
     progressRef.current.style.transition = "none";
@@ -149,9 +173,21 @@ function SpritzViewer({
             {t.venue_name && <div className="text-[10px] text-white/60 truncate">{t.venue_name}</div>}
           </div>
         </Link>
-        <button onClick={onClose} className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center text-white">
-          <X size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          {isMine && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="h-9 px-3 rounded-full bg-red-500/15 text-red-300 flex items-center gap-1.5 text-xs font-semibold disabled:opacity-50"
+            >
+              <Trash2 size={14} />
+              {deleting ? "..." : "Șterge"}
+            </button>
+          )}
+          <button onClick={onClose} className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center text-white">
+            <X size={18} />
+          </button>
+        </div>
       </div>
       <div className="flex-1 relative" onClick={(e) => {
         const r = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
