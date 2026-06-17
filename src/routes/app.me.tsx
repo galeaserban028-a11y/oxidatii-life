@@ -59,6 +59,35 @@ function MePage() {
 
   // tab state for the grid
   const [tab, setTab] = useState<"posts" | "reposts">("posts");
+  const queryClient = useQueryClient();
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  async function handleDelete(m: any) {
+    if (!user) return;
+    const label = tab === "reposts" ? "acest repost" : (m._kind === "proof" ? "acest șpriț" : "această poză");
+    if (!confirm(`Sigur vrei să ștergi ${label}?`)) return;
+    const key = `${m._kind}-${m.id}`;
+    setDeleting(key);
+    try {
+      let err: any = null;
+      if (tab === "reposts") {
+        ({ error: err } = await supabase.from("photo_reposts").delete().eq("user_id", user.id).eq("photo_id", m.id));
+      } else if (m._kind === "proof") {
+        ({ error: err } = await supabase.from("sprit_proofs").delete().eq("id", m.id).eq("user_id", user.id));
+      } else {
+        ({ error: err } = await supabase.from("venue_photos").delete().eq("id", m.id).eq("user_id", user.id));
+      }
+      if (err) throw err;
+      toast.success("Șters");
+      queryClient.invalidateQueries({ queryKey: ["my-moments", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["my-reposts", user.id] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Nu s-a putut șterge");
+    } finally {
+      setDeleting(null);
+    }
+  }
+
 
   // edit profile dialog state
   const [editOpen, setEditOpen] = useState(false);
