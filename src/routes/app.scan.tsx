@@ -23,7 +23,7 @@ function ScanPage() {
   const [venueQuery, setVenueQuery] = useState("");
   const [selectedVenue, setSelectedVenue] = useState<{ id: string; name: string; city?: any } | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [postToProfile, setPostToProfile] = useState(true);
+  const [postType, setPostType] = useState<"spritz" | "normal">("spritz");
   const [addOpen, setAddOpen] = useState(false);
   const [newVenueName, setNewVenueName] = useState("");
   const [newVenueType, setNewVenueType] = useState<"club" | "bar" | "terasa">("club");
@@ -59,34 +59,59 @@ function ScanPage() {
       const isVideo = file.type.startsWith("video/");
       const ext = file.name.split(".").pop()?.toLowerCase() ?? (isVideo ? "mp4" : "jpg");
       const path = `${user.id}/${selectedVenue.id}/${Date.now()}.${ext}`;
+
+      // For Spritz posts: enforce 1/day in Top
+      if (postType === "spritz") {
+        const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+        const { count } = await supabase
+          .from("sprit_proofs")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .gte("created_at", startOfDay.toISOString());
+        if ((count ?? 0) > 0) {
+          toast.error("Ai postat deja Șprițul zilei. Revino mâine 🥃");
+          setUploading(false);
+          return;
+        }
+      }
+
       const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, { contentType: file.type });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
-      if (postToProfile) {
-        const { error: insErr } = await supabase.from("venue_photos").insert({
-          venue_id: selectedVenue.id,
-          user_id: user.id,
-          photo_url: pub.publicUrl,
-          media_type: isVideo ? "video" : "image",
-          caption: caption.trim() || null,
-        });
-        if (insErr) throw insErr;
-      }
-      // Always create a sprit_proof so it shows up on the main /app feed (auto-deletes after 12h)
-      const { error: proofErr } = await supabase.from("sprit_proofs").insert({
-        user_id: user.id,
+
+      // Always post to profile gallery (the user explicitly chose to share something)
+      const { error: insErr } = await supabase.from("venue_photos").insert({
         venue_id: selectedVenue.id,
+        user_id: user.id,
         photo_url: pub.publicUrl,
         media_type: isVideo ? "video" : "image",
-        ai_verified: true,
+        caption: caption.trim() || null,
       });
-      if (proofErr) console.warn("sprit_proofs insert failed", proofErr);
-      toast.success(isVideo ? "Clipul tău e live." : "Șprițul tău e live.");
+      if (insErr) throw insErr;
+
+      // Only Spritz posts go into sprit_proofs (live feed + Top "Șprițul zilei")
+      if (postType === "spritz") {
+        const { error: proofErr } = await supabase.from("sprit_proofs").insert({
+          user_id: user.id,
+          venue_id: selectedVenue.id,
+          photo_url: pub.publicUrl,
+          media_type: isVideo ? "video" : "image",
+          ai_verified: true,
+        });
+        if (proofErr) console.warn("sprit_proofs insert failed", proofErr);
+      }
+
+      toast.success(
+        postType === "spritz"
+          ? (isVideo ? "Clipul tău e Șprițul zilei." : "Șprițul zilei e live.")
+          : "Postarea ta e live pe profil."
+      );
       qc.invalidateQueries({ queryKey: ["faze"] });
       qc.invalidateQueries({ queryKey: ["app-feed"] });
       qc.invalidateQueries({ queryKey: ["app-private-feed"] });
+      qc.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
       qc.invalidateQueries({ queryKey: ["venue", selectedVenue.id] });
-      nav({ to: "/app" });
+      nav({ to: postType === "spritz" ? "/app/top" : "/app/me" });
     } catch (e: any) {
       toast.error(e.message ?? "Nu s-a putut încărca");
     } finally {
@@ -273,25 +298,46 @@ function ScanPage() {
             className="w-full px-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
 
-          {/* Publish to profile toggle */}
-          <button
-            type="button"
-            onClick={() => setPostToProfile((v) => !v)}
-            className="w-full flex items-center justify-between p-3 rounded-2xl bg-card border border-border text-left active:scale-[0.99] transition"
-          >
-            <div className="min-w-0 pr-3">
-              <div className="text-sm font-semibold">publică și pe contul tău</div>
-              <div className="text-[11px] text-muted-foreground">
-                apare pe profil. dacă e off, șprițul intră doar în feed-ul live (12h).
-              </div>
+          {/* Post type selector */}
+          <div className="space-y-1.5">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">tip postare</div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPostType("spritz")}
+                className={`p-3 rounded-2xl border text-left transition active:scale-[0.98] ${
+                  postType === "spritz"
+                    ? "border-transparent text-white shadow-[var(--shadow-elevated)]"
+                    : "bg-card border-border text-foreground"
+                }`}
+                style={postType === "spritz" ? { background: "var(--gradient-sunset)" } : undefined}
+              >
+                <div className="text-sm font-display font-bold flex items-center gap-1.5">🥃 Șpriț</div>
+                <div className={`text-[10px] mt-0.5 ${postType === "spritz" ? "text-white/85" : "text-muted-foreground"}`}>
+                  Intri în Topul zilei · max 1/zi
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPostType("normal")}
+                className={`p-3 rounded-2xl border text-left transition active:scale-[0.98] ${
+                  postType === "normal"
+                    ? "bg-foreground text-background border-transparent"
+                    : "bg-card border-border text-foreground"
+                }`}
+              >
+                <div className="text-sm font-display font-bold flex items-center gap-1.5">📷 Postare</div>
+                <div className={`text-[10px] mt-0.5 ${postType === "normal" ? "text-background/70" : "text-muted-foreground"}`}>
+                  Doar pe profil, fără Top
+                </div>
+              </button>
             </div>
-            <div className={`shrink-0 w-11 h-6 rounded-full p-0.5 transition ${postToProfile ? "bg-primary" : "bg-secondary border border-border"}`}>
-              <div className={`h-5 w-5 rounded-full bg-white shadow transition ${postToProfile ? "translate-x-5" : "translate-x-0"}`} />
-            </div>
-          </button>
+          </div>
 
           <p className="text-[10px] text-center text-muted-foreground">
-            șprițurile din feed se șterg automat după 12 ore.
+            {postType === "spritz"
+              ? "șprițul apare în story-ul zilei din Top și pe profilul tău."
+              : "postarea apare doar pe profilul tău, nu intră în Top."}
           </p>
 
 

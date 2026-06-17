@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useMemo, useState } from "react";
 import { Flame, Camera, MapPin, Trophy, Globe2, ChevronDown } from "lucide-react";
+import { SpritzOfDayStrip } from "@/components/app/SpritzOfDayStrip";
 
 export const Route = createFileRoute("/app/top")({
   head: () => ({ meta: [{ title: "Top · OXIDAȚII" }] }),
@@ -222,6 +223,7 @@ function TopPage() {
       </header>
 
       <div className="px-5 pt-6 pb-10 max-w-xl mx-auto space-y-6">
+        <SpritzOfDayStrip />
         {isLoading ? (
           <div className="rounded-3xl border border-white/5 bg-white/[0.02] p-10 text-center text-sm text-white/40">
             Se încarcă…
