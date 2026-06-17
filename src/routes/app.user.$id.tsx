@@ -225,11 +225,21 @@ function UserPage() {
             )}
             <div className="relative z-10">
             <div className="flex items-center gap-4">
-              <div className="h-20 w-20 rounded-full overflow-hidden bg-gradient-to-br from-sunset-orange to-sunset-magenta flex items-center justify-center text-white font-display font-bold text-3xl shrink-0">
-                {profile.avatar_url
-                  ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
-                  : handle[0]?.toUpperCase()}
-              </div>
+              {theme ? (
+                <AvatarAura theme={theme} size={80}>
+                  <div className="h-full w-full overflow-hidden bg-gradient-to-br from-sunset-orange to-sunset-magenta flex items-center justify-center text-white font-display font-bold text-3xl">
+                    {profile.avatar_url
+                      ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                      : handle[0]?.toUpperCase()}
+                  </div>
+                </AvatarAura>
+              ) : (
+                <div className="h-20 w-20 rounded-full overflow-hidden bg-gradient-to-br from-sunset-orange to-sunset-magenta flex items-center justify-center text-white font-display font-bold text-3xl shrink-0">
+                  {profile.avatar_url
+                    ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                    : handle[0]?.toUpperCase()}
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <div className="font-display font-bold text-2xl truncate flex items-center gap-1.5 flex-wrap">
                   @{handle}
