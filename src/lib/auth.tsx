@@ -25,6 +25,7 @@ type Profile = {
   profile_theme_id?: string | null;
   music_clip_url?: string | null;
   profile_bg_url?: string | null;
+  theme_intensity?: { gradient?: number; aurora?: number; sheen?: number; grain?: number; vignette?: number } | null;
   bio?: string | null;
 };
 
