@@ -305,36 +305,54 @@ function MePage() {
       {/* Premium themed atmosphere */}
       {theme && (
         <>
-          {/* base wash */}
-          <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.cardBg }} />
-          {/* aurora halos */}
-          <div
-            className="fixed -top-32 -left-20 h-[420px] w-[420px] rounded-full pointer-events-none z-0 blur-[90px] opacity-70 animate-pulse"
-            style={{ background: `radial-gradient(circle, ${theme.accent} 0%, transparent 70%)`, animationDuration: "6s" }}
-          />
-          <div
-            className="fixed top-[40%] -right-24 h-[360px] w-[360px] rounded-full pointer-events-none z-0 blur-[100px] opacity-60 animate-pulse"
-            style={{ background: `radial-gradient(circle, ${theme.cardBorder} 0%, transparent 70%)`, animationDuration: "8s", animationDelay: "1.5s" }}
-          />
-          {/* moving sheen across the page */}
-          <div
-            className="fixed inset-0 pointer-events-none z-0 mix-blend-overlay opacity-40"
-            style={{
-              background: `linear-gradient(120deg, transparent 30%, ${theme.accent}33 50%, transparent 70%)`,
-              backgroundSize: "200% 200%",
-              animation: "themeSheen 9s linear infinite",
-            }}
-          />
+          {/* base wash from preset */}
+          <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.base }} />
+          {/* aurora halos from preset */}
+          {theme.aurora.map((a, i) => {
+            const [px, py] = a.pos.split(" ");
+            return (
+              <div
+                key={i}
+                className="fixed rounded-full pointer-events-none z-0 animate-pulse"
+                style={{
+                  left: px,
+                  top: py,
+                  height: a.size,
+                  width: a.size,
+                  filter: `blur(${a.blur}px)`,
+                  opacity: a.opacity,
+                  background: `radial-gradient(circle, ${a.color} 0%, transparent 70%)`,
+                  animationDuration: `${a.duration}s`,
+                  animationDelay: a.delay ? `${a.delay}s` : undefined,
+                }}
+              />
+            );
+          })}
+          {/* sheen (optional) */}
+          {theme.sheen && (
+            <div
+              className="fixed inset-0 pointer-events-none z-0 mix-blend-overlay"
+              style={{
+                opacity: theme.sheen.opacity,
+                background: `linear-gradient(120deg, transparent 30%, ${theme.sheen.color} 50%, transparent 70%)`,
+                backgroundSize: "200% 200%",
+                animation: `themeSheen ${theme.sheen.duration}s linear infinite`,
+              }}
+            />
+          )}
           {/* grain */}
-          <div
-            className="fixed inset-0 pointer-events-none z-0 opacity-[0.06] mix-blend-overlay"
-            style={{
-              backgroundImage:
-                "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
-            }}
-          />
-          {/* top vignette so header stays legible */}
-          <div className="fixed inset-x-0 top-0 h-32 pointer-events-none z-0 bg-gradient-to-b from-black/60 to-transparent" />
+          {theme.grain > 0 && (
+            <div
+              className="fixed inset-0 pointer-events-none z-0 mix-blend-overlay"
+              style={{
+                opacity: theme.grain,
+                backgroundImage:
+                  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
+              }}
+            />
+          )}
+          {/* vignette */}
+          <div className="fixed inset-0 pointer-events-none z-0" style={{ background: theme.vignette }} />
           <style>{`@keyframes themeSheen { 0% { background-position: 0% 0%; } 100% { background-position: 200% 200%; } }`}</style>
         </>
       )}
