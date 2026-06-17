@@ -93,32 +93,120 @@ function makePinImage(color: string, emoji: string): ImageData {
 
 
 
+// Custom "Nightlife Neon" vector basemap: deep purple background, dark purple
+// water, glowing gold roads, dashed purple admin boundaries. Uses OpenFreeMap's
+// free vector tiles (OpenMapTiles schema, no API key required).
 const VOYAGER_STYLE = {
   version: 8,
+  glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
   sources: {
-    "carto-dark": {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-      ],
-      tileSize: 256,
-      attribution: "© CARTO, © OpenStreetMap contributors",
-      maxzoom: 19,
+    omt: {
+      type: "vector",
+      url: "https://tiles.openfreemap.org/planet",
+      attribution: "© OpenFreeMap © OpenMapTiles © OpenStreetMap contributors",
     },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#080a12" } },
-    { id: "carto-dark", type: "raster", source: "carto-dark", paint: { "raster-opacity": 0.98, "raster-saturation": -0.12, "raster-contrast": 0.18, "raster-brightness-min": 0.08, "raster-brightness-max": 0.92 } },
+    { id: "background", type: "background", paint: { "background-color": "#0d0b1e" } },
+    {
+      id: "water",
+      type: "fill",
+      source: "omt",
+      "source-layer": "water",
+      paint: { "fill-color": "#070514" },
+    },
+    {
+      id: "landcover",
+      type: "fill",
+      source: "omt",
+      "source-layer": "landcover",
+      filter: ["==", ["get", "class"], "wood"],
+      paint: { "fill-color": "rgba(40,20,70,0.35)", "fill-opacity": 0.5 },
+    },
+    // Soft glow under roads
+    {
+      id: "roads-glow",
+      type: "line",
+      source: "omt",
+      "source-layer": "transportation",
+      filter: ["!in", ["get", "class"], ["literal", ["ferry", "rail"]]],
+      paint: {
+        "line-color": "rgba(212,175,55,0.22)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 4, 1.2, 8, 3, 12, 6, 16, 14],
+        "line-blur": 3,
+      },
+    },
+    {
+      id: "roads",
+      type: "line",
+      source: "omt",
+      "source-layer": "transportation",
+      filter: ["!in", ["get", "class"], ["literal", ["ferry", "rail"]]],
+      paint: {
+        "line-color": "rgba(232,196,90,0.55)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.4, 8, 0.8, 12, 1.4, 16, 2.4],
+      },
+    },
+    {
+      id: "admin-boundaries",
+      type: "line",
+      source: "omt",
+      "source-layer": "boundary",
+      filter: ["<=", ["get", "admin_level"], 4],
+      paint: {
+        "line-color": "rgba(168,85,247,0.55)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 2, 0.6, 6, 1.1, 10, 1.6],
+        "line-dasharray": [2, 2],
+      },
+    },
+    {
+      id: "place-country",
+      type: "symbol",
+      source: "omt",
+      "source-layer": "place",
+      filter: ["==", ["get", "class"], "country"],
+      minzoom: 2,
+      maxzoom: 7,
+      layout: {
+        "text-field": ["get", "name:latin"],
+        "text-font": ["Noto Sans Bold"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 2, 10, 6, 16],
+        "text-letter-spacing": 0.12,
+        "text-transform": "uppercase",
+      },
+      paint: {
+        "text-color": "rgba(230,220,255,0.85)",
+        "text-halo-color": "rgba(13,11,30,0.9)",
+        "text-halo-width": 1.4,
+      },
+    },
+    {
+      id: "place-city",
+      type: "symbol",
+      source: "omt",
+      "source-layer": "place",
+      filter: ["in", ["get", "class"], ["literal", ["city", "town"]]],
+      minzoom: 3,
+      layout: {
+        "text-field": ["get", "name:latin"],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 3, 10, 8, 14, 12, 18],
+      },
+      paint: {
+        "text-color": "rgba(255,255,255,0.88)",
+        "text-halo-color": "rgba(13,11,30,0.95)",
+        "text-halo-width": 1.2,
+      },
+    },
   ],
   sky: {
-    "sky-color": "#03040a",
-    "horizon-color": "#0a0a1f",
-    "fog-color": "#000000",
-    "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 6, 0.6, 10, 0],
+    "sky-color": "#0d0b1e",
+    "horizon-color": "#1a0b3a",
+    "fog-color": "#070514",
+    "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 6, 0.5, 10, 0],
   },
 } as unknown as maplibregl.StyleSpecification;
+
 
 
 
