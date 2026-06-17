@@ -405,21 +405,33 @@ function MePage() {
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="relative h-[92px] w-[92px] rounded-full p-[2.5px] bg-gradient-to-br from-[#ff3d8b] via-[#ffea00] to-[#c724ff] shadow-[0_0_28px_rgba(199,36,255,0.4)] shrink-0 active:scale-95 transition"
+            className={`relative shrink-0 active:scale-95 transition ${theme ? "" : "h-[92px] w-[92px] rounded-full p-[2.5px] bg-gradient-to-br from-[#ff3d8b] via-[#ffea00] to-[#c724ff] shadow-[0_0_28px_rgba(199,36,255,0.4)]"}`}
             aria-label="Schimbă poza de profil"
           >
-            <div className={`h-full w-full rounded-full overflow-hidden bg-[#0a0a0a] flex items-center justify-center text-3xl ${activeFrame?.css_class ?? ""}`} style={instrument}>
-              {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                (profile.handle ?? "?")[0].toUpperCase()
-              )}
-            </div>
-            <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#0a0a0a] border border-white/15 text-white/80 flex items-center justify-center shadow-lg">
+            {theme ? (
+              <AvatarAura theme={theme} size={92}>
+                <div className={`h-full w-full overflow-hidden bg-[#0a0a0a] flex items-center justify-center text-3xl ${activeFrame?.css_class ?? ""}`} style={instrument}>
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    (profile.handle ?? "?")[0].toUpperCase()
+                  )}
+                </div>
+              </AvatarAura>
+            ) : (
+              <div className={`h-full w-full rounded-full overflow-hidden bg-[#0a0a0a] flex items-center justify-center text-3xl ${activeFrame?.css_class ?? ""}`} style={instrument}>
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  (profile.handle ?? "?")[0].toUpperCase()
+                )}
+              </div>
+            )}
+            <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#0a0a0a] border border-white/15 text-white/80 flex items-center justify-center shadow-lg z-10">
               <Camera size={13} strokeWidth={2.4} />
             </div>
             {uploading && (
-              <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center text-[10px] font-mono uppercase">…</div>
+              <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center text-[10px] font-mono uppercase z-10">…</div>
             )}
           </button>
           <input
