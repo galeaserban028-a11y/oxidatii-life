@@ -59,34 +59,59 @@ function ScanPage() {
       const isVideo = file.type.startsWith("video/");
       const ext = file.name.split(".").pop()?.toLowerCase() ?? (isVideo ? "mp4" : "jpg");
       const path = `${user.id}/${selectedVenue.id}/${Date.now()}.${ext}`;
+
+      // For Spritz posts: enforce 1/day in Top
+      if (postType === "spritz") {
+        const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+        const { count } = await supabase
+          .from("sprit_proofs")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .gte("created_at", startOfDay.toISOString());
+        if ((count ?? 0) > 0) {
+          toast.error("Ai postat deja Șprițul zilei. Revino mâine 🥃");
+          setUploading(false);
+          return;
+        }
+      }
+
       const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, { contentType: file.type });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
-      if (postToProfile) {
-        const { error: insErr } = await supabase.from("venue_photos").insert({
-          venue_id: selectedVenue.id,
-          user_id: user.id,
-          photo_url: pub.publicUrl,
-          media_type: isVideo ? "video" : "image",
-          caption: caption.trim() || null,
-        });
-        if (insErr) throw insErr;
-      }
-      // Always create a sprit_proof so it shows up on the main /app feed (auto-deletes after 12h)
-      const { error: proofErr } = await supabase.from("sprit_proofs").insert({
-        user_id: user.id,
+
+      // Always post to profile gallery (the user explicitly chose to share something)
+      const { error: insErr } = await supabase.from("venue_photos").insert({
         venue_id: selectedVenue.id,
+        user_id: user.id,
         photo_url: pub.publicUrl,
         media_type: isVideo ? "video" : "image",
-        ai_verified: true,
+        caption: caption.trim() || null,
       });
-      if (proofErr) console.warn("sprit_proofs insert failed", proofErr);
-      toast.success(isVideo ? "Clipul tău e live." : "Șprițul tău e live.");
+      if (insErr) throw insErr;
+
+      // Only Spritz posts go into sprit_proofs (live feed + Top "Șprițul zilei")
+      if (postType === "spritz") {
+        const { error: proofErr } = await supabase.from("sprit_proofs").insert({
+          user_id: user.id,
+          venue_id: selectedVenue.id,
+          photo_url: pub.publicUrl,
+          media_type: isVideo ? "video" : "image",
+          ai_verified: true,
+        });
+        if (proofErr) console.warn("sprit_proofs insert failed", proofErr);
+      }
+
+      toast.success(
+        postType === "spritz"
+          ? (isVideo ? "Clipul tău e Șprițul zilei." : "Șprițul zilei e live.")
+          : "Postarea ta e live pe profil."
+      );
       qc.invalidateQueries({ queryKey: ["faze"] });
       qc.invalidateQueries({ queryKey: ["app-feed"] });
       qc.invalidateQueries({ queryKey: ["app-private-feed"] });
+      qc.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
       qc.invalidateQueries({ queryKey: ["venue", selectedVenue.id] });
-      nav({ to: "/app" });
+      nav({ to: postType === "spritz" ? "/app/top" : "/app/me" });
     } catch (e: any) {
       toast.error(e.message ?? "Nu s-a putut încărca");
     } finally {
