@@ -75,6 +75,34 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
     refreshProfile();
   }
 
+  // Theme intensity sliders (live preview + debounced save)
+  type Intensity = { gradient: number; aurora: number; sheen: number; grain: number; vignette: number };
+  const defaultIntensity: Intensity = { gradient: 1, aurora: 1, sheen: 1, grain: 1, vignette: 1 };
+  const initialIntensity: Intensity = {
+    ...defaultIntensity,
+    ...((profile as any)?.theme_intensity ?? {}),
+  };
+  const [intensity, setIntensity] = useState<Intensity>(initialIntensity);
+  useEffect(() => {
+    setIntensity({ ...defaultIntensity, ...((profile as any)?.theme_intensity ?? {}) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [(profile as any)?.theme_intensity, profile?.id]);
+
+  async function saveIntensity(next: Intensity) {
+    if (!user) return;
+    const { error } = await supabase.from("profiles").update({ theme_intensity: next } as any).eq("id", user.id);
+    if (error) return toast.error(error.message);
+    refreshProfile();
+  }
+
+  function updateIntensity(key: keyof Intensity, value: number) {
+    const next = { ...intensity, [key]: value };
+    setIntensity(next);
+    // Debounce DB write so dragging doesn't spam
+    if ((window as any).__intensityTimer) clearTimeout((window as any).__intensityTimer);
+    (window as any).__intensityTimer = setTimeout(() => saveIntensity(next), 400);
+  }
+
   if (!isVipPlus) return null;
   const currentTheme = profile?.profile_theme_id ?? null;
 
