@@ -353,11 +353,11 @@ export function RomaniaMap3D({
 
       // Register one neon pin icon per venue type (emoji glyph + neon halo).
       const pinTypes: Array<[string, string, string]> = [
-        ["pin-club", TYPE_COLOR.club, TYPE_EMOJI.club],
-        ["pin-bar", TYPE_COLOR.bar, TYPE_EMOJI.bar],
-        ["pin-pub", TYPE_COLOR.pub, TYPE_EMOJI.pub],
-        ["pin-terasa", TYPE_COLOR.terasa, TYPE_EMOJI.terasa],
-        ["pin-after", TYPE_COLOR.after, TYPE_EMOJI.after],
+        ["pin-v2-club", TYPE_COLOR.club, TYPE_EMOJI.club],
+        ["pin-v2-bar", TYPE_COLOR.bar, TYPE_EMOJI.bar],
+        ["pin-v2-pub", TYPE_COLOR.pub, TYPE_EMOJI.pub],
+        ["pin-v2-terasa", TYPE_COLOR.terasa, TYPE_EMOJI.terasa],
+        ["pin-v2-after", TYPE_COLOR.after, TYPE_EMOJI.after],
       ];
       for (const [name, color, emoji] of pinTypes) {
         if (!map.hasImage(name)) {
@@ -449,13 +449,13 @@ export function RomaniaMap3D({
         layout: {
           "icon-image": [
             "match", ["get", "type"],
-            "club", "pin-club",
-            "bar", "pin-bar",
-            "pub", "pin-pub",
-            "terasa", "pin-terasa",
-            "terasă", "pin-terasa",
-            "after", "pin-after",
-            "pin-bar",
+            "club", "pin-v2-club",
+            "bar", "pin-v2-bar",
+            "pub", "pin-v2-pub",
+            "terasa", "pin-v2-terasa",
+            "terasă", "pin-v2-terasa",
+            "after", "pin-v2-after",
+            "pin-v2-bar",
           ],
           "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.16, 6, 0.22, 10, 0.3, 14, 0.4, 17, 0.5],
           "icon-allow-overlap": true,
