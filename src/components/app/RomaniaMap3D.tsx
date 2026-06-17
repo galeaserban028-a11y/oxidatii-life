@@ -360,9 +360,10 @@ export function RomaniaMap3D({
         ["pin-v2-after", TYPE_COLOR.after, TYPE_EMOJI.after],
       ];
       for (const [name, color, emoji] of pinTypes) {
-        if (!map.hasImage(name)) {
-          try { map.addImage(name, makePinImage(color, emoji, isSmall), { pixelRatio: 2 }); } catch {}
-        }
+        try {
+          if (map.hasImage(name)) map.removeImage(name);
+          map.addImage(name, makePinImage(color, emoji, isSmall), { pixelRatio: 2 });
+        } catch {}
       }
 
       // Outer wide aura behind clusters — desktop only (expensive blur on mobile GPUs)
