@@ -223,17 +223,17 @@ export function RomaniaMap3D({
         },
       });
 
-      // Register one neon pin icon per venue type.
+      // Register one neon pin icon per venue type (emoji glyph + neon halo).
       const pinTypes: Array<[string, string, string]> = [
-        ["pin-club", TYPE_COLOR.club, "club"],
-        ["pin-bar", TYPE_COLOR.bar, "bar"],
-        ["pin-pub", TYPE_COLOR.pub, "pub"],
-        ["pin-terasa", TYPE_COLOR.terasa, "terasa"],
-        ["pin-after", TYPE_COLOR.after, "after"],
+        ["pin-club", TYPE_COLOR.club, TYPE_EMOJI.club],
+        ["pin-bar", TYPE_COLOR.bar, TYPE_EMOJI.bar],
+        ["pin-pub", TYPE_COLOR.pub, TYPE_EMOJI.pub],
+        ["pin-terasa", TYPE_COLOR.terasa, TYPE_EMOJI.terasa],
+        ["pin-after", TYPE_COLOR.after, TYPE_EMOJI.after],
       ];
-      for (const [name, color, kind] of pinTypes) {
+      for (const [name, color, emoji] of pinTypes) {
         if (!map.hasImage(name)) {
-          try { map.addImage(name, makePinImage(color, kind), { pixelRatio: 2 }); } catch {}
+          try { map.addImage(name, makePinImage(color, emoji), { pixelRatio: 2 }); } catch {}
         }
       }
 
@@ -245,12 +245,12 @@ export function RomaniaMap3D({
         paint: {
           "circle-color": [
             "step", ["get", "point_count"],
-            "rgba(255,49,134,0.18)", 80,
-            "rgba(198,107,255,0.20)", 240,
-            "rgba(255,176,0,0.18)",
+            "rgba(255,43,214,0.32)", 80,
+            "rgba(255,255,255,0.18)", 240,
+            "rgba(140,90,70,0.32)",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 26, 80, 34, 240, 42],
-          "circle-blur": 0.75,
+          "circle-radius": ["step", ["get", "point_count"], 36, 80, 46, 240, 56],
+          "circle-blur": 0.9,
         },
       });
       map.addLayer({
@@ -259,14 +259,19 @@ export function RomaniaMap3D({
         source: VENUES_SRC,
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": "rgba(12,14,24,0.82)",
-          "circle-radius": ["step", ["get", "point_count"], 18, 80, 23, 240, 29],
-          "circle-stroke-width": 2,
+          "circle-color": [
+            "step", ["get", "point_count"],
+            "rgba(10,6,18,0.92)", 80,
+            "rgba(20,14,26,0.92)", 240,
+            "rgba(48,28,22,0.92)",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 22, 80, 28, 240, 34],
+          "circle-stroke-width": 2.5,
           "circle-stroke-color": [
             "step", ["get", "point_count"],
-            "#ff3186", 80,
-            "#c66bff", 240,
-            "#ffb000",
+            "#ff2bd6", 80,
+            "#ffffff", 240,
+            "#a86b4a",
           ],
         },
       });
@@ -277,11 +282,11 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-size": ["step", ["get", "point_count"], 13, 80, 15, 240, 17],
+          "text-size": ["step", ["get", "point_count"], 16, 80, 19, 240, 22],
           "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
           "text-allow-overlap": true,
         },
-        paint: { "text-color": "rgba(255,255,255,0.94)", "text-halo-color": "rgba(0,0,0,0.7)", "text-halo-width": 1 },
+        paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.85)", "text-halo-width": 1.2 },
       });
 
       // unclustered points → neon glowing emoji pins
@@ -301,13 +306,14 @@ export function RomaniaMap3D({
             "after", "pin-after",
             "pin-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.22, 6, 0.32, 10, 0.46, 14, 0.64, 17, 0.78],
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.42, 6, 0.55, 10, 0.72, 14, 0.92, 17, 1.05],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
           "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
         },
       });
+
 
       // click → zoom into cluster / navigate to venue
       map.on("click", "venues-clusters", (e) => {
