@@ -21,8 +21,11 @@ export const getRouter = () => {
     scrollRestoration: true,
     // Preload-ul "intent" declanșa erori interne în router (_nonReactive) la atingerea taburilor,
     // care flash-uiau ErrorComponent-ul. "viewport" e mai blând și nu se mai întâmplă.
-    defaultPreload: "viewport",
+    defaultPreload: "intent",
     defaultPreloadStaleTime: 30_000,
+    // Keep the previous page on screen while the next route's loader runs,
+    // so we never flash an empty/loading page during navigation.
+    defaultPendingMs: 2000,
     defaultPendingMinMs: 0,
   });
 

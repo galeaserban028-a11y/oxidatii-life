@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { BottomTabBar } from "@/components/app/BottomTabBar";
 import { AppHeader } from "@/components/app/AppHeader";
 import { InstallBanner } from "@/components/app/InstallBanner";
+import { PageTransition } from "@/components/app/PageTransition";
 
 import { useLiveLocation } from "@/hooks/useLiveLocation";
 import { TutorialOverlay } from "@/components/app/TutorialOverlay";
@@ -47,7 +48,9 @@ function AppLayout() {
       <div className="mx-auto w-full max-w-[480px] min-w-0">
         <InstallBanner />
         <AppHeader />
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </div>
       <BottomTabBar />
       <TutorialOverlay />
