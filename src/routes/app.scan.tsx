@@ -298,25 +298,46 @@ function ScanPage() {
             className="w-full px-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
 
-          {/* Publish to profile toggle */}
-          <button
-            type="button"
-            onClick={() => setPostToProfile((v) => !v)}
-            className="w-full flex items-center justify-between p-3 rounded-2xl bg-card border border-border text-left active:scale-[0.99] transition"
-          >
-            <div className="min-w-0 pr-3">
-              <div className="text-sm font-semibold">publică și pe contul tău</div>
-              <div className="text-[11px] text-muted-foreground">
-                apare pe profil. dacă e off, șprițul intră doar în feed-ul live (12h).
-              </div>
+          {/* Post type selector */}
+          <div className="space-y-1.5">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">tip postare</div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPostType("spritz")}
+                className={`p-3 rounded-2xl border text-left transition active:scale-[0.98] ${
+                  postType === "spritz"
+                    ? "border-transparent text-white shadow-[var(--shadow-elevated)]"
+                    : "bg-card border-border text-foreground"
+                }`}
+                style={postType === "spritz" ? { background: "var(--gradient-sunset)" } : undefined}
+              >
+                <div className="text-sm font-display font-bold flex items-center gap-1.5">🥃 Șpriț</div>
+                <div className={`text-[10px] mt-0.5 ${postType === "spritz" ? "text-white/85" : "text-muted-foreground"}`}>
+                  Intri în Topul zilei · max 1/zi
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPostType("normal")}
+                className={`p-3 rounded-2xl border text-left transition active:scale-[0.98] ${
+                  postType === "normal"
+                    ? "bg-foreground text-background border-transparent"
+                    : "bg-card border-border text-foreground"
+                }`}
+              >
+                <div className="text-sm font-display font-bold flex items-center gap-1.5">📷 Postare</div>
+                <div className={`text-[10px] mt-0.5 ${postType === "normal" ? "text-background/70" : "text-muted-foreground"}`}>
+                  Doar pe profil, fără Top
+                </div>
+              </button>
             </div>
-            <div className={`shrink-0 w-11 h-6 rounded-full p-0.5 transition ${postToProfile ? "bg-primary" : "bg-secondary border border-border"}`}>
-              <div className={`h-5 w-5 rounded-full bg-white shadow transition ${postToProfile ? "translate-x-5" : "translate-x-0"}`} />
-            </div>
-          </button>
+          </div>
 
           <p className="text-[10px] text-center text-muted-foreground">
-            șprițurile din feed se șterg automat după 12 ore.
+            {postType === "spritz"
+              ? "șprițul apare în story-ul zilei din Top și pe profilul tău."
+              : "postarea apare doar pe profilul tău, nu intră în Top."}
           </p>
 
 
