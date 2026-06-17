@@ -248,6 +248,24 @@ export function RomaniaMap3D({
         }
       }
 
+      // Outer wide aura behind clusters
+      map.addLayer({
+        id: "venues-clusters-aura",
+        type: "circle",
+        source: VENUES_SRC,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": [
+            "step", ["get", "point_count"],
+            "rgba(255,43,214,0.42)", 80,
+            "rgba(255,255,255,0.28)", 240,
+            "rgba(255,140,90,0.42)",
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 64, 80, 78, 240, 92],
+          "circle-blur": 1,
+          "circle-opacity": 0.55,
+        },
+      });
       map.addLayer({
         id: "venues-clusters-glow",
         type: "circle",
@@ -256,14 +274,15 @@ export function RomaniaMap3D({
         paint: {
           "circle-color": [
             "step", ["get", "point_count"],
-            "rgba(255,43,214,0.32)", 80,
-            "rgba(255,255,255,0.18)", 240,
-            "rgba(140,90,70,0.32)",
+            "rgba(255,43,214,0.55)", 80,
+            "rgba(255,255,255,0.38)", 240,
+            "rgba(255,140,90,0.55)",
           ],
-          "circle-radius": ["step", ["get", "point_count"], 36, 80, 46, 240, 56],
-          "circle-blur": 0.9,
+          "circle-radius": ["step", ["get", "point_count"], 40, 80, 50, 240, 60],
+          "circle-blur": 0.7,
         },
       });
+
       map.addLayer({
         id: "venues-clusters",
         type: "circle",
