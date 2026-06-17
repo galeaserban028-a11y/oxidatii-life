@@ -28,6 +28,9 @@ import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { ReportDialog } from "@/components/app/ReportDialog";
 import { getTheme } from "@/lib/premium-themes";
+import { ThemeAtmosphere } from "@/components/app/ThemeAtmosphere";
+import { AvatarAura } from "@/components/app/AvatarAura";
+import { SignatureReveal } from "@/components/app/SignatureReveal";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -78,7 +81,7 @@ function UserPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["user-detail", slug],
     queryFn: async () => {
-      const sel = "id, handle, display_name, avatar_url, bio, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, premium_tier, premium_until, profile_theme_id, music_clip_url, profile_bg_url, boost_until, city:cities(name, slug)";
+      const sel = "id, handle, display_name, avatar_url, bio, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, premium_tier, premium_until, profile_theme_id, theme_intensity, music_clip_url, profile_bg_url, boost_until, city:cities(name, slug)";
       const q = supabase.from("profiles").select(sel);
       const res = isUuid
         ? await q.eq("id", slug).maybeSingle()
@@ -180,8 +183,15 @@ function UserPage() {
     .sort((a, b) => b[1].count - a[1].count)
     .slice(0, 5);
 
+  const pageTheme = profile ? getTheme(profile.profile_theme_id) : null;
+
   return (
-    <div className="px-5 pt-5 pb-10 max-w-xl mx-auto space-y-5">
+    <div className="relative min-h-screen">
+      {pageTheme && <ThemeAtmosphere theme={pageTheme} intensity={(profile as any)?.theme_intensity} />}
+      {pageTheme && profile?.handle && (
+        <SignatureReveal theme={pageTheme} handle={profile.handle} storageKey={`u:${profile.handle}`} />
+      )}
+      <div className="relative z-10 px-5 pt-5 pb-10 max-w-xl mx-auto space-y-5">
       <Link to="/app/top" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
         <ArrowLeft size={14} /> înapoi
       </Link>
@@ -215,11 +225,21 @@ function UserPage() {
             )}
             <div className="relative z-10">
             <div className="flex items-center gap-4">
-              <div className="h-20 w-20 rounded-full overflow-hidden bg-gradient-to-br from-sunset-orange to-sunset-magenta flex items-center justify-center text-white font-display font-bold text-3xl shrink-0">
-                {profile.avatar_url
-                  ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
-                  : handle[0]?.toUpperCase()}
-              </div>
+              {theme ? (
+                <AvatarAura theme={theme} size={80}>
+                  <div className="h-full w-full overflow-hidden bg-gradient-to-br from-sunset-orange to-sunset-magenta flex items-center justify-center text-white font-display font-bold text-3xl">
+                    {profile.avatar_url
+                      ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                      : handle[0]?.toUpperCase()}
+                  </div>
+                </AvatarAura>
+              ) : (
+                <div className="h-20 w-20 rounded-full overflow-hidden bg-gradient-to-br from-sunset-orange to-sunset-magenta flex items-center justify-center text-white font-display font-bold text-3xl shrink-0">
+                  {profile.avatar_url
+                    ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                    : handle[0]?.toUpperCase()}
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <div className="font-display font-bold text-2xl truncate flex items-center gap-1.5 flex-wrap">
                   @{handle}
@@ -504,6 +524,7 @@ function UserPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
     </div>
   );
 }
