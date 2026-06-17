@@ -3,23 +3,25 @@ import { type StripeEnv, verifyWebhook } from "@/lib/stripe.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 // price_id → premium tier + monthly coin grant
+// IMPORTANT: amounts MUST match the perks shown on /app/premium (src/routes/app.premium.tsx TIERS)
 const TIER_MAP: Record<string, { tier: "vip" | "vip_plus" | "pro" | "elite"; coins: number }> = {
-  vip_monthly: { tier: "vip", coins: 50 },
-  vip_yearly: { tier: "vip", coins: 600 },
-  vip_plus_monthly: { tier: "vip_plus", coins: 150 },
-  vip_plus_yearly: { tier: "vip_plus", coins: 1800 },
-  pro_monthly: { tier: "pro", coins: 500 },
-  pro_yearly: { tier: "pro", coins: 6000 },
-  elite_monthly: { tier: "elite", coins: 1500 },
-  elite_yearly: { tier: "elite", coins: 18000 },
+  vip_monthly: { tier: "vip", coins: 5 },
+  vip_yearly: { tier: "vip", coins: 60 },
+  vip_plus_monthly: { tier: "vip_plus", coins: 15 },
+  vip_plus_yearly: { tier: "vip_plus", coins: 180 },
+  pro_monthly: { tier: "pro", coins: 40 },
+  pro_yearly: { tier: "pro", coins: 480 },
+  elite_monthly: { tier: "elite", coins: 120 },
+  elite_yearly: { tier: "elite", coins: 1440 },
 };
 
+// pack_id → coins delivered. MUST match COIN_PACKS in src/routes/app.premium.tsx
 const COIN_PACKS: Record<string, number> = {
-  coins_mic: 50,
-  coins_mediu: 200,
-  coins_mare: 600,
-  coins_boss: 1500,
-  coins_legenda: 5000,
+  coins_mic: 5,
+  coins_mediu: 15,
+  coins_mare: 40,
+  coins_boss: 100,
+  coins_legenda: 300,
 };
 
 function resolvePriceLookup(item: any): string | null {
