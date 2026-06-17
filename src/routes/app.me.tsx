@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -59,6 +59,35 @@ function MePage() {
 
   // tab state for the grid
   const [tab, setTab] = useState<"posts" | "reposts">("posts");
+  const queryClient = useQueryClient();
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  async function handleDelete(m: any) {
+    if (!user) return;
+    const label = tab === "reposts" ? "acest repost" : (m._kind === "proof" ? "acest șpriț" : "această poză");
+    if (!confirm(`Sigur vrei să ștergi ${label}?`)) return;
+    const key = `${m._kind}-${m.id}`;
+    setDeleting(key);
+    try {
+      let err: any = null;
+      if (tab === "reposts") {
+        ({ error: err } = await supabase.from("photo_reposts").delete().eq("user_id", user.id).eq("photo_id", m.id));
+      } else if (m._kind === "proof") {
+        ({ error: err } = await supabase.from("sprit_proofs").delete().eq("id", m.id).eq("user_id", user.id));
+      } else {
+        ({ error: err } = await supabase.from("venue_photos").delete().eq("id", m.id).eq("user_id", user.id));
+      }
+      if (err) throw err;
+      toast.success("Șters");
+      queryClient.invalidateQueries({ queryKey: ["my-moments", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["my-reposts", user.id] });
+    } catch (e: any) {
+      toast.error(e.message ?? "Nu s-a putut șterge");
+    } finally {
+      setDeleting(null);
+    }
+  }
+
 
   // edit profile dialog state
   const [editOpen, setEditOpen] = useState(false);
@@ -640,34 +669,46 @@ function MePage() {
         <div className="grid grid-cols-3 gap-0.5">
           {tabMoments.map((m: any) => {
             const isProof = m._kind === "proof";
+            const key = `${m._kind}-${m.id}`;
             return (
-              <Link
-                key={`${m._kind}-${m.id}`}
-                to={isProof ? (m.venue?.id ? "/app/venue/$id" : "/app/me") : "/app/photo/$id"}
-                params={isProof ? (m.venue?.id ? { id: m.venue.id } : undefined as any) : { id: m.id }}
-                className="relative aspect-square overflow-hidden bg-black group"
-              >
-                <img src={m.photo_url} alt={m.caption ?? ""} className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition" loading="lazy" />
-                {isProof && (
-                  <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#ffea00]/50">
-                    <span className="font-mono text-[8px] uppercase text-[#ffea00]">verificat</span>
-                  </div>
-                )}
-                {tab === "reposts" && (
-                  <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#c724ff]/50">
-                    <span className="font-mono text-[8px] uppercase text-[#c724ff]">↻ repost</span>
-                  </div>
-                )}
-                {m.venue?.name && (
-                  <div className="absolute bottom-0 inset-x-0 p-1.5 bg-gradient-to-t from-black/90 to-transparent">
-                    <div className="font-mono text-[9px] uppercase tracking-wider text-white truncate flex items-center gap-1">
-                      <span className="h-1 w-1 rounded-full bg-[#ffea00]" />
-                      {m.venue.name}
+              <div key={key} className="relative aspect-square overflow-hidden bg-black group">
+                <Link
+                  to={isProof ? (m.venue?.id ? "/app/venue/$id" : "/app/me") : "/app/photo/$id"}
+                  params={isProof ? (m.venue?.id ? { id: m.venue.id } : undefined as any) : { id: m.id }}
+                  className="absolute inset-0"
+                >
+                  <img src={m.photo_url} alt={m.caption ?? ""} className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition" loading="lazy" />
+                  {isProof && (
+                    <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#ffea00]/50">
+                      <span className="font-mono text-[8px] uppercase text-[#ffea00]">verificat</span>
                     </div>
-                  </div>
-                )}
-              </Link>
+                  )}
+                  {tab === "reposts" && (
+                    <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#c724ff]/50">
+                      <span className="font-mono text-[8px] uppercase text-[#c724ff]">↻ repost</span>
+                    </div>
+                  )}
+                  {m.venue?.name && (
+                    <div className="absolute bottom-0 inset-x-0 p-1.5 bg-gradient-to-t from-black/90 to-transparent">
+                      <div className="font-mono text-[9px] uppercase tracking-wider text-white truncate flex items-center gap-1">
+                        <span className="h-1 w-1 rounded-full bg-[#ffea00]" />
+                        {m.venue.name}
+                      </div>
+                    </div>
+                  )}
+                </Link>
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(m); }}
+                  disabled={deleting === key}
+                  aria-label="Șterge"
+                  className={`absolute ${tab === "reposts" ? "top-1 left-1" : "top-1 right-1"} z-10 h-6 w-6 rounded-full backdrop-blur-xl bg-black/60 border border-white/20 text-white text-[11px] leading-none flex items-center justify-center hover:bg-red-500/80 transition disabled:opacity-50`}
+                >
+                  {deleting === key ? "…" : "×"}
+                </button>
+              </div>
             );
+
           })}
 
         </div>
