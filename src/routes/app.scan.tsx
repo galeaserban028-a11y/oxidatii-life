@@ -69,6 +69,15 @@ function ScanPage() {
         caption: caption.trim() || null,
       });
       if (insErr) throw insErr;
+      // Also create a sprit_proof so it shows up on the main /app feed
+      const { error: proofErr } = await supabase.from("sprit_proofs").insert({
+        user_id: user.id,
+        venue_id: selectedVenue.id,
+        photo_url: pub.publicUrl,
+        media_type: isVideo ? "video" : "image",
+        ai_verified: true,
+      });
+      if (proofErr) console.warn("sprit_proofs insert failed", proofErr);
       toast.success(isVideo ? "Clipul tău e live." : "Șprițul tău e live.");
       qc.invalidateQueries({ queryKey: ["faze"] });
       qc.invalidateQueries({ queryKey: ["app-feed"] });
