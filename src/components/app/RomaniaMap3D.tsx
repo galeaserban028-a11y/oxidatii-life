@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import maplibregl, { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { Crosshair } from "lucide-react";
 
 type City = { id: string; slug: string; name: string; lat: number; lng: number; chaos_level: number };
 type Venue = {
@@ -810,6 +811,14 @@ export function RomaniaMap3D({
     }
   }, [friends, retryKey]);
 
+  const mePin = friends.find(f => f.is_me);
+
+  const handleRecenter = useCallback(() => {
+    const map = mapRef.current;
+    if (!map || !mePin) return;
+    map.flyTo({ center: [mePin.lng, mePin.lat], zoom: 13.5, duration: 900, essential: true });
+  }, [mePin]);
+
   return (
     <div className="relative w-full h-[54vh] min-h-[400px] max-h-[560px] overflow-hidden bg-[#0d0b1e]">
       <style>{`
@@ -845,6 +854,17 @@ export function RomaniaMap3D({
             </button>
           </div>
         </div>
+      )}
+
+      {/* Re-centrează button — fly to user's pin */}
+      {mePin && (
+        <button
+          onClick={handleRecenter}
+          aria-label="Re-centrează pe poziția mea"
+          className="absolute bottom-3 right-3 z-20 h-10 w-10 grid place-items-center rounded-full backdrop-blur-xl bg-black/60 border border-white/15 text-white/90 active:scale-95 transition shadow-lg shadow-black/40"
+        >
+          <Crosshair size={18} />
+        </button>
       )}
 
       {/* Soft vignette only — no decorative blobs over the map. */}
