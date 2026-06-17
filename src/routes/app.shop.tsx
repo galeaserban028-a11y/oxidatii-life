@@ -68,7 +68,7 @@ function ShopPage() {
     if (!user) return;
     setBusy("profile-boost");
     try {
-      const { data, error } = await supabase.rpc("buy_boost", { _kind: "profile", _target_id: null });
+      const { data, error } = await supabase.rpc("buy_boost", { _kind: "profile" });
       if (error) throw error;
       const newBal = (data as any)?.balance ?? 0;
       toast.success(`Profil boostat 24h! Mai ai ${drink(newBal)}`);
