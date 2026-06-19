@@ -36,15 +36,12 @@ function AdminDashboard() {
         supabase.from("campaigns").select("*", head).eq("status", "active"),
         supabase.from("venues").select("*", head),
         supabase.from("cities").select("*", head),
-        supabase.from("business_accounts").select("wallet_balance_cents"),
+        supabase.rpc("admin_business_wallet_total"),
         supabase.from("reports").select("*", head),
         supabase.from("reports").select("*", head).eq("status", "pending"),
       ]);
 
-      const totalWallet = (walletSum.data ?? []).reduce(
-        (a: number, b: { wallet_balance_cents: number | null }) => a + (b.wallet_balance_cents ?? 0),
-        0
-      );
+      const totalWallet = Number((walletSum as any).data ?? 0);
 
       return {
         users: users.count ?? 0, newUsers7d: newUsers7d.count ?? 0,

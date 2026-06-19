@@ -16,14 +16,15 @@ function AdminBusinesses() {
   const { data } = useQuery({
     queryKey: ["admin-businesses", q],
     queryFn: async () => {
-      let query = supabase
-        .from("business_accounts")
-        .select("id, brand_name, type, verified, wallet_balance_cents, monthly_credits_cents, tier, owner_user_id, contact_email, created_at")
-        .order("created_at", { ascending: false })
-        .limit(100);
-      if (q.trim()) query = query.ilike("brand_name", `%${q.trim()}%`);
-      const { data } = await query;
-      return data ?? [];
+      // Sensitive columns (contact_email, wallet_balance_cents, …) are
+      // column-revoked from authenticated; use the admin-only RPC instead.
+      const { data, error } = await supabase.rpc("admin_list_businesses");
+      if (error) throw error;
+      const rows = (data ?? []) as any[];
+      const filtered = q.trim()
+        ? rows.filter((r) => (r.brand_name ?? "").toLowerCase().includes(q.trim().toLowerCase()))
+        : rows;
+      return filtered.slice(0, 100);
     },
   });
 
