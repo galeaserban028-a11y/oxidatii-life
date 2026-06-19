@@ -2144,6 +2144,7 @@ export type Database = {
           venue_id: string
         }[]
       }
+      get_my_birthdate: { Args: never; Returns: string }
       get_profile_card: {
         Args: { _id: string }
         Returns: {
