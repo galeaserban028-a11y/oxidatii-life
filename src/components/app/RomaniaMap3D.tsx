@@ -290,10 +290,15 @@ export function RomaniaMap3D({
       loadedRef.current = true;
       setMapFailed(false);
       // GPU-rendered venue layer + clustering — handles thousands of points at 60fps
+      // Enable real clustering so the cluster layers below actually render
+      // (previously cluster:false meant clusters were declared but never used,
+      // forcing thousands of individual symbols → frame drops).
       map.addSource(VENUES_SRC, {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
-        cluster: false,
+        cluster: true,
+        clusterRadius: 48,
+        clusterMaxZoom: 12,
       });
 
       // Very subtle energy source; kept low so the basemap roads/labels stay clean.
