@@ -213,6 +213,8 @@ const VOYAGER_STYLE = {
 
 const VENUES_SRC = "venues-src";
 const HEAT_SRC = "venues-heat-src";
+const SMALL_CITY_LIMIT = 18;
+const DESKTOP_CITY_LIMIT = 42;
 
 function isValidLngLat(lng: unknown, lat: unknown) {
   const x = Number(lng);
@@ -243,6 +245,7 @@ export function RomaniaMap3D({
   const friendMarkers = useRef<Map<string, Marker>>(new Map());
   const promotedMarkers = useRef<Map<string, Marker>>(new Map());
   const loadedRef = useRef(false);
+  const compactMapRef = useRef(false);
   const onCityClickRef = useRef<typeof onCityClick>(onCityClick);
   const nav = useNavigate();
   const navRef = useRef(nav);
@@ -270,10 +273,10 @@ export function RomaniaMap3D({
         attributionControl: { compact: true },
         cooperativeGestures: false,
         renderWorldCopies: false,
-        fadeDuration: 80,
+        fadeDuration: isSmall ? 0 : 80,
         refreshExpiredTiles: false,
         maxPitch: isSmall ? 45 : 60,
-        pixelRatio: isSmall ? Math.min(window.devicePixelRatio || 1, 1.5) : undefined,
+        pixelRatio: isSmall ? Math.min(window.devicePixelRatio || 1, 1.25) : undefined,
         antialias: !isSmall,
       } as any);
     } catch (error) {
@@ -284,11 +287,17 @@ export function RomaniaMap3D({
 
     map.touchZoomRotate.disableRotation();
     map.dragRotate.disable();
+    compactMapRef.current = isSmall;
     // dragPan + scrollZoom rămân activate ca să se poată naviga și da zoom
 
     map.on("load", () => {
       loadedRef.current = true;
       setMapFailed(false);
+      if (isSmall) {
+        for (const layerId of ["roads-glow", "landcover", "admin-boundaries"] as const) {
+          try { if (map.getLayer(layerId)) map.removeLayer(layerId); } catch {}
+        }
+      }
       // GPU-rendered venue layer + clustering — handles thousands of points at 60fps
       // Enable real clustering so the cluster layers below actually render
       // (previously cluster:false meant clusters were declared but never used,
@@ -301,31 +310,34 @@ export function RomaniaMap3D({
         clusterMaxZoom: 12,
       });
 
-      // Very subtle energy source; kept low so the basemap roads/labels stay clean.
-      map.addSource(HEAT_SRC, {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
-      map.addLayer({
-        id: "venues-heat",
-        type: "heatmap",
-        source: HEAT_SRC,
-        maxzoom: 13,
-        paint: {
-          "heatmap-weight": ["interpolate", ["linear"], ["get", "w"], 0, 0.08, 5, 0.55],
-          "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.18, 9, 0.45, 13, 0.75],
-          "heatmap-color": [
-            "interpolate", ["linear"], ["heatmap-density"],
-            0, "rgba(3,4,10,0)",
-            0.18, "rgba(57,255,210,0.16)",
-            0.45, "rgba(198,107,255,0.22)",
-            0.75, "rgba(255,176,0,0.24)",
-            1, "rgba(255,49,134,0.28)",
-          ],
-          "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 6, 18, 11, 34, 13, 48],
-          "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.22, 10, 0.16, 13, 0.05],
-        },
-      });
+      if (!isSmall) {
+        // Desktop-only heat layer. On mobile GPUs the heatmap blur competes
+        // with pan/zoom frames, so small screens use clustered pins only.
+        map.addSource(HEAT_SRC, {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+        map.addLayer({
+          id: "venues-heat",
+          type: "heatmap",
+          source: HEAT_SRC,
+          maxzoom: 13,
+          paint: {
+            "heatmap-weight": ["interpolate", ["linear"], ["get", "w"], 0, 0.08, 5, 0.55],
+            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.18, 9, 0.45, 13, 0.75],
+            "heatmap-color": [
+              "interpolate", ["linear"], ["heatmap-density"],
+              0, "rgba(3,4,10,0)",
+              0.18, "rgba(57,255,210,0.16)",
+              0.45, "rgba(198,107,255,0.22)",
+              0.75, "rgba(255,176,0,0.24)",
+              1, "rgba(255,49,134,0.28)",
+            ],
+            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 6, 18, 11, 34, 13, 48],
+            "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.22, 10, 0.16, 13, 0.05],
+          },
+        });
+      }
 
       // Register one clear vector wine-bottle icon per venue type.
       const pinTypes: Array<[string, string]> = [
@@ -411,7 +423,7 @@ export function RomaniaMap3D({
         layout: {
           "text-field": "{point_count_abbreviated}",
           "text-size": ["step", ["get", "point_count"], 10, 80, 11, 240, 12],
-          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+          "text-font": ["Noto Sans Bold"],
           "text-allow-overlap": true,
         },
         paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.85)", "text-halo-width": 1.2 },
