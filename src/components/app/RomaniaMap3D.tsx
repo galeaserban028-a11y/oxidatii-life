@@ -544,24 +544,11 @@ export function RomaniaMap3D({
     if (loadedRef.current) apply(); else map.once("load", apply);
   }, [venues, promotedMeta, retryKey]);
 
-  // Heatmap pulse — desktop only, throttled to ~8fps to avoid forcing a full
-  // GL repaint every frame on phones.
-  useEffect(() => {
-    const map = mapRef.current; if (!map) return;
-    const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
-    if (isSmall) return;
-    let timer: number | null = null;
-    const start = performance.now();
-    const tick = () => {
-      if (!map.getLayer("venues-heat")) { timer = window.setTimeout(tick, 250); return; }
-      const k = (Math.sin((performance.now() - start) / 1400) + 1) / 2;
-      try { map.setPaintProperty("venues-heat", "heatmap-intensity", 0.16 + k * 0.1); } catch {}
-      timer = window.setTimeout(tick, 120);
-    };
-    const onLoad = () => { tick(); };
-    if (loadedRef.current) onLoad(); else map.once("load", onLoad);
-    return () => { if (timer) clearTimeout(timer); };
-  }, [retryKey]);
+  // Heatmap pulse intentionally removed — it called setPaintProperty every
+  // 120ms which forced a full WebGL repaint and dropped the whole map below
+  // 60fps even when nothing else was happening. The base heatmap layer
+  // already looks alive thanks to the cluster glow + DOM pulse animations.
+
 
 
   // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
