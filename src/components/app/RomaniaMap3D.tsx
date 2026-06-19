@@ -570,6 +570,7 @@ export function RomaniaMap3D({
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
     const build = () => {
+      if (compactMapRef.current && promotedMarkers.current.size === 0 && Object.keys(promotedMeta).length === 0) return;
       // Read dismissed promo ids from sessionStorage so an X dismissal sticks
       // for the current browsing session without nuking the database.
       let dismissed = new Set<string>();
@@ -665,8 +666,11 @@ export function RomaniaMap3D({
   // the clean city/country typography, avoiding the previous label pile-up.
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
+    const markerCities = [...cities]
+      .sort((a, b) => b.chaos_level - a.chaos_level)
+      .slice(0, compactMapRef.current ? SMALL_CITY_LIMIT : DESKTOP_CITY_LIMIT);
     const bottleSVG = (size: number, color: string) => `
-      <svg width="${size}" height="${size * 2.2}" viewBox="0 0 20 44" xmlns="http://www.w3.org/2000/svg" style="display:block;filter:drop-shadow(0 0 6px ${color}) drop-shadow(0 2px 3px rgba(0,0,0,0.7));">
+      <svg width="${size}" height="${size * 2.2}" viewBox="0 0 20 44" xmlns="http://www.w3.org/2000/svg" style="display:block;${compactMapRef.current ? "" : `filter:drop-shadow(0 0 6px ${color}) drop-shadow(0 2px 3px rgba(0,0,0,0.7));`}">
         <rect x="8.5" y="0" width="3" height="6" rx="1" fill="#1a0f05"/>
         <rect x="7.5" y="5" width="5" height="3" fill="#d4a857"/>
         <path d="M8 8 L8 16 Q5 18 5 24 L5 40 Q5 43 8 43 L12 43 Q15 43 15 40 L15 24 Q15 18 12 16 L12 8 Z" fill="${color}" stroke="rgba(255,255,255,0.4)" stroke-width="0.6"/>
@@ -675,7 +679,7 @@ export function RomaniaMap3D({
         <ellipse cx="7" cy="22" rx="1" ry="6" fill="rgba(255,255,255,0.28)"/>
       </svg>`;
     const seen = new Set<string>();
-    for (const c of cities) {
+    for (const c of markerCities) {
       if (!isValidLngLat(c.lng, c.lat)) continue;
       seen.add(c.id);
       const existing = cityMarkers.current.get(c.id);
@@ -689,7 +693,7 @@ export function RomaniaMap3D({
       }
       const big = c.chaos_level >= 9;
       const color = big ? "#ff3d8b" : "#a855f7";
-      const bottleSize = big ? 20 : 16;
+      const bottleSize = compactMapRef.current ? (big ? 17 : 14) : (big ? 20 : 16);
       const wrap = document.createElement("button");
       wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:0;padding:0;transform:translate(-50%,-100%);position:relative;";
       wrap.title = c.name;
@@ -702,15 +706,15 @@ export function RomaniaMap3D({
       const label = document.createElement("div");
       label.textContent = c.name;
       label.className = "oxi-city-label";
-      label.style.cssText = `font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:0;color:rgba(255,255,255,0.85);text-shadow:0 0 5px ${color},0 1px 3px #000;white-space:nowrap;margin-top:2px;`;
-      wrap.appendChild(label);
+      label.style.cssText = `font-family:'DM Sans',sans-serif;font-weight:700;font-size:${compactMapRef.current ? 9 : 10}px;letter-spacing:0;color:rgba(255,255,255,0.85);text-shadow:0 1px 3px #000;white-space:nowrap;margin-top:2px;`;
+      if (!compactMapRef.current || big) wrap.appendChild(label);
 
       let shattering = false;
       const shatter = () => {
         if (shattering) return; shattering = true;
         const original = bottleStage.firstElementChild as HTMLElement | null;
         if (original) { original.style.transition = "opacity 100ms, transform 100ms"; original.style.opacity = "0"; original.style.transform = "scale(0.6)"; }
-        const burstCount = 7;
+        const burstCount = compactMapRef.current ? 4 : 7;
         for (let i = 0; i < burstCount; i++) {
           const frag = document.createElement("div");
           const angle = (i / burstCount) * Math.PI * 2 + Math.random() * 0.5;
