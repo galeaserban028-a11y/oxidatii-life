@@ -653,8 +653,6 @@ export function RomaniaMap3D({
   // the clean city/country typography, avoiding the previous label pile-up.
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
-    cityMarkers.current.forEach(m => m.remove());
-    cityMarkers.current = [];
     const bottleSVG = (size: number, color: string) => `
       <svg width="${size}" height="${size * 2.2}" viewBox="0 0 20 44" xmlns="http://www.w3.org/2000/svg" style="display:block;filter:drop-shadow(0 0 6px ${color}) drop-shadow(0 2px 3px rgba(0,0,0,0.7));">
         <rect x="8.5" y="0" width="3" height="6" rx="1" fill="#1a0f05"/>
@@ -664,8 +662,19 @@ export function RomaniaMap3D({
         <text x="10" y="30.6" text-anchor="middle" font-family="DM Sans,sans-serif" font-weight="900" font-size="3.4" fill="#7a1e1e">OXI</text>
         <ellipse cx="7" cy="22" rx="1" ry="6" fill="rgba(255,255,255,0.28)"/>
       </svg>`;
+    const seen = new Set<string>();
     for (const c of cities) {
       if (!isValidLngLat(c.lng, c.lat)) continue;
+      seen.add(c.id);
+      const existing = cityMarkers.current.get(c.id);
+      if (existing) {
+        // Diff-only: same city already rendered, just refresh position if it
+        // moved. Avoids tearing down DOM + SVGs on every parent re-render,
+        // which was the main map-jank culprit when cities reloaded.
+        const cur = existing.getLngLat();
+        if (cur.lng !== c.lng || cur.lat !== c.lat) existing.setLngLat([c.lng, c.lat]);
+        continue;
+      }
       const big = c.chaos_level >= 9;
       const color = big ? "#ff3d8b" : "#a855f7";
       const bottleSize = big ? 20 : 16;
@@ -725,7 +734,11 @@ export function RomaniaMap3D({
         if (longPressed) return;
         shatter();
       };
-      cityMarkers.current.push(new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([c.lng, c.lat]).addTo(map));
+      cityMarkers.current.set(c.id, new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([c.lng, c.lat]).addTo(map));
+    }
+    // Remove markers for cities that disappeared from the list.
+    for (const [id, marker] of cityMarkers.current) {
+      if (!seen.has(id)) { marker.remove(); cityMarkers.current.delete(id); }
     }
   }, [cities, retryKey]);
 
