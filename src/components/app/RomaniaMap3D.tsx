@@ -294,7 +294,7 @@ export function RomaniaMap3D({
       loadedRef.current = true;
       setMapFailed(false);
       if (isSmall) {
-        for (const layerId of ["roads-glow", "landcover", "admin-boundaries"] as const) {
+        for (const layerId of ["roads-glow", "landcover", "admin-boundaries", "place-city"] as const) {
           try { if (map.getLayer(layerId)) map.removeLayer(layerId); } catch {}
         }
       }
@@ -498,6 +498,14 @@ export function RomaniaMap3D({
     });
 
     map.on("error", (event) => { console.warn("Map tile error", event.error); });
+    if (isSmall) {
+      const movingOn = () => containerRef.current?.classList.add("oxi-map-moving");
+      const movingOff = () => containerRef.current?.classList.remove("oxi-map-moving");
+      map.on("movestart", movingOn);
+      map.on("zoomstart", movingOn);
+      map.on("moveend", movingOff);
+      map.on("zoomend", movingOff);
+    }
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
       event.preventDefault();
@@ -916,7 +924,8 @@ export function RomaniaMap3D({
         .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas { outline:none !important; }
-        .maplibregl-marker { position:absolute !important; top:0; left:0; will-change:transform; z-index:2; }
+        .maplibregl-marker { position:absolute !important; top:0; left:0; will-change:transform; contain:layout paint style; z-index:2; }
+        .oxi-map-moving .maplibregl-marker { visibility:hidden; pointer-events:none; }
         .maplibregl-ctrl-top-right { position:absolute; top:10px; right:10px; z-index:3; display:flex; flex-direction:column; gap:8px; }
         .maplibregl-ctrl-group { background: rgba(3,4,10,0.9) !important; border: 1px solid rgba(198,107,255,0.25) !important; }
         .maplibregl-ctrl-group button { background-color: transparent !important; }
