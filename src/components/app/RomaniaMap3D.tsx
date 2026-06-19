@@ -663,22 +663,59 @@ export function RomaniaMap3D({
     const map = mapRef.current; if (!map) return;
     cityMarkers.current.forEach(m => m.remove());
     cityMarkers.current = [];
+    const bottleSVG = (size: number, color: string) => `
+      <svg width="${size}" height="${size * 2.2}" viewBox="0 0 20 44" xmlns="http://www.w3.org/2000/svg" style="display:block;filter:drop-shadow(0 0 6px ${color}) drop-shadow(0 2px 3px rgba(0,0,0,0.7));">
+        <rect x="8.5" y="0" width="3" height="6" rx="1" fill="#1a0f05"/>
+        <rect x="7.5" y="5" width="5" height="3" fill="#d4a857"/>
+        <path d="M8 8 L8 16 Q5 18 5 24 L5 40 Q5 43 8 43 L12 43 Q15 43 15 40 L15 24 Q15 18 12 16 L12 8 Z" fill="${color}" stroke="rgba(255,255,255,0.4)" stroke-width="0.6"/>
+        <rect x="6" y="26" width="8" height="6" fill="rgba(255,255,255,0.92)"/>
+        <text x="10" y="30.6" text-anchor="middle" font-family="DM Sans,sans-serif" font-weight="900" font-size="3.4" fill="#7a1e1e">OXI</text>
+        <ellipse cx="7" cy="22" rx="1" ry="6" fill="rgba(255,255,255,0.28)"/>
+      </svg>`;
     for (const c of cities) {
       if (!isValidLngLat(c.lng, c.lat)) continue;
       const big = c.chaos_level >= 9;
-      if (!big) continue;
+      const color = big ? "#ff3d8b" : "#a855f7";
+      const bottleSize = big ? 20 : 16;
       const wrap = document.createElement("button");
-      wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:0;padding:0;transform:translate(-50%,-50%);";
+      wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:0;padding:0;transform:translate(-50%,-100%);position:relative;";
       wrap.title = c.name;
-      // City labels only — no marker icon. The neon emoji venue pins +
-      // cluster bubbles from the GPU layer carry the visual weight, exactly
-      // like the reference (Praha, Paris, Sarajevo… are pure text labels).
-      const color = "#ff3d8b";
+
+      const bottleStage = document.createElement("div");
+      bottleStage.style.cssText = "position:relative;display:block;transition:transform 160ms ease;";
+      bottleStage.innerHTML = bottleSVG(bottleSize, color);
+      wrap.appendChild(bottleStage);
+
       const label = document.createElement("div");
       label.textContent = c.name;
       label.className = "oxi-city-label";
-      label.style.cssText = `font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:0;color:rgba(255,255,255,0.82);text-shadow:0 0 5px ${color},0 1px 3px #000;white-space:nowrap;`;
+      label.style.cssText = `font-family:'DM Sans',sans-serif;font-weight:700;font-size:10px;letter-spacing:0;color:rgba(255,255,255,0.85);text-shadow:0 0 5px ${color},0 1px 3px #000;white-space:nowrap;margin-top:2px;`;
       wrap.appendChild(label);
+
+      let shattering = false;
+      const shatter = () => {
+        if (shattering) return; shattering = true;
+        const original = bottleStage.firstElementChild as HTMLElement | null;
+        if (original) { original.style.transition = "opacity 100ms, transform 100ms"; original.style.opacity = "0"; original.style.transform = "scale(0.6)"; }
+        const burstCount = 7;
+        for (let i = 0; i < burstCount; i++) {
+          const frag = document.createElement("div");
+          const angle = (i / burstCount) * Math.PI * 2 + Math.random() * 0.5;
+          const dist = 30 + Math.random() * 22;
+          const dx = Math.cos(angle) * dist;
+          const dy = Math.sin(angle) * dist - 12;
+          const rot = (Math.random() * 720 - 360).toFixed(0);
+          const miniSize = 7 + Math.random() * 5;
+          frag.style.cssText = `position:absolute;left:50%;top:50%;pointer-events:none;animation:oxi-bottle-shatter 780ms cubic-bezier(0.22,1,0.36,1) forwards;--dx:${dx.toFixed(1)}px;--dy:${dy.toFixed(1)}px;--rot:${rot}deg;`;
+          frag.innerHTML = bottleSVG(miniSize, color);
+          bottleStage.appendChild(frag);
+        }
+        window.setTimeout(() => {
+          if (onCityClickRef.current) onCityClickRef.current(c);
+          else navRef.current({ to: "/app/city/$slug", params: { slug: c.slug } });
+        }, 540);
+      };
+
       let pressTimer: number | null = null;
       let longPressed = false;
       wrap.onpointerdown = () => {
@@ -686,7 +723,7 @@ export function RomaniaMap3D({
         pressTimer = window.setTimeout(() => {
           longPressed = true;
           navRef.current({ to: "/app/city/$slug", params: { slug: c.slug } });
-        }, 550);
+        }, 600);
       };
       const clear = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
       wrap.onpointerup = wrap.onpointerleave = wrap.onpointercancel = clear;
@@ -694,8 +731,7 @@ export function RomaniaMap3D({
         e.stopPropagation();
         clear();
         if (longPressed) return;
-        if (onCityClickRef.current) onCityClickRef.current(c);
-        else navRef.current({ to: "/app/city/$slug", params: { slug: c.slug } });
+        shatter();
       };
       cityMarkers.current.push(new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([c.lng, c.lat]).addTo(map));
     }
@@ -844,6 +880,11 @@ export function RomaniaMap3D({
           100% { transform: translate3d(-4%, -2%, 0) scale(1); }
         }
         @keyframes oxi-ring-ping { 0% { transform: scale(0.6); opacity: 0.5; } 80% { transform: scale(1.6); opacity: 0; } 100% { opacity: 0; } }
+        @keyframes oxi-bottle-shatter {
+          0%   { transform: translate(-50%,-50%) rotate(0deg) scale(1); opacity: 1; }
+          15%  { transform: translate(-50%,-50%) rotate(calc(var(--rot) * 0.15)) scale(1.1); opacity: 1; }
+          100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(0.4); opacity: 0; }
+        }
         .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas { outline:none !important; }
