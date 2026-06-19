@@ -524,16 +524,16 @@ export function RomaniaMap3D({
     const apply = () => {
       const src = map.getSource(VENUES_SRC) as maplibregl.GeoJSONSource | undefined;
       if (!src) return;
+      const visibleVenues = venues.filter(v => isValidLngLat(v.lng, v.lat) && !promotedMeta[v.id]);
       src.setData({
         type: "FeatureCollection",
-        features: venues
-          .filter(v => isValidLngLat(v.lng, v.lat) && !promotedMeta[v.id])
-          .map(v => ({
+        features: visibleVenues.map(v => ({
             type: "Feature",
             geometry: { type: "Point", coordinates: [Number(v.lng), Number(v.lat)] },
             properties: { id: v.id, name: v.name, type: v.type ?? "club", address: v.address ?? "", cover_url: v.cover_url ?? "" },
           })),
       });
+      if (compactMapRef.current) return;
       const heat = map.getSource(HEAT_SRC) as maplibregl.GeoJSONSource | undefined;
       if (heat) {
         heat.setData({
@@ -886,7 +886,7 @@ export function RomaniaMap3D({
   const handleRecenter = useCallback(() => {
     const map = mapRef.current;
     if (!map || !mePin) return;
-    map.flyTo({ center: [mePin.lng, mePin.lat], zoom: 13.5, duration: 900, essential: true });
+    map.easeTo({ center: [mePin.lng, mePin.lat], zoom: 13.5, duration: 550, essential: true });
   }, [mePin]);
 
   return (
