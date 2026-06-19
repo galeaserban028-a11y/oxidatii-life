@@ -758,10 +758,17 @@ export function RomaniaMap3D({
     }
   }, [cities, retryKey]);
 
-  // FOCUS city programmatically (flyTo) when parent selects one
+  // FOCUS city programmatically. easeTo is lighter than flyTo on mobile GPUs.
   useEffect(() => {
     const map = mapRef.current; if (!map || !focusCity) return;
-    map.flyTo({ center: [focusCity.lng, focusCity.lat], zoom: focusCity.zoom ?? 12.4, pitch: 45, bearing: 0, duration: 1100, essential: true });
+    map.easeTo({
+      center: [focusCity.lng, focusCity.lat],
+      zoom: focusCity.zoom ?? 12.4,
+      pitch: compactMapRef.current ? 0 : 35,
+      bearing: 0,
+      duration: compactMapRef.current ? 500 : 850,
+      essential: true,
+    });
   }, [focusCity]);
 
   // FIT BOUNDS — used for country/region zoom
@@ -769,7 +776,7 @@ export function RomaniaMap3D({
     const map = mapRef.current; if (!map || !fitBounds) return;
     const fit = () => {
       try {
-        map.fitBounds(fitBounds, { padding: 60, duration: 900, pitch: 0, bearing: 0, maxZoom: 9 });
+        map.fitBounds(fitBounds, { padding: 60, duration: compactMapRef.current ? 450 : 800, pitch: 0, bearing: 0, maxZoom: 9 });
       } catch {}
     };
     if (loadedRef.current) fit(); else map.once("load", fit);
