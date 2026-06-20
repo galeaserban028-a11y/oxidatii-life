@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlcoholWarning } from "@/components/AlcoholWarning";
+import { SpritzIndexDial } from "@/components/app/SpritzIndexDial";
 import logoLight from "@/assets/logo-oxidatii-light.png";
 import { MapPin, Flame, Trophy, Users, Beer, Bell, Search, Plus, ChevronRight } from "lucide-react";
 
