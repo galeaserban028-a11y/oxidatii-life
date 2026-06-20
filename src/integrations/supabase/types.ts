@@ -2205,6 +2205,18 @@ export type Database = {
           is_public: boolean
         }[]
       }
+      get_spritz_index: { Args: { _city_id?: string }; Returns: Json }
+      get_spritz_index_ranking: {
+        Args: never
+        Returns: {
+          city_id: string
+          city_name: string
+          emoji: string
+          score: number
+          slug: string
+          vibe: string
+        }[]
+      }
       get_streak_status: { Args: { _user_id?: string }; Returns: Json }
       has_role: {
         Args: {
