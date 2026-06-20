@@ -37,7 +37,7 @@ export function SpritzIndexDial({ cityId = null, cityName, compact = false }: Pr
     let cancelled = false;
     const fetchIndex = async () => {
       const { data: res, error } = await supabase.rpc("get_spritz_index", {
-        _city_id: cityId,
+        _city_id: cityId ?? undefined,
       });
       if (!cancelled && !error && res) {
         setData(res as unknown as IndexPayload);
