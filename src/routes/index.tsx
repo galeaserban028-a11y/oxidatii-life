@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlcoholWarning } from "@/components/AlcoholWarning";
+import { SpritzIndexDial } from "@/components/app/SpritzIndexDial";
 import logoLight from "@/assets/logo-oxidatii-light.png";
 import { MapPin, Flame, Trophy, Users, Beer, Bell, Search, Plus, ChevronRight } from "lucide-react";
 
@@ -105,8 +106,14 @@ function Index() {
         </div>
       </section>
 
+      {/* Spritz Index */}
+      <section className="relative z-10 px-4 mb-6">
+        <SpritzIndexDial compact />
+      </section>
+
       {/* Live Activity */}
       <section className="relative z-10 px-4 mb-28">
+
         <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
           <div className="flex justify-between items-center mb-5">
             <div className="flex items-center gap-2">

@@ -23,6 +23,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppTopRouteImport } from './routes/app.top'
 import { Route as AppSquadRouteImport } from './routes/app.squad'
+import { Route as AppSpritzIndexRouteImport } from './routes/app.spritz-index'
 import { Route as AppShopRouteImport } from './routes/app.shop'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScanRouteImport } from './routes/app.scan'
@@ -130,6 +131,11 @@ const AppTopRoute = AppTopRouteImport.update({
 const AppSquadRoute = AppSquadRouteImport.update({
   id: '/squad',
   path: '/squad',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSpritzIndexRoute = AppSpritzIndexRouteImport.update({
+  id: '/spritz-index',
+  path: '/spritz-index',
   getParentRoute: () => AppRoute,
 } as any)
 const AppShopRoute = AppShopRouteImport.update({
@@ -354,6 +360,7 @@ export interface FileRoutesByFullPath {
   '/app/scan': typeof AppScanRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shop': typeof AppShopRoute
+  '/app/spritz-index': typeof AppSpritzIndexRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
@@ -406,6 +413,7 @@ export interface FileRoutesByTo {
   '/app/scan': typeof AppScanRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shop': typeof AppShopRoute
+  '/app/spritz-index': typeof AppSpritzIndexRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app': typeof AppIndexRoute
@@ -461,6 +469,7 @@ export interface FileRoutesById {
   '/app/scan': typeof AppScanRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/shop': typeof AppShopRoute
+  '/app/spritz-index': typeof AppSpritzIndexRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/': typeof AppIndexRoute
@@ -517,6 +526,7 @@ export interface FileRouteTypes {
     | '/app/scan'
     | '/app/settings'
     | '/app/shop'
+    | '/app/spritz-index'
     | '/app/squad'
     | '/app/top'
     | '/app/'
@@ -569,6 +579,7 @@ export interface FileRouteTypes {
     | '/app/scan'
     | '/app/settings'
     | '/app/shop'
+    | '/app/spritz-index'
     | '/app/squad'
     | '/app/top'
     | '/app'
@@ -623,6 +634,7 @@ export interface FileRouteTypes {
     | '/app/scan'
     | '/app/settings'
     | '/app/shop'
+    | '/app/spritz-index'
     | '/app/squad'
     | '/app/top'
     | '/app/'
@@ -761,6 +773,13 @@ declare module '@tanstack/react-router' {
       path: '/squad'
       fullPath: '/app/squad'
       preLoaderRoute: typeof AppSquadRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/spritz-index': {
+      id: '/app/spritz-index'
+      path: '/spritz-index'
+      fullPath: '/app/spritz-index'
+      preLoaderRoute: typeof AppSpritzIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/shop': {
@@ -1088,6 +1107,7 @@ interface AppRouteChildren {
   AppScanRoute: typeof AppScanRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppShopRoute: typeof AppShopRoute
+  AppSpritzIndexRoute: typeof AppSpritzIndexRoute
   AppSquadRoute: typeof AppSquadRoute
   AppTopRoute: typeof AppTopRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -1122,6 +1142,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppScanRoute: AppScanRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppShopRoute: AppShopRoute,
+  AppSpritzIndexRoute: AppSpritzIndexRoute,
   AppSquadRoute: AppSquadRoute,
   AppTopRoute: AppTopRoute,
   AppIndexRoute: AppIndexRoute,
@@ -1156,13 +1177,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
