@@ -162,6 +162,7 @@ function FazePage() {
   const [commentsFor, setCommentsFor] = useState<Moment | null>(null);
   const [shareFor, setShareFor] = useState<Moment | null>(null);
   const [menuFor, setMenuFor] = useState<Moment | null>(null);
+  const [zoomFor, setZoomFor] = useState<Moment | null>(null);
   const [ctaHidden, setCtaHidden] = useState(false);
   useEffect(() => {
     let lastY = typeof window !== "undefined" ? window.scrollY : 0;
