@@ -3,8 +3,17 @@ import { useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
-const THRESHOLD = 70;
-const MAX = 130;
+// Platform calibration — tuned so both feel identical in hand.
+// iOS already rubber-bands the page, so we need stiffer damping + a tiny
+// dead-zone before our pull starts, otherwise it feels "double-stretchy".
+// Android has no native overscroll bounce, so it needs a softer curve and
+// a smaller dead-zone so the gesture catches immediately.
+const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+const IS_IOS = /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && "ontouchend" in (globalThis as any));
+const TUNING = IS_IOS
+  ? { THRESHOLD: 78, MAX: 130, DAMP: 145, DEAD: 8, START_OFFSET: 6 }
+  : { THRESHOLD: 64, MAX: 130, DAMP: 95, DEAD: 4, START_OFFSET: 2 };
+const { THRESHOLD, MAX, DAMP, DEAD, START_OFFSET } = TUNING;
 
 export function PullToRefresh({ children }: { children: ReactNode }) {
   const router = useRouter();
