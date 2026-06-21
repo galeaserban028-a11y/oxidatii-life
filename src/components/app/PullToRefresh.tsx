@@ -84,7 +84,9 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
 
     const onTouchMove = (e: TouchEvent) => {
       if (!active.current || startY.current == null || refreshingRef.current) return;
-      const dy = e.touches[0].clientY - startY.current;
+      const raw = e.touches[0].clientY - startY.current;
+      // dead-zone — ignore tiny jitters / iOS rubber-band noise
+      const dy = raw - DEAD;
       if (dy <= 0) {
         if (pullRef.current !== 0) {
           pullRef.current = 0;
@@ -92,10 +94,10 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
         }
         return;
       }
-      // smooth resistance curve
-      const eased = MAX * (1 - Math.exp(-dy / 110));
+      // exponential resistance — same shape, platform-tuned damping
+      const eased = MAX * (1 - Math.exp(-dy / DAMP));
       pullRef.current = eased;
-      if (dy > 4 && window.scrollY <= 0 && e.cancelable) e.preventDefault();
+      if (raw > START_OFFSET && window.scrollY <= 0 && e.cancelable) e.preventDefault();
       scheduleApply();
     };
 
