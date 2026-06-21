@@ -327,7 +327,9 @@ function FazePage() {
                   {isVideo ? (
                     <video src={it.photo_url} className="w-full h-full object-cover" playsInline muted loop preload="metadata" />
                   ) : (
-                    <img src={it.photo_url} alt={it.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
+                    <button type="button" onClick={() => setZoomFor(it)} className="block w-full h-full" aria-label="Mărește poza">
+                      <img src={it.photo_url} alt={it.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
+                    </button>
                   )}
 
                   {/* Top overlay: badge left, author right */}
