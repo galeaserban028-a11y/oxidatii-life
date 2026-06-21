@@ -635,6 +635,7 @@ function UploadSheet({ onClose }: { onClose: () => void }) {
         venue_id: selectedVenue.id,
         photo_url: pub.publicUrl,
         caption: caption.trim() || null,
+        media_type: file.type.startsWith("video/") ? "video" : "image",
       });
       if (insErr) throw insErr;
       toast.success("Faza ta e live.");
