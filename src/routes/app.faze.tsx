@@ -369,11 +369,8 @@ function FazePage() {
                     </div>
                   </div>
 
-                  {isVideo && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="size-14 rounded-full bg-white/90 text-black flex items-center justify-center text-xl shadow-xl">▶</div>
-                    </div>
-                  )}
+
+
 
                   {/* Bottom floating glass action pill */}
                   <div className="absolute inset-x-3 bottom-3">
