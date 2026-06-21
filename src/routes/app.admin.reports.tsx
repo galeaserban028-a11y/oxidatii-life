@@ -25,14 +25,28 @@ function AdminReports() {
   const { data } = useQuery({
     queryKey: ["admin-reports"],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: rows, error } = await supabase
         .from("reports")
-        .select("id, target_type, target_id, reason, details, status, created_at, resolution_note, reporter:reporter_id(handle, display_name)")
+        .select("id, target_type, target_id, reason, details, status, created_at, resolution_note, reporter_id")
         .order("created_at", { ascending: false })
         .limit(300);
-      return data ?? [];
+      if (error) {
+        toast.error(error.message);
+        return [];
+      }
+      const ids = Array.from(new Set((rows ?? []).map((r: any) => r.reporter_id).filter(Boolean)));
+      let profMap: Record<string, { handle: string | null; display_name: string | null }> = {};
+      if (ids.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, handle, display_name")
+          .in("id", ids);
+        profMap = Object.fromEntries((profs ?? []).map((p: any) => [p.id, p]));
+      }
+      return (rows ?? []).map((r: any) => ({ ...r, reporter: profMap[r.reporter_id] ?? null }));
     },
   });
+
 
   const resolve = async (id: string, status: "resolved" | "dismissed") => {
     const note = prompt("Notă (opțional):") ?? "";
