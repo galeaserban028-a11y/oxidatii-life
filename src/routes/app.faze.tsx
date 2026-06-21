@@ -9,6 +9,7 @@ import { openOrCreateDM } from "@/lib/chat";
 import { toast } from "sonner";
 import { SponsoredFazaCard, usePromoCards } from "@/components/app/SponsoredFazaCard";
 import PhotoZoom from "@/components/app/PhotoZoom";
+import VideoTile from "@/components/app/VideoTile";
 
 export const Route = createFileRoute("/app/faze")({
   head: () => ({ meta: [{ title: "Cele mai tari faze · OXIDAȚII" }] }),
@@ -30,12 +31,13 @@ type Moment = {
   created_at: string;
   user_id: string;
   venue_id: string;
+  media_type?: string | null;
 };
 
 async function loadMoments(currentUserId: string | null) {
   const { data: photos } = await supabase
     .from("venue_photos")
-    .select("id, photo_url, caption, taken_at, user_id, venue_id")
+    .select("id, photo_url, caption, taken_at, user_id, venue_id, media_type")
     .order("taken_at", { ascending: false })
     .limit(60);
 
@@ -46,6 +48,7 @@ async function loadMoments(currentUserId: string | null) {
     created_at: p.taken_at,
     user_id: p.user_id,
     venue_id: p.venue_id,
+    media_type: (p as any).media_type ?? null,
   }));
   const photoIds = items.map((i) => i.id);
 
