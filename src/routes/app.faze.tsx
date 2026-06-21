@@ -319,7 +319,7 @@ function FazePage() {
             const likes = data.likesMap.get(it.id) ?? 0;
             const comments = data.commentsMap.get(it.id) ?? 0;
             const reposts = data.repostsMap.get(it.id) ?? 0;
-            const isVideo = /\.(mp4|webm|mov)$/i.test(it.photo_url);
+            const isVideo = it.media_type === "video" || /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(it.photo_url);
             const isLiked = data.likedSet.has(it.id);
             const isReposted = data.repostedSet.has(it.id);
             const isMine = user?.id === it.user_id;
@@ -328,7 +328,7 @@ function FazePage() {
                 {/* Media with floating overlays */}
                 <div className="relative aspect-square bg-black">
                   {isVideo ? (
-                    <video src={it.photo_url} className="w-full h-full object-cover" playsInline muted loop preload="metadata" />
+                    <VideoTile src={it.photo_url} />
                   ) : (
                     <button type="button" onClick={() => setZoomFor(it)} className="block w-full h-full" aria-label="Mărește poza">
                       <img src={it.photo_url} alt={it.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
