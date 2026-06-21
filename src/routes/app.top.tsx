@@ -83,13 +83,16 @@ function TopPage() {
       if (metric === "streak") {
         for (const p of candidates) scoreMap.set(p.id, (p as any).current_streak ?? 0);
       } else {
-        // Fetch sprit_proofs + checkins for this month (used by sprits / checkins / score)
+        // Fetch sprit_proofs + venue_photos + checkins for this month
         const needPhotos = metric === "sprits" || metric === "score";
         const needCheckins = metric === "checkins" || metric === "score";
 
-        const [photoRes, checkinRes] = await Promise.all([
+        const [proofRes, photoRes, checkinRes] = await Promise.all([
           needPhotos
             ? supabase.from("sprit_proofs").select("user_id, created_at").in("user_id", ids).gte("created_at", monthStart)
+            : Promise.resolve({ data: [] as any[] }),
+          needPhotos
+            ? supabase.from("venue_photos").select("user_id, created_at").in("user_id", ids).gte("created_at", monthStart)
             : Promise.resolve({ data: [] as any[] }),
           needCheckins
             ? supabase.from("check_ins").select("user_id").in("user_id", ids).gte("created_at", monthStart)
@@ -97,12 +100,13 @@ function TopPage() {
         ]);
 
         const photoCounts = new Map<string, number>();
-        for (const r of photoRes.data ?? []) {
-          const uid = (r as any).user_id;
+        const bump = (uid: string, t: number) => {
           photoCounts.set(uid, (photoCounts.get(uid) ?? 0) + 1);
-          const t = +new Date((r as any).created_at);
           if (t > (lastPostMap.get(uid) ?? 0)) lastPostMap.set(uid, t);
-        }
+        };
+        for (const r of proofRes.data ?? []) bump((r as any).user_id, +new Date((r as any).created_at));
+        for (const r of photoRes.data ?? []) bump((r as any).user_id, +new Date((r as any).created_at));
+
         const checkinCounts = new Map<string, number>();
         for (const r of checkinRes.data ?? []) checkinCounts.set((r as any).user_id, (checkinCounts.get((r as any).user_id) ?? 0) + 1);
 
