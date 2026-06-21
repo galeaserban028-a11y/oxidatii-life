@@ -458,6 +458,10 @@ function FazePage() {
         <PostMenu photo={menuFor} onClose={() => setMenuFor(null)} onDelete={() => deletePost(menuFor)} />,
         document.body
       )}
+      {zoomFor && typeof document !== "undefined" && createPortal(
+        <PhotoZoom src={zoomFor.photo_url} alt={zoomFor.caption ?? ""} onClose={() => setZoomFor(null)} />,
+        document.body
+      )}
     </div>
   );
 }
