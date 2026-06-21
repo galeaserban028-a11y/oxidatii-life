@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import PhotoZoom from "@/components/app/PhotoZoom";
 
 export const Route = createFileRoute("/app/photo/$id")({
   head: () => ({ meta: [{ title: "Fază · OXIDAȚII" }] }),
