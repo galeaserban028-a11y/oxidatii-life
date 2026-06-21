@@ -27,8 +27,11 @@ function SignupPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
-      nav({ to: profile?.onboarded ? "/app/map" : "/onboarding", replace: true });
+    if (loading || !user) return;
+    if (profile) {
+      nav({ to: profile.onboarded ? "/app/map" : "/onboarding", replace: true });
+    } else {
+      nav({ to: "/onboarding", replace: true });
     }
   }, [user, profile, loading, nav]);
 
@@ -58,11 +61,23 @@ function SignupPage() {
       setBusy(false);
       return toast.error(error.message);
     }
-    // Save birthdate on profile immediately if session was created
-    if (data.user) {
-      await supabase.from("profiles").update({ birthdate: dob } as any).eq("id", data.user.id);
+
+    // Email-confirmation ON → no session is returned; show feedback instead of leaving the user stuck.
+    if (!data.session) {
+      setBusy(false);
+      toast.success("Ți-am trimis un email de confirmare. Verifică inbox-ul (și spam-ul).");
+      return;
     }
-    setBusy(false);
+
+    // Session exists → safe to write to RLS-protected tables.
+    if (data.user) {
+      const { error: pErr } = await supabase
+        .from("profiles")
+        .update({ birthdate: dob } as any)
+        .eq("id", data.user.id);
+      if (pErr) console.warn("birthdate write failed:", pErr.message);
+    }
+    // Leave busy=true; the effect above will navigate once profile loads.
   }
 
   async function handleGoogle() {
