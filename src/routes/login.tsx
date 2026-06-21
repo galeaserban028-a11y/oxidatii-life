@@ -19,8 +19,14 @@ function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
-      nav({ to: profile?.onboarded ? "/app/map" : "/onboarding", replace: true });
+    // Wait until we have BOTH the user and a profile fetch result before navigating.
+    // Otherwise we send already-onboarded users to /onboarding (profile still null).
+    if (loading || !user) return;
+    if (profile) {
+      nav({ to: profile.onboarded ? "/app/map" : "/onboarding", replace: true });
+    } else {
+      // No profile row (rare — trigger should have created one). Send to onboarding to recover.
+      nav({ to: "/onboarding", replace: true });
     }
   }, [user, profile, loading, nav]);
 
@@ -28,8 +34,12 @@ function LoginPage() {
     e.preventDefault();
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password: pwd });
-    setBusy(false);
-    if (error) toast.error(error.message);
+    if (error) {
+      setBusy(false);
+      toast.error(error.message);
+      return;
+    }
+    // Leave busy=true; the effect above will navigate once profile is loaded.
   }
 
   async function handleGoogle() {
