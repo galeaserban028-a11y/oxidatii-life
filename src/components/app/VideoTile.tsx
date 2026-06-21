@@ -8,16 +8,27 @@ type Props = {
 
 /**
  * Autoplaying muted looping video tile with custom scrub bar.
+ * Scrub is rAF-throttled and writes directly to the DOM to feel 1:1.
  */
 export default function VideoTile({ src, className }: Props) {
   const ref = useRef<HTMLVideoElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
+  const fillRef = useRef<HTMLDivElement>(null);
+  const knobRef = useRef<HTMLDivElement>(null);
+  const pillRef = useRef<HTMLDivElement>(null);
+
   const [muted, setMuted] = useState(true);
   const [visible, setVisible] = useState(false);
-  const [progress, setProgress] = useState(0); // 0..1
-  const [duration, setDuration] = useState(0);
-  const [current, setCurrent] = useState(0);
   const [scrubbing, setScrubbing] = useState(false);
+  const [duration, setDuration] = useState(0);
+
+  // Mutable scrub state (no re-renders)
+  const rectRef = useRef<DOMRect | null>(null);
+  const pendingXRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const scrubbingRef = useRef(false);
+  const wasPlayingRef = useRef(false);
+  const lastSeekAtRef = useRef(0);
 
   useEffect(() => {
     const el = ref.current;
@@ -35,16 +46,16 @@ export default function VideoTile({ src, className }: Props) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (visible) {
+    if (visible && !scrubbing) {
       el.play().catch(() => {});
-    } else {
+    } else if (!visible) {
       el.pause();
       if (!muted) {
         el.muted = true;
         setMuted(true);
       }
     }
-  }, [visible, muted]);
+  }, [visible, muted, scrubbing]);
 
   useEffect(() => {
     const onUnmute = (e: Event) => {
@@ -58,14 +69,24 @@ export default function VideoTile({ src, className }: Props) {
     return () => window.removeEventListener("oxy:video-unmute", onUnmute as EventListener);
   }, []);
 
-  // Track time
+  // Update progress UI (direct DOM writes — no re-render)
+  const paintProgress = (p: number, t: number) => {
+    const pct = (p * 100).toFixed(3);
+    if (fillRef.current) fillRef.current.style.width = `${pct}%`;
+    if (knobRef.current) knobRef.current.style.left = `${pct}%`;
+    if (pillRef.current && scrubbingRef.current) {
+      pillRef.current.textContent = `${fmt(t)} / ${fmt(duration || ref.current?.duration || 0)}`;
+    }
+  };
+
+  // Sync from video timeupdate when not scrubbing
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const onTime = () => {
-      if (scrubbing) return;
-      setCurrent(el.currentTime);
-      if (el.duration > 0) setProgress(el.currentTime / el.duration);
+      if (scrubbingRef.current) return;
+      const d = el.duration || 0;
+      if (d > 0) paintProgress(el.currentTime / d, el.currentTime);
     };
     const onMeta = () => setDuration(el.duration || 0);
     el.addEventListener("timeupdate", onTime);
@@ -76,7 +97,7 @@ export default function VideoTile({ src, className }: Props) {
       el.removeEventListener("loadedmetadata", onMeta);
       el.removeEventListener("durationchange", onMeta);
     };
-  }, [scrubbing]);
+  }, [duration]);
 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,39 +112,70 @@ export default function VideoTile({ src, className }: Props) {
     }
   };
 
-  const seekFromClientX = (clientX: number) => {
-    const bar = barRef.current;
+  const applySeek = () => {
+    rafRef.current = null;
+    const x = pendingXRef.current;
+    const rect = rectRef.current;
     const el = ref.current;
-    if (!bar || !el || !el.duration) return;
-    const rect = bar.getBoundingClientRect();
-    const p = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    setProgress(p);
-    setCurrent(p * el.duration);
-    el.currentTime = p * el.duration;
+    if (x == null || !rect || !el || !el.duration) return;
+    const p = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+    const t = p * el.duration;
+    paintProgress(p, t);
+    // Throttle actual seeks to ~60Hz; use fastSeek when available
+    const now = performance.now();
+    if (now - lastSeekAtRef.current >= 16) {
+      lastSeekAtRef.current = now;
+      const fs = (el as HTMLVideoElement & { fastSeek?: (t: number) => void }).fastSeek;
+      if (typeof fs === "function") fs.call(el, t);
+      else el.currentTime = t;
+    }
+  };
+
+  const scheduleSeek = (clientX: number) => {
+    pendingXRef.current = clientX;
+    if (rafRef.current == null) rafRef.current = requestAnimationFrame(applySeek);
   };
 
   const onPointerDown = (e: React.PointerEvent) => {
     e.stopPropagation();
+    const bar = barRef.current;
+    const el = ref.current;
+    if (!bar || !el) return;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    rectRef.current = bar.getBoundingClientRect();
+    scrubbingRef.current = true;
+    wasPlayingRef.current = !el.paused;
+    el.pause();
     setScrubbing(true);
-    seekFromClientX(e.clientX);
-  };
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!scrubbing) return;
-    e.stopPropagation();
-    seekFromClientX(e.clientX);
-  };
-  const onPointerUp = (e: React.PointerEvent) => {
-    if (!scrubbing) return;
-    e.stopPropagation();
-    setScrubbing(false);
+    scheduleSeek(e.clientX);
   };
 
-  const fmt = (s: number) => {
-    if (!isFinite(s) || s < 0) s = 0;
-    const m = Math.floor(s / 60);
-    const r = Math.floor(s % 60);
-    return `${m}:${r.toString().padStart(2, "0")}`;
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!scrubbingRef.current) return;
+    e.stopPropagation();
+    scheduleSeek(e.clientX);
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!scrubbingRef.current) return;
+    e.stopPropagation();
+    // Flush any pending seek synchronously
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    const x = pendingXRef.current;
+    const rect = rectRef.current;
+    const el = ref.current;
+    if (x != null && rect && el && el.duration) {
+      const p = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+      el.currentTime = p * el.duration;
+    }
+    scrubbingRef.current = false;
+    pendingXRef.current = null;
+    rectRef.current = null;
+    setScrubbing(false);
+    if (wasPlayingRef.current && el) el.play().catch(() => {});
   };
 
   return (
@@ -154,13 +206,16 @@ export default function VideoTile({ src, className }: Props) {
       </button>
 
       {/* Time pill while scrubbing */}
-      {scrubbing && duration > 0 && (
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full text-[11px] font-medium text-white bg-black/70 backdrop-blur-xl border border-white/15 tabular-nums">
-          {fmt(current)} / {fmt(duration)}
+      {scrubbing && (
+        <div
+          ref={pillRef}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full text-[11px] font-medium text-white bg-black/70 backdrop-blur-xl border border-white/15 tabular-nums pointer-events-none"
+        >
+          0:00 / {fmt(duration)}
         </div>
       )}
 
-      {/* Custom scrub bar */}
+      {/* Custom scrub bar — bigger touch target, direct DOM updates */}
       <div
         ref={barRef}
         onPointerDown={onPointerDown}
@@ -168,19 +223,29 @@ export default function VideoTile({ src, className }: Props) {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onClick={(e) => e.stopPropagation()}
-        className="absolute left-0 right-0 bottom-0 px-3 pb-2 pt-4 touch-none cursor-pointer select-none"
+        className="absolute left-0 right-0 bottom-0 px-3 pb-2 pt-5 touch-none cursor-pointer select-none"
+        style={{ touchAction: "none" }}
       >
-        <div className={`relative h-[3px] rounded-full bg-white/25 overflow-visible transition-all ${scrubbing ? "h-[5px]" : ""}`}>
+        <div className={`relative rounded-full bg-white/25 ${scrubbing ? "h-[5px]" : "h-[3px]"}`} style={{ willChange: "height" }}>
           <div
+            ref={fillRef}
             className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-300 via-orange-400 to-rose-500"
-            style={{ width: `${progress * 100}%` }}
+            style={{ width: "0%", willChange: "width" }}
           />
           <div
-            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white shadow-[0_0_0_3px_rgba(0,0,0,0.35)] transition-all ${scrubbing ? "size-3.5" : "size-2.5 opacity-90"}`}
-            style={{ left: `${progress * 100}%` }}
+            ref={knobRef}
+            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white shadow-[0_0_0_3px_rgba(0,0,0,0.35)] ${scrubbing ? "size-3.5" : "size-2.5 opacity-90"}`}
+            style={{ left: "0%", willChange: "left" }}
           />
         </div>
       </div>
     </div>
   );
+}
+
+function fmt(s: number) {
+  if (!isFinite(s) || s < 0) s = 0;
+  const m = Math.floor(s / 60);
+  const r = Math.floor(s % 60);
+  return `${m}:${r.toString().padStart(2, "0")}`;
 }
