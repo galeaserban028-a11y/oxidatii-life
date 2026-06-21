@@ -125,8 +125,8 @@ export default function VideoTile({ src, className }: Props) {
     const now = performance.now();
     if (now - lastSeekAtRef.current >= 16) {
       lastSeekAtRef.current = now;
-      // @ts-expect-error fastSeek is non-standard but widely supported
-      if (typeof el.fastSeek === "function") el.fastSeek(t);
+      const fs = (el as HTMLVideoElement & { fastSeek?: (t: number) => void }).fastSeek;
+      if (typeof fs === "function") fs.call(el, t);
       else el.currentTime = t;
     }
   };
