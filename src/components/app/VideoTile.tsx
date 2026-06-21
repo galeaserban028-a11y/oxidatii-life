@@ -4,13 +4,15 @@ type Props = {
   src: string;
   className?: string;
   onTapZone?: () => void;
+  /** Px of space at the bottom reserved for overlays (action pill, tab bar, etc). */
+  bottomInset?: number;
 };
 
 /**
  * Autoplaying muted looping video tile with custom scrub bar.
  * Scrub is rAF-throttled and writes directly to the DOM to feel 1:1.
  */
-export default function VideoTile({ src, className }: Props) {
+export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
   const ref = useRef<HTMLVideoElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
