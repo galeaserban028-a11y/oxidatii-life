@@ -3,8 +3,17 @@ import { useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
-const THRESHOLD = 70;
-const MAX = 130;
+// Platform calibration — tuned so both feel identical in hand.
+// iOS already rubber-bands the page, so we need stiffer damping + a tiny
+// dead-zone before our pull starts, otherwise it feels "double-stretchy".
+// Android has no native overscroll bounce, so it needs a softer curve and
+// a smaller dead-zone so the gesture catches immediately.
+const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+const IS_IOS = /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && "ontouchend" in (globalThis as any));
+const TUNING = IS_IOS
+  ? { THRESHOLD: 78, MAX: 130, DAMP: 145, DEAD: 8, START_OFFSET: 6 }
+  : { THRESHOLD: 64, MAX: 130, DAMP: 95, DEAD: 4, START_OFFSET: 2 };
+const { THRESHOLD, MAX, DAMP, DEAD, START_OFFSET } = TUNING;
 
 export function PullToRefresh({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -75,7 +84,9 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
 
     const onTouchMove = (e: TouchEvent) => {
       if (!active.current || startY.current == null || refreshingRef.current) return;
-      const dy = e.touches[0].clientY - startY.current;
+      const raw = e.touches[0].clientY - startY.current;
+      // dead-zone — ignore tiny jitters / iOS rubber-band noise
+      const dy = raw - DEAD;
       if (dy <= 0) {
         if (pullRef.current !== 0) {
           pullRef.current = 0;
@@ -83,10 +94,10 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
         }
         return;
       }
-      // smooth resistance curve
-      const eased = MAX * (1 - Math.exp(-dy / 110));
+      // exponential resistance — same shape, platform-tuned damping
+      const eased = MAX * (1 - Math.exp(-dy / DAMP));
       pullRef.current = eased;
-      if (dy > 4 && window.scrollY <= 0 && e.cancelable) e.preventDefault();
+      if (raw > START_OFFSET && window.scrollY <= 0 && e.cancelable) e.preventDefault();
       scheduleApply();
     };
 
