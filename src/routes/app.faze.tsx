@@ -9,6 +9,7 @@ import { openOrCreateDM } from "@/lib/chat";
 import { toast } from "sonner";
 import { SponsoredFazaCard, usePromoCards } from "@/components/app/SponsoredFazaCard";
 import PhotoZoom from "@/components/app/PhotoZoom";
+import VideoTile from "@/components/app/VideoTile";
 
 export const Route = createFileRoute("/app/faze")({
   head: () => ({ meta: [{ title: "Cele mai tari faze · OXIDAȚII" }] }),
@@ -30,12 +31,13 @@ type Moment = {
   created_at: string;
   user_id: string;
   venue_id: string;
+  media_type?: string | null;
 };
 
 async function loadMoments(currentUserId: string | null) {
   const { data: photos } = await supabase
     .from("venue_photos")
-    .select("id, photo_url, caption, taken_at, user_id, venue_id")
+    .select("id, photo_url, caption, taken_at, user_id, venue_id, media_type")
     .order("taken_at", { ascending: false })
     .limit(60);
 
@@ -46,6 +48,7 @@ async function loadMoments(currentUserId: string | null) {
     created_at: p.taken_at,
     user_id: p.user_id,
     venue_id: p.venue_id,
+    media_type: (p as any).media_type ?? null,
   }));
   const photoIds = items.map((i) => i.id);
 
@@ -316,7 +319,7 @@ function FazePage() {
             const likes = data.likesMap.get(it.id) ?? 0;
             const comments = data.commentsMap.get(it.id) ?? 0;
             const reposts = data.repostsMap.get(it.id) ?? 0;
-            const isVideo = /\.(mp4|webm|mov)$/i.test(it.photo_url);
+            const isVideo = it.media_type === "video" || /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(it.photo_url);
             const isLiked = data.likedSet.has(it.id);
             const isReposted = data.repostedSet.has(it.id);
             const isMine = user?.id === it.user_id;
@@ -325,7 +328,7 @@ function FazePage() {
                 {/* Media with floating overlays */}
                 <div className="relative aspect-square bg-black">
                   {isVideo ? (
-                    <video src={it.photo_url} className="w-full h-full object-cover" playsInline muted loop preload="metadata" />
+                    <VideoTile src={it.photo_url} />
                   ) : (
                     <button type="button" onClick={() => setZoomFor(it)} className="block w-full h-full" aria-label="Mărește poza">
                       <img src={it.photo_url} alt={it.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
@@ -366,11 +369,8 @@ function FazePage() {
                     </div>
                   </div>
 
-                  {isVideo && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="size-14 rounded-full bg-white/90 text-black flex items-center justify-center text-xl shadow-xl">▶</div>
-                    </div>
-                  )}
+
+
 
                   {/* Bottom floating glass action pill */}
                   <div className="absolute inset-x-3 bottom-3">
@@ -635,6 +635,7 @@ function UploadSheet({ onClose }: { onClose: () => void }) {
         venue_id: selectedVenue.id,
         photo_url: pub.publicUrl,
         caption: caption.trim() || null,
+        media_type: file.type.startsWith("video/") ? "video" : "image",
       });
       if (insErr) throw insErr;
       toast.success("Faza ta e live.");
