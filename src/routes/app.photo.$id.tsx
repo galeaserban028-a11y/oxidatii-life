@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import PhotoZoom from "@/components/app/PhotoZoom";
 
 export const Route = createFileRoute("/app/photo/$id")({
   head: () => ({ meta: [{ title: "Fază · OXIDAȚII" }] }),
@@ -34,6 +35,7 @@ function PhotoPage() {
   const qc = useQueryClient();
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
+  const [zoomOpen, setZoomOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["photo-detail", id, user?.id ?? null],
@@ -186,9 +188,12 @@ function PhotoPage() {
           {isVideo ? (
             <video src={photo.photo_url} className="w-full aspect-square object-cover" playsInline controls preload="metadata" />
           ) : (
-            <img src={photo.photo_url} alt={photo.caption ?? ""} className="w-full aspect-square object-cover" />
+            <button type="button" onClick={() => setZoomOpen(true)} className="block w-full" aria-label="Mărește poza">
+              <img src={photo.photo_url} alt={photo.caption ?? ""} className="w-full aspect-square object-cover" />
+            </button>
           )}
         </div>
+        {zoomOpen && !isVideo ? <PhotoZoom src={photo.photo_url} alt={photo.caption ?? ""} onClose={() => setZoomOpen(false)} /> : null}
 
         {/* Actions */}
         <div className="flex items-center gap-1 px-2 pt-2.5">

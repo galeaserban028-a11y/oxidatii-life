@@ -8,6 +8,7 @@ import { ReportDialog } from "@/components/app/ReportDialog";
 import { openOrCreateDM } from "@/lib/chat";
 import { toast } from "sonner";
 import { SponsoredFazaCard, usePromoCards } from "@/components/app/SponsoredFazaCard";
+import PhotoZoom from "@/components/app/PhotoZoom";
 
 export const Route = createFileRoute("/app/faze")({
   head: () => ({ meta: [{ title: "Cele mai tari faze · OXIDAȚII" }] }),
@@ -161,6 +162,7 @@ function FazePage() {
   const [commentsFor, setCommentsFor] = useState<Moment | null>(null);
   const [shareFor, setShareFor] = useState<Moment | null>(null);
   const [menuFor, setMenuFor] = useState<Moment | null>(null);
+  const [zoomFor, setZoomFor] = useState<Moment | null>(null);
   const [ctaHidden, setCtaHidden] = useState(false);
   useEffect(() => {
     let lastY = typeof window !== "undefined" ? window.scrollY : 0;
@@ -325,7 +327,9 @@ function FazePage() {
                   {isVideo ? (
                     <video src={it.photo_url} className="w-full h-full object-cover" playsInline muted loop preload="metadata" />
                   ) : (
-                    <img src={it.photo_url} alt={it.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
+                    <button type="button" onClick={() => setZoomFor(it)} className="block w-full h-full" aria-label="Mărește poza">
+                      <img src={it.photo_url} alt={it.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
+                    </button>
                   )}
 
                   {/* Top overlay: badge left, author right */}
@@ -452,6 +456,10 @@ function FazePage() {
       )}
       {menuFor && typeof document !== "undefined" && createPortal(
         <PostMenu photo={menuFor} onClose={() => setMenuFor(null)} onDelete={() => deletePost(menuFor)} />,
+        document.body
+      )}
+      {zoomFor && typeof document !== "undefined" && createPortal(
+        <PhotoZoom src={zoomFor.photo_url} alt={zoomFor.caption ?? ""} onClose={() => setZoomFor(null)} />,
         document.body
       )}
     </div>
