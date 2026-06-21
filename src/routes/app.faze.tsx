@@ -8,6 +8,7 @@ import { ReportDialog } from "@/components/app/ReportDialog";
 import { openOrCreateDM } from "@/lib/chat";
 import { toast } from "sonner";
 import { SponsoredFazaCard, usePromoCards } from "@/components/app/SponsoredFazaCard";
+import PhotoZoom from "@/components/app/PhotoZoom";
 
 export const Route = createFileRoute("/app/faze")({
   head: () => ({ meta: [{ title: "Cele mai tari faze · OXIDAȚII" }] }),
