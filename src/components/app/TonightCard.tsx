@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { Sparkles, MapPin, X } from "lucide-react";
+import { Sparkles, MapPin, X, Users, Plus } from "lucide-react";
 
 function localDateBuc(): string {
   // YYYY-MM-DD in Bucharest tz
@@ -25,6 +25,8 @@ export default function TonightCard() {
   const [venues, setVenues] = useState<Array<{ id: string; name: string }>>([]);
   const [pickedVenue, setPickedVenue] = useState<{ id: string; name: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [hotVenues, setHotVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
+  const [joining, setJoining] = useState<string | null>(null);
 
   // Show card only after 16:00 local time
   const showCard = useMemo(() => {
@@ -64,6 +66,50 @@ export default function TonightCard() {
     })();
     return () => { cancel = true; };
   }, [user?.id, today]);
+
+  // Hot venues tonight — group intents by venue
+  async function refreshHotVenues() {
+    const { data } = await supabase
+      .from("daily_intents")
+      .select("venue_id, venue:venues(id, name)")
+      .eq("intent_date", today)
+      .not("venue_id", "is", null)
+      .limit(200);
+    const map = new Map<string, { id: string; name: string; count: number }>();
+    (data ?? []).forEach((r: any) => {
+      if (!r.venue?.id) return;
+      const ex = map.get(r.venue.id);
+      if (ex) ex.count++;
+      else map.set(r.venue.id, { id: r.venue.id, name: r.venue.name, count: 1 });
+    });
+    setHotVenues([...map.values()].sort((a, b) => b.count - a.count).slice(0, 5));
+  }
+  useEffect(() => { if (user) refreshHotVenues(); }, [user?.id, today]);
+
+  async function joinVenue(v: { id: string; name: string }) {
+    if (!user) return;
+    setJoining(v.id);
+    try {
+      const { error } = await supabase.from("daily_intents").upsert({
+        user_id: user.id,
+        intent_date: today,
+        venue_id: v.id,
+        note: note.trim() || null,
+      } as any, { onConflict: "user_id,intent_date" });
+      if (error) throw error;
+      toast.success(`Te-ai băgat la ${v.name}!`);
+      setMyIntent({ id: "_", venue_id: v.id, note: note.trim() || null, venue: { name: v.name } });
+      setPickedVenue(v);
+      await refreshHotVenues();
+      const { count: c } = await supabase
+        .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
+      setCount(c ?? 0);
+    } catch (e: any) {
+      toast.error(e.message ?? "Eroare");
+    } finally {
+      setJoining(null);
+    }
+  }
 
   useEffect(() => {
     if (!venueQuery.trim()) { setVenues([]); return; }
