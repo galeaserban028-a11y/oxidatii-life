@@ -91,8 +91,9 @@ function PartiesPage() {
   const profileMap = new Map(profiles.map(p => [p.id, p]));
 
   useEffect(() => {
+    const channelName = `parties-feed:${Date.now()}:${Math.random().toString(36).slice(2)}`;
     const ch = supabase
-      .channel("parties-feed")
+      .channel(channelName)
       .on("postgres_changes", { event: "*", schema: "public", table: "parties" }, () => {
         qc.invalidateQueries({ queryKey: ["parties"] });
       })

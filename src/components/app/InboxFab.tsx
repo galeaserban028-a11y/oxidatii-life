@@ -33,8 +33,9 @@ export function InboxFab() {
     };
     refresh();
 
+    const channelName = `inbox-badge:${user.id}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
     const ch = supabase
-      .channel("inbox-badge")
+      .channel(channelName)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, refresh)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversation_members" }, refresh)
       .subscribe();

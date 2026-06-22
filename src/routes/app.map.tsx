@@ -354,18 +354,20 @@ function MapPage() {
   // Realtime: refresh on check-ins AND live GPS updates from friends
   const qc = useQueryClient();
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
+    const userId = user.id;
+    const channelName = `live-presence:${userId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
     const ch = supabase
-      .channel("live-presence")
+      .channel(channelName)
       .on("postgres_changes", { event: "*", schema: "public", table: "check_ins" }, () => {
-        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+        qc.invalidateQueries({ queryKey: ["friend-pins", userId] });
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "live_locations" }, () => {
-        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+        qc.invalidateQueries({ queryKey: ["friend-pins", userId] });
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [user, qc]);
+  }, [user?.id, qc]);
 
   const cityMap = useMemo(() => new Map(cities.map(c => [c.id, c])), [cities]);
 

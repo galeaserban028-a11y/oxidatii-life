@@ -167,8 +167,8 @@
   0% { opacity: 0; transform: translateY(8px); }
   100% { opacity: 1; transform: translateY(0); }
 }
-.vt-fill-glow { animation: vt-glow-pulse 2.6s ease-in-out infinite; }
-.vt-knob-glow { animation: vt-knob-pulse 2.6s ease-in-out infinite; }
+.vt-fill-glow { box-shadow: 0 0 12px rgba(244,63,94,0.35); }
+.vt-knob-glow { box-shadow: 0 0 10px rgba(255,255,255,0.6); }
 .vt-rise { animation: vt-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .vt-rise-delay { animation-delay: 80ms; }
 
@@ -455,7 +455,16 @@
      them so the compositor isn't churning behind solid content. */
   .float-particle,
   .shimmer,
-  .pulse-ring { animation-iteration-count: 6; }
+  .pulse-ring,
+  .animate-pulse { animation: none !important; }
+
+  .vt-rise { animation-duration: 0.22s; }
+
+  nav.fixed,
+  nav.fixed * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 
   /* (content-visibility on cards a fost scos — provoca layout-jump și tăia bara la scroll) */
 }
@@ -463,7 +472,8 @@
 /* Battery-saver / low-end devices: kill decorative loops, snap transitions. */
 @media (max-width: 480px), (update: slow) {
   .pulse-ring, .float-particle, .shimmer,
-  .tier-glow-elite, .tier-glow-exclusive { animation: none !important; }
+  .tier-glow-elite, .tier-glow-exclusive,
+  .vt-rise { animation: none !important; }
 }
 
 /* Snappier taps everywhere */
