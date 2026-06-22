@@ -14,6 +14,8 @@ import { getOrCreateNightWrap } from "@/lib/night-wrap.functions";
 import VideoTile from "@/components/app/VideoTile";
 import PhotoZoom from "@/components/app/PhotoZoom";
 import PinchImage from "@/components/app/PinchImage";
+import TonightCard from "@/components/app/TonightCard";
+
 
 type FeedItem = {
   id: string;
