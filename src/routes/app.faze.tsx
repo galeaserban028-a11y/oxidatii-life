@@ -343,7 +343,7 @@ function FazePage() {
                 {/* Media with floating overlays */}
                 <div className="relative aspect-square bg-black">
                   {isVideo ? (
-                    <VideoTile src={it.photo_url} bottomInset={104} />
+                    <VideoTile src={it.photo_url} bottomInset={88} />
                   ) : (
                     <button type="button" onClick={() => setZoomFor(it)} className="block w-full h-full" aria-label="Mărește poza">
                       <img src={it.photo_url} alt={it.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
