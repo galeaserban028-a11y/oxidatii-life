@@ -274,14 +274,19 @@ function MePage() {
   if (!user || !profile) return null;
 
   const verifiedProofs = (moments?.proofs ?? []).filter((p: any) => p.ai_verified);
-  const allMoments = [
-    ...verifiedProofs.map((p: any) => ({ ...p, _kind: "proof" as const, _date: p.created_at })),
-    ...(moments?.photos ?? []).map((p: any) => ({ ...p, _kind: "photo" as const, _date: p.taken_at })),
-  ].sort((a, b) => +new Date(b._date) - +new Date(a._date));
+  const postsOnly = (moments?.photos ?? [])
+    .map((p: any) => ({ ...p, _kind: "photo" as const, _date: p.taken_at }))
+    .sort((a, b) => +new Date(b._date) - +new Date(a._date));
+  const spritzOnly = verifiedProofs
+    .map((p: any) => ({ ...p, _kind: "proof" as const, _date: p.created_at }))
+    .sort((a, b) => +new Date(b._date) - +new Date(a._date));
 
-  const tabMoments = tab === "reposts" ? reposts : allMoments;
-  const postsCount = allMoments.length;
+  const tabMoments =
+    tab === "reposts" ? reposts : tab === "spritz" ? spritzOnly : postsOnly;
+  const postsCount = postsOnly.length;
   const repostsCount = reposts.length;
+  const spritzCount = spritzOnly.length;
+
 
 
   const handleDoSignOut = async () => {
