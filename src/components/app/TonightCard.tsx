@@ -351,10 +351,19 @@ export default function TonightCard() {
         </div>
       )}
 
-      {displayedVenues.length > 0 && (
+      {showVenues && displayedVenues.length > 0 && (
         <div className="relative mt-5 pt-4 border-t border-white/10">
-          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-2">
-            <Users size={11} /> unde se adună
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/50">
+              <Users size={11} /> unde se adună
+            </div>
+            <button
+              onClick={() => setShowVenues(false)}
+              className="h-7 w-7 rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 flex items-center justify-center"
+              aria-label="Închide"
+            >
+              <X size={13} />
+            </button>
           </div>
           <div className="space-y-1.5">
             {displayedVenues.map(v => {
