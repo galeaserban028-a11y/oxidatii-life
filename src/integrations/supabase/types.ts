@@ -944,6 +944,44 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_intents: {
+        Row: {
+          created_at: string
+          id: string
+          intent_date: string
+          note: string | null
+          updated_at: string
+          user_id: string
+          venue_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          intent_date: string
+          note?: string | null
+          updated_at?: string
+          user_id: string
+          venue_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          intent_date?: string
+          note?: string | null
+          updated_at?: string
+          user_id?: string
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_intents_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exclusive_partner_slots: {
         Row: {
           business_id: string | null
@@ -2163,6 +2201,15 @@ export type Database = {
       compute_business_score: {
         Args: { _business_id: string }
         Returns: number
+      }
+      current_weekend_window: {
+        Args: never
+        Returns: {
+          ends_at: string
+          is_active: boolean
+          prize_at: string
+          starts_at: string
+        }[]
       }
       get_business_contact: {
         Args: { _business_id: string }

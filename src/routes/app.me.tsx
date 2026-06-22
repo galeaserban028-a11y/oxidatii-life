@@ -62,7 +62,7 @@ function MePage() {
   });
 
   // tab state for the grid
-  const [tab, setTab] = useState<"posts" | "reposts">("posts");
+  const [tab, setTab] = useState<"posts" | "reposts" | "spritz">("posts");
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState<string | null>(null);
   const [editingPremium, setEditingPremium] = useState(false);
@@ -274,14 +274,19 @@ function MePage() {
   if (!user || !profile) return null;
 
   const verifiedProofs = (moments?.proofs ?? []).filter((p: any) => p.ai_verified);
-  const allMoments = [
-    ...verifiedProofs.map((p: any) => ({ ...p, _kind: "proof" as const, _date: p.created_at })),
-    ...(moments?.photos ?? []).map((p: any) => ({ ...p, _kind: "photo" as const, _date: p.taken_at })),
-  ].sort((a, b) => +new Date(b._date) - +new Date(a._date));
+  const postsOnly = (moments?.photos ?? [])
+    .map((p: any) => ({ ...p, _kind: "photo" as const, _date: p.taken_at }))
+    .sort((a, b) => +new Date(b._date) - +new Date(a._date));
+  const spritzOnly = verifiedProofs
+    .map((p: any) => ({ ...p, _kind: "proof" as const, _date: p.created_at }))
+    .sort((a, b) => +new Date(b._date) - +new Date(a._date));
 
-  const tabMoments = tab === "reposts" ? reposts : allMoments;
-  const postsCount = allMoments.length;
+  const tabMoments =
+    tab === "reposts" ? reposts : tab === "spritz" ? spritzOnly : postsOnly;
+  const postsCount = postsOnly.length;
   const repostsCount = reposts.length;
+  const spritzCount = spritzOnly.length;
+
 
 
   const handleDoSignOut = async () => {
@@ -682,10 +687,10 @@ function MePage() {
       <div className="mt-6 border-t border-white/5" />
 
       {/* Tabs */}
-      <div className="sticky top-12 z-20 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5 grid grid-cols-2">
+      <div className="sticky top-12 z-20 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5 grid grid-cols-3">
         <button
           onClick={() => setTab("posts")}
-          className={`relative h-11 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest transition ${
+          className={`relative h-11 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest transition ${
             tab === "posts" ? "text-white" : "text-white/40"
           }`}
         >
@@ -694,8 +699,20 @@ function MePage() {
           {tab === "posts" && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[2px] bg-gradient-to-r from-[#ff3d8b] to-[#c724ff]" />}
         </button>
         <button
+          onClick={() => setTab("spritz")}
+          className={`relative h-11 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest transition ${
+            tab === "spritz" ? "text-white" : "text-white/40"
+          }`}
+          title="Doar tu vezi acest tab"
+        >
+          <Flame size={14} />
+          Șprițuri <span className="font-mono text-[10px] opacity-70">{spritzCount}</span>
+          <Lock size={9} className="opacity-50" />
+          {tab === "spritz" && <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[2px] bg-gradient-to-r from-[#ffea00] to-[#ff3d8b]" />}
+        </button>
+        <button
           onClick={() => setTab("reposts")}
-          className={`relative h-11 flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-widest transition ${
+          className={`relative h-11 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest transition ${
             tab === "reposts" ? "text-white" : "text-white/40"
           }`}
         >
@@ -705,21 +722,31 @@ function MePage() {
         </button>
       </div>
 
+      {tab === "spritz" && (
+        <div className="mx-4 mt-3 px-3 py-2 rounded-xl border border-[#ffea00]/20 bg-[#ffea00]/5 text-[10px] font-mono uppercase tracking-widest text-[#ffea00]/80 flex items-center gap-2">
+          <Lock size={11} /> doar tu vezi istoricul tău de șprițuri
+        </div>
+      )}
+
+
       {/* Grid moments */}
       {tabMoments.length === 0 ? (
         <div className="mx-4 mt-4 rounded-3xl border border-white/10 bg-[#0d0d0d] p-8 text-center space-y-3">
-          <div className="text-4xl">{tab === "reposts" ? "↻" : "📸"}</div>
+          <div className="text-4xl">{tab === "reposts" ? "↻" : tab === "spritz" ? "🍹" : "📸"}</div>
           <div style={instrument} className="text-2xl text-white">
-            {tab === "reposts" ? "Niciun repost încă" : "Niciun moment încă."}
+            {tab === "reposts" ? "Niciun repost încă" : tab === "spritz" ? "Niciun șpriț scanat." : "Nicio postare încă."}
           </div>
           <p className="text-xs text-white/50 max-w-xs mx-auto">
             {tab === "reposts"
               ? "Când dai repost la o fază din feed, apare aici."
-              : "Nu inventăm istorii. Când postezi o poză sau scanezi un șpriț, apare aici."}
+              : tab === "spritz"
+                ? "Scanează primul șpriț — apare doar pe profilul tău, vizibil doar ție."
+                : "Postările tale rămân aici pentru totdeauna. Pe feed dispar după 12h."}
           </p>
           <Link to={tab === "reposts" ? "/app/faze" : "/app/scan"} className="inline-flex mt-2 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-full bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white">
-            {tab === "reposts" ? "vezi fazele →" : "scanează primul șpriț →"}
+            {tab === "reposts" ? "vezi fazele →" : tab === "spritz" ? "scanează primul șpriț →" : "postează primul →"}
           </Link>
+
         </div>
 
       ) : (
