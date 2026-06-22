@@ -198,8 +198,8 @@ export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
         type="button"
         onClick={toggleMute}
         aria-label={muted ? "Activează sunetul" : "Oprește sunetul"}
-        style={{ bottom: `calc(${bottomInset}px + env(safe-area-inset-bottom) + 8px)` }}
-        className="absolute left-3 size-9 rounded-full backdrop-blur-xl bg-black/50 border border-white/15 grid place-items-center text-white active:scale-90 transition pointer-events-auto"
+        style={{ bottom: `calc(${bottomInset}px + env(safe-area-inset-bottom) - 14px)` }}
+        className="absolute left-3 size-8 rounded-full backdrop-blur-xl bg-black/50 border border-white/15 grid place-items-center text-white active:scale-90 transition pointer-events-auto"
       >
 
         {muted ? (
