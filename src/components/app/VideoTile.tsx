@@ -198,9 +198,10 @@ export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
         type="button"
         onClick={toggleMute}
         aria-label={muted ? "Activează sunetul" : "Oprește sunetul"}
-        style={{ bottom: bottomInset + 8 }}
+        style={{ bottom: `calc(${bottomInset}px + env(safe-area-inset-bottom) + 8px)` }}
         className="absolute left-3 size-9 rounded-full backdrop-blur-xl bg-black/50 border border-white/15 grid place-items-center text-white active:scale-90 transition pointer-events-auto"
       >
+
         {muted ? (
           <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
         ) : (
@@ -212,7 +213,7 @@ export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
       {scrubbing && (
         <div
           ref={pillRef}
-          style={{ bottom: bottomInset + 18 }}
+          style={{ bottom: `calc(${bottomInset}px + env(safe-area-inset-bottom) + 18px)` }}
           className="absolute left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full text-[11px] font-medium text-white bg-black/70 backdrop-blur-xl border border-white/15 tabular-nums pointer-events-none"
         >
           0:00 / {fmt(duration)}
@@ -228,8 +229,9 @@ export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
         onPointerCancel={onPointerUp}
         onClick={(e) => e.stopPropagation()}
         className="absolute left-0 right-0 px-3 pb-2 pt-5 touch-none cursor-pointer select-none"
-        style={{ touchAction: "none", bottom: bottomInset }}
+        style={{ touchAction: "none", bottom: `calc(${bottomInset}px + env(safe-area-inset-bottom))` }}
       >
+
         <div className={`relative rounded-full bg-white/25 ${scrubbing ? "h-[5px]" : "h-[3px]"}`} style={{ willChange: "height" }}>
           <div
             ref={fillRef}
