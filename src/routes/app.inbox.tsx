@@ -315,7 +315,9 @@ function FriendsList({ onMessage }: { onMessage: (id: string) => void }) {
 }
 
 const REVEAL = 88;
-const TRIGGER = 60;
+const TRIGGER = 80; // more intentional open threshold
+const VELOCITY_THRESHOLD = 1.2; // px/ms — fast left flick also opens
+
 
 function ConversationRow({
   conv,
