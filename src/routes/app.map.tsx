@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
@@ -13,6 +13,9 @@ import { tierConfig } from "@/lib/biz/tiers";
 
 export const Route = createFileRoute("/app/map")({
   head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
+  validateSearch: (search: Record<string, unknown>): { venue?: string } => ({
+    venue: typeof search.venue === "string" ? search.venue : undefined,
+  }),
   component: MapPage,
 });
 
