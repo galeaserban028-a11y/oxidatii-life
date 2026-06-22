@@ -7,6 +7,9 @@
       "dependencies": {
         "@ai-sdk/openai-compatible": "^2.0.48",
         "@fontsource/archivo-black": "^5.2.8",
+        "@fontsource/barlow": "^5.2.8",
+        "@fontsource/barlow-condensed": "^5.2.8",
+        "@fontsource/bebas-neue": "^5.2.7",
         "@fontsource/dm-sans": "^5.2.8",
         "@fontsource/hind": "^5.2.8",
         "@fontsource/instrument-serif": "^5.2.8",
@@ -255,6 +258,12 @@
     "@floating-ui/utils": ["@floating-ui/utils@0.2.11", "", {}, "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="],
 
     "@fontsource/archivo-black": ["@fontsource/archivo-black@5.2.8", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@fontsource/archivo-black/-/archivo-black-5.2.8.tgz", {}, "sha512-3zNj/o9LzWyDl/UEpY5IOHpAQyUtFr3hQaFS7NSKwCLLkXOfH/CMCt1L2b2Z+OF25OURtOYenCadgAebALz7/A=="],
+
+    "@fontsource/barlow": ["@fontsource/barlow@5.2.8", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@fontsource/barlow/-/barlow-5.2.8.tgz", {}, "sha512-iuFOnY4OI2cd1STrJ3NdJNzWjhcwv6JarmqfdoZzAmz9g0jTVjES86MNbuBxqVR3ydbTEjo4opEl24GXScRM7w=="],
+
+    "@fontsource/barlow-condensed": ["@fontsource/barlow-condensed@5.2.8", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@fontsource/barlow-condensed/-/barlow-condensed-5.2.8.tgz", {}, "sha512-cmCWNfh7oCmfarGDlhiJRkl4HOgt9aOqki7IYtDOaI3qLCeEO/8VjiZeAx/2PEPf4K36YxXDjAlOWwW/anQUZA=="],
+
+    "@fontsource/bebas-neue": ["@fontsource/bebas-neue@5.2.7", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@fontsource/bebas-neue/-/bebas-neue-5.2.7.tgz", {}, "sha512-DsmBrmq55d9BCU0mt4DT4RZDdH8vhWRKEUOfbuNB1EEjMuwbtFvM8N+3gIlkYSFbsb10P8Q19BV5OdpMu2h0fA=="],
 
     "@fontsource/dm-sans": ["@fontsource/dm-sans@5.2.8", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@fontsource/dm-sans/-/dm-sans-5.2.8.tgz", {}, "sha512-tlovG42m9ESG28WiHpLq3F5umAlm64rv0RkqTbYowRn70e9OlRr5a3yTJhrhrY+k5lftR/OFJjPzOLQzk8EfCA=="],
 

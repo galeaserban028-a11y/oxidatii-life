@@ -17,6 +17,9 @@
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.48",
     "@fontsource/archivo-black": "^5.2.8",
+    "@fontsource/barlow": "^5.2.8",
+    "@fontsource/barlow-condensed": "^5.2.8",
+    "@fontsource/bebas-neue": "^5.2.7",
     "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/hind": "^5.2.8",
     "@fontsource/instrument-serif": "^5.2.8",
