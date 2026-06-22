@@ -479,8 +479,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     border-radius: 9999px;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(248,200,216,0.12);
@@ -488,6 +488,7 @@
     transition: background 0.15s ease, color 0.15s ease;
   }
   .tonight-icon-btn:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.9); }
+
 
   .tonight-chat-btn {
     height: 28px;
