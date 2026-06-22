@@ -6,10 +6,12 @@ export const getRouter = () => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        // Snappy feel: serve cache instantly, refresh in background
-        staleTime: 30_000,
-        gcTime: 5 * 60_000,
+        // Snappy feel: serve cache instantly, refresh in background. 2 min keeps
+        // tab-bar hops (feed → inbox → me) completely cache-hit.
+        staleTime: 2 * 60_000,
+        gcTime: 10 * 60_000,
         refetchOnWindowFocus: false,
+        refetchOnMount: false,
         retry: 1,
       },
     },
@@ -19,11 +21,13 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
-    // Preload-ul "intent" declanșa erori interne în router (_nonReactive) la atingerea taburilor,
-    // care flash-uiau ErrorComponent-ul. "viewport" e mai blând și nu se mai întâmplă.
+    // Preload on intent (hover / touchstart) — chunk + data ready before tap lands.
     defaultPreload: "intent",
-    defaultPreloadStaleTime: 30_000,
-    defaultPendingMinMs: 0,
+    defaultPreloadDelay: 30,
+    defaultPreloadStaleTime: 0, // Query owns freshness
+    // If a navigation resolves in <300ms, never flash the pending state.
+    defaultPendingMs: 300,
+    defaultPendingMinMs: 150,
   });
 
   return router;

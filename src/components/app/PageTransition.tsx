@@ -6,21 +6,18 @@ import { memo, ReactNode } from "react";
 // are animated, which the compositor can run off the main thread at 60fps.
 // No filters/blurs (cause layout/paint), no layout animations, no height/width.
 const variants = {
-  initial: { opacity: 0, y: 8 },
+  initial: { opacity: 0, y: 6 },
   animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -6 },
+  exit: { opacity: 0 },
 };
 
 const transition = {
-  duration: 0.22,
+  duration: 0.14,
   ease: [0.22, 1, 0.36, 1] as const,
 };
 
-// Hint to the browser to promote this layer up-front, so the first frame
-// of the animation doesn't pay for a layer-creation hit.
 const style = {
   willChange: "opacity, transform",
-  // Avoid touching layout of siblings while two pages overlap briefly.
   transform: "translateZ(0)",
 } as const;
 
@@ -32,8 +29,10 @@ function PageTransitionImpl({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
+  // `mode="popLayout"` lets the new page mount immediately while the old fades —
+  // no perceived blank gap, feels instant on mid-range Android.
   return (
-    <AnimatePresence mode="wait" initial={false}>
+    <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
         key={pathname}
         variants={variants}
