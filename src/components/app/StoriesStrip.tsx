@@ -427,7 +427,10 @@ function StoryViewer({
       <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black/80 to-transparent z-10 pointer-events-none" />
 
       {/* progress bars */}
-      <div className="absolute top-0 inset-x-0 flex gap-1 p-2 z-20">
+      <div
+        className="absolute inset-x-0 flex gap-1 p-2 z-20"
+        style={{ top: "env(safe-area-inset-top, 0px)" }}
+      >
         {group.stories.map((_, idx) => (
           <div key={idx} className="flex-1 h-0.5 rounded-full bg-white/20 overflow-hidden">
             <div className={`h-full bg-white transition-all ${idx < si ? "w-full" : idx === si ? "w-1/3" : "w-0"}`} />
@@ -436,7 +439,11 @@ function StoryViewer({
       </div>
 
       {/* header */}
-      <div className="absolute top-4 inset-x-0 px-4 z-20 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="absolute inset-x-0 px-4 z-20 flex items-center gap-2"
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 18px)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="h-8 w-8 rounded-full overflow-hidden bg-foreground/20 shrink-0 ring-2 ring-white/30">
           {group.avatar_url ? (
             <img src={group.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -459,6 +466,7 @@ function StoryViewer({
           <X size={20} />
         </button>
       </div>
+
 
       {/* media */}
       <div className="absolute inset-0 flex items-start justify-center px-5 pt-28 pb-8" onClick={(e) => e.stopPropagation()}>
