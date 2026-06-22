@@ -27,8 +27,10 @@ export default function TonightCard() {
   const [pickedVenue, setPickedVenue] = useState<{ id: string; name: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [hotVenues, setHotVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
+  const [suggestedVenues, setSuggestedVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
   const [joining, setJoining] = useState<string | null>(null);
   const [follows, setFollows] = useState<Set<string>>(new Set());
+  const [followedVenues, setFollowedVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
   const [chatVenue, setChatVenue] = useState<{ id: string; name: string } | null>(null);
 
   // Show card only after 16:00 local time
@@ -89,6 +91,21 @@ export default function TonightCard() {
   }
   useEffect(() => { if (user) refreshHotVenues(); }, [user?.id, today]);
 
+  useEffect(() => {
+    if (!user || !(profile as any)?.city_id) return;
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from("venues")
+        .select("id, name")
+        .eq("city_id", (profile as any).city_id)
+        .order("created_at", { ascending: false })
+        .limit(8);
+      if (!cancel) setSuggestedVenues(((data ?? []) as any[]).map((v) => ({ ...v, count: 0 })));
+    })();
+    return () => { cancel = true; };
+  }, [user?.id, (profile as any)?.city_id]);
+
   // Load followed venues
   useEffect(() => {
     if (!user) return;
@@ -98,12 +115,18 @@ export default function TonightCard() {
         .select("venue_id, venue:venues(id, name)")
         .eq("user_id", user.id);
       setFollows(new Set((data ?? []).map((r: any) => r.venue_id)));
+      setFollowedVenues((data ?? []).map((r: any) => ({ id: r.venue_id, name: r.venue?.name ?? "Loc", count: 0 })));
     })();
   }, [user?.id]);
 
   // Merge followed venues into the displayed list (suggestions)
   const displayedVenues = useMemo(() => {
-    const merged = [...hotVenues];
+    const byId = new Map<string, { id: string; name: string; count: number }>();
+    [...suggestedVenues, ...followedVenues, ...hotVenues].forEach((v) => {
+      const prev = byId.get(v.id);
+      byId.set(v.id, prev ? { ...prev, count: Math.max(prev.count, v.count) } : v);
+    });
+    const merged = [...byId.values()];
     // sort: followed first, then by count
     return merged.sort((a, b) => {
       const fa = follows.has(a.id) ? 1 : 0;
