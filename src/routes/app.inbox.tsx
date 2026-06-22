@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM, createGroupChat } from "@/lib/chat";
-import { ArrowLeft, PenSquare, Users, Loader2, Search, X, Check } from "lucide-react";
+import { ArrowLeft, PenSquare, Users, Loader2, Search, X, Check, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/inbox")({
   head: () => ({ meta: [{ title: "Mesaje · OXIDAȚII" }] }),
@@ -169,46 +170,17 @@ function InboxPage() {
             const title = isDM
               ? (c.others[0]?.handle ? `@${c.others[0].handle}` : c.others[0]?.display_name ?? "necunoscut")
               : c.title ?? `grup · ${c.others.length + 1}`;
-            const subtitle = c.last
-              ? (c.last.sender_id === user?.id ? `Tu: ${c.last.body}` : c.last.body)
-              : (isDM ? "Spune ceva 👋" : "Grup nou");
             const initial = (isDM ? (c.others[0]?.handle ?? c.others[0]?.display_name ?? "?")[0] : "G").toUpperCase();
             return (
-              <Link
+              <ConversationRow
                 key={c.id}
-                to="/app/chat/$id"
-                params={{ id: c.id }}
-                className={`relative flex items-center gap-4 px-5 py-4 border-y transition active:bg-zinc-900/60 ${
-                  c.unread ? "bg-zinc-900/40 border-zinc-800/50" : "border-transparent hover:bg-zinc-900/20"
-                }`}
-              >
-                {c.unread && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-lime-400 rounded-r-full shadow-[0_0_10px_#00e5ff]" />
-                )}
-                <div className="relative shrink-0">
-                  <div className="h-14 w-14 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden">
-                    {isDM && c.others[0]?.avatar_url ? (
-                      <img src={c.others[0].avatar_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="h-full w-full bg-gradient-to-br from-fuchsia-600 to-rose-600 flex items-center justify-center font-display font-black text-white text-lg">
-                        {isDM ? initial : <Users size={20} />}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-baseline gap-2 mb-1">
-                    <h3 className={`font-display uppercase tracking-tight truncate text-sm ${c.unread ? "font-black text-white" : "font-bold text-zinc-300"}`}>{title}</h3>
-                    <span className={`text-[10px] font-bold shrink-0 tabular-nums uppercase ${c.unread ? "text-lime-400" : "text-zinc-600"}`}>
-                      {timeAgo(c.last?.created_at ?? c.last_message_at)}
-                    </span>
-                  </div>
-                  <p className={`text-xs truncate ${c.unread ? "text-zinc-300 font-medium" : "text-zinc-500"}`}>
-                    {c.last && c.last.sender_id === user?.id && <span className="text-zinc-600 italic mr-1">Tu:</span>}
-                    {c.last ? c.last.body : subtitle}
-                  </p>
-                </div>
-              </Link>
+                conv={c}
+                title={title}
+                initial={initial}
+                isDM={isDM}
+                meId={user?.id}
+                onDeleted={() => qc.invalidateQueries({ queryKey: ["inbox", user?.id] })}
+              />
             );
           })}
         </div>
@@ -338,6 +310,163 @@ function FriendsList({ onMessage }: { onMessage: (id: string) => void }) {
           <div className="text-[10px] font-black uppercase tracking-widest text-lime-400 shrink-0">mesaj</div>
         </button>
       ))}
+    </div>
+  );
+}
+
+const REVEAL = 88;
+const TRIGGER = 60;
+
+function ConversationRow({
+  conv,
+  title,
+  initial,
+  isDM,
+  meId,
+  onDeleted,
+}: {
+  conv: any;
+  title: string;
+  initial: string;
+  isDM: boolean;
+  meId?: string;
+  onDeleted: () => void;
+}) {
+  const nav = useNavigate();
+  const [dx, setDx] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [removed, setRemoved] = useState(false);
+  const start = useRef<{ x: number; y: number; t: number; lock: "h" | "v" | null }>({ x: 0, y: 0, t: 0, lock: null });
+  const moved = useRef(false);
+
+  function onPointerDown(e: React.PointerEvent) {
+    if (deleting) return;
+    start.current = { x: e.clientX, y: e.clientY, t: Date.now(), lock: null };
+    moved.current = false;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }
+  function onPointerMove(e: React.PointerEvent) {
+    const ddx = e.clientX - start.current.x;
+    const ddy = e.clientY - start.current.y;
+    if (!start.current.lock) {
+      if (Math.abs(ddx) < 6 && Math.abs(ddy) < 6) return;
+      start.current.lock = Math.abs(ddx) > Math.abs(ddy) ? "h" : "v";
+    }
+    if (start.current.lock !== "h") return;
+    moved.current = true;
+    const base = open ? -REVEAL : 0;
+    let next = base + ddx;
+    if (next > 0) next = next / 4; // rubberband right
+    if (next < -REVEAL - 30) next = -REVEAL - 30 + (next + REVEAL + 30) / 4;
+    setDx(next);
+  }
+  function onPointerUp() {
+    if (start.current.lock !== "h") {
+      setDx(open ? -REVEAL : 0);
+      return;
+    }
+    const willOpen = dx < -TRIGGER;
+    setOpen(willOpen);
+    setDx(willOpen ? -REVEAL : 0);
+  }
+  function onClickRow(e: React.MouseEvent) {
+    if (moved.current || open) {
+      e.preventDefault();
+      if (open) { setOpen(false); setDx(0); }
+      return;
+    }
+    nav({ to: "/app/chat/$id", params: { id: conv.id } });
+  }
+
+  async function handleDelete(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!meId || deleting) return;
+    setDeleting(true);
+    const { error } = await supabase
+      .from("conversation_members")
+      .delete()
+      .eq("conversation_id", conv.id)
+      .eq("user_id", meId);
+    if (error) {
+      toast.error("Nu s-a putut șterge");
+      setDeleting(false);
+      return;
+    }
+    setRemoved(true);
+    setTimeout(onDeleted, 250);
+  }
+
+  if (removed) return null;
+
+  const subtitle = conv.last
+    ? conv.last.body
+    : (isDM ? "Spune ceva 👋" : "Grup nou");
+
+  return (
+    <div className="relative overflow-hidden">
+      {/* Delete action behind */}
+      <div className="absolute inset-y-0 right-0 flex items-stretch">
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          aria-label="Șterge conversația"
+          className="w-[88px] flex flex-col items-center justify-center gap-1 bg-gradient-to-b from-rose-600 to-red-700 text-white active:scale-95 transition disabled:opacity-60"
+        >
+          {deleting ? (
+            <Loader2 size={20} className="animate-spin" />
+          ) : (
+            <>
+              <Trash2 size={20} />
+              <span className="text-[9px] font-black uppercase tracking-widest">Șterge</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Foreground row */}
+      <div
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onClick={onClickRow}
+        style={{
+          transform: `translateX(${dx}px)`,
+          transition: start.current.lock === "h" && Date.now() - start.current.t < 1000 && Math.abs(dx) !== REVEAL && dx !== 0 ? "none" : "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+          touchAction: "pan-y",
+        }}
+        className={`relative flex items-center gap-4 px-5 py-4 border-y cursor-pointer select-none ${
+          conv.unread ? "bg-zinc-900/40 border-zinc-800/50" : "border-transparent hover:bg-zinc-900/20"
+        } bg-black`}
+      >
+        {conv.unread && (
+          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-lime-400 rounded-r-full shadow-[0_0_10px_#00e5ff]" />
+        )}
+        <div className="relative shrink-0">
+          <div className="h-14 w-14 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden">
+            {isDM && conv.others[0]?.avatar_url ? (
+              <img src={conv.others[0].avatar_url} alt="" className="h-full w-full object-cover pointer-events-none" draggable={false} />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-br from-fuchsia-600 to-rose-600 flex items-center justify-center font-display font-black text-white text-lg">
+                {isDM ? initial : <Users size={20} />}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-baseline gap-2 mb-1">
+            <h3 className={`font-display uppercase tracking-tight truncate text-sm ${conv.unread ? "font-black text-white" : "font-bold text-zinc-300"}`}>{title}</h3>
+            <span className={`text-[10px] font-bold shrink-0 tabular-nums uppercase ${conv.unread ? "text-lime-400" : "text-zinc-600"}`}>
+              {timeAgo(conv.last?.created_at ?? conv.last_message_at)}
+            </span>
+          </div>
+          <p className={`text-xs truncate ${conv.unread ? "text-zinc-300 font-medium" : "text-zinc-500"}`}>
+            {conv.last && conv.last.sender_id === meId && <span className="text-zinc-600 italic mr-1">Tu:</span>}
+            {subtitle}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
