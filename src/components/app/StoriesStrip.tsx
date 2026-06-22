@@ -369,6 +369,18 @@ function StoryViewer({
   const group = groups[gi];
   const story = group?.stories[si];
 
+  // Lock body scroll while open (prevents scrollbar shift on close)
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    const prevTouch = document.body.style.touchAction;
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    return () => {
+      document.body.style.overflow = prev;
+      document.body.style.touchAction = prevTouch;
+    };
+  }, []);
+
   // Mark each viewed story as seen
   useEffect(() => {
     if (story) onSeen([story.id]);
