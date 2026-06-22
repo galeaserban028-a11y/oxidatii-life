@@ -13,6 +13,7 @@ import { NightWrapCard } from "@/components/app/NightWrapCard";
 import { getOrCreateNightWrap } from "@/lib/night-wrap.functions";
 import VideoTile from "@/components/app/VideoTile";
 import PhotoZoom from "@/components/app/PhotoZoom";
+import PinchImage from "@/components/app/PinchImage";
 
 type FeedItem = {
   id: string;
@@ -492,14 +493,12 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
         {item.media_type === "video" ? (
           <VideoTile src={item.photo_url} bottomInset={8} />
         ) : (
-          <button
-            type="button"
-            onClick={() => setZoomOpen(true)}
-            className="block w-full h-full"
-            aria-label="Mărește poza"
-          >
-            <img src={item.photo_url} alt={item.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
-          </button>
+          <PinchImage
+            src={item.photo_url}
+            alt={item.caption ?? ""}
+            className="w-full h-full"
+            onTap={() => setZoomOpen(true)}
+          />
         )}
       </div>
 
