@@ -443,9 +443,20 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
             <Link to="/app/user/$id" params={{ id: item.user_id }} className="font-display text-sm truncate">{handle}</Link>
             {badge.key === "legendar" && <span className="text-neon-crimson">⚡</span>}
           </div>
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
-            📍 {venue?.name ?? "—"} · {timeAgo(item.created_at)}
-          </div>
+          {venue?.name && item.venue_id ? (
+            <Link
+              to="/app/map"
+              search={{ venue: item.venue_id }}
+              className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate flex items-center gap-1 active:scale-95 transition hover:text-white"
+              aria-label={`Vezi ${venue.name} pe hartă`}
+            >
+              <MapPin size={10} /> <span className="truncate underline-offset-2 hover:underline">{venue.name}</span> · {timeAgo(item.created_at)}
+            </Link>
+          ) : (
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
+              📍 — · {timeAgo(item.created_at)}
+            </div>
+          )}
         </div>
         <span className={`shrink-0 inline-flex items-center px-2 py-[3px] rounded-md border text-[10px] font-mono uppercase tracking-[0.15em] ${badge.className}`}>
           {badge.label}
