@@ -338,11 +338,18 @@ function ConversationRow({
   const [deleting, setDeleting] = useState(false);
   const [removed, setRemoved] = useState(false);
   const start = useRef<{ x: number; y: number; t: number; lock: "h" | "v" | null }>({ x: 0, y: 0, t: 0, lock: null });
+  const currentDx = useRef(0);
   const moved = useRef(false);
+
+  function applyDx(next: number) {
+    currentDx.current = next;
+    setDx(next);
+  }
 
   function onPointerDown(e: React.PointerEvent) {
     if (deleting) return;
     start.current = { x: e.clientX, y: e.clientY, t: Date.now(), lock: null };
+    currentDx.current = open ? -REVEAL : 0;
     moved.current = false;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
@@ -359,21 +366,27 @@ function ConversationRow({
     let next = base + ddx;
     if (next > 0) next = next / 4; // rubberband right
     if (next < -REVEAL - 30) next = -REVEAL - 30 + (next + REVEAL + 30) / 4;
-    setDx(next);
+    applyDx(next);
   }
   function onPointerUp() {
     if (start.current.lock !== "h") {
-      setDx(open ? -REVEAL : 0);
+      applyDx(open ? -REVEAL : 0);
       return;
     }
-    const willOpen = dx < -TRIGGER;
+    const willOpen = currentDx.current < -TRIGGER;
     setOpen(willOpen);
-    setDx(willOpen ? -REVEAL : 0);
+    applyDx(willOpen ? -REVEAL : 0);
   }
   function onClickRow(e: React.MouseEvent) {
-    if (moved.current || open) {
+    if (moved.current) {
       e.preventDefault();
-      if (open) { setOpen(false); setDx(0); }
+      moved.current = false;
+      return;
+    }
+    if (open) {
+      e.preventDefault();
+      setOpen(false);
+      applyDx(0);
       return;
     }
     nav({ to: "/app/chat/$id", params: { id: conv.id } });
