@@ -28,7 +28,7 @@ export function BusinessReviewCard({
       const [all, mine] = await Promise.all([
         supabase
           .from("business_reviews")
-          .select("rating, comment, created_at, reviewer_id")
+          .select("rating, comment, created_at")
           .eq("business_id", businessId)
           .order("created_at", { ascending: false })
           .limit(20),
