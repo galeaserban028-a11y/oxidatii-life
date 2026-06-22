@@ -262,7 +262,7 @@ export default function TonightCard() {
     await refreshHotVenues();
   }
 
-  if (!user || !showCard) return null;
+  if (!user) return null;
 
   return (
     <div className="tonight-card cherry-glow-anim animate-fade-in">
