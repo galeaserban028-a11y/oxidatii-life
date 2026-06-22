@@ -137,7 +137,8 @@ const TabItem = memo(function TabItem({ tab, active, shrunk, iconSize, badge = 0
         transition: FAST_TR,
         padding: "4px 2px",
         minHeight: 44,
-        minWidth: 44,
+        // No horizontal minWidth — 6 tabs + center button would overflow on phones <420px.
+        // Vertical 44px already meets touch-target guidance; horizontal flex distributes evenly.
       }}
     >
       <div className="relative">
@@ -174,7 +175,7 @@ const TabItem = memo(function TabItem({ tab, active, shrunk, iconSize, badge = 0
         )}
       </div>
       <span
-        className="leading-none overflow-hidden"
+        className="leading-none overflow-hidden truncate max-w-full"
         style={{
           maxHeight: shrunk ? 0 : 14,
           marginTop: shrunk ? 0 : 3,
@@ -247,9 +248,9 @@ export function BottomTabBar() {
       <div
         className="pointer-events-auto flex items-center justify-between"
         style={{
-          gap: shrunk ? 6 : 10,
-          padding: shrunk ? "6px 14px" : "10px 18px",
-          width: "min(96%, 600px)",
+          gap: shrunk ? 2 : 4,
+          padding: shrunk ? "6px 10px" : "8px 12px",
+          width: "min(98%, 600px)",
           background: "rgba(15, 13, 28, 0.85)",
           backdropFilter: "blur(14px)",
           WebkitBackdropFilter: "blur(14px)",
@@ -258,6 +259,7 @@ export function BottomTabBar() {
           boxShadow: "0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
           transition: "padding 0.3s, border-radius 0.3s",
           transform: "translateZ(0)",
+          overflow: "hidden",
         }}
       >
         {tabs.slice(0, 3).map((t) => (
