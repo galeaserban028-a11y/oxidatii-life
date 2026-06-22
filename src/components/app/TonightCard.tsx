@@ -275,7 +275,7 @@ export default function TonightCard() {
           <div className="tonight-label flex items-center gap-1">
             <Sparkles size={8} /> diseară
           </div>
-          <h3 className="tonight-title mt-0.5 text-[16px]">
+          <h3 className="tonight-title mt-0.5 text-[13px]">
             {myIntent ? (
               <>Te-ai băgat. <span style={{ color: "var(--cherry-400)" }}>{count}</span> pers.</>
             ) : (
