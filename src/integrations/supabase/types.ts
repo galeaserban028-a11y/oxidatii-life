@@ -1968,6 +1968,67 @@ export type Database = {
         }
         Relationships: []
       }
+      venue_follows: {
+        Row: {
+          created_at: string
+          user_id: string
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+          venue_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_follows_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_night_chats: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          intent_date: string
+          user_id: string
+          venue_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          intent_date: string
+          user_id: string
+          venue_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          intent_date?: string
+          user_id?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_night_chats_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       venue_photos: {
         Row: {
           caption: string | null
@@ -2270,6 +2331,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      has_venue_intent: {
+        Args: { _date: string; _user: string; _venue: string }
         Returns: boolean
       }
       increment_business_visit: {
