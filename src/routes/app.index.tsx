@@ -13,6 +13,7 @@ import { NightWrapCard } from "@/components/app/NightWrapCard";
 import { getOrCreateNightWrap } from "@/lib/night-wrap.functions";
 import VideoTile from "@/components/app/VideoTile";
 import PhotoZoom from "@/components/app/PhotoZoom";
+import PinchImage from "@/components/app/PinchImage";
 
 type FeedItem = {
   id: string;
