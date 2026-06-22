@@ -30,7 +30,7 @@ function AdminUsers() {
     queryFn: async () => {
       let query = supabase
         .from("profiles")
-        .select("id, handle, display_name, avatar_url, aura, lifetime_sprits, current_streak, longest_streak, is_public, onboarded, rank, coin_balance, premium_tier, premium_until, created_at")
+        .select("id, handle, display_name, avatar_url, aura, lifetime_sprits, current_streak, longest_streak, is_public, onboarded, rank, premium_tier, premium_until, created_at")
         .order("created_at", { ascending: false })
         .limit(100);
       if (q.trim()) {
