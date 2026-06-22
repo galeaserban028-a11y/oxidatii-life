@@ -242,7 +242,7 @@ function EditUserSheet({
         </Field>
 
         <div className="grid grid-cols-2 gap-2">
-          <Field label="Coins (șprițuri)"><NumInput value={coins} onChange={setCoins} /></Field>
+          <Field label="Grant șprițuri (±)"><NumInput value={grantCoins} onChange={setGrantCoins} /></Field>
           <Field label="Aura"><NumInput value={aura} onChange={setAura} /></Field>
           <Field label="Lifetime sprits"><NumInput value={sprits} onChange={setSprits} /></Field>
           <Field label="Current streak"><NumInput value={streak} onChange={setStreak} /></Field>
