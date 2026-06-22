@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { Sparkles, MapPin, X } from "lucide-react";
+import { Sparkles, MapPin, X, Users, Plus } from "lucide-react";
 
 function localDateBuc(): string {
   // YYYY-MM-DD in Bucharest tz
@@ -25,6 +25,8 @@ export default function TonightCard() {
   const [venues, setVenues] = useState<Array<{ id: string; name: string }>>([]);
   const [pickedVenue, setPickedVenue] = useState<{ id: string; name: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [hotVenues, setHotVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
+  const [joining, setJoining] = useState<string | null>(null);
 
   // Show card only after 16:00 local time
   const showCard = useMemo(() => {
@@ -65,6 +67,50 @@ export default function TonightCard() {
     return () => { cancel = true; };
   }, [user?.id, today]);
 
+  // Hot venues tonight — group intents by venue
+  async function refreshHotVenues() {
+    const { data } = await supabase
+      .from("daily_intents")
+      .select("venue_id, venue:venues(id, name)")
+      .eq("intent_date", today)
+      .not("venue_id", "is", null)
+      .limit(200);
+    const map = new Map<string, { id: string; name: string; count: number }>();
+    (data ?? []).forEach((r: any) => {
+      if (!r.venue?.id) return;
+      const ex = map.get(r.venue.id);
+      if (ex) ex.count++;
+      else map.set(r.venue.id, { id: r.venue.id, name: r.venue.name, count: 1 });
+    });
+    setHotVenues([...map.values()].sort((a, b) => b.count - a.count).slice(0, 5));
+  }
+  useEffect(() => { if (user) refreshHotVenues(); }, [user?.id, today]);
+
+  async function joinVenue(v: { id: string; name: string }) {
+    if (!user) return;
+    setJoining(v.id);
+    try {
+      const { error } = await supabase.from("daily_intents").upsert({
+        user_id: user.id,
+        intent_date: today,
+        venue_id: v.id,
+        note: note.trim() || null,
+      } as any, { onConflict: "user_id,intent_date" });
+      if (error) throw error;
+      toast.success(`Te-ai băgat la ${v.name}!`);
+      setMyIntent({ id: "_", venue_id: v.id, note: note.trim() || null, venue: { name: v.name } });
+      setPickedVenue(v);
+      await refreshHotVenues();
+      const { count: c } = await supabase
+        .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
+      setCount(c ?? 0);
+    } catch (e: any) {
+      toast.error(e.message ?? "Eroare");
+    } finally {
+      setJoining(null);
+    }
+  }
+
   useEffect(() => {
     if (!venueQuery.trim()) { setVenues([]); return; }
     const t = setTimeout(async () => {
@@ -93,6 +139,7 @@ export default function TonightCard() {
       const { count: c } = await supabase
         .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
       setCount(c ?? 0);
+      await refreshHotVenues();
     } catch (e: any) {
       toast.error(e.message ?? "Eroare");
     } finally {
@@ -109,6 +156,7 @@ export default function TonightCard() {
     const { count: c } = await supabase
       .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
     setCount(c ?? 0);
+    await refreshHotVenues();
   }
 
   if (!user || !showCard) return null;
@@ -187,6 +235,39 @@ export default function TonightCard() {
             <button onClick={save} disabled={saving} className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#ffea00] to-[#ff3d8b] text-black font-bold text-[11px] uppercase tracking-widest disabled:opacity-50">
               {saving ? "..." : "salvează"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {hotVenues.length > 0 && (
+        <div className="relative mt-5 pt-4 border-t border-white/10">
+          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-2">
+            <Users size={11} /> unde se adună
+          </div>
+          <div className="space-y-1.5">
+            {hotVenues.map(v => {
+              const mine = myIntent?.venue_id === v.id;
+              return (
+                <div key={v.id} className="flex items-center gap-2 rounded-xl bg-white/[0.03] border border-white/5 px-3 py-2">
+                  <MapPin size={13} className="text-[#ffea00] shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] text-white truncate">{v.name}</div>
+                    <div className="text-[10px] text-white/40">{v.count} {v.count === 1 ? "persoană" : "persoane"}</div>
+                  </div>
+                  {mine ? (
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#ffea00]">aici ești</span>
+                  ) : (
+                    <button
+                      onClick={() => joinVenue(v)}
+                      disabled={joining === v.id}
+                      className="h-8 px-3 rounded-full bg-[#ffea00] text-black text-[10px] font-bold uppercase tracking-widest active:scale-95 transition disabled:opacity-50 flex items-center gap-1"
+                    >
+                      <Plus size={11} strokeWidth={3} /> {joining === v.id ? "..." : "mă bag"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
