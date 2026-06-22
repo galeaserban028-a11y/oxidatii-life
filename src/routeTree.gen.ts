@@ -21,7 +21,6 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
-import { Route as QaTabbarRouteImport } from './routes/qa.tabbar'
 import { Route as AppTopRouteImport } from './routes/app.top'
 import { Route as AppSquadRouteImport } from './routes/app.squad'
 import { Route as AppSpritzIndexRouteImport } from './routes/app.spritz-index'
@@ -123,11 +122,6 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
-} as any)
-const QaTabbarRoute = QaTabbarRouteImport.update({
-  id: '/qa/tabbar',
-  path: '/qa/tabbar',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AppTopRoute = AppTopRouteImport.update({
   id: '/top',
@@ -369,7 +363,6 @@ export interface FileRoutesByFullPath {
   '/app/spritz-index': typeof AppSpritzIndexRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
-  '/qa/tabbar': typeof QaTabbarRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
@@ -423,7 +416,6 @@ export interface FileRoutesByTo {
   '/app/spritz-index': typeof AppSpritzIndexRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
-  '/qa/tabbar': typeof QaTabbarRoute
   '/app': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
@@ -480,7 +472,6 @@ export interface FileRoutesById {
   '/app/spritz-index': typeof AppSpritzIndexRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
-  '/qa/tabbar': typeof QaTabbarRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
@@ -538,7 +529,6 @@ export interface FileRouteTypes {
     | '/app/spritz-index'
     | '/app/squad'
     | '/app/top'
-    | '/qa/tabbar'
     | '/app/'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
@@ -592,7 +582,6 @@ export interface FileRouteTypes {
     | '/app/spritz-index'
     | '/app/squad'
     | '/app/top'
-    | '/qa/tabbar'
     | '/app'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
@@ -648,7 +637,6 @@ export interface FileRouteTypes {
     | '/app/spritz-index'
     | '/app/squad'
     | '/app/top'
-    | '/qa/tabbar'
     | '/app/'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
@@ -684,7 +672,6 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
-  QaTabbarRoute: typeof QaTabbarRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -773,13 +760,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
-    }
-    '/qa/tabbar': {
-      id: '/qa/tabbar'
-      path: '/qa/tabbar'
-      fullPath: '/qa/tabbar'
-      preLoaderRoute: typeof QaTabbarRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/app/top': {
       id: '/app/top'
@@ -1192,7 +1172,6 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
-  QaTabbarRoute: QaTabbarRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
