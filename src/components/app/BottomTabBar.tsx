@@ -137,7 +137,8 @@ const TabItem = memo(function TabItem({ tab, active, shrunk, iconSize, badge = 0
         transition: FAST_TR,
         padding: "4px 2px",
         minHeight: 44,
-        minWidth: 44,
+        // No horizontal minWidth — 6 tabs + center button would overflow on phones <420px.
+        // Vertical 44px already meets touch-target guidance; horizontal flex distributes evenly.
       }}
     >
       <div className="relative">
