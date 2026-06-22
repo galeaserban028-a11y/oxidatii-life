@@ -16,7 +16,7 @@ type UserRow = {
   id: string; handle: string | null; display_name: string | null; avatar_url: string | null;
   aura: number | null; lifetime_sprits: number | null; current_streak: number | null;
   longest_streak: number | null; is_public: boolean | null; onboarded: boolean | null;
-  rank: string | null; coin_balance: number | null; premium_tier: string | null;
+  rank: string | null; premium_tier: string | null;
   premium_until: string | null; created_at: string;
 };
 
@@ -30,7 +30,7 @@ function AdminUsers() {
     queryFn: async () => {
       let query = supabase
         .from("profiles")
-        .select("id, handle, display_name, avatar_url, aura, lifetime_sprits, current_streak, longest_streak, is_public, onboarded, rank, coin_balance, premium_tier, premium_until, created_at")
+        .select("id, handle, display_name, avatar_url, aura, lifetime_sprits, current_streak, longest_streak, is_public, onboarded, rank, premium_tier, premium_until, created_at")
         .order("created_at", { ascending: false })
         .limit(100);
       if (q.trim()) {
@@ -131,7 +131,7 @@ function AdminUsers() {
                   {!u.is_public && <EyeOff size={11} className="text-muted-foreground" />}
                 </div>
                 <div className="font-mono text-[10px] text-muted-foreground truncate">
-                  @{u.handle || "—"} · {u.rank} · aura {u.aura} · 🍺 {u.coin_balance ?? 0} · streak {u.current_streak}
+                  @{u.handle || "—"} · {u.rank} · aura {u.aura} · streak {u.current_streak}
                 </div>
               </div>
               <div className="flex items-center gap-1">
@@ -185,7 +185,7 @@ function EditUserSheet({
 }) {
   const [rank, setRank] = useState<string>(user.rank ?? "MDS");
   const [aura, setAura] = useState<number>(user.aura ?? 0);
-  const [coins, setCoins] = useState<number>(user.coin_balance ?? 0);
+  const [grantCoins, setGrantCoins] = useState<number>(0);
   const [sprits, setSprits] = useState<number>(user.lifetime_sprits ?? 0);
   const [streak, setStreak] = useState<number>(user.current_streak ?? 0);
   const [longest, setLongest] = useState<number>(user.longest_streak ?? 0);
@@ -197,7 +197,7 @@ function EditUserSheet({
     setSaving(true);
     try {
       const patch: Record<string, any> = {
-        rank, aura, coin_balance: coins, lifetime_sprits: sprits,
+        rank, aura, lifetime_sprits: sprits,
         current_streak: streak, longest_streak: longest,
         premium_tier: premium || null,
       };
@@ -210,6 +210,10 @@ function EditUserSheet({
       }
       const { error } = await supabase.from("profiles").update(patch as any).eq("id", user.id);
       if (error) throw error;
+      if (grantCoins !== 0) {
+        const { error: gErr } = await supabase.rpc("admin_grant_coins", { _user_id: user.id, _amount: grantCoins });
+        if (gErr) throw gErr;
+      }
       toast.success("Profil actualizat");
       onSaved();
     } catch (e: any) {
@@ -238,7 +242,7 @@ function EditUserSheet({
         </Field>
 
         <div className="grid grid-cols-2 gap-2">
-          <Field label="Coins (șprițuri)"><NumInput value={coins} onChange={setCoins} /></Field>
+          <Field label="Grant șprițuri (±)"><NumInput value={grantCoins} onChange={setGrantCoins} /></Field>
           <Field label="Aura"><NumInput value={aura} onChange={setAura} /></Field>
           <Field label="Lifetime sprits"><NumInput value={sprits} onChange={setSprits} /></Field>
           <Field label="Current streak"><NumInput value={streak} onChange={setStreak} /></Field>

@@ -2307,6 +2307,14 @@ export type Database = {
           wallet_balance_cents: number
         }[]
       }
+      get_campaign_event_stats: {
+        Args: { _campaign_id: string }
+        Returns: {
+          event_count: number
+          event_type: string
+          unique_users: number
+        }[]
+      }
       get_crystal_ball: { Args: never; Returns: Json }
       get_featured_tonight: {
         Args: { _city_id: string; _limit?: number }
@@ -2320,6 +2328,17 @@ export type Database = {
           score: number
           tier: Database["public"]["Enums"]["business_tier"]
           venue_id: string
+        }[]
+      }
+      get_my_account_state: {
+        Args: never
+        Returns: {
+          coin_balance: number
+          last_boost_at: string
+          location_consent: boolean
+          map_ghost: boolean
+          map_precision: string
+          map_visibility: string
         }[]
       }
       get_my_birthdate: { Args: never; Returns: string }
