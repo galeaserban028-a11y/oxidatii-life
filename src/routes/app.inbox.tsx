@@ -451,7 +451,8 @@ function ConversationRow({
         }}
         className={`relative flex items-center gap-4 px-5 py-4 border-y cursor-pointer select-none ${
           conv.unread ? "bg-zinc-900/40 border-zinc-800/50" : "border-transparent hover:bg-zinc-900/20"
-        } bg-black`}
+        }`}
+
       >
         {conv.unread && (
           <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-lime-400 rounded-r-full shadow-[0_0_10px_#00e5ff]" />
