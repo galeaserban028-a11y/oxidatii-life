@@ -33,6 +33,11 @@ import { AvatarAura } from "@/components/app/AvatarAura";
 import { SignatureReveal } from "@/components/app/SignatureReveal";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const VIDEO_URL_RE = /\.(mp4|webm|mov|m4v)(\?.*)?$/i;
+
+function isVideoUrl(url?: string | null) {
+  return !!url && VIDEO_URL_RE.test(url);
+}
 
 export const Route = createFileRoute("/app/user/$id")({
   loader: async ({ params }) => {
