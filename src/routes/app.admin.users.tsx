@@ -185,7 +185,7 @@ function EditUserSheet({
 }) {
   const [rank, setRank] = useState<string>(user.rank ?? "MDS");
   const [aura, setAura] = useState<number>(user.aura ?? 0);
-  const [coins, setCoins] = useState<number>(user.coin_balance ?? 0);
+  const [grantCoins, setGrantCoins] = useState<number>(0);
   const [sprits, setSprits] = useState<number>(user.lifetime_sprits ?? 0);
   const [streak, setStreak] = useState<number>(user.current_streak ?? 0);
   const [longest, setLongest] = useState<number>(user.longest_streak ?? 0);
