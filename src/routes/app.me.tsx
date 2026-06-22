@@ -754,6 +754,8 @@ function MePage() {
           {tabMoments.map((m: any) => {
             const isProof = m._kind === "proof";
             const key = `${m._kind}-${m.id}`;
+            const url: string = m.photo_url ?? "";
+            const isVideo = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url) || m.media_type === "video";
             return (
               <div key={key} className="relative aspect-square overflow-hidden bg-black group">
                 <Link
@@ -761,7 +763,25 @@ function MePage() {
                   params={isProof ? (m.venue?.id ? { id: m.venue.id } : undefined as any) : { id: m.id }}
                   className="absolute inset-0"
                 >
-                  <img src={m.photo_url} alt={m.caption ?? ""} className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition" loading="lazy" />
+                  {isVideo ? (
+                    <>
+                      <video
+                        src={url}
+                        muted
+                        playsInline
+                        preload="metadata"
+                        onLoadedMetadata={(e) => { try { (e.currentTarget as HTMLVideoElement).currentTime = 0.1; } catch {} }}
+                        className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 pointer-events-none" />
+                      <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/50 border border-white/20 flex items-center gap-1">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                        <span className="font-mono text-[8px] uppercase text-white tracking-wider">video</span>
+                      </div>
+                    </>
+                  ) : (
+                    <img src={url} alt={m.caption ?? ""} className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition" loading="lazy" />
+                  )}
                   {isProof && (
                     <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#ffea00]/50">
                       <span className="font-mono text-[8px] uppercase text-[#ffea00]">verificat</span>
