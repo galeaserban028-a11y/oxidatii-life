@@ -218,7 +218,11 @@ function AppFeed() {
       </header>
 
 
+      <TonightCard />
+
       <LiveSpritzStrip />
+
+
 
       {isLoading ? (
         <div className="space-y-3">
