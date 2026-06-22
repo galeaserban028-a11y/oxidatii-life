@@ -391,6 +391,7 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [zoomOpen, setZoomOpen] = useState(false);
 
   useEffect(() => {
     if (!menuOpen) return;
