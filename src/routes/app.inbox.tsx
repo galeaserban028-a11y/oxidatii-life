@@ -1,10 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM, createGroupChat } from "@/lib/chat";
-import { ArrowLeft, PenSquare, Users, Loader2, Search, X, Check } from "lucide-react";
+import { ArrowLeft, PenSquare, Users, Loader2, Search, X, Check, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/inbox")({
   head: () => ({ meta: [{ title: "Mesaje · OXIDAȚII" }] }),
@@ -169,46 +170,17 @@ function InboxPage() {
             const title = isDM
               ? (c.others[0]?.handle ? `@${c.others[0].handle}` : c.others[0]?.display_name ?? "necunoscut")
               : c.title ?? `grup · ${c.others.length + 1}`;
-            const subtitle = c.last
-              ? (c.last.sender_id === user?.id ? `Tu: ${c.last.body}` : c.last.body)
-              : (isDM ? "Spune ceva 👋" : "Grup nou");
             const initial = (isDM ? (c.others[0]?.handle ?? c.others[0]?.display_name ?? "?")[0] : "G").toUpperCase();
             return (
-              <Link
+              <ConversationRow
                 key={c.id}
-                to="/app/chat/$id"
-                params={{ id: c.id }}
-                className={`relative flex items-center gap-4 px-5 py-4 border-y transition active:bg-zinc-900/60 ${
-                  c.unread ? "bg-zinc-900/40 border-zinc-800/50" : "border-transparent hover:bg-zinc-900/20"
-                }`}
-              >
-                {c.unread && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-lime-400 rounded-r-full shadow-[0_0_10px_#00e5ff]" />
-                )}
-                <div className="relative shrink-0">
-                  <div className="h-14 w-14 rounded-full bg-zinc-800 border border-zinc-700 overflow-hidden">
-                    {isDM && c.others[0]?.avatar_url ? (
-                      <img src={c.others[0].avatar_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="h-full w-full bg-gradient-to-br from-fuchsia-600 to-rose-600 flex items-center justify-center font-display font-black text-white text-lg">
-                        {isDM ? initial : <Users size={20} />}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-baseline gap-2 mb-1">
-                    <h3 className={`font-display uppercase tracking-tight truncate text-sm ${c.unread ? "font-black text-white" : "font-bold text-zinc-300"}`}>{title}</h3>
-                    <span className={`text-[10px] font-bold shrink-0 tabular-nums uppercase ${c.unread ? "text-lime-400" : "text-zinc-600"}`}>
-                      {timeAgo(c.last?.created_at ?? c.last_message_at)}
-                    </span>
-                  </div>
-                  <p className={`text-xs truncate ${c.unread ? "text-zinc-300 font-medium" : "text-zinc-500"}`}>
-                    {c.last && c.last.sender_id === user?.id && <span className="text-zinc-600 italic mr-1">Tu:</span>}
-                    {c.last ? c.last.body : subtitle}
-                  </p>
-                </div>
-              </Link>
+                conv={c}
+                title={title}
+                initial={initial}
+                isDM={isDM}
+                meId={user?.id}
+                onDeleted={() => qc.invalidateQueries({ queryKey: ["inbox", user?.id] })}
+              />
             );
           })}
         </div>
