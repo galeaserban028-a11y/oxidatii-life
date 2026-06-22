@@ -440,9 +440,10 @@ function ConversationRow({
       {/* Delete action behind — visible only while swiping left or when row is open */}
       <div
         className={`absolute inset-y-0 right-0 flex items-stretch transition-opacity duration-200 ${
-          open || dx < 0 ? "opacity-100" : "opacity-0 pointer-events-none"
+          open || dx < -VISIBILITY_THRESHOLD ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
+
         <button
           onClick={handleDelete}
           disabled={deleting}
