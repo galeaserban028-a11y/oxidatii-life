@@ -138,8 +138,8 @@
   --cherry-500: #d66e8e;
   --cherry-600: #c45c7c;
   --cherry-900: #3a1522;
-  --cherry-glow: 0 24px 60px -24px rgba(0,0,0,0.6), 0 0 0 1px rgba(196,92,124,0.08), 0 0 48px -16px rgba(232,138,171,0.22);
-  --cherry-btn-glow: 0 12px 30px -10px rgba(196,92,124,0.45), inset 0 1px 0 rgba(255,255,255,0.35);
+  --cherry-glow: 0 16px 44px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(196,92,124,0.08), 0 0 40px -18px rgba(232,138,171,0.18);
+  --cherry-btn-glow: 0 10px 24px -8px rgba(196,92,124,0.40), inset 0 1px 0 rgba(255,255,255,0.35);
 }
 
 @keyframes tier-pulse {
