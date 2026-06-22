@@ -503,8 +503,8 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
             src={item.photo_url}
             alt={item.caption ?? ""}
             className="w-full h-full"
-            onTap={() => setZoomOpen(true)}
           />
+
         )}
       </div>
 
