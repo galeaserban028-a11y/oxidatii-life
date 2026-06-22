@@ -270,47 +270,49 @@ export default function TonightCard() {
       <div className="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full blur-[52px] opacity-50" style={{ background: "var(--cherry-400)" }} />
       <div className="pointer-events-none absolute -bottom-6 -left-6 h-20 w-20 rounded-full blur-[40px] opacity-35" style={{ background: "var(--cherry-600)" }} />
 
-      <div className="relative flex items-start justify-between gap-3">
+      <div className="relative flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="tonight-label flex items-center gap-1.5">
             <Sparkles size={10} /> diseară
           </div>
-          <h3 className="tonight-title mt-1.5 text-[22px]">
+          <h3 className="tonight-title mt-1 text-[20px]">
             {myIntent ? (
-              <>Te-ai băgat. <span style={{ color: "var(--cherry-400)" }}>{count}</span> persoane ies.</>
+              <>Te-ai băgat. <span style={{ color: "var(--cherry-400)" }}>{count}</span> pers.</>
             ) : (
-              <>Diseară unde <span style={{ color: "var(--cherry-400)", fontStyle: "italic" }}>ieși</span>?</>
+              <>Unde <span style={{ color: "var(--cherry-400)", fontStyle: "italic" }}>ieși</span>?</>
             )}
           </h3>
           {myIntent && (myIntent.venue?.name || myIntent.note) && (
-            <div className="mt-1 text-[11px] text-white/70 flex items-center gap-1.5" style={{ fontFamily: "'Barlow', sans-serif" }}>
-              {myIntent.venue?.name && <><MapPin size={11} style={{ color: "var(--cherry-400)" }} /> {myIntent.venue.name}</>}
+            <div className="mt-1 text-[10px] text-white/70 flex items-center gap-1.5" style={{ fontFamily: "'Barlow', sans-serif" }}>
+              {myIntent.venue?.name && <><MapPin size={10} style={{ color: "var(--cherry-400)" }} /> {myIntent.venue.name}</>}
               {myIntent.note && <span className="text-white/50">· {myIntent.note}</span>}
             </div>
           )}
         </div>
-        {myIntent ? (
+
+        {!myIntent && !showVenues && (
+          <button onClick={() => setShowVenues(true)} className="tonight-btn" style={{ width: 'auto', padding: '0 18px' }}>
+            mă bag ({count})
+          </button>
+        )}
+
+        {myIntent && !myIntent.venue_id && !showVenues && (
+          <button
+            onClick={() => setShowVenues(true)}
+            className="tonight-btn"
+            style={{ width: 'auto', padding: '0 14px', background: "var(--cherry-400)", boxShadow: "0 12px 30px -10px rgba(232,138,171,0.35)" }}
+          >
+            loc
+          </button>
+        )}
+
+        {myIntent && myIntent.venue_id && !showVenues && (
           <button onClick={cancel} className="tonight-icon-btn" aria-label="Anulează">
             <X size={13} />
           </button>
-        ) : null}
+        )}
       </div>
 
-      {!myIntent && !showVenues && (
-        <button onClick={() => setShowVenues(true)} className="tonight-btn mt-4">
-          mă bag în seara asta ({count})
-        </button>
-      )}
-
-      {myIntent && !myIntent.venue_id && !showVenues && (
-        <button
-          onClick={() => setShowVenues(true)}
-          className="tonight-btn mt-4"
-          style={{ background: "var(--cherry-400)", boxShadow: "0 12px 30px -10px rgba(232,138,171,0.35)" }}
-        >
-          alege locul pentru chat
-        </button>
-      )}
 
       {showVenues && (
         <div className="relative mt-4 space-y-2">
