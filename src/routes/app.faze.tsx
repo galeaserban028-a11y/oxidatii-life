@@ -35,11 +35,25 @@ type Moment = {
 };
 
 async function loadMoments(currentUserId: string | null) {
-  const { data: photos } = await supabase
+  // Restrict the FAZE feed to the current weekend window (Fri 18:00 -> Mon 06:00 Bucharest).
+  // Outside that window, show last weekend (the function handles both cases).
+  let startsAt: string | null = null;
+  let endsAt: string | null = null;
+  try {
+    const { data: win } = await supabase.rpc("current_weekend_window" as any);
+    const row: any = Array.isArray(win) ? win[0] : win;
+    if (row?.starts_at) startsAt = row.starts_at;
+    if (row?.ends_at) endsAt = row.ends_at;
+  } catch {/* fall through to unfiltered */}
+
+  let q = supabase
     .from("venue_photos")
     .select("id, photo_url, caption, taken_at, user_id, venue_id, media_type")
     .order("taken_at", { ascending: false })
     .limit(60);
+  if (startsAt) q = q.gte("taken_at", startsAt);
+  if (endsAt) q = q.lt("taken_at", endsAt);
+  const { data: photos } = await q;
 
   const items: Moment[] = (photos ?? []).map((p) => ({
     id: p.id,
@@ -51,6 +65,7 @@ async function loadMoments(currentUserId: string | null) {
     media_type: (p as any).media_type ?? null,
   }));
   const photoIds = items.map((i) => i.id);
+
 
   const userIds = Array.from(new Set(items.map((i) => i.user_id)));
   const venueIds = Array.from(new Set(items.map((i) => i.venue_id)));
