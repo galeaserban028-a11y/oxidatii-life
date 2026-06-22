@@ -259,6 +259,7 @@ export function BottomTabBar() {
           boxShadow: "0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
           transition: "padding 0.3s, border-radius 0.3s",
           transform: "translateZ(0)",
+          overflow: "hidden",
         }}
       >
         {tabs.slice(0, 3).map((t) => (
