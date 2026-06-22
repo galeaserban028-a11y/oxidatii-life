@@ -375,10 +375,25 @@ function ConversationRow({
       applyDx(open ? -REVEAL : 0);
       return;
     }
-    const willOpen = currentDx.current < -TRIGGER;
+    const elapsed = Date.now() - start.current.t;
+    const base = open ? -REVEAL : 0;
+    const travel = Math.abs(currentDx.current - base);
+    const velocity = elapsed > 0 ? travel / elapsed : 0;
+    const movingLeft = currentDx.current < base;
+
+    let willOpen: boolean;
+    if (open) {
+      // Stay open unless pulled back past the halfway point
+      willOpen = currentDx.current < -(REVEAL / 2);
+    } else {
+      // Open only on deliberate distance or a fast left flick
+      willOpen = currentDx.current < -TRIGGER || (movingLeft && velocity > VELOCITY_THRESHOLD);
+    }
+
     setOpen(willOpen);
     applyDx(willOpen ? -REVEAL : 0);
   }
+
   function onClickRow(e: React.MouseEvent) {
     if (moved.current) {
       e.preventDefault();
