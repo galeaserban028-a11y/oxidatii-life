@@ -321,7 +321,7 @@ export function StoriesStrip() {
 
 
 
-      {viewerIdx !== null && groups[viewerIdx] && (
+      {viewerIdx !== null && groups[viewerIdx] && typeof document !== "undefined" && createPortal(
         <StoryViewer
           groups={groups}
           startIndex={viewerIdx}
@@ -329,7 +329,8 @@ export function StoriesStrip() {
           onDeleted={() => qc.invalidateQueries({ queryKey: ["stories-strip"] })}
           onSeen={markSeen}
           viewerId={user.id}
-        />
+        />,
+        document.body
       )}
 
 
@@ -368,6 +369,18 @@ function StoryViewer({
   const group = groups[gi];
   const story = group?.stories[si];
 
+  // Lock body scroll while open (prevents scrollbar shift on close)
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    const prevTouch = document.body.style.touchAction;
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+    return () => {
+      document.body.style.overflow = prev;
+      document.body.style.touchAction = prevTouch;
+    };
+  }, []);
+
   // Mark each viewed story as seen
   useEffect(() => {
     if (story) onSeen([story.id]);
@@ -405,7 +418,11 @@ function StoryViewer({
   const safeRatio = Math.min(1.45, Math.max(0.82, mediaRatio ?? 1));
 
   return (
-      <div className="fixed inset-0 z-[80] bg-black flex items-center justify-center" onClick={onClose}>
+      <div
+        className="fixed inset-0 z-[80] bg-black flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
+        style={{ animationTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
+        onClick={onClose}
+      >
       {/* top scrim for legibility */}
       <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black/80 to-transparent z-10 pointer-events-none" />
 
