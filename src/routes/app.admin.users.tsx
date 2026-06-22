@@ -16,7 +16,7 @@ type UserRow = {
   id: string; handle: string | null; display_name: string | null; avatar_url: string | null;
   aura: number | null; lifetime_sprits: number | null; current_streak: number | null;
   longest_streak: number | null; is_public: boolean | null; onboarded: boolean | null;
-  rank: string | null; coin_balance: number | null; premium_tier: string | null;
+  rank: string | null; premium_tier: string | null;
   premium_until: string | null; created_at: string;
 };
 
