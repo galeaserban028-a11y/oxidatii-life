@@ -197,7 +197,7 @@ function EditUserSheet({
     setSaving(true);
     try {
       const patch: Record<string, any> = {
-        rank, aura, coin_balance: coins, lifetime_sprits: sprits,
+        rank, aura, lifetime_sprits: sprits,
         current_streak: streak, longest_streak: longest,
         premium_tier: premium || null,
       };
@@ -210,6 +210,10 @@ function EditUserSheet({
       }
       const { error } = await supabase.from("profiles").update(patch as any).eq("id", user.id);
       if (error) throw error;
+      if (grantCoins !== 0) {
+        const { error: gErr } = await supabase.rpc("admin_grant_coins", { _user_id: user.id, _amount: grantCoins });
+        if (gErr) throw gErr;
+      }
       toast.success("Profil actualizat");
       onSaved();
     } catch (e: any) {
