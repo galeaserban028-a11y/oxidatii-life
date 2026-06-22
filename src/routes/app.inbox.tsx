@@ -418,8 +418,12 @@ function ConversationRow({
 
   return (
     <div className="relative overflow-hidden">
-      {/* Delete action behind */}
-      <div className="absolute inset-y-0 right-0 flex items-stretch">
+      {/* Delete action behind — visible only while swiping left or when row is open */}
+      <div
+        className={`absolute inset-y-0 right-0 flex items-stretch transition-opacity duration-200 ${
+          open || dx < 0 ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
         <button
           onClick={handleDelete}
           disabled={deleting}
@@ -436,6 +440,7 @@ function ConversationRow({
           )}
         </button>
       </div>
+
 
       {/* Foreground row */}
       <div
