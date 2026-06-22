@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -27,7 +28,12 @@ export default function VenueNightChat({
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     let cancel = false;
@@ -98,10 +104,12 @@ export default function VenueNightChat({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-[80] bg-black/70 backdrop-blur-sm flex items-center justify-center" onClick={onClose}>
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="w-full sm:max-w-md h-[80dvh] sm:h-[70vh] rounded-3xl bg-[#0a0a0a] border border-white/10 flex flex-col overflow-hidden"
+        className="h-[80dvh] max-h-[calc(100dvh-2rem)] w-full max-w-md rounded-3xl border border-white/10 bg-[#0a0a0a] flex flex-col overflow-hidden sm:h-[70vh]"
         onClick={(e) => e.stopPropagation()}
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
@@ -155,6 +163,7 @@ export default function VenueNightChat({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
