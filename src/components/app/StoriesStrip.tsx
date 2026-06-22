@@ -418,7 +418,11 @@ function StoryViewer({
   const safeRatio = Math.min(1.45, Math.max(0.82, mediaRatio ?? 1));
 
   return (
-      <div className="fixed inset-0 z-[80] bg-black flex items-center justify-center" onClick={onClose}>
+      <div
+        className="fixed inset-0 z-[80] bg-black flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
+        style={{ animationTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
+        onClick={onClose}
+      >
       {/* top scrim for legibility */}
       <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black/80 to-transparent z-10 pointer-events-none" />
 
