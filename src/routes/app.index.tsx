@@ -436,37 +436,37 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
   return (
     <article className="rounded-2xl border border-foreground/10 bg-card/40 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3 p-3">
+      <div className="flex items-center gap-2.5 px-3 pt-3 pb-3.5">
         <Link to="/app/user/$id" params={{ id: item.user_id }} className="shrink-0">
           {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt={handle} className="size-10 rounded-full object-cover border border-foreground/10" />
+            <img src={profile.avatar_url} alt={handle} className="size-9 rounded-full object-cover border border-foreground/10" />
           ) : (
-            <div className="size-10 rounded-full bg-foreground/10 flex items-center justify-center font-display text-sm">
+            <div className="size-9 rounded-full bg-foreground/10 flex items-center justify-center font-display text-sm">
               {handle[0]?.toUpperCase() ?? "?"}
             </div>
           )}
         </Link>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <Link to="/app/user/$id" params={{ id: item.user_id }} className="font-display text-sm truncate">{handle}</Link>
-            {badge.key === "legendar" && <span className="text-neon-crimson">⚡</span>}
+        <div className="flex-1 min-w-0 overflow-hidden">
+          <div className="flex items-center gap-1 min-w-0">
+            <Link to="/app/user/$id" params={{ id: item.user_id }} className="font-display text-[13px] truncate min-w-0">{handle}</Link>
+            {badge.key === "legendar" && <span className="text-neon-crimson text-[11px] shrink-0">⚡</span>}
           </div>
           {venue?.name && item.venue_id ? (
             <Link
               to="/app/map"
               search={{ venue: item.venue_id }}
-              className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate flex items-center gap-1 active:scale-95 transition hover:text-white"
+              className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground truncate flex items-center gap-1 active:scale-95 transition hover:text-white min-w-0"
               aria-label={`Vezi ${venue.name} pe hartă`}
             >
-              <MapPin size={10} /> <span className="truncate underline-offset-2 hover:underline">{venue.name}</span> · {timeAgo(item.created_at)}
+              <MapPin size={9} className="shrink-0" /> <span className="truncate underline-offset-2 hover:underline">{venue.name}</span> · {timeAgo(item.created_at)}
             </Link>
           ) : (
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
+            <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground truncate">
               📍 — · {timeAgo(item.created_at)}
             </div>
           )}
         </div>
-        <span className={`shrink-0 inline-flex items-center px-2 py-[3px] rounded-md border text-[10px] font-mono uppercase tracking-[0.15em] ${badge.className}`}>
+        <span className={`shrink-0 inline-flex items-center px-1.5 py-[2px] rounded-md border text-[9px] font-mono uppercase tracking-[0.12em] ${badge.className}`}>
           {badge.label}
         </span>
         {isMine && (
