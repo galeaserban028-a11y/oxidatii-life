@@ -315,7 +315,11 @@ function FriendsList({ onMessage }: { onMessage: (id: string) => void }) {
 }
 
 const REVEAL = 88;
-const TRIGGER = 60;
+const TRIGGER = 80; // more intentional open threshold
+const VELOCITY_THRESHOLD = 1.2; // px/ms — fast left flick also opens
+const VISIBILITY_THRESHOLD = 28; // show delete button only after deliberate left swipe
+
+
 
 function ConversationRow({
   conv,
@@ -373,10 +377,25 @@ function ConversationRow({
       applyDx(open ? -REVEAL : 0);
       return;
     }
-    const willOpen = currentDx.current < -TRIGGER;
+    const elapsed = Date.now() - start.current.t;
+    const base = open ? -REVEAL : 0;
+    const travel = Math.abs(currentDx.current - base);
+    const velocity = elapsed > 0 ? travel / elapsed : 0;
+    const movingLeft = currentDx.current < base;
+
+    let willOpen: boolean;
+    if (open) {
+      // Stay open unless pulled back past the halfway point
+      willOpen = currentDx.current < -(REVEAL / 2);
+    } else {
+      // Open only on deliberate distance or a fast left flick
+      willOpen = currentDx.current < -TRIGGER || (movingLeft && velocity > VELOCITY_THRESHOLD);
+    }
+
     setOpen(willOpen);
     applyDx(willOpen ? -REVEAL : 0);
   }
+
   function onClickRow(e: React.MouseEvent) {
     if (moved.current) {
       e.preventDefault();
@@ -421,9 +440,10 @@ function ConversationRow({
       {/* Delete action behind — visible only while swiping left or when row is open */}
       <div
         className={`absolute inset-y-0 right-0 flex items-stretch transition-opacity duration-200 ${
-          open || dx < 0 ? "opacity-100" : "opacity-0 pointer-events-none"
+          open || dx < -VISIBILITY_THRESHOLD ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
+
         <button
           onClick={handleDelete}
           disabled={deleting}
