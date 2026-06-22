@@ -239,6 +239,7 @@ function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
 
 function MapPage() {
   const { user, profile, refreshProfile } = useAuth();
+  const search = Route.useSearch();
 
   // filter state
   const [query, setQuery] = useState("");
@@ -251,6 +252,7 @@ function MapPage() {
   const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
   const [autoLocated, setAutoLocated] = useState(false);
+  const focusedFromSearchRef = useRef<string | null>(null);
 
   const { data: citiesData, isLoading } = useQuery({
     queryKey: ["cities"],
