@@ -5,11 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Flame, MapPin, Users, Plus, MoreHorizontal, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 
 import { PromoTakeover } from "@/components/app/PromoTakeover";
 import { NightWrapCard } from "@/components/app/NightWrapCard";
 import { getOrCreateNightWrap } from "@/lib/night-wrap.functions";
+import VideoTile from "@/components/app/VideoTile";
+import PhotoZoom from "@/components/app/PhotoZoom";
 
 type FeedItem = {
   id: string;
