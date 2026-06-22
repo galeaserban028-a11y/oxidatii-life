@@ -248,9 +248,9 @@ export function BottomTabBar() {
       <div
         className="pointer-events-auto flex items-center justify-between"
         style={{
-          gap: shrunk ? 6 : 10,
-          padding: shrunk ? "6px 14px" : "10px 18px",
-          width: "min(96%, 600px)",
+          gap: shrunk ? 2 : 4,
+          padding: shrunk ? "6px 10px" : "8px 12px",
+          width: "min(98%, 600px)",
           background: "rgba(15, 13, 28, 0.85)",
           backdropFilter: "blur(14px)",
           WebkitBackdropFilter: "blur(14px)",
