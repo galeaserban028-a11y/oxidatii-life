@@ -101,11 +101,13 @@ function ChatPage() {
 
   // Realtime new messages
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
+    const userId = user.id;
+    const channelName = `chat-${id}:${userId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
     const ch = supabase
-      .channel(`chat-${id}`)
+      .channel(channelName)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` }, (payload) => {
-        qc.setQueryData(["chat", id, user.id], (old: any) => {
+        qc.setQueryData(["chat", id, userId], (old: any) => {
           if (!old) return old;
           const m = payload.new as Msg;
           if (old.messages.some((x: Msg) => x.id === m.id)) return old;
@@ -114,7 +116,7 @@ function ChatPage() {
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [id, user, qc]);
+  }, [id, user?.id, qc]);
 
   // Auto-grow textarea
   useEffect(() => {

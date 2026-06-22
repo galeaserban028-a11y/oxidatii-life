@@ -59,8 +59,9 @@ export default function VenueNightChat({
   }, [venueId, date]);
 
   useEffect(() => {
+    const channelName = `vnc:${venueId}:${date}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
     const ch = supabase
-      .channel(`vnc:${venueId}:${date}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "venue_night_chats", filter: `venue_id=eq.${venueId}` },

@@ -24,8 +24,8 @@ const tabs: Tab[] = [
 ];
 
 // Tween-ed transitions: only the cheap, GPU-accelerated props.
-const FAST_TR = "transform 0.25s cubic-bezier(0.4,0,0.2,1), color 0.25s, opacity 0.25s";
-const SHRINK_TR = "max-height 0.25s ease, margin-top 0.25s ease, opacity 0.2s ease";
+const FAST_TR = "transform 0.18s cubic-bezier(0.4,0,0.2,1), color 0.18s, opacity 0.18s";
+const SHRINK_TR = "max-height 0.18s ease, margin-top 0.18s ease, opacity 0.14s ease";
 
 function useUnreadCount() {
   const { user } = useAuth();
@@ -72,8 +72,9 @@ function useUnreadCount() {
 
     compute();
 
+    const channelName = `bottombar-inbox:${user.id}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
     const ch = supabase
-      .channel("bottombar-inbox")
+      .channel(channelName)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
         const cid = (payload.new as any)?.conversation_id;
         // Only react to messages in conversations we are part of.
@@ -252,12 +253,12 @@ export function BottomTabBar() {
           padding: shrunk ? "6px 10px" : "8px 12px",
           width: "min(98%, 600px)",
           background: "rgba(15, 13, 28, 0.85)",
-          backdropFilter: "blur(14px)",
-          WebkitBackdropFilter: "blur(14px)",
+          backdropFilter: "none",
+          WebkitBackdropFilter: "none",
           borderRadius: shrunk ? 22 : 28,
           border: "1px solid rgba(255, 255, 255, 0.08)",
           boxShadow: "0 10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
-          transition: "padding 0.3s, border-radius 0.3s",
+          transition: "padding 0.2s, border-radius 0.2s",
           transform: "translateZ(0)",
           overflow: "visible",
         }}
@@ -277,9 +278,8 @@ export function BottomTabBar() {
               marginTop: centerMargin,
               background: "linear-gradient(135deg, #ff3d8b, #ff3d8b, #c724ff)",
               backgroundSize: "200% 200%",
-              animation: "gradient-shift 5s ease infinite",
               boxShadow: "0 8px 25px rgba(255,82,82,0.4), 0 0 0 4px rgba(15,13,28,0.78)",
-              transition: "width 0.3s, height 0.3s, margin-top 0.3s, border-radius 0.3s",
+              transition: "width 0.2s, height 0.2s, margin-top 0.2s, border-radius 0.2s",
               cursor: "pointer",
             }}
           >

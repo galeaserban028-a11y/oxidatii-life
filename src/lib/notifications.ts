@@ -30,8 +30,9 @@ export function useNotifications(userId?: string | null) {
   // Live subscription — keep list fresh
   useEffect(() => {
     if (!userId) return;
+    const channelName = `notifications:${userId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
     const channel = supabase
-      .channel(`notifications:${userId}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         {
@@ -86,8 +87,9 @@ export function useUnreadNotificationsCount(userId?: string | null) {
 
   useEffect(() => {
     if (!userId) return;
+    const channelName = `notif-count:${userId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
     const channel = supabase
-      .channel(`notif-count:${userId}`)
+      .channel(channelName)
       .on(
         "postgres_changes",
         {

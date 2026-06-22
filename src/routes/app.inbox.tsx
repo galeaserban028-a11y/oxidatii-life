@@ -61,18 +61,20 @@ function InboxPage() {
   });
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
+    const userId = user.id;
+    const channelName = `inbox-stream:${userId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
     const ch = supabase
-      .channel("inbox-stream")
+      .channel(channelName)
       .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
-        qc.invalidateQueries({ queryKey: ["inbox", user.id] });
+        qc.invalidateQueries({ queryKey: ["inbox", userId] });
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_members", filter: `user_id=eq.${user.id}` }, () => {
-        qc.invalidateQueries({ queryKey: ["inbox", user.id] });
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_members", filter: `user_id=eq.${userId}` }, () => {
+        qc.invalidateQueries({ queryKey: ["inbox", userId] });
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [user, qc]);
+  }, [user?.id, qc]);
 
   const dms = useMemo(() => conversations.filter((c: any) => c.kind === "dm"), [conversations]);
   const groups = useMemo(() => conversations.filter((c: any) => c.kind !== "dm"), [conversations]);
