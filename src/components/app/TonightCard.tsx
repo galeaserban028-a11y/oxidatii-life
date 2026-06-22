@@ -139,6 +139,7 @@ export default function TonightCard() {
       const { count: c } = await supabase
         .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
       setCount(c ?? 0);
+      await refreshHotVenues();
     } catch (e: any) {
       toast.error(e.message ?? "Eroare");
     } finally {
@@ -155,6 +156,7 @@ export default function TonightCard() {
     const { count: c } = await supabase
       .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
     setCount(c ?? 0);
+    await refreshHotVenues();
   }
 
   if (!user || !showCard) return null;
@@ -233,6 +235,39 @@ export default function TonightCard() {
             <button onClick={save} disabled={saving} className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#ffea00] to-[#ff3d8b] text-black font-bold text-[11px] uppercase tracking-widest disabled:opacity-50">
               {saving ? "..." : "salvează"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {hotVenues.length > 0 && (
+        <div className="relative mt-5 pt-4 border-t border-white/10">
+          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-2">
+            <Users size={11} /> unde se adună
+          </div>
+          <div className="space-y-1.5">
+            {hotVenues.map(v => {
+              const mine = myIntent?.venue_id === v.id;
+              return (
+                <div key={v.id} className="flex items-center gap-2 rounded-xl bg-white/[0.03] border border-white/5 px-3 py-2">
+                  <MapPin size={13} className="text-[#ffea00] shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[13px] text-white truncate">{v.name}</div>
+                    <div className="text-[10px] text-white/40">{v.count} {v.count === 1 ? "persoană" : "persoane"}</div>
+                  </div>
+                  {mine ? (
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#ffea00]">aici ești</span>
+                  ) : (
+                    <button
+                      onClick={() => joinVenue(v)}
+                      disabled={joining === v.id}
+                      className="h-8 px-3 rounded-full bg-[#ffea00] text-black text-[10px] font-bold uppercase tracking-widest active:scale-95 transition disabled:opacity-50 flex items-center gap-1"
+                    >
+                      <Plus size={11} strokeWidth={3} /> {joining === v.id ? "..." : "mă bag"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
