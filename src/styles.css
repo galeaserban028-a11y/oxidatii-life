@@ -542,7 +542,7 @@
     50% { box-shadow: 0 0 36px -8px rgba(232,138,171,0.34); }
   }
   .cherry-glow-anim { animation: cherry-breathe 4s ease-in-out infinite; }
-
+}
 
 /* ── MapLibre controls — OXI dark glass aesthetic ── */
 .maplibregl-ctrl-group {
