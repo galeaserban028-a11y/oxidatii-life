@@ -204,17 +204,17 @@ export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
             type="button"
             onClick={toggleMute}
             aria-label={muted ? "Activează sunetul" : "Oprește sunetul"}
-            className="shrink-0 size-10 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg grid place-items-center text-white active:scale-90 transition"
+            className="vt-rise shrink-0 size-10 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg grid place-items-center text-white transition-all duration-300 ease-out hover:bg-white/20 hover:border-white/40 hover:scale-105 hover:shadow-[0_0_18px_rgba(255,255,255,0.25)] active:scale-90"
           >
             {muted ? (
-              <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+              <svg viewBox="0 0 24 24" className="size-[18px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
             ) : (
-              <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              <svg viewBox="0 0 24 24" className="size-[18px] transition-transform duration-300" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
             )}
           </button>
 
           {/* Scrub bar + times */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 vt-rise vt-rise-delay">
             <div
               ref={barRef}
               onPointerDown={onPointerDown}
@@ -222,18 +222,18 @@ export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
               onPointerUp={onPointerUp}
               onPointerCancel={onPointerUp}
               onClick={(e) => e.stopPropagation()}
-              className="relative py-3 touch-none cursor-pointer select-none"
+              className="group/bar relative py-3 touch-none cursor-pointer select-none"
               style={{ touchAction: "none" }}
             >
-              <div className={`relative w-full rounded-full bg-white/20 ${scrubbing ? "h-[6px]" : "h-[4px]"} transition-[height]`}>
+              <div className={`relative w-full rounded-full bg-white/20 transition-[height,background-color] duration-300 ease-out group-hover/bar:bg-white/30 ${scrubbing ? "h-[6px]" : "h-[4px] group-hover/bar:h-[6px]"}`}>
                 <div
                   ref={fillRef}
-                  className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-400 via-rose-500 to-rose-600 shadow-[0_0_15px_rgba(244,63,94,0.45)]"
+                  className="vt-fill-glow absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-400 via-rose-500 to-rose-600 transition-[width] duration-150 ease-out"
                   style={{ width: "0%", willChange: "width" }}
                 />
                 <div
                   ref={knobRef}
-                  className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white border-2 border-rose-500 shadow-[0_0_12px_rgba(255,255,255,0.8)] ${scrubbing ? "size-4" : "size-3"}`}
+                  className={`vt-knob-glow absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white border-2 border-rose-500 transition-[width,height,transform] duration-200 ease-out group-hover/bar:scale-110 ${scrubbing ? "size-4 scale-110" : "size-3"}`}
                   style={{ left: "0%", willChange: "left" }}
                 />
               </div>
@@ -248,6 +248,7 @@ export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
