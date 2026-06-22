@@ -228,7 +228,7 @@ export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onClick={(e) => e.stopPropagation()}
-        className="absolute left-0 right-0 px-3 pb-2 pt-5 touch-none cursor-pointer select-none"
+        className="absolute left-[64px] right-0 pl-3 pr-3 pb-2 pt-5 touch-none cursor-pointer select-none"
         style={{ touchAction: "none", bottom: `calc(${bottomInset}px + env(safe-area-inset-bottom))` }}
       >
 
