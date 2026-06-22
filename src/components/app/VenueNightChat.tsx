@@ -34,13 +34,19 @@ export default function VenueNightChat({
     (async () => {
       const { data } = await supabase
         .from("venue_night_chats")
-        .select("id, user_id, body, created_at, author:profiles!venue_night_chats_user_id_fkey(handle, display_name, avatar_url)")
+        .select("id, user_id, body, created_at")
         .eq("venue_id", venueId)
         .eq("intent_date", date)
         .order("created_at", { ascending: true })
         .limit(200);
       if (cancel) return;
-      setMsgs((data as any) ?? []);
+      const rows = (data as Msg[]) ?? [];
+      const ids = Array.from(new Set(rows.map((m) => m.user_id)));
+      const { data: profiles } = ids.length
+        ? await supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", ids)
+        : { data: [] as any[] };
+      const profById = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+      setMsgs(rows.map((m) => ({ ...m, author: profById.get(m.user_id) ?? null })));
       requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: 999999 }));
     })();
     return () => { cancel = true; };
@@ -73,13 +79,17 @@ export default function VenueNightChat({
     if (!user || !body.trim()) return;
     setSending(true);
     try {
-      const { error } = await supabase.from("venue_night_chats").insert({
+      const { data, error } = await supabase.from("venue_night_chats").insert({
         venue_id: venueId,
         intent_date: date,
         user_id: user.id,
         body: body.trim().slice(0, 240),
-      } as any);
+      } as any).select("id, user_id, body, created_at").single();
       if (error) throw error;
+      if (data) {
+        setMsgs((prev) => prev.some(m => m.id === data.id) ? prev : [...prev, { ...(data as Msg), author: null }]);
+        requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: 999999, behavior: "smooth" }));
+      }
       setBody("");
     } catch (e: any) {
       toast.error(e.message ?? "Eroare la trimitere");

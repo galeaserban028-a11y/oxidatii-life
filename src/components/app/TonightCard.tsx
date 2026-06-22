@@ -15,6 +15,17 @@ function localDateBuc(): string {
   return `${y}-${m}-${d}`;
 }
 
+function slugifyVenueName(name: string) {
+  const base = name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 42) || "loc";
+  return `${base}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
 export default function TonightCard() {
   const { user, profile } = useAuth();
   const [today, setToday] = useState<string>(localDateBuc());
@@ -27,8 +38,10 @@ export default function TonightCard() {
   const [pickedVenue, setPickedVenue] = useState<{ id: string; name: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [hotVenues, setHotVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
+  const [suggestedVenues, setSuggestedVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
   const [joining, setJoining] = useState<string | null>(null);
   const [follows, setFollows] = useState<Set<string>>(new Set());
+  const [followedVenues, setFollowedVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
   const [chatVenue, setChatVenue] = useState<{ id: string; name: string } | null>(null);
 
   // Show card only after 16:00 local time
@@ -89,6 +102,21 @@ export default function TonightCard() {
   }
   useEffect(() => { if (user) refreshHotVenues(); }, [user?.id, today]);
 
+  useEffect(() => {
+    if (!user || !(profile as any)?.city_id) return;
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from("venues")
+        .select("id, name")
+        .eq("city_id", (profile as any).city_id)
+        .order("created_at", { ascending: false })
+        .limit(8);
+      if (!cancel) setSuggestedVenues(((data ?? []) as any[]).map((v) => ({ ...v, count: 0 })));
+    })();
+    return () => { cancel = true; };
+  }, [user?.id, (profile as any)?.city_id]);
+
   // Load followed venues
   useEffect(() => {
     if (!user) return;
@@ -98,12 +126,18 @@ export default function TonightCard() {
         .select("venue_id, venue:venues(id, name)")
         .eq("user_id", user.id);
       setFollows(new Set((data ?? []).map((r: any) => r.venue_id)));
+      setFollowedVenues((data ?? []).map((r: any) => ({ id: r.venue_id, name: r.venue?.name ?? "Loc", count: 0 })));
     })();
   }, [user?.id]);
 
   // Merge followed venues into the displayed list (suggestions)
   const displayedVenues = useMemo(() => {
-    const merged = [...hotVenues];
+    const byId = new Map<string, { id: string; name: string; count: number }>();
+    [...suggestedVenues, ...followedVenues, ...hotVenues].forEach((v) => {
+      const prev = byId.get(v.id);
+      byId.set(v.id, prev ? { ...prev, count: Math.max(prev.count, v.count) } : v);
+    });
+    const merged = [...byId.values()];
     // sort: followed first, then by count
     return merged.sort((a, b) => {
       const fa = follows.has(a.id) ? 1 : 0;
@@ -111,7 +145,7 @@ export default function TonightCard() {
       if (fa !== fb) return fb - fa;
       return b.count - a.count;
     });
-  }, [hotVenues, follows]);
+  }, [hotVenues, suggestedVenues, followedVenues, follows]);
 
   async function toggleFollow(v: { id: string; name: string }) {
     if (!user) return;
@@ -120,19 +154,37 @@ export default function TonightCard() {
     if (isFollowing) {
       next.delete(v.id);
       setFollows(next);
+      setFollowedVenues((prev) => prev.filter((item) => item.id !== v.id));
       await supabase.from("venue_follows").delete().eq("user_id", user.id).eq("venue_id", v.id);
     } else {
       next.add(v.id);
       setFollows(next);
+      setFollowedVenues((prev) => prev.some((item) => item.id === v.id) ? prev : [...prev, { ...v, count: 0 }]);
       const { error } = await supabase.from("venue_follows").insert({ user_id: user.id, venue_id: v.id } as any);
       if (error) {
         next.delete(v.id);
         setFollows(new Set(next));
+        setFollowedVenues((prev) => prev.filter((item) => item.id !== v.id));
         toast.error("Nu am putut urmări locul");
       } else {
         toast.success(`Urmărești ${v.name}`);
       }
     }
+  }
+
+  async function ensurePickedVenue() {
+    if (pickedVenue) return pickedVenue;
+    const name = venueQuery.trim();
+    if (!name) return null;
+    const cityId = (profile as any)?.city_id;
+    if (!cityId) throw new Error("Alege orașul din profil înainte să adaugi locul");
+    const { data, error } = await supabase
+      .from("venues")
+      .insert({ city_id: cityId, name, slug: slugifyVenueName(name) } as any)
+      .select("id, name")
+      .single();
+    if (error) throw error;
+    return data as { id: string; name: string };
   }
 
   async function joinVenue(v: { id: string; name: string }) {
@@ -175,15 +227,17 @@ export default function TonightCard() {
     if (!user) return;
     setSaving(true);
     try {
+      const venue = await ensurePickedVenue();
       const { error } = await supabase.from("daily_intents").upsert({
         user_id: user.id,
         intent_date: today,
-        venue_id: pickedVenue?.id ?? null,
+        venue_id: venue?.id ?? null,
         note: note.trim() || null,
       } as any, { onConflict: "user_id,intent_date" });
       if (error) throw error;
       toast.success("Ai marcat seara!");
-      setMyIntent({ id: "_", venue_id: pickedVenue?.id ?? null, note: note.trim() || null, venue: pickedVenue ? { name: pickedVenue.name } : null });
+      setMyIntent({ id: "_", venue_id: venue?.id ?? null, note: note.trim() || null, venue: venue ? { name: venue.name } : null });
+      if (venue) setPickedVenue(venue);
       setOpen(false);
       const { count: c } = await supabase
         .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
@@ -250,6 +304,15 @@ export default function TonightCard() {
           className="relative mt-4 w-full h-12 rounded-2xl bg-gradient-to-r from-[#ffea00] to-[#ff3d8b] text-black font-bold text-[11px] uppercase tracking-[0.2em] active:scale-[0.98] transition"
         >
           mă bag în seara asta ({count})
+        </button>
+      )}
+
+      {myIntent && !myIntent.venue_id && !open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="relative mt-4 w-full h-12 rounded-2xl bg-[#ffea00] text-black font-bold text-[11px] uppercase tracking-[0.2em] active:scale-[0.98] transition"
+        >
+          alege locul pentru chat
         </button>
       )}
 
