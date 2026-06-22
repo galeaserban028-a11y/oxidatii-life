@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
@@ -13,6 +13,9 @@ import { tierConfig } from "@/lib/biz/tiers";
 
 export const Route = createFileRoute("/app/map")({
   head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
+  validateSearch: (search: Record<string, unknown>): { venue?: string } => ({
+    venue: typeof search.venue === "string" ? search.venue : undefined,
+  }),
   component: MapPage,
 });
 
@@ -236,6 +239,7 @@ function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
 
 function MapPage() {
   const { user, profile, refreshProfile } = useAuth();
+  const search = Route.useSearch();
 
   // filter state
   const [query, setQuery] = useState("");
@@ -248,6 +252,7 @@ function MapPage() {
   const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
   const [autoLocated, setAutoLocated] = useState(false);
+  const focusedFromSearchRef = useRef<string | null>(null);
 
   const { data: citiesData, isLoading } = useQuery({
     queryKey: ["cities"],
@@ -284,6 +289,19 @@ function MapPage() {
       return all.map(v => ({ ...v, lat: v.lat === null ? null : Number(v.lat), lng: v.lng === null ? null : Number(v.lng) }));
     },
   });
+
+  // Focus map on a venue passed via ?venue=<id> in the URL.
+  useEffect(() => {
+    const id = search.venue;
+    if (!id || !venues.length) return;
+    if (focusedFromSearchRef.current === id) return;
+    const v = venues.find((x) => x.id === id);
+    if (v && v.lat != null && v.lng != null) {
+      setFocusCity({ lat: Number(v.lat), lng: Number(v.lng), zoom: 16 });
+      focusedFromSearchRef.current = id;
+    }
+  }, [search.venue, venues]);
+
 
   // Active venue-linked promo campaigns → "shining" pins on the map.
   // Pulls only the data needed to recognize a promoted venue + tint its halo

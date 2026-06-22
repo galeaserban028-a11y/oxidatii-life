@@ -5,11 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Flame, MapPin, Users, Plus, MoreHorizontal, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 
 import { PromoTakeover } from "@/components/app/PromoTakeover";
 import { NightWrapCard } from "@/components/app/NightWrapCard";
 import { getOrCreateNightWrap } from "@/lib/night-wrap.functions";
+import VideoTile from "@/components/app/VideoTile";
+import PhotoZoom from "@/components/app/PhotoZoom";
 
 type FeedItem = {
   id: string;
@@ -388,6 +391,7 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const [zoomOpen, setZoomOpen] = useState(false);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -440,9 +444,20 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
             <Link to="/app/user/$id" params={{ id: item.user_id }} className="font-display text-sm truncate">{handle}</Link>
             {badge.key === "legendar" && <span className="text-neon-crimson">⚡</span>}
           </div>
-          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
-            📍 {venue?.name ?? "—"} · {timeAgo(item.created_at)}
-          </div>
+          {venue?.name && item.venue_id ? (
+            <Link
+              to="/app/map"
+              search={{ venue: item.venue_id }}
+              className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate flex items-center gap-1 active:scale-95 transition hover:text-white"
+              aria-label={`Vezi ${venue.name} pe hartă`}
+            >
+              <MapPin size={10} /> <span className="truncate underline-offset-2 hover:underline">{venue.name}</span> · {timeAgo(item.created_at)}
+            </Link>
+          ) : (
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
+              📍 — · {timeAgo(item.created_at)}
+            </div>
+          )}
         </div>
         <span className={`shrink-0 inline-flex items-center px-2 py-[3px] rounded-md border text-[10px] font-mono uppercase tracking-[0.15em] ${badge.className}`}>
           {badge.label}
@@ -473,22 +488,28 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
       </div>
 
       {/* Media */}
-      <div className="relative bg-black">
+      <div className="relative bg-black aspect-[4/5] w-full">
         {item.media_type === "video" ? (
-          <video src={item.photo_url} className="w-full aspect-[4/5] object-cover" playsInline muted loop preload="metadata" />
+          <VideoTile src={item.photo_url} bottomInset={8} />
         ) : (
-          <img src={item.photo_url} alt={item.caption ?? ""} className="w-full aspect-[4/5] object-cover" loading="lazy" />
-        )}
-        {item.media_type === "video" && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="size-14 rounded-full bg-white/90 text-black flex items-center justify-center text-xl shadow-xl">▶</div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setZoomOpen(true)}
+            className="block w-full h-full"
+            aria-label="Mărește poza"
+          >
+            <img src={item.photo_url} alt={item.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
+          </button>
         )}
       </div>
 
       {/* Caption */}
       {item.caption && (
         <div className="px-4 pb-3 pt-3 text-sm leading-snug">{item.caption}</div>
+      )}
+      {zoomOpen && item.media_type !== "video" && typeof document !== "undefined" && createPortal(
+        <PhotoZoom src={item.photo_url} alt={item.caption ?? ""} onClose={() => setZoomOpen(false)} />,
+        document.body
       )}
     </article>
   );
