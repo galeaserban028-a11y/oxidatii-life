@@ -288,23 +288,39 @@ export default function TonightCard() {
         </div>
       )}
 
-      {hotVenues.length > 0 && (
+      {displayedVenues.length > 0 && (
         <div className="relative mt-5 pt-4 border-t border-white/10">
           <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 mb-2">
             <Users size={11} /> unde se adună
           </div>
           <div className="space-y-1.5">
-            {hotVenues.map(v => {
+            {displayedVenues.map(v => {
               const mine = myIntent?.venue_id === v.id;
+              const followed = follows.has(v.id);
               return (
                 <div key={v.id} className="flex items-center gap-2 rounded-xl bg-white/[0.03] border border-white/5 px-3 py-2">
                   <MapPin size={13} className="text-[#ffea00] shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-[13px] text-white truncate">{v.name}</div>
+                    <div className="text-[13px] text-white truncate flex items-center gap-1.5">
+                      {v.name}
+                      {followed && <span className="text-[8px] font-mono uppercase tracking-widest text-[#ff3d8b]">★</span>}
+                    </div>
                     <div className="text-[10px] text-white/40">{v.count} {v.count === 1 ? "persoană" : "persoane"}</div>
                   </div>
+                  <button
+                    onClick={() => toggleFollow(v)}
+                    className={`h-8 w-8 rounded-full flex items-center justify-center transition ${followed ? "bg-[#ff3d8b]/20 text-[#ff3d8b]" : "bg-white/5 text-white/40 hover:text-white/70"}`}
+                    aria-label={followed ? "Nu mai urmări" : "Urmărește"}
+                  >
+                    <Heart size={13} fill={followed ? "currentColor" : "none"} />
+                  </button>
                   {mine ? (
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#ffea00]">aici ești</span>
+                    <button
+                      onClick={() => setChatVenue(v)}
+                      className="h-8 px-3 rounded-full bg-white/10 text-white text-[10px] font-bold uppercase tracking-widest active:scale-95 transition flex items-center gap-1"
+                    >
+                      <MessageCircle size={11} /> chat
+                    </button>
                   ) : (
                     <button
                       onClick={() => joinVenue(v)}
@@ -319,6 +335,15 @@ export default function TonightCard() {
             })}
           </div>
         </div>
+      )}
+
+      {chatVenue && (
+        <VenueNightChat
+          venueId={chatVenue.id}
+          venueName={chatVenue.name}
+          date={today}
+          onClose={() => setChatVenue(null)}
+        />
       )}
     </div>
   );
