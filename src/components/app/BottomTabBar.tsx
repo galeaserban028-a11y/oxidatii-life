@@ -125,7 +125,7 @@ const TabItem = memo(function TabItem({ tab, active, shrunk, iconSize, badge = 0
   return (
     <Link
       to={tab.to as any}
-      className="tab-press flex flex-col items-center flex-1 min-w-0"
+      className="tab-press flex flex-col items-center justify-center flex-1 min-w-0"
       style={{
         color: active ? "#ff3d8b" : "#8e8c99",
         fontSize: 10,
@@ -135,7 +135,9 @@ const TabItem = memo(function TabItem({ tab, active, shrunk, iconSize, badge = 0
         transform: active ? "translateY(-2px)" : "translateY(0)",
         textShadow: active ? "0 0 10px rgba(255,107,0,0.6)" : undefined,
         transition: FAST_TR,
-        padding: "4px 0",
+        padding: "4px 2px",
+        minHeight: 44,
+        minWidth: 44,
       }}
     >
       <div className="relative">
