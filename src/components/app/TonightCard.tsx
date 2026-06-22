@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { Sparkles, MapPin, X, Users, Plus } from "lucide-react";
+import { Sparkles, MapPin, X, Users, Plus, Heart, MessageCircle } from "lucide-react";
+import VenueNightChat from "./VenueNightChat";
 
 function localDateBuc(): string {
   // YYYY-MM-DD in Bucharest tz
@@ -27,6 +28,8 @@ export default function TonightCard() {
   const [saving, setSaving] = useState(false);
   const [hotVenues, setHotVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
   const [joining, setJoining] = useState<string | null>(null);
+  const [follows, setFollows] = useState<Set<string>>(new Set());
+  const [chatVenue, setChatVenue] = useState<{ id: string; name: string } | null>(null);
 
   // Show card only after 16:00 local time
   const showCard = useMemo(() => {
@@ -85,6 +88,52 @@ export default function TonightCard() {
     setHotVenues([...map.values()].sort((a, b) => b.count - a.count).slice(0, 5));
   }
   useEffect(() => { if (user) refreshHotVenues(); }, [user?.id, today]);
+
+  // Load followed venues
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("venue_follows")
+        .select("venue_id, venue:venues(id, name)")
+        .eq("user_id", user.id);
+      setFollows(new Set((data ?? []).map((r: any) => r.venue_id)));
+    })();
+  }, [user?.id]);
+
+  // Merge followed venues into the displayed list (suggestions)
+  const displayedVenues = useMemo(() => {
+    const merged = [...hotVenues];
+    // sort: followed first, then by count
+    return merged.sort((a, b) => {
+      const fa = follows.has(a.id) ? 1 : 0;
+      const fb = follows.has(b.id) ? 1 : 0;
+      if (fa !== fb) return fb - fa;
+      return b.count - a.count;
+    });
+  }, [hotVenues, follows]);
+
+  async function toggleFollow(v: { id: string; name: string }) {
+    if (!user) return;
+    const isFollowing = follows.has(v.id);
+    const next = new Set(follows);
+    if (isFollowing) {
+      next.delete(v.id);
+      setFollows(next);
+      await supabase.from("venue_follows").delete().eq("user_id", user.id).eq("venue_id", v.id);
+    } else {
+      next.add(v.id);
+      setFollows(next);
+      const { error } = await supabase.from("venue_follows").insert({ user_id: user.id, venue_id: v.id } as any);
+      if (error) {
+        next.delete(v.id);
+        setFollows(new Set(next));
+        toast.error("Nu am putut urmări locul");
+      } else {
+        toast.success(`Urmărești ${v.name}`);
+      }
+    }
+  }
 
   async function joinVenue(v: { id: string; name: string }) {
     if (!user) return;
