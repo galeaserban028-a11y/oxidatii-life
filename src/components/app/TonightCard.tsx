@@ -265,44 +265,39 @@ export default function TonightCard() {
   if (!user || !showCard) return null;
 
   return (
-    <div
-      className="relative overflow-hidden rounded-3xl border border-white/10 p-5"
-      style={{
-        background: "linear-gradient(135deg, rgba(255,234,0,0.10), rgba(199,36,255,0.10) 60%, transparent)",
-      }}
-    >
-      <div className="absolute -top-10 -right-10 h-28 w-28 rounded-full bg-[#ffea00]/20 blur-3xl pointer-events-none" />
+    <div className="tonight-card cherry-glow-anim animate-fade-in">
+      {/* Cherry glow orbs */}
+      <div className="pointer-events-none absolute -top-10 -right-10 h-36 w-36 rounded-full blur-[64px] opacity-60" style={{ background: "var(--cherry-400)" }} />
+      <div className="pointer-events-none absolute -bottom-8 -left-8 h-28 w-28 rounded-full blur-[52px] opacity-40" style={{ background: "var(--cherry-600)" }} />
+
       <div className="relative flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-[#ffea00]">
+          <div className="tonight-label flex items-center gap-2">
             <Sparkles size={12} /> diseară
           </div>
-          <h3 className="mt-1 text-[26px] leading-[0.95] text-white" style={{ fontFamily: "'Instrument Serif', serif" }}>
+          <h3 className="tonight-title mt-2 text-[28px]">
             {myIntent ? (
-              <>Te-ai băgat. <span className="italic text-[#ffea00]">{count}</span> persoane ies diseară.</>
+              <>Te-ai băgat. <span style={{ color: "var(--cherry-400)" }}>{count}</span> persoane ies diseară.</>
             ) : (
-              <>Diseară unde <span className="italic">ieși</span>?</>
+              <>Diseară unde <span style={{ color: "var(--cherry-400)", fontStyle: "italic" }}>ieși</span>?</>
             )}
           </h3>
           {myIntent && (myIntent.venue?.name || myIntent.note) && (
-            <div className="mt-2 text-[12px] text-white/70 flex items-center gap-1.5">
-              {myIntent.venue?.name && <><MapPin size={12} className="text-[#ffea00]" /> {myIntent.venue.name}</>}
+            <div className="mt-2 text-[12px] text-white/70 flex items-center gap-1.5" style={{ fontFamily: "'Barlow', sans-serif" }}>
+              {myIntent.venue?.name && <><MapPin size={12} style={{ color: "var(--cherry-400)" }} /> {myIntent.venue.name}</>}
               {myIntent.note && <span className="text-white/50">· {myIntent.note}</span>}
             </div>
           )}
         </div>
         {myIntent ? (
-          <button onClick={cancel} className="h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 flex items-center justify-center" aria-label="Anulează">
+          <button onClick={cancel} className="tonight-icon-btn" aria-label="Anulează">
             <X size={14} />
           </button>
         ) : null}
       </div>
 
       {!myIntent && !showVenues && (
-        <button
-          onClick={() => setShowVenues(true)}
-          className="relative mt-4 w-full h-12 rounded-2xl bg-gradient-to-r from-[#ffea00] to-[#ff3d8b] text-black font-bold text-[11px] uppercase tracking-[0.2em] active:scale-[0.98] transition"
-        >
+        <button onClick={() => setShowVenues(true)} className="tonight-btn mt-5">
           mă bag în seara asta ({count})
         </button>
       )}
@@ -310,25 +305,30 @@ export default function TonightCard() {
       {myIntent && !myIntent.venue_id && !showVenues && (
         <button
           onClick={() => setShowVenues(true)}
-          className="relative mt-4 w-full h-12 rounded-2xl bg-[#ffea00] text-black font-bold text-[11px] uppercase tracking-[0.2em] active:scale-[0.98] transition"
+          className="tonight-btn mt-5"
+          style={{ background: "var(--cherry-400)", boxShadow: "0 12px 30px -10px rgba(232,138,171,0.35)" }}
         >
           alege locul pentru chat
         </button>
       )}
 
       {showVenues && (
-        <div className="relative mt-4 space-y-2">
+        <div className="relative mt-5 space-y-2">
           <div className="relative">
             <input
               value={pickedVenue?.name ?? venueQuery}
               onChange={(e) => { setVenueQuery(e.target.value); setPickedVenue(null); }}
               placeholder="Unde? (opțional)"
-              className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#ffea00]/40"
+              className="tonight-input"
             />
             {!pickedVenue && venues.length > 0 && (
-              <div className="absolute z-20 inset-x-0 mt-1 rounded-xl bg-[#0a0a0a] border border-white/10 overflow-hidden">
+              <div className="absolute z-20 inset-x-0 mt-1 rounded-xl border overflow-hidden" style={{ background: "#0f0b10", borderColor: "rgba(248,200,216,0.12)" }}>
                 {venues.map(v => (
-                  <button key={v.id} onClick={() => { setPickedVenue(v); setVenueQuery(""); setVenues([]); }} className="block w-full text-left px-3 py-2 text-sm text-white hover:bg-white/5">
+                  <button
+                    key={v.id}
+                    onClick={() => { setPickedVenue(v); setVenueQuery(""); setVenues([]); }}
+                    className="block w-full text-left px-3 py-2 text-sm text-white hover:bg-white/5 transition"
+                  >
                     {v.name}
                   </button>
                 ))}
@@ -340,11 +340,11 @@ export default function TonightCard() {
             onChange={(e) => setNote(e.target.value)}
             maxLength={60}
             placeholder="vibe (ex: cocktail, șpriț, dans)"
-            className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#ffea00]/40"
+            className="tonight-input"
           />
           <div className="flex gap-2">
-            <button onClick={() => setShowVenues(false)} className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 text-white/70 text-[11px] uppercase tracking-widest">Renunță</button>
-            <button onClick={save} disabled={saving} className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#ffea00] to-[#ff3d8b] text-black font-bold text-[11px] uppercase tracking-widest disabled:opacity-50">
+            <button onClick={() => setShowVenues(false)} className="tonight-ghost-btn">Renunță</button>
+            <button onClick={save} disabled={saving} className="tonight-btn" style={{ height: 44, fontSize: 11, letterSpacing: "0.1em" }}>
               {saving ? "..." : "salvează"}
             </button>
           </div>
@@ -352,16 +352,12 @@ export default function TonightCard() {
       )}
 
       {showVenues && displayedVenues.length > 0 && (
-        <div className="relative mt-5 pt-4 border-t border-white/10">
+        <div className="relative mt-5 pt-4" style={{ borderTop: "1px solid rgba(248,200,216,0.10)" }}>
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.25em] text-white/50">
+            <div className="tonight-label flex items-center gap-2 text-white/50">
               <Users size={11} /> unde se adună
             </div>
-            <button
-              onClick={() => setShowVenues(false)}
-              className="h-7 w-7 rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 flex items-center justify-center"
-              aria-label="Închide"
-            >
+            <button onClick={() => setShowVenues(false)} className="tonight-icon-btn" aria-label="Închide">
               <X size={13} />
             </button>
           </div>
@@ -370,34 +366,31 @@ export default function TonightCard() {
               const mine = myIntent?.venue_id === v.id;
               const followed = follows.has(v.id);
               return (
-                <div key={v.id} className="flex items-center gap-2 rounded-xl bg-white/[0.03] border border-white/5 px-3 py-2">
-                  <MapPin size={13} className="text-[#ffea00] shrink-0" />
+                <div key={v.id} className="tonight-venue-row">
+                  <MapPin size={13} style={{ color: "var(--cherry-400)", flexShrink: 0 }} />
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] text-white truncate flex items-center gap-1.5">
                       {v.name}
-                      {followed && <span className="text-[8px] font-mono uppercase tracking-widest text-[#ff3d8b]">★</span>}
+                      {followed && <span style={{ color: "var(--cherry-400)", fontSize: 8, fontWeight: 700, letterSpacing: "0.05em" }}>★</span>}
                     </div>
                     <div className="text-[10px] text-white/40">{v.count} {v.count === 1 ? "persoană" : "persoane"}</div>
                   </div>
                   <button
                     onClick={() => toggleFollow(v)}
-                    className={`h-8 w-8 rounded-full flex items-center justify-center transition ${followed ? "bg-[#ff3d8b]/20 text-[#ff3d8b]" : "bg-white/5 text-white/40 hover:text-white/70"}`}
+                    className={`tonight-follow-btn ${followed ? "active" : ""}`}
                     aria-label={followed ? "Nu mai urmări" : "Urmărește"}
                   >
                     <Heart size={13} fill={followed ? "currentColor" : "none"} />
                   </button>
                   {mine ? (
-                    <button
-                      onClick={() => setChatVenue(v)}
-                      className="h-8 px-3 rounded-full bg-white/10 text-white text-[10px] font-bold uppercase tracking-widest active:scale-95 transition flex items-center gap-1"
-                    >
+                    <button onClick={() => setChatVenue(v)} className="tonight-chat-btn">
                       <MessageCircle size={11} /> chat
                     </button>
                   ) : (
                     <button
                       onClick={() => joinVenue(v)}
                       disabled={joining === v.id}
-                      className="h-8 px-3 rounded-full bg-[#ffea00] text-black text-[10px] font-bold uppercase tracking-widest active:scale-95 transition disabled:opacity-50 flex items-center gap-1"
+                      className="tonight-join-btn"
                     >
                       <Plus size={11} strokeWidth={3} /> {joining === v.id ? "..." : "mă bag"}
                     </button>
