@@ -15,6 +15,17 @@ function localDateBuc(): string {
   return `${y}-${m}-${d}`;
 }
 
+function slugifyVenueName(name: string) {
+  const base = name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 42) || "loc";
+  return `${base}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
 export default function TonightCard() {
   const { user, profile } = useAuth();
   const [today, setToday] = useState<string>(localDateBuc());
@@ -143,19 +154,37 @@ export default function TonightCard() {
     if (isFollowing) {
       next.delete(v.id);
       setFollows(next);
+      setFollowedVenues((prev) => prev.filter((item) => item.id !== v.id));
       await supabase.from("venue_follows").delete().eq("user_id", user.id).eq("venue_id", v.id);
     } else {
       next.add(v.id);
       setFollows(next);
+      setFollowedVenues((prev) => prev.some((item) => item.id === v.id) ? prev : [...prev, { ...v, count: 0 }]);
       const { error } = await supabase.from("venue_follows").insert({ user_id: user.id, venue_id: v.id } as any);
       if (error) {
         next.delete(v.id);
         setFollows(new Set(next));
+        setFollowedVenues((prev) => prev.filter((item) => item.id !== v.id));
         toast.error("Nu am putut urmări locul");
       } else {
         toast.success(`Urmărești ${v.name}`);
       }
     }
+  }
+
+  async function ensurePickedVenue() {
+    if (pickedVenue) return pickedVenue;
+    const name = venueQuery.trim();
+    if (!name) return null;
+    const cityId = (profile as any)?.city_id;
+    if (!cityId) throw new Error("Alege orașul din profil înainte să adaugi locul");
+    const { data, error } = await supabase
+      .from("venues")
+      .insert({ city_id: cityId, name, slug: slugifyVenueName(name) } as any)
+      .select("id, name")
+      .single();
+    if (error) throw error;
+    return data as { id: string; name: string };
   }
 
   async function joinVenue(v: { id: string; name: string }) {
@@ -198,15 +227,17 @@ export default function TonightCard() {
     if (!user) return;
     setSaving(true);
     try {
+      const venue = await ensurePickedVenue();
       const { error } = await supabase.from("daily_intents").upsert({
         user_id: user.id,
         intent_date: today,
-        venue_id: pickedVenue?.id ?? null,
+        venue_id: venue?.id ?? null,
         note: note.trim() || null,
       } as any, { onConflict: "user_id,intent_date" });
       if (error) throw error;
       toast.success("Ai marcat seara!");
-      setMyIntent({ id: "_", venue_id: pickedVenue?.id ?? null, note: note.trim() || null, venue: pickedVenue ? { name: pickedVenue.name } : null });
+      setMyIntent({ id: "_", venue_id: venue?.id ?? null, note: note.trim() || null, venue: venue ? { name: venue.name } : null });
+      if (venue) setPickedVenue(venue);
       setOpen(false);
       const { count: c } = await supabase
         .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
