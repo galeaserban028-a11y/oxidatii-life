@@ -76,8 +76,8 @@ export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
     const pct = (p * 100).toFixed(3);
     if (fillRef.current) fillRef.current.style.width = `${pct}%`;
     if (knobRef.current) knobRef.current.style.left = `${pct}%`;
-    if (pillRef.current && scrubbingRef.current) {
-      pillRef.current.textContent = `${fmt(t)} / ${fmt(duration || ref.current?.duration || 0)}`;
+    if (pillRef.current) {
+      pillRef.current.textContent = fmt(t);
     }
   };
 
@@ -193,61 +193,66 @@ export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
         onClick={toggleMute}
       />
 
-      {/* Mute button */}
-      <button
-        type="button"
-        onClick={toggleMute}
-        aria-label={muted ? "Activează sunetul" : "Oprește sunetul"}
-        style={{ bottom: `calc(${bottomInset}px + env(safe-area-inset-bottom) - 18px)` }}
-        className="absolute left-3 size-8 rounded-full backdrop-blur-xl bg-black/50 border border-white/15 grid place-items-center text-white active:scale-90 transition pointer-events-auto"
-      >
-
-        {muted ? (
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-        ) : (
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-        )}
-      </button>
-
-      {/* Time pill while scrubbing */}
-      {scrubbing && (
-        <div
-          ref={pillRef}
-          style={{ bottom: `calc(${bottomInset}px + env(safe-area-inset-bottom) + 18px)` }}
-          className="absolute left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full text-[11px] font-medium text-white bg-black/70 backdrop-blur-xl border border-white/15 tabular-nums pointer-events-none"
-        >
-          0:00 / {fmt(duration)}
-        </div>
-      )}
-
-      {/* Custom scrub bar — bigger touch target, direct DOM updates */}
+      {/* Bottom gradient + unified glass control strip */}
       <div
-        ref={barRef}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        onClick={(e) => e.stopPropagation()}
-        className="absolute left-[52px] right-3 pl-2 pr-1 pb-2 pt-5 touch-none cursor-pointer select-none"
-        style={{ touchAction: "none", bottom: `calc(${bottomInset}px + env(safe-area-inset-bottom) - 12px)` }}
+        className="absolute inset-x-0 bottom-0 px-4 pt-16 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none"
+        style={{ paddingBottom: `calc(${bottomInset}px + env(safe-area-inset-bottom))` }}
       >
+        <div className="flex items-center gap-3 pointer-events-auto">
+          {/* Mute button */}
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-label={muted ? "Activează sunetul" : "Oprește sunetul"}
+            className="shrink-0 size-10 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg grid place-items-center text-white active:scale-90 transition"
+          >
+            {muted ? (
+              <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            ) : (
+              <svg viewBox="0 0 24 24" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            )}
+          </button>
 
-        <div className={`relative rounded-full bg-white/25 ${scrubbing ? "h-[5px]" : "h-[3px]"}`} style={{ willChange: "height" }}>
-          <div
-            ref={fillRef}
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-300 via-orange-400 to-rose-500"
-            style={{ width: "0%", willChange: "width" }}
-          />
-          <div
-            ref={knobRef}
-            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white shadow-[0_0_0_3px_rgba(0,0,0,0.35)] ${scrubbing ? "size-3.5" : "size-2.5 opacity-90"}`}
-            style={{ left: "0%", willChange: "left" }}
-          />
+          {/* Scrub bar + times */}
+          <div className="flex-1 min-w-0">
+            <div
+              ref={barRef}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={onPointerUp}
+              onClick={(e) => e.stopPropagation()}
+              className="relative py-3 touch-none cursor-pointer select-none"
+              style={{ touchAction: "none" }}
+            >
+              <div className={`relative w-full rounded-full bg-white/20 ${scrubbing ? "h-[6px]" : "h-[4px]"} transition-[height]`}>
+                <div
+                  ref={fillRef}
+                  className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-amber-400 via-rose-500 to-rose-600 shadow-[0_0_15px_rgba(244,63,94,0.45)]"
+                  style={{ width: "0%", willChange: "width" }}
+                />
+                <div
+                  ref={knobRef}
+                  className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white border-2 border-rose-500 shadow-[0_0_12px_rgba(255,255,255,0.8)] ${scrubbing ? "size-4" : "size-3"}`}
+                  style={{ left: "0%", willChange: "left" }}
+                />
+              </div>
+            </div>
+            <div className="flex justify-between mt-0.5">
+              <span ref={pillRef} className="text-[10px] font-medium text-white/70 tracking-wider tabular-nums">
+                0:00
+              </span>
+              <span className="text-[10px] font-medium text-white/40 tracking-wider tabular-nums">
+                {fmt(duration)}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
 
 function fmt(s: number) {
   if (!isFinite(s) || s < 0) s = 0;
