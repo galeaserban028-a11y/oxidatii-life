@@ -438,8 +438,7 @@
   .shimmer,
   .pulse-ring { animation-iteration-count: 6; }
 
-  /* Skip painting offscreen cards entirely. */
-  article, section[class*="card"] { content-visibility: auto; contain-intrinsic-size: 1px 320px; }
+  /* (content-visibility on cards a fost scos — provoca layout-jump și tăia bara la scroll) */
 }
 
 /* Battery-saver / low-end devices: kill decorative loops, snap transitions. */
