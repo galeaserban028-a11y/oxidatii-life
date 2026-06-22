@@ -611,8 +611,9 @@ function GiftSheet({ onClose, onSend }: { onClose: () => void; onSend: (g: Gift)
     queryKey: ["my-coins", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("coin_balance").eq("id", user!.id).single();
-      return (data as any)?.coin_balance ?? 0;
+      const { data } = await supabase.rpc("get_my_account_state");
+      const row = Array.isArray(data) ? (data[0] as any) : null;
+      return (row?.coin_balance as number | undefined) ?? 0;
     },
   });
 
