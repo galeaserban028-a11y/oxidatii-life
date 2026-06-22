@@ -31,7 +31,7 @@ export default function TonightCard() {
   const [today, setToday] = useState<string>(localDateBuc());
   const [myIntent, setMyIntent] = useState<{ id: string; venue_id: string | null; note: string | null; venue?: { name: string } | null } | null>(null);
   const [count, setCount] = useState<number>(0);
-  const [open, setOpen] = useState(false);
+  const [showVenues, setShowVenues] = useState(false);
   const [note, setNote] = useState("");
   const [venueQuery, setVenueQuery] = useState("");
   const [venues, setVenues] = useState<Array<{ id: string; name: string }>>([]);
@@ -238,7 +238,7 @@ export default function TonightCard() {
       toast.success("Ai marcat seara!");
       setMyIntent({ id: "_", venue_id: venue?.id ?? null, note: note.trim() || null, venue: venue ? { name: venue.name } : null });
       if (venue) setPickedVenue(venue);
-      setOpen(false);
+      setShowVenues(false);
       const { count: c } = await supabase
         .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
       setCount(c ?? 0);
