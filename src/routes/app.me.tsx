@@ -766,15 +766,24 @@ function MePage() {
                   {isVideo ? (
                     <>
                       <video
-                        src={url}
+                        src={`${url}#t=0.5`}
                         muted
                         playsInline
                         preload="metadata"
-                        onLoadedMetadata={(e) => { try { (e.currentTarget as HTMLVideoElement).currentTime = 0.1; } catch {} }}
-                        className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition"
+                        crossOrigin="anonymous"
+                        onLoadedMetadata={(e) => {
+                          const v = e.currentTarget as HTMLVideoElement;
+                          try { v.currentTime = 0.5; } catch {}
+                        }}
+                        onLoadedData={(e) => {
+                          const v = e.currentTarget as HTMLVideoElement;
+                          // Force a paint of the first frame on Safari/Chrome
+                          v.play().then(() => { try { v.pause(); v.currentTime = 0.5; } catch {} }).catch(() => {});
+                        }}
+                        className="absolute inset-0 h-full w-full object-cover bg-black group-active:scale-105 transition"
                       />
                       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 pointer-events-none" />
-                      <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/50 border border-white/20 flex items-center gap-1">
+                      <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-black/60 border border-white/20 flex items-center gap-1">
                         <svg width="9" height="9" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
                         <span className="font-mono text-[8px] uppercase text-white tracking-wider">video</span>
                       </div>
