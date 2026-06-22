@@ -175,7 +175,7 @@ const TabItem = memo(function TabItem({ tab, active, shrunk, iconSize, badge = 0
         )}
       </div>
       <span
-        className="leading-none overflow-hidden"
+        className="leading-none overflow-hidden truncate max-w-full"
         style={{
           maxHeight: shrunk ? 0 : 14,
           marginTop: shrunk ? 0 : 3,
