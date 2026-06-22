@@ -62,7 +62,7 @@ function MePage() {
   });
 
   // tab state for the grid
-  const [tab, setTab] = useState<"posts" | "reposts">("posts");
+  const [tab, setTab] = useState<"posts" | "reposts" | "spritz">("posts");
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState<string | null>(null);
   const [editingPremium, setEditingPremium] = useState(false);
