@@ -497,7 +497,7 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
       {/* Media */}
       <div className="relative bg-black aspect-[4/5] w-full">
         {item.media_type === "video" ? (
-          <VideoTile src={item.photo_url} bottomInset={8} />
+          <VideoTile src={item.photo_url} bottomInset={96} />
         ) : (
           <PinchImage
             src={item.photo_url}
@@ -507,6 +507,7 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
           />
         )}
       </div>
+
 
       {/* Caption */}
       {item.caption && (
