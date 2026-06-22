@@ -145,7 +145,7 @@ export default function TonightCard() {
       if (fa !== fb) return fb - fa;
       return b.count - a.count;
     });
-  }, [hotVenues, follows]);
+  }, [hotVenues, suggestedVenues, followedVenues, follows]);
 
   async function toggleFollow(v: { id: string; name: string }) {
     if (!user) return;
@@ -304,6 +304,15 @@ export default function TonightCard() {
           className="relative mt-4 w-full h-12 rounded-2xl bg-gradient-to-r from-[#ffea00] to-[#ff3d8b] text-black font-bold text-[11px] uppercase tracking-[0.2em] active:scale-[0.98] transition"
         >
           mă bag în seara asta ({count})
+        </button>
+      )}
+
+      {myIntent && !myIntent.venue_id && !open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="relative mt-4 w-full h-12 rounded-2xl bg-[#ffea00] text-black font-bold text-[11px] uppercase tracking-[0.2em] active:scale-[0.98] transition"
+        >
+          alege locul pentru chat
         </button>
       )}
 
