@@ -368,8 +368,8 @@
   .tonight-card {
     position: relative;
     overflow: hidden;
-    border-radius: 16px;
-    padding: 10px 12px;
+    border-radius: 13px;
+    padding: 7px 10px;
     background: linear-gradient(160deg, #1a1016 0%, #150d13 45%, #0f0b10 100%);
     border: 1px solid rgba(248, 200, 216, 0.16);
     box-shadow: var(--cherry-glow);
@@ -385,16 +385,16 @@
 
   .tonight-label {
     font-family: 'Barlow', sans-serif;
-    font-size: 8px;
+    font-size: 7px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.2em;
     color: var(--cherry-400);
   }
 
   .tonight-title {
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
+    font-size: 13px;
     font-weight: 700;
     letter-spacing: -0.01em;
     line-height: 1.05;
@@ -404,13 +404,13 @@
   .tonight-btn {
     position: relative;
     width: 100%;
-    height: 30px;
+    height: 24px;
     border-radius: 9999px;
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 400;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.12em;
     color: #0d0d0d;
     background: linear-gradient(90deg, var(--cherry-400) 0%, var(--cherry-600) 100%);
     box-shadow: var(--cherry-btn-glow);
