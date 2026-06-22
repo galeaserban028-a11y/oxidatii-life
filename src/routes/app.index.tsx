@@ -487,22 +487,28 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
       </div>
 
       {/* Media */}
-      <div className="relative bg-black">
+      <div className="relative bg-black aspect-[4/5] w-full">
         {item.media_type === "video" ? (
-          <video src={item.photo_url} className="w-full aspect-[4/5] object-cover" playsInline muted loop preload="metadata" />
+          <VideoTile src={item.photo_url} bottomInset={8} />
         ) : (
-          <img src={item.photo_url} alt={item.caption ?? ""} className="w-full aspect-[4/5] object-cover" loading="lazy" />
-        )}
-        {item.media_type === "video" && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="size-14 rounded-full bg-white/90 text-black flex items-center justify-center text-xl shadow-xl">▶</div>
-          </div>
+          <button
+            type="button"
+            onClick={() => setZoomOpen(true)}
+            className="block w-full h-full"
+            aria-label="Mărește poza"
+          >
+            <img src={item.photo_url} alt={item.caption ?? ""} className="w-full h-full object-cover" loading="lazy" />
+          </button>
         )}
       </div>
 
       {/* Caption */}
       {item.caption && (
         <div className="px-4 pb-3 pt-3 text-sm leading-snug">{item.caption}</div>
+      )}
+      {zoomOpen && item.media_type !== "video" && typeof document !== "undefined" && createPortal(
+        <PhotoZoom src={item.photo_url} alt={item.caption ?? ""} onClose={() => setZoomOpen(false)} />,
+        document.body
       )}
     </article>
   );
