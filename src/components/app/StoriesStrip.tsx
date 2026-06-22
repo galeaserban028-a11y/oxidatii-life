@@ -321,7 +321,7 @@ export function StoriesStrip() {
 
 
 
-      {viewerIdx !== null && groups[viewerIdx] && (
+      {viewerIdx !== null && groups[viewerIdx] && typeof document !== "undefined" && createPortal(
         <StoryViewer
           groups={groups}
           startIndex={viewerIdx}
@@ -329,7 +329,8 @@ export function StoriesStrip() {
           onDeleted={() => qc.invalidateQueries({ queryKey: ["stories-strip"] })}
           onSeen={markSeen}
           viewerId={user.id}
-        />
+        />,
+        document.body
       )}
 
 
