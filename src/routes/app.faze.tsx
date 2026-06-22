@@ -399,9 +399,16 @@ function FazePage() {
                 {/* Caption Area */}
                 <div className="p-5 pt-4 bg-[#0a0a0a]">
                   {venue?.name && (
-                    <div className="flex items-center gap-1.5 text-[#ffea00] mb-2">
-                      <svg className="size-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/></svg>
-                      <span className="text-[11px] font-bold uppercase tracking-[0.16em]">{venue.name}</span>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Link
+                        to="/app/map"
+                        search={{ venue: it.venue_id }}
+                        className="flex items-center gap-1.5 text-[#ffea00] active:scale-95 transition"
+                        aria-label={`Vezi ${venue.name} pe hartă`}
+                      >
+                        <svg className="size-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/></svg>
+                        <span className="text-[11px] font-bold uppercase tracking-[0.16em] underline-offset-2 hover:underline">{venue.name}</span>
+                      </Link>
                       <span className="text-white/20 mx-1">•</span>
                       <span className="text-white/40 text-[10px] uppercase tracking-wider">acum {timeAgo(it.created_at)}</span>
                     </div>
