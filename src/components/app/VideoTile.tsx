@@ -76,8 +76,8 @@ export default function VideoTile({ src, className, bottomInset = 72 }: Props) {
     const pct = (p * 100).toFixed(3);
     if (fillRef.current) fillRef.current.style.width = `${pct}%`;
     if (knobRef.current) knobRef.current.style.left = `${pct}%`;
-    if (pillRef.current && scrubbingRef.current) {
-      pillRef.current.textContent = `${fmt(t)} / ${fmt(duration || ref.current?.duration || 0)}`;
+    if (pillRef.current) {
+      pillRef.current.textContent = fmt(t);
     }
   };
 
