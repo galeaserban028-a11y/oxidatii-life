@@ -35,12 +35,17 @@ export function MapSettingsSheet({ open, onOpenChange }: { open: boolean; onOpen
     queryKey: ["map-settings", user?.id],
     enabled: !!user && open,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("map_ghost, map_visibility, map_precision, map_auto_ghost_hours, map_hide_from_live_list, map_require_reciprocity")
-        .eq("id", user!.id)
-        .maybeSingle();
-      return (data ?? DEFAULTS) as MapSettings;
+      const [stateRes, extrasRes] = await Promise.all([
+        supabase.rpc("get_my_account_state"),
+        supabase
+          .from("profiles")
+          .select("map_auto_ghost_hours, map_hide_from_live_list, map_require_reciprocity")
+          .eq("id", user!.id)
+          .maybeSingle(),
+      ]);
+      const stateRow = Array.isArray(stateRes.data) ? (stateRes.data[0] as any) : null;
+      const merged = { ...DEFAULTS, ...(extrasRes.data ?? {}), ...(stateRow ?? {}) };
+      return merged as MapSettings;
     },
   });
 
