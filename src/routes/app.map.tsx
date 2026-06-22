@@ -290,6 +290,19 @@ function MapPage() {
     },
   });
 
+  // Focus map on a venue passed via ?venue=<id> in the URL.
+  useEffect(() => {
+    const id = search.venue;
+    if (!id || !venues.length) return;
+    if (focusedFromSearchRef.current === id) return;
+    const v = venues.find((x) => x.id === id);
+    if (v && v.lat != null && v.lng != null) {
+      setFocusCity({ lat: Number(v.lat), lng: Number(v.lng), zoom: 16 });
+      focusedFromSearchRef.current = id;
+    }
+  }, [search.venue, venues]);
+
+
   // Active venue-linked promo campaigns → "shining" pins on the map.
   // Pulls only the data needed to recognize a promoted venue + tint its halo
   // and show the brand logo in place of the bottle silhouette.
