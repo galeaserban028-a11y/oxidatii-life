@@ -57,9 +57,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loadProfile = useCallback(async (uid: string) => {
     if (mountedRef.current) setProfileLoading(true);
     try {
-      const profileRequest = supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
+      // Select only columns readable for cross-user via RLS. Sensitive private
+      // fields (coin_balance, last_boost_at, map_*, location_consent) are
+      // fetched separately via the get_my_account_state() RPC for self.
+      const profileRequest = supabase
+        .from("profiles")
+        .select(
+          "id, handle, display_name, city_id, avatar_url, rank, aura, lifetime_sprits, current_streak, longest_streak, onboarded, is_public, active_frame_id, premium_tier, premium_until, boost_until, profile_theme_id, music_clip_url, profile_bg_url, theme_intensity, bio, map_auto_ghost_hours, map_hide_from_live_list, map_require_reciprocity"
+        )
+        .eq("id", uid)
+        .maybeSingle();
+      const stateRequest = supabase.rpc("get_my_account_state");
       const timeout = new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 5000));
-      const result = await Promise.race([profileRequest, timeout]);
+      const result = await Promise.race([
+        Promise.all([profileRequest, stateRequest]),
+        timeout,
+      ]);
 
       if (!mountedRef.current) return;
       if (result === null) {
@@ -67,13 +80,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
         return;
       }
-      const { data, error } = result;
-      if (error) {
-        console.error("Could not load profile", error);
+      const [profileRes, stateRes] = result as [
+        Awaited<typeof profileRequest>,
+        Awaited<typeof stateRequest>,
+      ];
+      if (profileRes.error) {
+        console.error("Could not load profile", profileRes.error);
         setProfile(null);
         return;
       }
-      setProfile(data as Profile | null);
+      const baseProfile = profileRes.data as Record<string, unknown> | null;
+      const stateRows = (stateRes.data ?? []) as Array<Record<string, unknown>>;
+      const stateRow = stateRows[0] ?? null;
+      setProfile(
+        baseProfile
+          ? ({ ...baseProfile, ...(stateRow ?? {}) } as Profile)
+          : null,
+      );
     } finally {
       if (mountedRef.current) setProfileLoading(false);
     }
