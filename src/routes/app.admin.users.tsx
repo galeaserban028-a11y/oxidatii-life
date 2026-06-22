@@ -131,7 +131,7 @@ function AdminUsers() {
                   {!u.is_public && <EyeOff size={11} className="text-muted-foreground" />}
                 </div>
                 <div className="font-mono text-[10px] text-muted-foreground truncate">
-                  @{u.handle || "—"} · {u.rank} · aura {u.aura} · 🍺 {u.coin_balance ?? 0} · streak {u.current_streak}
+                  @{u.handle || "—"} · {u.rank} · aura {u.aura} · streak {u.current_streak}
                 </div>
               </div>
               <div className="flex items-center gap-1">
