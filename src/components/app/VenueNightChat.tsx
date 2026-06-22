@@ -99,9 +99,9 @@ export default function VenueNightChat({
   }
 
   return (
-    <div className="fixed inset-0 z-[80] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center" onClick={onClose}>
+    <div className="fixed inset-0 z-[80] bg-black/70 backdrop-blur-sm flex items-center justify-center" onClick={onClose}>
       <div
-        className="w-full sm:max-w-md h-[92dvh] sm:h-[70vh] sm:rounded-3xl rounded-t-3xl bg-[#0a0a0a] border border-white/10 flex flex-col overflow-hidden"
+        className="w-full sm:max-w-md h-[80dvh] sm:h-[70vh] rounded-3xl bg-[#0a0a0a] border border-white/10 flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
