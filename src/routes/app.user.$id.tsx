@@ -139,7 +139,7 @@ function UserPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("venue_photos")
-        .select("id, photo_url, caption, taken_at, venue:venues(id, name, city:cities(name))")
+        .select("id, photo_url, media_type, caption, taken_at, venue:venues(id, name, city:cities(name))")
         .eq("user_id", id)
         .order("taken_at", { ascending: false })
         .limit(60);
@@ -161,7 +161,7 @@ function UserPage() {
       if (!ids.length) return [];
       const { data: pics } = await supabase
         .from("venue_photos")
-        .select("id, photo_url, caption, user_id, venue:venues(id, name, city:cities(name))")
+        .select("id, photo_url, media_type, caption, user_id, venue:venues(id, name, city:cities(name))")
         .in("id", ids);
       const map = new Map((pics ?? []).map((p: any) => [p.id, p]));
       return (rep ?? [])
@@ -434,10 +434,30 @@ function UserPage() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-3 gap-1.5">
-                    {(photos as any[]).map((p) => (
+                    {(photos as any[]).map((p) => {
+                      const isVideo = p.media_type === "video" || isVideoUrl(p.photo_url);
+                      return (
                       <div key={p.id} className="relative aspect-square overflow-hidden rounded-lg bg-card border border-border">
-                        <img src={p.photo_url} alt={p.caption ?? ""} loading="lazy"
-                          className="absolute inset-0 h-full w-full object-cover" />
+                        {isVideo ? (
+                          <>
+                            <video
+                              src={`${p.photo_url}#t=0.5`}
+                              muted
+                              playsInline
+                              preload="metadata"
+                              onLoadedMetadata={(e) => { try { e.currentTarget.currentTime = 0.5; } catch {} }}
+                              className="absolute inset-0 h-full w-full object-cover"
+                            />
+                            <div className="absolute inset-0 grid place-items-center bg-black/10">
+                              <span className="grid size-8 place-items-center rounded-full bg-black/55 border border-white/25 text-white shadow-lg">
+                                <svg viewBox="0 0 24 24" className="ml-0.5 size-3.5 fill-current"><path d="M8 5v14l11-7z" /></svg>
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                          <img src={p.photo_url} alt={p.caption ?? ""} loading="lazy"
+                            className="absolute inset-0 h-full w-full object-cover" />
+                        )}
                         {p.venue?.name && (
                           <div className="absolute bottom-0 inset-x-0 p-1.5 bg-gradient-to-t from-black/85 to-transparent">
                             <div className="text-[9px] uppercase tracking-wider text-white truncate font-medium">
@@ -446,7 +466,8 @@ function UserPage() {
                           </div>
                         )}
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 )}
               </section>
@@ -460,10 +481,30 @@ function UserPage() {
                     <span className="text-foreground/60 font-mono text-[10px]">({reposts.length})</span>
                   </h2>
                   <div className="grid grid-cols-3 gap-1.5">
-                    {reposts.map((r: any) => (
+                    {reposts.map((r: any) => {
+                      const isVideo = r.photo.media_type === "video" || isVideoUrl(r.photo.photo_url);
+                      return (
                       <div key={r.photo.id} className="relative aspect-square overflow-hidden rounded-lg bg-card border border-border">
-                        <img src={r.photo.photo_url} alt={r.photo.caption ?? ""} loading="lazy"
-                          className="absolute inset-0 h-full w-full object-cover" />
+                        {isVideo ? (
+                          <>
+                            <video
+                              src={`${r.photo.photo_url}#t=0.5`}
+                              muted
+                              playsInline
+                              preload="metadata"
+                              onLoadedMetadata={(e) => { try { e.currentTarget.currentTime = 0.5; } catch {} }}
+                              className="absolute inset-0 h-full w-full object-cover"
+                            />
+                            <div className="absolute inset-0 grid place-items-center bg-black/10">
+                              <span className="grid size-8 place-items-center rounded-full bg-black/55 border border-white/25 text-white shadow-lg">
+                                <svg viewBox="0 0 24 24" className="ml-0.5 size-3.5 fill-current"><path d="M8 5v14l11-7z" /></svg>
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                          <img src={r.photo.photo_url} alt={r.photo.caption ?? ""} loading="lazy"
+                            className="absolute inset-0 h-full w-full object-cover" />
+                        )}
                         <div className="absolute top-1 left-1 size-5 rounded-full bg-emerald-400/90 text-black flex items-center justify-center">
                           <svg viewBox="0 0 24 24" className="size-3 fill-none stroke-black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h13l-3-3"/><path d="M20 17H7l3 3"/></svg>
                         </div>
@@ -475,7 +516,8 @@ function UserPage() {
                           </div>
                         )}
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 </section>
               )}
