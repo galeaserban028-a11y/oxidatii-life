@@ -298,25 +298,25 @@ export default function TonightCard() {
         ) : null}
       </div>
 
-      {!myIntent && !open && (
+      {!myIntent && !showVenues && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => setShowVenues(true)}
           className="relative mt-4 w-full h-12 rounded-2xl bg-gradient-to-r from-[#ffea00] to-[#ff3d8b] text-black font-bold text-[11px] uppercase tracking-[0.2em] active:scale-[0.98] transition"
         >
           mă bag în seara asta ({count})
         </button>
       )}
 
-      {myIntent && !myIntent.venue_id && !open && (
+      {myIntent && !myIntent.venue_id && !showVenues && (
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => setShowVenues(true)}
           className="relative mt-4 w-full h-12 rounded-2xl bg-[#ffea00] text-black font-bold text-[11px] uppercase tracking-[0.2em] active:scale-[0.98] transition"
         >
           alege locul pentru chat
         </button>
       )}
 
-      {open && (
+      {showVenues && (
         <div className="relative mt-4 space-y-2">
           <div className="relative">
             <input
@@ -343,7 +343,7 @@ export default function TonightCard() {
             className="w-full rounded-xl bg-black/40 border border-white/10 px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#ffea00]/40"
           />
           <div className="flex gap-2">
-            <button onClick={() => setOpen(false)} className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 text-white/70 text-[11px] uppercase tracking-widest">Renunță</button>
+            <button onClick={() => setShowVenues(false)} className="flex-1 h-11 rounded-xl bg-white/5 border border-white/10 text-white/70 text-[11px] uppercase tracking-widest">Renunță</button>
             <button onClick={save} disabled={saving} className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#ffea00] to-[#ff3d8b] text-black font-bold text-[11px] uppercase tracking-widest disabled:opacity-50">
               {saving ? "..." : "salvează"}
             </button>
