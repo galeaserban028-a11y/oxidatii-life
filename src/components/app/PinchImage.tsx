@@ -83,16 +83,14 @@ export default function PinchImage({ src, alt, className, onTap }: Props) {
       // released a pinch → snap back
       if (zooming) reset();
       else {
-        // simple tap detection
+        // double tap → toggle zoom in place (no fullscreen)
         const now = Date.now();
         if (now - lastTap.current < 280) {
-          // double tap → quick zoom in/out
           if (scale.current > 1) reset();
           else {
             scale.current = 2.2;
             paint(true);
             setZooming(true);
-            setTimeout(reset, 1200);
           }
           lastTap.current = 0;
         } else {
@@ -102,6 +100,7 @@ export default function PinchImage({ src, alt, className, onTap }: Props) {
       }
     }
   };
+
 
   return (
     <div
