@@ -606,10 +606,10 @@ export function RomaniaMap3D({
         wrap.appendChild(pulse);
 
         const ring = document.createElement("div");
-        ring.style.cssText = `position:relative;width:58px;height:58px;border-radius:18px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 14px ${theme}88,0 8px 16px rgba(0,0,0,0.58);animation:oxi-marker-pop 0.32s cubic-bezier(0.22,1,0.36,1) both;`;
+        ring.style.cssText = `position:relative;width:58px;height:58px;border-radius:9999px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 14px ${theme}88,0 8px 16px rgba(0,0,0,0.58);animation:oxi-marker-pop 0.32s cubic-bezier(0.22,1,0.36,1) both;`;
         if (meta.cover) {
           const imgFrame = document.createElement("div");
-          imgFrame.style.cssText = "position:absolute;inset:3px;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;";
+          imgFrame.style.cssText = "position:absolute;inset:3px;border-radius:9999px;overflow:hidden;background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;";
           const img = document.createElement("img");
           img.src = meta.cover; img.alt = "";
           img.loading = "lazy";
