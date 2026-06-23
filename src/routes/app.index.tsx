@@ -244,7 +244,9 @@ function AppFeed() {
             const profile = data.profilesMap.get(it.user_id);
             const venue = it.venue_id ? data.venuesMap.get(it.venue_id) : null;
             return (
-              <FeedCard key={it.id} item={it} profile={profile} venue={venue} />
+              <FadeIn key={it.id} y={10}>
+                <FeedCard item={it} profile={profile} venue={venue} />
+              </FadeIn>
             );
           })}
         </div>
