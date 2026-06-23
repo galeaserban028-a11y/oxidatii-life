@@ -28,20 +28,20 @@ function AdminUsers() {
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users", q],
     queryFn: async () => {
-      let query = supabase
-        .from("profiles")
-        .select("id, handle, display_name, avatar_url, aura, lifetime_sprits, current_streak, longest_streak, is_public, onboarded, rank, premium_tier, premium_until, created_at")
-        .order("created_at", { ascending: false })
-        .limit(100);
-      if (q.trim()) {
-        const term = `%${q.trim()}%`;
-        query = query.or(`handle.ilike.${term},display_name.ilike.${term}`);
-      }
-      const { data, error } = await query;
+      const { data, error } = await supabase.rpc("admin_list_users");
       if (error) throw error;
-      return (data ?? []) as UserRow[];
+      const term = q.trim().toLowerCase();
+      const rows = ((data ?? []) as UserRow[]);
+      const filtered = term
+        ? rows.filter((r) =>
+            (r.handle ?? "").toLowerCase().includes(term) ||
+            (r.display_name ?? "").toLowerCase().includes(term),
+          )
+        : rows;
+      return filtered.slice(0, 100);
     },
   });
+
 
   const { data: roles } = useQuery({
     queryKey: ["admin-roles"],

@@ -86,7 +86,7 @@ function UserPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["user-detail", slug],
     queryFn: async () => {
-      const sel = "id, handle, display_name, avatar_url, bio, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, premium_tier, premium_until, profile_theme_id, theme_intensity, music_clip_url, profile_bg_url, boost_until, city:cities(name, slug)";
+      const sel = "id, handle, display_name, avatar_url, bio, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, profile_theme_id, theme_intensity, music_clip_url, profile_bg_url, city:cities(name, slug)";
       const q = supabase.from("profiles").select(sel);
       const res = isUuid
         ? await q.eq("id", slug).maybeSingle()
@@ -107,6 +107,17 @@ function UserPage() {
   const profile = data?.profile as any;
   const id = profile?.id ?? (isUuid ? slug : "");
   const isMe = !!user && !!id && user.id === id;
+
+  const { data: badge } = useQuery({
+    queryKey: ["user-premium-badge", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data } = await supabase.rpc("get_user_premium_badge", { _user_id: id });
+      const row = Array.isArray(data) ? (data[0] as any) : null;
+      return row ?? null;
+    },
+  });
+
 
   // Track profile visit (debounced server-side to 1/hour)
   useEffect(() => {
@@ -210,8 +221,9 @@ function UserPage() {
           {/* Header */}
           {(() => {
             const theme = getTheme(profile.profile_theme_id);
-            const isPremium = !!profile.premium_tier && profile.premium_until && new Date(profile.premium_until) > new Date();
+            const isPremium = !!badge?.has_active_premium;
             const bgUrl: string | null = isPremium ? profile.profile_bg_url ?? null : null;
+
             const isVideo = bgUrl ? /\.(mp4|webm|mov)$/i.test(bgUrl) : false;
             return (
           <div
@@ -249,7 +261,7 @@ function UserPage() {
                 <div className="font-display font-bold text-2xl truncate flex items-center gap-1.5 flex-wrap">
                   @{handle}
                   {!isPublic && <Lock size={14} className="text-neon-crimson shrink-0" />}
-                  <PremiumBadge tier={profile.premium_tier} size="sm" asLink={false} />
+                  <PremiumBadge tier={badge?.premium_tier ?? null} size="sm" asLink={false} />
                 </div>
                 {profile.city?.name && (
                   <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">

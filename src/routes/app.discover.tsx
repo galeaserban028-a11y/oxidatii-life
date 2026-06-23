@@ -17,8 +17,6 @@ type Profile = {
   avatar_url: string | null;
   rank: string | null;
   aura: number | null;
-  boost_until?: string | null;
-  premium_tier?: string | null;
 };
 
 function DiscoverPage() {
@@ -57,28 +55,19 @@ function DiscoverPage() {
     queryKey: ["discover-suggestions", user?.id],
     enabled: !!user && q.trim().length < 2,
     queryFn: async (): Promise<Profile[]> => {
-      const nowIso = new Date().toISOString();
-      // Featured: boost activ OR Elite premium activ
-      const { data: featured } = await supabase
-        .from("profiles")
-        .select("id, handle, display_name, avatar_url, rank, aura, boost_until, premium_tier, premium_until")
-        .eq("is_public", true)
-        .neq("id", user!.id)
-        .or(`boost_until.gt.${nowIso},and(premium_tier.eq.elite,premium_until.gt.${nowIso})`)
-        .order("boost_until", { ascending: false, nullsFirst: false })
-        .limit(10);
-      const featuredIds = new Set((featured ?? []).map((p: any) => p.id));
-      const { data: rest } = await supabase
+      // Premium/boost state is private to each user now (no longer readable
+      // cross-user), so suggestions sort purely by public aura.
+      const { data } = await supabase
         .from("profiles")
         .select("id, handle, display_name, avatar_url, rank, aura")
         .eq("is_public", true)
         .neq("id", user!.id)
         .order("aura", { ascending: false })
         .limit(30);
-      const restFiltered = (rest ?? []).filter((p: any) => !featuredIds.has(p.id));
-      return [...(featured ?? []), ...restFiltered] as Profile[];
+      return (data ?? []) as Profile[];
     },
   });
+
 
   async function doFollow(id: string) {
     if (!user) return;
@@ -162,10 +151,8 @@ function DiscoverPage() {
                 <Link to="/app/user/$id" params={{ id: p.id }} className="flex-1 min-w-0">
                   <div className="font-display text-sm truncate flex items-center gap-1.5">
                     {p.display_name ?? `@${p.handle ?? "—"}`}
-                    {(p.boost_until && new Date(p.boost_until) > new Date()) || p.premium_tier === "elite" ? (
-                      <span className="text-[8px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded-sm bg-gradient-to-r from-amber-300 to-fuchsia-400 text-black">featured</span>
-                    ) : null}
                   </div>
+
                   {p.display_name && p.handle && (
                     <div className="font-mono text-[10px] text-muted-foreground truncate">@{p.handle}</div>
                   )}
