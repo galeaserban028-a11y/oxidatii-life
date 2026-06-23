@@ -267,13 +267,13 @@ export default function TonightCard() {
   return (
     <div className="tonight-card cherry-glow-anim animate-fade-in">
       {/* Cherry glow orbs — tiny, atmospheric */}
-      <div className="pointer-events-none absolute -top-5 -right-5 h-16 w-16 rounded-full blur-[34px] opacity-45" style={{ background: "var(--cherry-400)" }} />
-      <div className="pointer-events-none absolute -bottom-4 -left-4 h-12 w-12 rounded-full blur-[26px] opacity-30" style={{ background: "var(--cherry-600)" }} />
+      <div className="pointer-events-none absolute -top-4 -right-4 h-12 w-12 rounded-full blur-[26px] opacity-45" style={{ background: "var(--cherry-400)" }} />
+      <div className="pointer-events-none absolute -bottom-3 -left-3 h-8 w-8 rounded-full blur-[20px] opacity-30" style={{ background: "var(--cherry-600)" }} />
 
-      <div className="relative flex items-center justify-between gap-3">
+      <div className="relative flex items-center justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <div className="tonight-label flex items-center gap-1">
-            <Sparkles size={8} /> diseară
+          <div className="tonight-label flex items-center gap-0.5">
+            <Sparkles size={7} /> diseară
           </div>
           <h3 className="tonight-title mt-0.5 text-[13px]">
             {myIntent ? (
