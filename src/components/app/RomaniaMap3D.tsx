@@ -924,6 +924,11 @@ export function RomaniaMap3D({
           15%  { transform: translate(-50%,-50%) rotate(calc(var(--rot) * 0.15)) scale(1.1); opacity: 1; }
           100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(0.4); opacity: 0; }
         }
+        @keyframes oxi-marker-pop {
+          0%   { opacity: 0; transform: scale(0.6); }
+          70%  { opacity: 1; transform: scale(1.08); }
+          100% { opacity: 1; transform: scale(1); }
+        }
         .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas { outline:none !important; }
@@ -934,6 +939,7 @@ export function RomaniaMap3D({
         .maplibregl-ctrl-group button { background-color: transparent !important; }
         .maplibregl-ctrl-group button span { filter: invert(1) brightness(1.2); }
       `}</style>
+
       <div ref={containerRef} className="absolute inset-0" />
       {mapFailed && (
         <div className="absolute inset-0 z-20 grid place-items-center bg-background/95 px-6 text-center">
