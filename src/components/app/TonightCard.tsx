@@ -265,10 +265,10 @@ export default function TonightCard() {
   if (!user || !showCard) return null;
 
   return (
-    <div className="tonight-card cherry-glow-anim animate-fade-in">
-      {/* Cherry glow orbs — tiny, atmospheric */}
-      <div className="pointer-events-none absolute -top-4 -right-4 h-12 w-12 rounded-full blur-[26px] opacity-45" style={{ background: "var(--cherry-400)" }} />
-      <div className="pointer-events-none absolute -bottom-3 -left-3 h-8 w-8 rounded-full blur-[20px] opacity-30" style={{ background: "var(--cherry-600)" }} />
+    <div className="tonight-card warm-glow-anim animate-fade-in">
+      {/* Warm sunset glow orbs */}
+      <div className="pointer-events-none absolute -top-4 -right-4 h-12 w-12 rounded-full blur-[26px] opacity-50" style={{ background: "var(--warm-orange)" }} />
+      <div className="pointer-events-none absolute -bottom-3 -left-3 h-8 w-8 rounded-full blur-[20px] opacity-35" style={{ background: "var(--warm-rose)" }} />
 
       <div className="relative flex items-center justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -277,15 +277,15 @@ export default function TonightCard() {
           </div>
           <h3 className="tonight-title mt-0.5">
             {myIntent ? (
-              <>Te-ai băgat. <span style={{ color: "var(--cherry-400)" }}>{count}</span> pers.</>
+              <>Te-ai băgat. <span className="text-white/95" style={{ textShadow: "0 0 12px rgba(255,255,255,0.35)" }}>{count}</span> pers.</>
             ) : (
-              <>Unde <span style={{ color: "var(--cherry-400)", fontStyle: "italic" }}>ieși</span>?</>
+              <>Unde <span className="italic text-white/95">ieși</span>?</>
             )}
           </h3>
           {myIntent && (myIntent.venue?.name || myIntent.note) && (
-            <div className="mt-0.5 text-[8px] text-white/70 flex items-center gap-1" style={{ fontFamily: "'Barlow', sans-serif" }}>
-              {myIntent.venue?.name && <><MapPin size={7} style={{ color: "var(--cherry-400)" }} /> {myIntent.venue.name}</>}
-              {myIntent.note && <span className="text-white/50">· {myIntent.note}</span>}
+            <div className="mt-0.5 text-[8px] text-white/80 flex items-center gap-1">
+              {myIntent.venue?.name && <><MapPin size={7} className="text-white/90" /> {myIntent.venue.name}</>}
+              {myIntent.note && <span className="text-white/55">· {myIntent.note}</span>}
             </div>
           )}
         </div>
@@ -300,7 +300,7 @@ export default function TonightCard() {
           <button
             onClick={() => setShowVenues(true)}
             className="tonight-btn"
-            style={{ width: 'auto', padding: '0 9px', background: "var(--cherry-400)", boxShadow: "0 6px 16px -6px rgba(232,138,171,0.32)" }}
+            style={{ width: 'auto', padding: '0 9px' }}
           >
             loc
           </button>
@@ -316,7 +316,7 @@ export default function TonightCard() {
 
 
       {showVenues && (
-        <div className="relative mt-4 space-y-2">
+        <div className="relative mt-3 space-y-2">
           <div className="relative">
             <input
               value={pickedVenue?.name ?? venueQuery}
@@ -325,7 +325,7 @@ export default function TonightCard() {
               className="tonight-input"
             />
             {!pickedVenue && venues.length > 0 && (
-              <div className="absolute z-20 inset-x-0 mt-1 rounded-xl border overflow-hidden" style={{ background: "#0f0b10", borderColor: "rgba(248,200,216,0.12)" }}>
+              <div className="absolute z-20 inset-x-0 mt-1 rounded-xl border overflow-hidden" style={{ background: "rgba(35, 14, 9, 0.98)", borderColor: "rgba(255,255,255,0.15)" }}>
                 {venues.map(v => (
                   <button
                     key={v.id}
@@ -347,7 +347,7 @@ export default function TonightCard() {
           />
           <div className="flex gap-2">
             <button onClick={() => setShowVenues(false)} className="tonight-ghost-btn">Renunță</button>
-            <button onClick={save} disabled={saving} className="tonight-btn" style={{ height: 36, fontSize: 10, letterSpacing: "0.1em" }}>
+            <button onClick={save} disabled={saving} className="tonight-btn" style={{ flex: 1 }}>
               {saving ? "..." : "salvează"}
             </button>
           </div>
@@ -355,9 +355,9 @@ export default function TonightCard() {
       )}
 
       {showVenues && displayedVenues.length > 0 && (
-        <div className="relative mt-4 pt-3" style={{ borderTop: "1px solid rgba(248,200,216,0.10)" }}>
+        <div className="relative mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.15)" }}>
           <div className="flex items-center justify-between mb-2">
-            <div className="tonight-label flex items-center gap-1.5 text-white/50">
+            <div className="tonight-label flex items-center gap-1.5 text-white/70">
               <Users size={10} /> unde se adună
             </div>
             <button onClick={() => setShowVenues(false)} className="tonight-icon-btn" aria-label="Închide">
@@ -370,13 +370,13 @@ export default function TonightCard() {
               const followed = follows.has(v.id);
               return (
                 <div key={v.id} className="tonight-venue-row">
-                  <MapPin size={12} style={{ color: "var(--cherry-400)", flexShrink: 0 }} />
+                  <MapPin size={12} className="text-white/90 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="text-[12px] text-white truncate flex items-center gap-1.5">
                       {v.name}
-                      {followed && <span style={{ color: "var(--cherry-400)", fontSize: 7, fontWeight: 700, letterSpacing: "0.05em" }}>★</span>}
+                      {followed && <span className="text-white/90 text-[7px] font-bold tracking-wider">★</span>}
                     </div>
-                    <div className="text-[9px] text-white/40">{v.count} {v.count === 1 ? "persoană" : "persoane"}</div>
+                    <div className="text-[9px] text-white/60">{v.count} {v.count === 1 ? "persoană" : "persoane"}</div>
                   </div>
                   <button
                     onClick={() => toggleFollow(v)}
