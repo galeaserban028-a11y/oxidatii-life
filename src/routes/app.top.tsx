@@ -203,28 +203,37 @@ function TopPage() {
             <div className="relative mt-2">
               <button
                 onClick={() => setCountryOpen((o) => !o)}
-                className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur text-sm font-semibold"
+                className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur text-sm font-semibold active:scale-[0.99] transition-all"
               >
                 <span>{COUNTRY_LABEL[country] ?? country}</span>
-                <ChevronDown size={16} className={`transition ${countryOpen ? "rotate-180" : ""}`} />
+                <ChevronDown size={16} className={`transition-transform duration-200 ${countryOpen ? "rotate-180" : ""}`} />
               </button>
-              {countryOpen && (
-                <div className="absolute z-20 mt-1 w-full max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[#0a0a0a] shadow-2xl">
-                  {countries.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => { setCountry(c); setCountryOpen(false); }}
-                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition ${
-                        c === country ? "bg-white/5 font-semibold text-[#ffea00]" : ""
-                      }`}
-                    >
-                      {COUNTRY_LABEL[c] ?? c}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <AnimatePresence>
+                {countryOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                    transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute z-20 mt-1 w-full max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[#0a0a0a] shadow-2xl"
+                  >
+                    {countries.map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => { setCountry(c); setCountryOpen(false); }}
+                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition-colors ${
+                          c === country ? "bg-white/5 font-semibold text-[#ffea00]" : ""
+                        }`}
+                      >
+                        {COUNTRY_LABEL[c] ?? c}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
+
         </div>
       </header>
 
