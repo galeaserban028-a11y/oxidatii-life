@@ -723,110 +723,113 @@ function MePage() {
         </button>
       </div>
 
-      {tab === "spritz" && (
-        <div className="mx-4 mt-3 px-3 py-2 rounded-xl border border-[#ffea00]/20 bg-[#ffea00]/5 text-[10px] font-mono uppercase tracking-widest text-[#ffea00]/80 flex items-center gap-2">
-          <Lock size={11} /> doar tu vezi istoricul tău de șprițuri
-        </div>
-      )}
-
-
-      {/* Grid moments */}
-      {tabMoments.length === 0 ? (
-        <div className="mx-4 mt-4 rounded-3xl border border-white/10 bg-[#0d0d0d] p-8 text-center space-y-3">
-          <div className="text-4xl">{tab === "reposts" ? "↻" : tab === "spritz" ? "🍹" : "📸"}</div>
-          <div style={instrument} className="text-2xl text-white">
-            {tab === "reposts" ? "Niciun repost încă" : tab === "spritz" ? "Niciun șpriț scanat." : "Nicio postare încă."}
+      <FadeIn key={tab} y={10}>
+        {tab === "spritz" && (
+          <div className="mx-4 mt-3 px-3 py-2 rounded-xl border border-[#ffea00]/20 bg-[#ffea00]/5 text-[10px] font-mono uppercase tracking-widest text-[#ffea00]/80 flex items-center gap-2">
+            <Lock size={11} /> doar tu vezi istoricul tău de șprițuri
           </div>
-          <p className="text-xs text-white/50 max-w-xs mx-auto">
-            {tab === "reposts"
-              ? "Când dai repost la o fază din feed, apare aici."
-              : tab === "spritz"
-                ? "Scanează primul șpriț — apare doar pe profilul tău, vizibil doar ție."
-                : "Postările tale rămân aici pentru totdeauna. Pe feed dispar după 12h."}
-          </p>
-          <Link to={tab === "reposts" ? "/app/faze" : "/app/scan"} className="inline-flex mt-2 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-full bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white">
-            {tab === "reposts" ? "vezi fazele →" : tab === "spritz" ? "scanează primul șpriț →" : "postează primul →"}
-          </Link>
+        )}
 
-        </div>
 
-      ) : (
-        <div className="grid grid-cols-3 gap-0.5">
-          {tabMoments.map((m: any) => {
-            const isProof = m._kind === "proof";
-            const key = `${m._kind}-${m.id}`;
-            const url: string = m.photo_url ?? "";
-            const isVideo = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url) || m.media_type === "video";
-            return (
-              <div key={key} className="relative aspect-square overflow-hidden bg-black group">
-                <Link
-                  to={isProof ? (m.venue?.id ? "/app/venue/$id" : "/app/me") : "/app/photo/$id"}
-                  params={isProof ? (m.venue?.id ? { id: m.venue.id } : undefined as any) : { id: m.id }}
-                  className="absolute inset-0"
-                >
-                  {isVideo ? (
-                    <>
-                      <video
-                        src={`${url}#t=0.5`}
-                        muted
-                        playsInline
-                        preload="metadata"
-                        crossOrigin="anonymous"
-                        onLoadedMetadata={(e) => {
-                          const v = e.currentTarget as HTMLVideoElement;
-                          try { v.currentTime = 0.5; } catch {}
-                        }}
-                        onLoadedData={(e) => {
-                          const v = e.currentTarget as HTMLVideoElement;
-                          // Force a paint of the first frame on Safari/Chrome
-                          v.play().then(() => { try { v.pause(); v.currentTime = 0.5; } catch {} }).catch(() => {});
-                        }}
-                        className="absolute inset-0 h-full w-full object-cover bg-black group-active:scale-105 transition"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 pointer-events-none" />
-                      <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-black/60 border border-white/20 flex items-center gap-1">
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
-                        <span className="font-mono text-[8px] uppercase text-white tracking-wider">video</span>
+        {/* Grid moments */}
+        {tabMoments.length === 0 ? (
+          <div className="mx-4 mt-4 rounded-3xl border border-white/10 bg-[#0d0d0d] p-8 text-center space-y-3">
+            <div className="text-4xl">{tab === "reposts" ? "↻" : tab === "spritz" ? "🍹" : "📸"}</div>
+            <div style={instrument} className="text-2xl text-white">
+              {tab === "reposts" ? "Niciun repost încă" : tab === "spritz" ? "Niciun șpriț scanat." : "Nicio postare încă."}
+            </div>
+            <p className="text-xs text-white/50 max-w-xs mx-auto">
+              {tab === "reposts"
+                ? "Când dai repost la o fază din feed, apare aici."
+                : tab === "spritz"
+                  ? "Scanează primul șpriț — apare doar pe profilul tău, vizibil doar ție."
+                  : "Postările tale rămân aici pentru totdeauna. Pe feed dispar după 12h."}
+            </p>
+            <Link to={tab === "reposts" ? "/app/faze" : "/app/scan"} className="inline-flex mt-2 font-mono text-[10px] uppercase tracking-widest px-4 py-2 rounded-full bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white">
+              {tab === "reposts" ? "vezi fazele →" : tab === "spritz" ? "scanează primul șpriț →" : "postează primul →"}
+            </Link>
+
+          </div>
+
+        ) : (
+          <div className="grid grid-cols-3 gap-0.5">
+            {tabMoments.map((m: any) => {
+              const isProof = m._kind === "proof";
+              const key = `${m._kind}-${m.id}`;
+              const url: string = m.photo_url ?? "";
+              const isVideo = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url) || m.media_type === "video";
+              return (
+                <div key={key} className="relative aspect-square overflow-hidden bg-black group">
+                  <Link
+                    to={isProof ? (m.venue?.id ? "/app/venue/$id" : "/app/me") : "/app/photo/$id"}
+                    params={isProof ? (m.venue?.id ? { id: m.venue.id } : undefined as any) : { id: m.id }}
+                    className="absolute inset-0"
+                  >
+                    {isVideo ? (
+                      <>
+                        <video
+                          src={`${url}#t=0.5`}
+                          muted
+                          playsInline
+                          preload="metadata"
+                          crossOrigin="anonymous"
+                          onLoadedMetadata={(e) => {
+                            const v = e.currentTarget as HTMLVideoElement;
+                            try { v.currentTime = 0.5; } catch {}
+                          }}
+                          onLoadedData={(e) => {
+                            const v = e.currentTarget as HTMLVideoElement;
+                            // Force a paint of the first frame on Safari/Chrome
+                            v.play().then(() => { try { v.pause(); v.currentTime = 0.5; } catch {} }).catch(() => {});
+                          }}
+                          className="absolute inset-0 h-full w-full object-cover bg-black group-active:scale-105 transition"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 pointer-events-none" />
+                        <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-black/60 border border-white/20 flex items-center gap-1">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                          <span className="font-mono text-[8px] uppercase text-white tracking-wider">video</span>
+                        </div>
+                      </>
+                    ) : (
+                      <img src={url} alt={m.caption ?? ""} className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition" loading="lazy" />
+                    )}
+                    {isProof && (
+                      <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#ffea00]/50">
+                        <span className="font-mono text-[8px] uppercase text-[#ffea00]">verificat</span>
                       </div>
-                    </>
-                  ) : (
-                    <img src={url} alt={m.caption ?? ""} className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition" loading="lazy" />
-                  )}
-                  {isProof && (
-                    <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#ffea00]/50">
-                      <span className="font-mono text-[8px] uppercase text-[#ffea00]">verificat</span>
-                    </div>
-                  )}
-                  {tab === "reposts" && (
-                    <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#c724ff]/50">
-                      <span className="font-mono text-[8px] uppercase text-[#c724ff]">↻ repost</span>
-                    </div>
-                  )}
-                  {m.venue?.name && (
-                    <div className="absolute bottom-0 inset-x-0 p-1.5 bg-gradient-to-t from-black/90 to-transparent">
-                      <div className="font-mono text-[9px] uppercase tracking-wider text-white truncate flex items-center gap-1">
-                        <span className="h-1 w-1 rounded-full bg-[#ffea00]" />
-                        {m.venue.name}
+                    )}
+                    {tab === "reposts" && (
+                      <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#c724ff]/50">
+                        <span className="font-mono text-[8px] uppercase text-[#c724ff]">↻ repost</span>
                       </div>
-                    </div>
-                  )}
-                </Link>
-                <button
-                  type="button"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(m); }}
-                  disabled={deleting === key}
-                  aria-label="Șterge"
-                  className={`absolute ${tab === "reposts" ? "top-1 left-1" : "top-1 right-1"} z-10 h-6 w-6 rounded-full backdrop-blur-xl bg-black/60 border border-white/20 text-white text-[11px] leading-none flex items-center justify-center hover:bg-red-500/80 transition disabled:opacity-50`}
-                >
-                  {deleting === key ? "…" : "×"}
-                </button>
-              </div>
-            );
+                    )}
+                    {m.venue?.name && (
+                      <div className="absolute bottom-0 inset-x-0 p-1.5 bg-gradient-to-t from-black/90 to-transparent">
+                        <div className="font-mono text-[9px] uppercase tracking-wider text-white truncate flex items-center gap-1">
+                          <span className="h-1 w-1 rounded-full bg-[#ffea00]" />
+                          {m.venue.name}
+                        </div>
+                      </div>
+                    )}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(m); }}
+                    disabled={deleting === key}
+                    aria-label="Șterge"
+                    className={`absolute ${tab === "reposts" ? "top-1 left-1" : "top-1 right-1"} z-10 h-6 w-6 rounded-full backdrop-blur-xl bg-black/60 border border-white/20 text-white text-[11px] leading-none flex items-center justify-center hover:bg-red-500/80 transition disabled:opacity-50`}
+                  >
+                    {deleting === key ? "…" : "×"}
+                  </button>
+                </div>
+              );
 
-          })}
+            })}
 
-        </div>
-      )}
+          </div>
+        )}
+      </FadeIn>
+
 
       <p className="text-[10px] font-mono text-center text-white/30 pt-4">
         OXIDAȚII · construit pe oameni reali · made in Balcani
