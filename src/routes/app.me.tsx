@@ -688,7 +688,7 @@ function MePage() {
       <div className="mt-6 border-t border-white/5" />
 
       {/* Tabs */}
-      <div className="sticky top-12 z-20 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5 grid grid-cols-3">
+      <div className="grid grid-cols-3">
         <button
           onClick={() => setTab("posts")}
           className={`relative h-11 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest transition ${
