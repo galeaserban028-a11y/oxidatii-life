@@ -274,7 +274,40 @@ function MePage() {
     },
   });
 
-  if (!user || !profile) return null;
+  if (!user) return null;
+  if (!profile) {
+    return (
+      <div className="px-5 pt-10 pb-20 max-w-md mx-auto text-center space-y-4">
+        <div className="text-lg font-display font-bold">Profilul nu s-a încărcat</div>
+        <p className="text-sm text-muted-foreground">
+          Conexiunea pare lentă sau aplicația rulează pe o versiune veche. Reîncarcă pagina.
+        </p>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => { void refreshProfile(); }}
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+          >
+            Reîncearcă
+          </button>
+          <button
+            onClick={() => {
+              if ("serviceWorker" in navigator) {
+                navigator.serviceWorker.getRegistrations().then((regs) =>
+                  Promise.all(regs.map((r) => r.unregister())),
+                ).finally(() => window.location.reload());
+              } else {
+                window.location.reload();
+              }
+            }}
+            className="inline-flex items-center justify-center rounded-md border border-foreground/20 px-4 py-2 text-sm"
+          >
+            Forțează update PWA
+          </button>
+        </div>
+      </div>
+    );
+  }
+
 
   const verifiedProofs = (moments?.proofs ?? []).filter((p: any) => p.ai_verified);
   const postsOnly = (moments?.photos ?? [])
