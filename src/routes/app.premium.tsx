@@ -489,7 +489,7 @@ function PremiumPage() {
         </section>
 
         {/* Manage subscription + boost */}
-        {currentTier && (
+        {ent.isActive && (
           <div className="space-y-3">
             <ProfileBoostCard />
             <button
