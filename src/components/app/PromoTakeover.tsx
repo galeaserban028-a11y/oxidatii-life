@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useEntitlements } from "@/lib/entitlements";
 import { Sparkles, X, ChevronRight, Calendar, MapPin, Ticket, Star, Video } from "lucide-react";
 
 type Campaign = {
@@ -81,7 +82,7 @@ async function loadActive(excludeIds: string[] = []): Promise<{ campaign: Campai
 
 export function PromoTakeover() {
   const { user, profile } = useAuth();
-  const isPremium = !!(profile as any)?.premium_tier;
+  const { isActive: isPremium } = useEntitlements();
   const [payload, setPayload] = useState<{ campaign: Campaign; biz: Biz | null } | null>(null);
   const [phase, setPhase] = useState<"hidden" | "full" | "mini" | "gone">("hidden");
   const trackedRef = useRef(false);

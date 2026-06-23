@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { type StripeEnv, verifyWebhook } from "@/lib/stripe.server";
+import { type StripeEnv, verifyWebhook, createStripeClient } from "@/lib/stripe.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 // price_id → premium tier + monthly coin grant
@@ -53,6 +53,30 @@ async function handleWalletTopup(session: any) {
   const current = (biz?.wallet_balance_cents as number | undefined) ?? 0;
   await supabaseAdmin.from("business_accounts")
     .update({ wallet_balance_cents: current + amountCents }).eq("id", businessId);
+}
+
+async function handleCheckoutSessionCompleted(session: any, env: StripeEnv) {
+  if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
+
+  // Wallet top-ups / coin packs (metadata-driven)
+  await handleWalletTopup(session);
+  await handleCoinPackPurchase(session, env);
+
+  // Subscription created via checkout: if webhooks for customer.subscription.* are
+  // delayed or misconfigured, make sure the profile still gets activated.
+  const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+  if (!subscriptionId) return;
+
+  // Idempotency: if we already upserted this subscription, skip
+  const { data: existing } = await supabaseAdmin
+    .from("subscriptions").select("id").eq("stripe_subscription_id", subscriptionId).maybeSingle();
+  if (existing) return;
+
+  const stripe = createStripeClient(env);
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
+    expand: ["items.data.price.product"],
+  });
+  await upsertSubscription(subscription, env);
 }
 
 async function handleCoinPackPurchase(session: any, env: StripeEnv) {
@@ -278,14 +302,9 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           const event = await verifyWebhook(request, env);
           switch (event.type) {
             case "checkout.session.completed":
-            case "checkout.session.async_payment_succeeded": {
-              const session = event.data.object as any;
-              if (session.payment_status === "paid" || session.payment_status === "no_payment_required") {
-                await handleWalletTopup(session);
-                await handleCoinPackPurchase(session, env);
-              }
+            case "checkout.session.async_payment_succeeded":
+              await handleCheckoutSessionCompleted(event.data.object, env);
               break;
-            }
             case "customer.subscription.created":
             case "customer.subscription.updated":
               await upsertSubscription(event.data.object, env);
