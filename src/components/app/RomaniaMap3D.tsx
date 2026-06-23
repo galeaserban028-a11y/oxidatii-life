@@ -204,6 +204,31 @@ function isValidLngLat(lng: unknown, lat: unknown) {
   return Number.isFinite(x) && Number.isFinite(y) && x >= -180 && x <= 180 && y >= -85 && y <= 85;
 }
 
+function resolveCityLabelCollisions(container: HTMLElement | null, compact: boolean) {
+  if (!container) return;
+  const labels = Array.from(container.querySelectorAll<HTMLElement>(".oxi-city-label"))
+    .sort((a, b) => Number(b.dataset.priority || 0) - Number(a.dataset.priority || 0));
+  const occupied: DOMRect[] = [];
+  const pad = compact ? 9 : 6;
+
+  for (const label of labels) {
+    label.style.display = "inline-block";
+    const rect = label.getBoundingClientRect();
+    const overlaps = occupied.some((other) => !(
+      rect.right + pad < other.left ||
+      rect.left - pad > other.right ||
+      rect.bottom + pad < other.top ||
+      rect.top - pad > other.bottom
+    ));
+
+    if (overlaps) {
+      label.style.display = "none";
+    } else {
+      occupied.push(rect);
+    }
+  }
+}
+
 export function RomaniaMap3D({
   cities,
   venues = [],
@@ -482,11 +507,18 @@ export function RomaniaMap3D({
     map.on("error", (event) => { console.warn("Map tile error", event.error); });
     if (isSmall) {
       const movingOn = () => containerRef.current?.classList.add("oxi-map-moving");
-      const movingOff = () => containerRef.current?.classList.remove("oxi-map-moving");
+      const movingOff = () => {
+        containerRef.current?.classList.remove("oxi-map-moving");
+        requestAnimationFrame(() => resolveCityLabelCollisions(containerRef.current, compactMapRef.current));
+      };
       map.on("movestart", movingOn);
       map.on("zoomstart", movingOn);
       map.on("moveend", movingOff);
       map.on("zoomend", movingOff);
+    } else {
+      const refreshLabels = () => requestAnimationFrame(() => resolveCityLabelCollisions(containerRef.current, compactMapRef.current));
+      map.on("moveend", refreshLabels);
+      map.on("zoomend", refreshLabels);
     }
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
@@ -660,9 +692,9 @@ export function RomaniaMap3D({
   // the clean city/country typography, avoiding the previous label pile-up.
   useEffect(() => {
     const map = mapRef.current; if (!map) return;
-    const markerCities = [...cities]
+      const markerCities = [...cities]
       .sort((a, b) => b.chaos_level - a.chaos_level)
-      .slice(0, compactMapRef.current ? SMALL_CITY_LIMIT : DESKTOP_CITY_LIMIT);
+        .slice(0, compactMapRef.current ? 12 : DESKTOP_CITY_LIMIT);
     const bottleSVG = (size: number, color: string) => `
       <svg width="${size}" height="${size * 2.2}" viewBox="0 0 20 44" xmlns="http://www.w3.org/2000/svg" style="display:block;${compactMapRef.current ? "" : `filter:drop-shadow(0 0 6px ${color}) drop-shadow(0 2px 3px rgba(0,0,0,0.7));`}">
         <rect x="8.5" y="0" width="3" height="6" rx="1" fill="#1a0f05"/>
@@ -702,7 +734,8 @@ export function RomaniaMap3D({
       const label = document.createElement("div");
       label.textContent = c.name;
       label.className = "oxi-city-label";
-      label.style.cssText = `font-family:'Plus Jakarta Sans','DM Sans',sans-serif;font-weight:800;font-size:${compactMapRef.current ? 10 : 11}px;letter-spacing:0.02em;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,0.95),0 0 6px rgba(0,0,0,0.7);white-space:nowrap;margin-top:3px;padding:1px 5px;background:rgba(0,0,0,0.35);border-radius:6px;backdrop-filter:blur(2px);`;
+      label.dataset.priority = String(c.chaos_level);
+      label.style.cssText = `font-family:'Plus Jakarta Sans','DM Sans',sans-serif;font-weight:800;font-size:${compactMapRef.current ? 9 : 11}px;letter-spacing:0.02em;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,0.95),0 0 6px rgba(0,0,0,0.7);white-space:nowrap;margin-top:3px;padding:1px 4px;background:rgba(0,0,0,0.35);border-radius:6px;backdrop-filter:blur(2px);`;
       wrap.appendChild(label);
 
       let shattering = false;
@@ -752,6 +785,7 @@ export function RomaniaMap3D({
     for (const [id, marker] of cityMarkers.current) {
       if (!seen.has(id)) { marker.remove(); cityMarkers.current.delete(id); }
     }
+    requestAnimationFrame(() => resolveCityLabelCollisions(containerRef.current, compactMapRef.current));
   }, [cities, retryKey]);
 
   // FOCUS city programmatically. easeTo is lighter than flyTo on mobile GPUs.
