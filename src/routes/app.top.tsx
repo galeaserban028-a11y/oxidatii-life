@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useMemo, useState } from "react";
 import { Flame, Camera, MapPin, Trophy, Globe2, ChevronDown } from "lucide-react";
 import { SpritzOfDayStrip } from "@/components/app/SpritzOfDayStrip";
+import { FadeIn } from "@/components/app/FadeIn";
 
 export const Route = createFileRoute("/app/top")({
   head: () => ({ meta: [{ title: "Top · OXIDAȚII" }] }),
@@ -201,28 +203,37 @@ function TopPage() {
             <div className="relative mt-2">
               <button
                 onClick={() => setCountryOpen((o) => !o)}
-                className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur text-sm font-semibold"
+                className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur text-sm font-semibold active:scale-[0.99] transition-all"
               >
                 <span>{COUNTRY_LABEL[country] ?? country}</span>
-                <ChevronDown size={16} className={`transition ${countryOpen ? "rotate-180" : ""}`} />
+                <ChevronDown size={16} className={`transition-transform duration-200 ${countryOpen ? "rotate-180" : ""}`} />
               </button>
-              {countryOpen && (
-                <div className="absolute z-20 mt-1 w-full max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[#0a0a0a] shadow-2xl">
-                  {countries.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => { setCountry(c); setCountryOpen(false); }}
-                      className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition ${
-                        c === country ? "bg-white/5 font-semibold text-[#ffea00]" : ""
-                      }`}
-                    >
-                      {COUNTRY_LABEL[c] ?? c}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <AnimatePresence>
+                {countryOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                    transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute z-20 mt-1 w-full max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[#0a0a0a] shadow-2xl"
+                  >
+                    {countries.map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => { setCountry(c); setCountryOpen(false); }}
+                        className={`w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition-colors ${
+                          c === country ? "bg-white/5 font-semibold text-[#ffea00]" : ""
+                        }`}
+                      >
+                        {COUNTRY_LABEL[c] ?? c}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
+
         </div>
       </header>
 
@@ -245,59 +256,62 @@ function TopPage() {
           <>
             {/* Cinema podium bento */}
             {top3.length > 0 && (
-              <div className="relative rounded-3xl overflow-hidden border border-white/5 bg-gradient-to-br from-[#0a0a14] via-[#0a0a0a] to-[#0a0a14] p-5">
-                <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#c724ff]/20 blur-3xl pointer-events-none" />
-                <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-[#ff3d8b]/20 blur-3xl pointer-events-none" />
-                <div className="relative grid grid-cols-3 gap-3 items-end">
-                  {podiumOrder.map((p: any, idx) => {
-                    const realRank = p === top3[0] ? 1 : p === top3[1] ? 2 : 3;
-                    const isKing = realRank === 1;
-                    const handle = p?.handle ?? p?.display_name ?? "anonim";
-                    const isMe = p.id === user?.id;
-                    const podiumH = isKing ? "h-32" : realRank === 2 ? "h-24" : "h-20";
-                    return (
-                      <Link
-                        key={p.id}
-                        to="/app/user/$id"
-                        params={{ id: p.id }}
-                        className="flex flex-col items-center gap-2"
-                      >
-                        <div className={`relative ${isKing ? "h-20 w-20" : "h-16 w-16"} rounded-full p-[2px] bg-gradient-to-br ${
-                          isKing ? "from-[#ff3d8b] to-[#c724ff]" : "from-white/20 to-white/5"
-                        } ${isKing ? "shadow-[0_0_30px_rgba(199,36,255,0.5)]" : ""}`}>
-                          <div className="h-full w-full rounded-full overflow-hidden bg-[#0a0a0a]">
-                            {p?.avatar_url
-                              ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
-                              : <div className="h-full w-full flex items-center justify-center text-xl font-semibold">{handle[0]?.toUpperCase()}</div>
-                            }
+              <FadeIn y={12}>
+                <div className="relative rounded-3xl overflow-hidden border border-white/5 bg-gradient-to-br from-[#0a0a14] via-[#0a0a0a] to-[#0a0a14] p-5">
+                  <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#c724ff]/20 blur-3xl pointer-events-none" />
+                  <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-[#ff3d8b]/20 blur-3xl pointer-events-none" />
+                  <div className="relative grid grid-cols-3 gap-3 items-end">
+                    {podiumOrder.map((p: any, idx) => {
+                      const realRank = p === top3[0] ? 1 : p === top3[1] ? 2 : 3;
+                      const isKing = realRank === 1;
+                      const handle = p?.handle ?? p?.display_name ?? "anonim";
+                      const isMe = p.id === user?.id;
+                      const podiumH = isKing ? "h-32" : realRank === 2 ? "h-24" : "h-20";
+                      return (
+                        <Link
+                          key={p.id}
+                          to="/app/user/$id"
+                          params={{ id: p.id }}
+                          className="flex flex-col items-center gap-2"
+                        >
+                          <div className={`relative ${isKing ? "h-20 w-20" : "h-16 w-16"} rounded-full p-[2px] bg-gradient-to-br ${
+                            isKing ? "from-[#ff3d8b] to-[#c724ff]" : "from-white/20 to-white/5"
+                          } ${isKing ? "shadow-[0_0_30px_rgba(199,36,255,0.5)]" : ""}`}>
+                            <div className="h-full w-full rounded-full overflow-hidden bg-[#0a0a0a]">
+                              {p?.avatar_url
+                                ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
+                                : <div className="h-full w-full flex items-center justify-center text-xl font-semibold">{handle[0]?.toUpperCase()}</div>
+                              }
+                            </div>
+                            {isKing && (
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl">👑</div>
+                            )}
                           </div>
-                          {isKing && (
-                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl">👑</div>
-                          )}
-                        </div>
-                        <div className="text-center min-w-0 w-full">
-                          <div className={`text-[12px] font-semibold truncate ${isKing ? "text-white" : "text-white/80"}`}>
-                            @{handle}{isMe && <span className="text-[#ffea00]"> ·tu</span>}
+                          <div className="text-center min-w-0 w-full">
+                            <div className={`text-[12px] font-semibold truncate ${isKing ? "text-white" : "text-white/80"}`}>
+                              @{handle}{isMe && <span className="text-[#ffea00]"> ·tu</span>}
+                            </div>
+                            <div style={instrument} className={`leading-none mt-1 ${isKing ? "text-3xl text-[#ffea00]" : "text-2xl text-white/70"}`}>
+                              {p.value}
+                            </div>
                           </div>
-                          <div style={instrument} className={`leading-none mt-1 ${isKing ? "text-3xl text-[#ffea00]" : "text-2xl text-white/70"}`}>
-                            {p.value}
+                          <div className={`${podiumH} w-full rounded-t-2xl backdrop-blur-xl border-t border-white/10 ${
+                            isKing
+                              ? "bg-gradient-to-t from-[#c724ff]/30 to-transparent"
+                              : "bg-white/[0.03]"
+                          } flex items-start justify-center pt-2`}>
+                            <span className={`text-[11px] font-mono font-bold ${isKing ? "text-[#ffea00]" : "text-white/40"}`}>
+                              #{realRank}
+                            </span>
                           </div>
-                        </div>
-                        <div className={`${podiumH} w-full rounded-t-2xl backdrop-blur-xl border-t border-white/10 ${
-                          isKing
-                            ? "bg-gradient-to-t from-[#c724ff]/30 to-transparent"
-                            : "bg-white/[0.03]"
-                        } flex items-start justify-center pt-2`}>
-                          <span className={`text-[11px] font-mono font-bold ${isKing ? "text-[#ffea00]" : "text-white/40"}`}>
-                            #{realRank}
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              </FadeIn>
             )}
+
 
             {/* Rest of list */}
             {rest.length > 0 && (
@@ -308,42 +322,43 @@ function TopPage() {
                   const isMe = uid === user?.id;
                   const handle = p?.handle ?? p?.display_name ?? "anonim";
                   return (
-                    <Link
-                      key={uid}
-                      to="/app/user/$id"
-                      params={{ id: uid }}
-                      className={`grid grid-cols-[32px_44px_1fr_auto] items-center gap-3 p-3 rounded-2xl border transition active:scale-[0.99] ${
-                        isMe
-                          ? "bg-gradient-to-r from-[#ff3d8b]/10 to-[#c724ff]/10 border-[#c724ff]/40"
-                          : "bg-[#0d0d0d] border-white/5 hover:bg-[#111]"
-                      }`}
-                    >
-                      <div className="font-mono font-bold text-sm text-center text-white/40">
-                        {rank}
-                      </div>
-                      <div className="h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center text-white font-semibold">
-                        {p?.avatar_url
-                          ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
-                          : handle[0]?.toUpperCase()}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-sm truncate text-white">
-                          @{handle} {isMe && <span className="text-[10px] text-[#ffea00]">· tu</span>}
+                    <FadeIn key={uid} y={8} delay={Math.min(i * 0.03, 0.4)}>
+                      <Link
+                        to="/app/user/$id"
+                        params={{ id: uid }}
+                        className={`grid grid-cols-[32px_44px_1fr_auto] items-center gap-3 p-3 rounded-2xl border transition active:scale-[0.99] ${
+                          isMe
+                            ? "bg-gradient-to-r from-[#ff3d8b]/10 to-[#c724ff]/10 border-[#c724ff]/40"
+                            : "bg-[#0d0d0d] border-white/5 hover:bg-[#111]"
+                        }`}
+                      >
+                        <div className="font-mono font-bold text-sm text-center text-white/40">
+                          {rank}
                         </div>
-                        <div className="text-[11px] text-white/40 truncate">
-                          {p?.city?.name ?? "—"}{p?.city?.country ? ` · ${p.city.country}` : ""}
+                        <div className="h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center text-white font-semibold">
+                          {p?.avatar_url
+                            ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
+                            : handle[0]?.toUpperCase()}
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div style={instrument} className="text-2xl leading-none text-white flex items-center justify-end gap-1.5">
-                          {p.value}
-                          <Icon size={13} className="text-white/40" />
+                        <div className="min-w-0">
+                          <div className="font-semibold text-sm truncate text-white">
+                            @{handle} {isMe && <span className="text-[10px] text-[#ffea00]">· tu</span>}
+                          </div>
+                          <div className="text-[11px] text-white/40 truncate">
+                            {p?.city?.name ?? "—"}{p?.city?.country ? ` · ${p.city.country}` : ""}
+                          </div>
                         </div>
-                        <div className="text-[9px] text-white/30 uppercase tracking-wider mt-1">
-                          {METRIC_META[metric].unit}
+                        <div className="text-right">
+                          <div style={instrument} className="text-2xl leading-none text-white flex items-center justify-end gap-1.5">
+                            {p.value}
+                            <Icon size={13} className="text-white/40" />
+                          </div>
+                          <div className="text-[9px] text-white/30 uppercase tracking-wider mt-1">
+                            {METRIC_META[metric].unit}
+                          </div>
                         </div>
-                      </div>
-                    </Link>
+                      </Link>
+                    </FadeIn>
                   );
                 })}
               </div>

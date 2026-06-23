@@ -606,7 +606,7 @@ export function RomaniaMap3D({
         wrap.appendChild(pulse);
 
         const ring = document.createElement("div");
-        ring.style.cssText = `position:relative;width:58px;height:58px;border-radius:18px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 14px ${theme}88,0 8px 16px rgba(0,0,0,0.58);`;
+        ring.style.cssText = `position:relative;width:58px;height:58px;border-radius:18px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 14px ${theme}88,0 8px 16px rgba(0,0,0,0.58);animation:oxi-marker-pop 0.32s cubic-bezier(0.22,1,0.36,1) both;`;
         if (meta.cover) {
           const imgFrame = document.createElement("div");
           imgFrame.style.cssText = "position:absolute;inset:3px;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;";
@@ -623,6 +623,7 @@ export function RomaniaMap3D({
           ring.appendChild(ini);
         }
         wrap.appendChild(ring);
+
 
         const badge = document.createElement("div");
         badge.textContent = "";
@@ -712,7 +713,9 @@ export function RomaniaMap3D({
       const bottleStage = document.createElement("div");
       bottleStage.style.cssText = "position:relative;display:block;transition:transform 160ms ease;";
       bottleStage.innerHTML = bottleSVG(bottleSize, color);
+      bottleStage.style.animation = "oxi-marker-pop 0.34s cubic-bezier(0.22,1,0.36,1) both";
       wrap.appendChild(bottleStage);
+
 
       const label = document.createElement("div");
       label.textContent = c.name;
@@ -853,7 +856,8 @@ export function RomaniaMap3D({
       wrap.appendChild(pulse);
 
       const ring = document.createElement("div");
-      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:${f.is_me ? 18 : 14}px;border:2px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3d8b,#c724ff);box-shadow:0 0 14px ${accent},0 4px 12px rgba(0,0,0,0.55);aspect-ratio:1/1;`;
+      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:${f.is_me ? 18 : 14}px;border:2px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3d8b,#c724ff);box-shadow:0 0 14px ${accent},0 4px 12px rgba(0,0,0,0.55);aspect-ratio:1/1;animation:oxi-marker-pop 0.32s cubic-bezier(0.22,1,0.36,1) both;`;
+
       if (f.avatar_url) {
         const img = document.createElement("img");
         img.src = f.avatar_url; img.alt = "";
@@ -924,6 +928,11 @@ export function RomaniaMap3D({
           15%  { transform: translate(-50%,-50%) rotate(calc(var(--rot) * 0.15)) scale(1.1); opacity: 1; }
           100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(0.4); opacity: 0; }
         }
+        @keyframes oxi-marker-pop {
+          0%   { opacity: 0; transform: scale(0.6); }
+          70%  { opacity: 1; transform: scale(1.08); }
+          100% { opacity: 1; transform: scale(1); }
+        }
         .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas { outline:none !important; }
@@ -934,6 +943,7 @@ export function RomaniaMap3D({
         .maplibregl-ctrl-group button { background-color: transparent !important; }
         .maplibregl-ctrl-group button span { filter: invert(1) brightness(1.2); }
       `}</style>
+
       <div ref={containerRef} className="absolute inset-0" />
       {mapFailed && (
         <div className="absolute inset-0 z-20 grid place-items-center bg-background/95 px-6 text-center">
@@ -952,18 +962,18 @@ export function RomaniaMap3D({
 
       {/* Zoom + recenter controls — stacked bottom-right */}
       <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-2">
-        <div className="flex flex-col rounded-full overflow-hidden backdrop-blur-xl bg-black/60 border border-white/15 shadow-lg shadow-black/40">
+        <div className="flex flex-col rounded-full overflow-hidden backdrop-blur-xl bg-black/60 border border-white/15 shadow-lg shadow-black/40 transition-colors hover:border-white/25">
           <button
             onClick={() => mapRef.current?.zoomIn({ duration: 220 })}
             aria-label="Apropie harta"
-            className="h-10 w-10 grid place-items-center text-white/90 active:scale-95 transition border-b border-white/10"
+            className="h-10 w-10 grid place-items-center text-white/90 active:scale-95 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 will-change-transform border-b border-white/10"
           >
             <Plus size={18} />
           </button>
           <button
             onClick={() => mapRef.current?.zoomOut({ duration: 220 })}
             aria-label="Depărtează harta"
-            className="h-10 w-10 grid place-items-center text-white/90 active:scale-95 transition"
+            className="h-10 w-10 grid place-items-center text-white/90 active:scale-95 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 will-change-transform"
           >
             <Minus size={18} />
           </button>
@@ -972,12 +982,13 @@ export function RomaniaMap3D({
           <button
             onClick={handleRecenter}
             aria-label="Re-centrează pe poziția mea"
-            className="h-10 w-10 grid place-items-center rounded-full backdrop-blur-xl bg-black/60 border border-white/15 text-white/90 active:scale-95 transition shadow-lg shadow-black/40"
+            className="h-10 w-10 grid place-items-center rounded-full backdrop-blur-xl bg-black/60 border border-white/15 text-white/90 active:scale-95 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 hover:border-white/25 will-change-transform shadow-lg shadow-black/40"
           >
             <Crosshair size={18} />
           </button>
         )}
       </div>
+
 
       {/* Soft vignette only — no decorative blobs over the map. */}
       <div className="pointer-events-none absolute inset-0 z-[1]"

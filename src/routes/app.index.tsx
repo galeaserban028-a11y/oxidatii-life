@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -10,6 +11,7 @@ import { toast } from "sonner";
 
 import { PromoTakeover } from "@/components/app/PromoTakeover";
 import { NightWrapCard } from "@/components/app/NightWrapCard";
+import { FadeIn } from "@/components/app/FadeIn";
 import { getOrCreateNightWrap } from "@/lib/night-wrap.functions";
 import VideoTile from "@/components/app/VideoTile";
 import PhotoZoom from "@/components/app/PhotoZoom";
@@ -243,7 +245,9 @@ function AppFeed() {
             const profile = data.profilesMap.get(it.user_id);
             const venue = it.venue_id ? data.venuesMap.get(it.venue_id) : null;
             return (
-              <FeedCard key={it.id} item={it} profile={profile} venue={venue} />
+              <FadeIn key={it.id} y={10}>
+                <FeedCard item={it} profile={profile} venue={venue} />
+              </FadeIn>
             );
           })}
         </div>
@@ -483,7 +487,12 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
               <MoreHorizontal size={18} />
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-full mt-1 z-20 min-w-[160px] rounded-xl border border-white/10 bg-[#15151a] shadow-2xl overflow-hidden">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute right-0 top-full mt-1 z-20 min-w-[160px] rounded-xl border border-white/10 bg-[#15151a] shadow-2xl overflow-hidden origin-top-right"
+              >
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
@@ -492,7 +501,7 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
                   <Trash2 size={15} />
                   {deleting ? "Se șterge…" : "Șterge postarea"}
                 </button>
-              </div>
+              </motion.div>
             )}
           </div>
         )}

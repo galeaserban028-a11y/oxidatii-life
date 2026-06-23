@@ -8,6 +8,7 @@ import { UserPlus, Users, MapPin, Clock, X, Beer, List, Navigation, Sparkles, Se
 import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilters";
 import { AddVenueSheet } from "@/components/app/AddVenueSheet";
 import { MapSettingsSheet } from "@/components/app/MapSettingsSheet";
+import { FadeIn } from "@/components/app/FadeIn";
 import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
 import { tierConfig } from "@/lib/biz/tiers";
 
@@ -767,21 +768,26 @@ function MapPage() {
         <div className="relative overflow-hidden border-y border-white/10 bg-[#080a12] -mx-4">
 
           {isLoading ? (
-            <div className="aspect-[5/4] animate-pulse bg-white/5" />
+            <FadeIn key="map-loading" y={0}>
+              <div className="aspect-[5/4] animate-pulse bg-white/5" />
+            </FadeIn>
           ) : (
-            <RomaniaMap3D
-              cities={citiesScoped}
-              venues={filtered}
-              promotedMeta={promotedMeta}
-              friends={mapFriendPins}
-              focusCity={focusCity}
-              fitBounds={fitBounds}
-              onCityClick={(c) => {
-                setCityId(c.id);
-                setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
-              }}
-            />
+            <FadeIn key="map-ready" delay={0.08}>
+              <RomaniaMap3D
+                cities={citiesScoped}
+                venues={filtered}
+                promotedMeta={promotedMeta}
+                friends={mapFriendPins}
+                focusCity={focusCity}
+                fitBounds={fitBounds}
+                onCityClick={(c) => {
+                  setCityId(c.id);
+                  setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
+                }}
+              />
+            </FadeIn>
           )}
+
           {activeCity && (
             <div className="absolute top-3 left-3 right-3 z-10 flex items-center gap-2 rounded-2xl backdrop-blur-xl bg-black/50 border border-white/10 px-3 py-2">
               <MapPin size={12} className="text-[#ffea00] shrink-0" />
