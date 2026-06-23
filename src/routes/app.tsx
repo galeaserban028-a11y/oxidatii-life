@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { BottomTabBar } from "@/components/app/BottomTabBar";
@@ -15,9 +15,13 @@ export const Route = createFileRoute("/app")({
   component: AppLayout,
 });
 
+
 function AppLayout() {
   const nav = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isMe = pathname === "/app/me" || pathname.startsWith("/app/me/");
   const { user, profile, loading } = useAuth();
+
 
   // Broadcast our live position to friends if we've granted location consent.
   useLiveLocation(user?.id ?? null, !!profile?.location_consent);
@@ -35,7 +39,7 @@ function AppLayout() {
   return (
     <main
       className="min-h-screen bg-background text-foreground overflow-x-hidden"
-      style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)" }}
+      style={{ paddingBottom: isMe ? "env(safe-area-inset-bottom)" : "calc(env(safe-area-inset-bottom) + 8.5rem)" }}
     >
       {/* iOS status-bar tint — solid background under the Dynamic Island / notch
           so the area never shows transparent content. Sits behind the sticky header. */}
@@ -47,17 +51,18 @@ function AppLayout() {
       {/* Centered phone-width column: on desktop the app looks like a phone column,
           on actual phones it fills the whole screen. */}
       <div className="mx-auto w-full max-w-[480px] min-w-0">
-        <InstallBanner />
-        <AppHeader />
+        {!isMe && <InstallBanner />}
+        {!isMe && <AppHeader />}
         <PullToRefresh>
           <PageTransition>
             <Outlet />
           </PageTransition>
         </PullToRefresh>
       </div>
-      <BottomTabBar />
+      {!isMe && <BottomTabBar />}
       <TutorialOverlay />
     </main>
+
   );
 }
 
