@@ -324,7 +324,7 @@ function MePage() {
       )}
       <div className="relative z-10" style={theme ? ({ ["--theme-accent" as any]: theme.accent, ["--theme-border" as any]: theme.cardBorder }) : undefined}>
       {/* Top bar — sunset glass */}
-      <header className="sticky top-0 z-30 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5 px-3 h-12 flex items-center justify-between">
+      <header className="px-3 h-12 flex items-center justify-between">
         <Link to="/app/scan" className="p-1.5 -ml-1.5 active:scale-95 transition text-white/80 hover:text-[#ffea00]" aria-label="Adaugă">
           <Plus size={24} strokeWidth={2.2} />
         </Link>
@@ -688,7 +688,7 @@ function MePage() {
       <div className="mt-6 border-t border-white/5" />
 
       {/* Tabs */}
-      <div className="sticky top-12 z-20 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5 grid grid-cols-3">
+      <div className="grid grid-cols-3">
         <button
           onClick={() => setTab("posts")}
           className={`relative h-11 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest transition ${
