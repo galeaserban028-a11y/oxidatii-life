@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { useEntitlements } from "@/lib/entitlements";
 import { Sparkles, X, ChevronRight, Calendar, MapPin, Ticket, Star, Video } from "lucide-react";
 
 type Campaign = {
