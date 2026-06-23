@@ -8,6 +8,7 @@ import { UserPlus, Users, MapPin, Clock, X, Beer, List, Navigation, Sparkles, Se
 import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilters";
 import { AddVenueSheet } from "@/components/app/AddVenueSheet";
 import { MapSettingsSheet } from "@/components/app/MapSettingsSheet";
+import { FadeIn } from "@/components/app/FadeIn";
 import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
 import { tierConfig } from "@/lib/biz/tiers";
 
