@@ -322,42 +322,43 @@ function TopPage() {
                   const isMe = uid === user?.id;
                   const handle = p?.handle ?? p?.display_name ?? "anonim";
                   return (
-                    <Link
-                      key={uid}
-                      to="/app/user/$id"
-                      params={{ id: uid }}
-                      className={`grid grid-cols-[32px_44px_1fr_auto] items-center gap-3 p-3 rounded-2xl border transition active:scale-[0.99] ${
-                        isMe
-                          ? "bg-gradient-to-r from-[#ff3d8b]/10 to-[#c724ff]/10 border-[#c724ff]/40"
-                          : "bg-[#0d0d0d] border-white/5 hover:bg-[#111]"
-                      }`}
-                    >
-                      <div className="font-mono font-bold text-sm text-center text-white/40">
-                        {rank}
-                      </div>
-                      <div className="h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center text-white font-semibold">
-                        {p?.avatar_url
-                          ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
-                          : handle[0]?.toUpperCase()}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-sm truncate text-white">
-                          @{handle} {isMe && <span className="text-[10px] text-[#ffea00]">· tu</span>}
+                    <FadeIn key={uid} y={8} delay={Math.min(i * 0.03, 0.4)}>
+                      <Link
+                        to="/app/user/$id"
+                        params={{ id: uid }}
+                        className={`grid grid-cols-[32px_44px_1fr_auto] items-center gap-3 p-3 rounded-2xl border transition active:scale-[0.99] ${
+                          isMe
+                            ? "bg-gradient-to-r from-[#ff3d8b]/10 to-[#c724ff]/10 border-[#c724ff]/40"
+                            : "bg-[#0d0d0d] border-white/5 hover:bg-[#111]"
+                        }`}
+                      >
+                        <div className="font-mono font-bold text-sm text-center text-white/40">
+                          {rank}
                         </div>
-                        <div className="text-[11px] text-white/40 truncate">
-                          {p?.city?.name ?? "—"}{p?.city?.country ? ` · ${p.city.country}` : ""}
+                        <div className="h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center text-white font-semibold">
+                          {p?.avatar_url
+                            ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
+                            : handle[0]?.toUpperCase()}
                         </div>
-                      </div>
-                      <div className="text-right">
-                        <div style={instrument} className="text-2xl leading-none text-white flex items-center justify-end gap-1.5">
-                          {p.value}
-                          <Icon size={13} className="text-white/40" />
+                        <div className="min-w-0">
+                          <div className="font-semibold text-sm truncate text-white">
+                            @{handle} {isMe && <span className="text-[10px] text-[#ffea00]">· tu</span>}
+                          </div>
+                          <div className="text-[11px] text-white/40 truncate">
+                            {p?.city?.name ?? "—"}{p?.city?.country ? ` · ${p.city.country}` : ""}
+                          </div>
                         </div>
-                        <div className="text-[9px] text-white/30 uppercase tracking-wider mt-1">
-                          {METRIC_META[metric].unit}
+                        <div className="text-right">
+                          <div style={instrument} className="text-2xl leading-none text-white flex items-center justify-end gap-1.5">
+                            {p.value}
+                            <Icon size={13} className="text-white/40" />
+                          </div>
+                          <div className="text-[9px] text-white/30 uppercase tracking-wider mt-1">
+                            {METRIC_META[metric].unit}
+                          </div>
                         </div>
-                      </div>
-                    </Link>
+                      </Link>
+                    </FadeIn>
                   );
                 })}
               </div>
