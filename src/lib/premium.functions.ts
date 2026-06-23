@@ -4,6 +4,7 @@ import { type StripeEnv, createStripeClient, getCheckoutClientSecret, getStripeE
 
 type CheckoutResult = { clientSecret: string } | { error: string };
 type PortalResult = { url: string } | { error: string };
+type SyncResult = { success: true; tier?: string; coinsAdded?: number } | { success: false; error: string };
 
 // Allowed price IDs (subscriptions + one-time coin packs)
 const ALLOWED_PRICES = new Set([
@@ -22,10 +23,22 @@ const COIN_PACKS: Record<string, number> = {
   coins_legenda: 5000,
 };
 
+// price_id → premium tier. Must match webhook at src/routes/api/public/payments/webhook.tsx
+const TIER_MAP: Record<string, "vip" | "vip_plus" | "pro" | "elite"> = {
+  vip_monthly: "vip",
+  vip_yearly: "vip",
+  vip_plus_monthly: "vip_plus",
+  vip_plus_yearly: "vip_plus",
+  pro_monthly: "pro",
+  pro_yearly: "pro",
+  elite_monthly: "elite",
+  elite_yearly: "elite",
+};
+
 async function resolveCustomer(stripe: ReturnType<typeof createStripeClient>, userId: string, email?: string) {
   if (!/^[a-zA-Z0-9_-]+$/.test(userId)) throw new Error("Invalid userId");
   const found = await stripe.customers.search({
-    query: `metadata['userId']:'${userId}'`,
+    query: `metadata['userId']:'${userId}']`,
     limit: 1,
   });
   const foundCustomers = Array.isArray(found.data) ? found.data : [];
@@ -109,6 +122,146 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
       return { clientSecret };
     } catch (error) {
       return { error: getStripeErrorMessage(error) };
+    }
+  });
+
+// Client-side fallback: when a user returns from checkout, the app calls this to
+// ensure their premium tier / coin pack is applied even if Stripe webhooks are
+// delayed or not configured for the current environment (preview vs published).
+export const syncCheckoutToProfile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { sessionId: string; environment: StripeEnv }) => data)
+  .handler(async ({ data, context }): Promise<SyncResult> => {
+    const { userId } = context;
+    if (!/^[a-zA-Z0-9_-]+$/.test(data.sessionId)) {
+      return { success: false, error: "Invalid session ID" };
+    }
+
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const stripe = createStripeClient(data.environment);
+      const session = await stripe.checkout.sessions.retrieve(data.sessionId, {
+        expand: ["subscription", "subscription.items.data.price.product"],
+      });
+
+      if (session.status !== "complete") {
+        return { success: false, error: "Plata nu este finalizată încă" };
+      }
+      if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") {
+        return { success: false, error: "Plata nu a fost procesată" };
+      }
+
+      // Security: session must belong to the calling user
+      const sessionUserId = session.metadata?.userId ?? session.metadata?.user_id ?? null;
+      if (sessionUserId !== userId) {
+        return { success: false, error: "Sesiunea nu aparține contului tău" };
+      }
+
+      const priceId = session.metadata?.price_id ?? null;
+      const isCoinPack = typeof priceId === "string" && priceId.startsWith("coins_");
+
+      // Coin packs: add coins immediately
+      if (isCoinPack) {
+        const { data: existing } = await supabaseAdmin
+          .from("coin_purchases")
+          .select("id")
+          .eq("stripe_session_id", session.id)
+          .maybeSingle();
+        if (!existing) {
+          const coins = parseInt(session.metadata?.coins ?? String(COIN_PACKS[priceId] ?? 0), 10);
+          if (coins > 0) {
+            const { data: prof } = await supabaseAdmin
+              .from("profiles")
+              .select("coin_balance")
+              .eq("id", userId)
+              .maybeSingle();
+            const current = (prof?.coin_balance as number | undefined) ?? 0;
+            await supabaseAdmin.from("profiles").update({ coin_balance: current + coins }).eq("id", userId);
+            await supabaseAdmin.from("coin_purchases").insert({
+              user_id: userId,
+              stripe_session_id: session.id,
+              pack_id: priceId,
+              coins,
+              amount_cents: session.amount_total ?? 0,
+              currency: session.currency ?? "ron",
+              environment: data.environment,
+            });
+            return { success: true, coinsAdded: coins };
+          }
+        }
+        return { success: true };
+      }
+
+      // Subscriptions: expand subscription and apply tier
+      const rawSub = session.subscription;
+      if (!rawSub || typeof rawSub === "string") {
+        return { success: false, error: "Nu am găsit abonamentul asociat plății" };
+      }
+      const subscription = rawSub as any;
+      const item = subscription.items?.data?.[0];
+      const price = item?.price;
+      if (!price) {
+        return { success: false, error: "Nu am găsit prețul abonamentului" };
+      }
+      const priceLookup = price.lookup_key || price.metadata?.lovable_external_id || price.id;
+      const tierInfo = priceLookup ? TIER_MAP[priceLookup] : null;
+      if (!tierInfo) {
+        return { success: false, error: "Nu am recunoscut produsul cumpărat" };
+      }
+
+      const periodEnd = item?.current_period_end ?? subscription.current_period_end;
+      const periodEndIso = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
+      const periodStart = item?.current_period_start ?? subscription.current_period_start;
+      const periodStartIso = periodStart ? new Date(periodStart * 1000).toISOString() : null;
+
+      // Upsert subscription row
+      await supabaseAdmin.from("subscriptions").upsert({
+        user_id: userId,
+        stripe_subscription_id: subscription.id,
+        stripe_customer_id: typeof subscription.customer === "string" ? subscription.customer : subscription.customer?.id,
+        product_id: typeof price.product === "string" ? price.product : price.product?.id,
+        price_id: priceLookup,
+        status: subscription.status,
+        current_period_start: periodStartIso,
+        current_period_end: periodEndIso,
+        cancel_at_period_end: subscription.cancel_at_period_end || false,
+        environment: data.environment,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "stripe_subscription_id" });
+
+      // Apply premium tier and grant one-time coins on first upgrade
+      const { data: prof } = await supabaseAdmin
+        .from("profiles")
+        .select("coin_balance, premium_tier, active_frame_id")
+        .eq("id", userId)
+        .maybeSingle();
+      const currentCoins = (prof?.coin_balance as number | undefined) ?? 0;
+      const wasUpgraded = prof?.premium_tier !== tierInfo.tier;
+
+      const PREMIUM_FRAME: Record<string, string> = {
+        vip: "vip_aurum",
+        vip_plus: "vipplus_crystal",
+        pro: "pro_holo",
+        elite: "elite_diamond",
+      };
+      const frameId = PREMIUM_FRAME[tierInfo.tier];
+      if (frameId) {
+        await supabaseAdmin.from("user_frames").upsert(
+          { user_id: userId, frame_id: frameId },
+          { onConflict: "user_id,frame_id", ignoreDuplicates: true }
+        );
+      }
+
+      await supabaseAdmin.from("profiles").update({
+        premium_tier: tierInfo.tier,
+        premium_until: periodEndIso,
+        ...(wasUpgraded && { coin_balance: currentCoins + tierInfo.coins }),
+        ...(wasUpgraded && frameId && !prof?.active_frame_id && { active_frame_id: frameId }),
+      }).eq("id", userId);
+
+      return { success: true, tier: tierInfo.tier };
+    } catch (error) {
+      return { success: false, error: getStripeErrorMessage(error) };
     }
   });
 
