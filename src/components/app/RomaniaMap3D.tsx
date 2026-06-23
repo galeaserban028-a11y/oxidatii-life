@@ -714,8 +714,8 @@ export function RomaniaMap3D({
       const label = document.createElement("div");
       label.textContent = c.name;
       label.className = "oxi-city-label";
-      label.style.cssText = `font-family:'DM Sans',sans-serif;font-weight:700;font-size:${compactMapRef.current ? 9 : 10}px;letter-spacing:0;color:rgba(255,255,255,0.85);text-shadow:0 1px 3px #000;white-space:nowrap;margin-top:2px;`;
-      if (!compactMapRef.current || big) wrap.appendChild(label);
+      label.style.cssText = `font-family:'Plus Jakarta Sans','DM Sans',sans-serif;font-weight:800;font-size:${compactMapRef.current ? 10 : 11}px;letter-spacing:0.02em;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,0.95),0 0 6px rgba(0,0,0,0.7);white-space:nowrap;margin-top:3px;padding:1px 5px;background:rgba(0,0,0,0.35);border-radius:6px;backdrop-filter:blur(2px);`;
+      wrap.appendChild(label);
 
       let shattering = false;
       const shatter = () => {
