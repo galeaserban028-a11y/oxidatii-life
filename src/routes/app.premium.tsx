@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Settings, ArrowUpRight, Plus, Minus, Check, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useEntitlements } from "@/lib/entitlements";
+import { useEntitlements, type PremiumTier } from "@/lib/entitlements";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
 import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
