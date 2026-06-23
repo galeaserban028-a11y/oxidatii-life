@@ -507,11 +507,18 @@ export function RomaniaMap3D({
     map.on("error", (event) => { console.warn("Map tile error", event.error); });
     if (isSmall) {
       const movingOn = () => containerRef.current?.classList.add("oxi-map-moving");
-      const movingOff = () => containerRef.current?.classList.remove("oxi-map-moving");
+      const movingOff = () => {
+        containerRef.current?.classList.remove("oxi-map-moving");
+        requestAnimationFrame(() => resolveCityLabelCollisions(containerRef.current, compactMapRef.current));
+      };
       map.on("movestart", movingOn);
       map.on("zoomstart", movingOn);
       map.on("moveend", movingOff);
       map.on("zoomend", movingOff);
+    } else {
+      const refreshLabels = () => requestAnimationFrame(() => resolveCityLabelCollisions(containerRef.current, compactMapRef.current));
+      map.on("moveend", refreshLabels);
+      map.on("zoomend", refreshLabels);
     }
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
