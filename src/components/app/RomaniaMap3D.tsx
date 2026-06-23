@@ -599,21 +599,21 @@ export function RomaniaMap3D({
         }
         const theme = meta.theme || "#ff3d8b";
         const wrap = document.createElement("div");
-        wrap.style.cssText = "position:relative;width:56px;height:62px;cursor:pointer;transform:translateY(-50%);z-index:5;";
+        wrap.style.cssText = "position:relative;width:58px;height:58px;cursor:pointer;transform:translateY(-50%);z-index:5;";
 
         const pulse = document.createElement("div");
-        pulse.style.cssText = `position:absolute;inset:-3px;border-radius:9999px;background:${theme};opacity:0.18;animation:oxi-pulse-strong 2.4s ease-out infinite;pointer-events:none;`;
+        pulse.style.cssText = `position:absolute;inset:-4px;border-radius:9999px;background:${theme};opacity:0.18;animation:oxi-pulse-strong 2.4s ease-out infinite;pointer-events:none;`;
         wrap.appendChild(pulse);
 
         const ring = document.createElement("div");
-        ring.style.cssText = `position:relative;width:56px;height:62px;border-radius:18px 18px 22px 22px;border:2px solid ${theme};overflow:visible;background:#06070a;box-shadow:0 0 14px ${theme}88,0 8px 16px rgba(0,0,0,0.58);padding:3px;`;
+        ring.style.cssText = `position:relative;width:58px;height:58px;border-radius:18px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 14px ${theme}88,0 8px 16px rgba(0,0,0,0.58);`;
         if (meta.cover) {
           const imgFrame = document.createElement("div");
-          imgFrame.style.cssText = "width:100%;height:100%;border-radius:14px 14px 18px 18px;overflow:hidden;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;";
+          imgFrame.style.cssText = "position:absolute;inset:3px;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;";
           const img = document.createElement("img");
           img.src = meta.cover; img.alt = "";
           img.loading = "lazy";
-          img.style.cssText = "width:100%;height:100%;object-fit:contain;object-position:center center;display:block;";
+          img.style.cssText = "width:100%;height:100%;object-fit:contain;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
           imgFrame.appendChild(img);
           ring.appendChild(imgFrame);
         } else {
