@@ -2259,6 +2259,25 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_list_users: {
+        Args: never
+        Returns: {
+          aura: number
+          avatar_url: string
+          created_at: string
+          current_streak: number
+          display_name: string
+          handle: string
+          id: string
+          is_public: boolean
+          lifetime_sprits: number
+          longest_streak: number
+          onboarded: boolean
+          premium_tier: string
+          premium_until: string
+          rank: string
+        }[]
+      }
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       buy_boost: { Args: { _kind: string; _target_id?: string }; Returns: Json }
       buy_frame: { Args: { _frame_id: string }; Returns: Json }
@@ -2333,12 +2352,16 @@ export type Database = {
       get_my_account_state: {
         Args: never
         Returns: {
+          birthdate: string
+          boost_until: string
           coin_balance: number
           last_boost_at: string
           location_consent: boolean
           map_ghost: boolean
           map_precision: string
           map_visibility: string
+          premium_tier: string
+          premium_until: string
         }[]
       }
       get_my_birthdate: { Args: never; Returns: string }
@@ -2366,6 +2389,15 @@ export type Database = {
         }[]
       }
       get_streak_status: { Args: { _user_id?: string }; Returns: Json }
+      get_user_premium_badge: {
+        Args: { _user_id: string }
+        Returns: {
+          has_active_boost: boolean
+          has_active_premium: boolean
+          premium_tier: string
+          user_id: string
+        }[]
+      }
       has_active_premium: {
         Args: { _min_tier?: string; _user_id: string }
         Returns: boolean
