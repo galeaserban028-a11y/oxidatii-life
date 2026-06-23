@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
+import { useEntitlements } from "@/lib/entitlements";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, BarChart3, Lock } from "lucide-react";
 
