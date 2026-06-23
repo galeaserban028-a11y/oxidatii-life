@@ -609,11 +609,11 @@ export function RomaniaMap3D({
         ring.style.cssText = `position:relative;width:58px;height:58px;border-radius:18px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 14px ${theme}88,0 8px 16px rgba(0,0,0,0.58);`;
         if (meta.cover) {
           const imgFrame = document.createElement("div");
-          imgFrame.style.cssText = "position:absolute;inset:3px;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;";
+          imgFrame.style.cssText = "position:absolute;inset:3px;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;";
           const img = document.createElement("img");
           img.src = meta.cover; img.alt = "";
           img.loading = "lazy";
-          img.style.cssText = "width:100%;height:100%;object-fit:contain;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
+          img.style.cssText = "width:100%;height:100%;object-fit:cover;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
           imgFrame.appendChild(img);
           ring.appendChild(imgFrame);
         } else {
@@ -626,7 +626,7 @@ export function RomaniaMap3D({
 
         const badge = document.createElement("div");
         badge.textContent = "";
-        badge.style.cssText = `position:absolute;bottom:4px;right:4px;width:9px;height:9px;border-radius:9999px;background:${theme};border:1.5px solid #06070a;box-shadow:0 0 8px ${theme};`;
+        badge.style.cssText = `position:absolute;bottom:3px;right:3px;width:10px;height:10px;border-radius:9999px;background:${theme};border:1.5px solid #06070a;box-shadow:0 0 8px ${theme};`;
         wrap.appendChild(badge);
 
         // X dismiss button (top-right). Stops propagation so click doesn't
@@ -635,7 +635,7 @@ export function RomaniaMap3D({
         close.type = "button";
         close.setAttribute("aria-label", "Ascunde reclama");
         close.textContent = "×";
-        close.style.cssText = `position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'DM Sans',sans-serif;font-weight:900;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.78;`;
+        close.style.cssText = `position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'DM Sans',sans-serif;font-weight:900;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.78;`;
         close.onclick = (e) => {
           e.stopPropagation();
           e.preventDefault();
