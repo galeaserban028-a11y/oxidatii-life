@@ -10,6 +10,7 @@ import { toast } from "sonner";
 
 import { PromoTakeover } from "@/components/app/PromoTakeover";
 import { NightWrapCard } from "@/components/app/NightWrapCard";
+import { FadeIn } from "@/components/app/FadeIn";
 import { getOrCreateNightWrap } from "@/lib/night-wrap.functions";
 import VideoTile from "@/components/app/VideoTile";
 import PhotoZoom from "@/components/app/PhotoZoom";
