@@ -812,12 +812,12 @@ export function RomaniaMap3D({
           if (img) {
             if (img.src !== f.avatar_url) img.src = f.avatar_url;
           } else {
-            const ring = el.querySelector("div[style*='border-radius:9999px'][style*='overflow:hidden']") as HTMLElement | null;
+            const ring = el.querySelector("div[style*='border-radius:'][style*='overflow:hidden']") as HTMLElement | null;
             if (ring) {
               ring.innerHTML = "";
               const ni = document.createElement("img");
               ni.src = f.avatar_url; ni.alt = "";
-              ni.style.cssText = "width:100%;height:100%;object-fit:contain;object-position:center center;background:linear-gradient(135deg,rgba(255,61,139,.28),rgba(0,229,255,.18));";
+              ni.style.cssText = "width:100%;height:100%;object-fit:cover;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
               ring.appendChild(ni);
             }
           }
@@ -845,19 +845,19 @@ export function RomaniaMap3D({
       wrap.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);z-index:10;";
 
       const accent = f.is_me ? "#ff3d8b" : "#00e5ff";
-      const ringSize = f.is_me ? 54 : 42;
-      const pulseSize = f.is_me ? 66 : 52;
+      const ringSize = f.is_me ? 56 : 44;
+      const pulseSize = f.is_me ? 68 : 54;
 
       const pulse = document.createElement("div");
       pulse.style.cssText = `position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:${pulseSize}px;height:${pulseSize}px;border-radius:9999px;background:${accent};opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;`;
       wrap.appendChild(pulse);
 
       const ring = document.createElement("div");
-      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:${f.is_me ? 18 : 14}px;border:2px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3d8b,#c724ff);box-shadow:0 0 14px ${accent},0 4px 12px rgba(0,0,0,0.55);`;
+      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:${f.is_me ? 18 : 14}px;border:2px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3d8b,#c724ff);box-shadow:0 0 14px ${accent},0 4px 12px rgba(0,0,0,0.55);aspect-ratio:1/1;`;
       if (f.avatar_url) {
         const img = document.createElement("img");
         img.src = f.avatar_url; img.alt = "";
-        img.style.cssText = "width:100%;height:100%;object-fit:contain;object-position:center center;background:linear-gradient(135deg,rgba(255,61,139,.28),rgba(0,229,255,.18));";
+        img.style.cssText = "width:100%;height:100%;object-fit:cover;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
         ring.appendChild(img);
       } else {
         const ini = document.createElement("div");
@@ -868,7 +868,7 @@ export function RomaniaMap3D({
       wrap.appendChild(ring);
 
       const live = document.createElement("div");
-      live.style.cssText = `position:absolute;top:-1px;right:-1px;width:9px;height:9px;border-radius:9999px;background:${accent};border:2px solid #06070a;box-shadow:0 0 8px ${accent};`;
+      live.style.cssText = `position:absolute;top:-1px;right:-1px;width:10px;height:10px;border-radius:9999px;background:${accent};border:2px solid #06070a;box-shadow:0 0 8px ${accent};`;
       ring.appendChild(live);
 
       if (f.is_me) {
