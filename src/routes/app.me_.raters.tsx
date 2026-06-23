@@ -9,12 +9,9 @@ export const Route = createFileRoute("/app/me_/raters")({
   component: RatersPage,
 });
 
-const TIER_OK = new Set(["vip_plus", "pro", "elite"]);
-
 function RatersPage() {
-  const { user, profile } = useAuth();
-  const tier = (profile as any)?.premium_tier as string | null;
-  const allowed = !!tier && TIER_OK.has(tier);
+  const { user } = useAuth();
+  const { isVipPlus: allowed } = useEntitlements();
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-raters", user?.id],

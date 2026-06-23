@@ -1,4 +1,5 @@
 import { useAuth } from "@/lib/auth";
+import { useEntitlements } from "@/lib/entitlements";
 import { supabase } from "@/integrations/supabase/client";
 import { PROFILE_THEMES, isThemeAvailable } from "@/lib/premium-themes";
 import { Lock } from "lucide-react";
@@ -8,12 +9,11 @@ import { toast } from "sonner";
 
 /**
  * Premium customization: profile theme (VIP+), music clip (Pro+), animated bg (Pro+).
+ * Gated by useEntitlements() — expired subscriptions are treated as no tier.
  */
 export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
   const { user, profile, refreshProfile } = useAuth();
-  const tier = profile?.premium_tier;
-  const isVipPlus = tier === "vip_plus" || tier === "pro" || tier === "elite";
-  const isPro = tier === "pro" || tier === "elite";
+  const { tier, isVipPlus, isPro } = useEntitlements();
 
   const musicRef = useRef<HTMLInputElement>(null);
   const bgRef = useRef<HTMLInputElement>(null);

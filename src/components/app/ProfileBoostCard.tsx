@@ -1,4 +1,5 @@
 import { useAuth } from "@/lib/auth";
+import { useEntitlements } from "@/lib/entitlements";
 import { supabase } from "@/integrations/supabase/client";
 import { Rocket, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -6,12 +7,12 @@ import { toast } from "sonner";
 
 /**
  * Profile Boost claim card — Pro/Elite get a 24h Discover boost once per 7 days.
+ * Eligibility uses useEntitlements() so an expired subscription hides the card.
  */
 export function ProfileBoostCard() {
   const { profile, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
-  const tier = profile?.premium_tier;
-  const eligible = tier === "pro" || tier === "elite";
+  const { isPro: eligible } = useEntitlements();
   const boostUntil = profile?.boost_until ? new Date(profile.boost_until) : null;
   const lastBoostAt = profile?.last_boost_at ? new Date(profile.last_boost_at) : null;
   const now = new Date();

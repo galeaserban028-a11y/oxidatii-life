@@ -21,9 +21,8 @@ const CAT_LABELS: Record<string, string> = {
 const CATS = ["respect", "reliability", "energy", "friendliness", "contribution", "trust"];
 
 function ReputationAnalyticsPage() {
-  const { user, profile } = useAuth();
-  const tier = profile?.premium_tier;
-  const isPro = tier === "pro" || tier === "elite";
+  const { user } = useAuth();
+  const { isPro } = useEntitlements();
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-reputation", user?.id],
