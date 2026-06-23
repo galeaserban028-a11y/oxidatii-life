@@ -140,6 +140,13 @@
   --cherry-900: #3a1522;
   --cherry-glow: 0 16px 44px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(196,92,124,0.08), 0 0 40px -18px rgba(232,138,171,0.18);
   --cherry-btn-glow: 0 10px 24px -8px rgba(196,92,124,0.40), inset 0 1px 0 rgba(255,255,255,0.35);
+
+  /* Warm sunset palette — friendly, inviting Tonight card glow */
+  --warm-orange: oklch(0.75 0.16 55);
+  --warm-rose:   oklch(0.64 0.22 15);
+  --warm-amber:  oklch(0.77 0.15 75);
+  --warm-glow: 0 16px 44px -14px oklch(0.65 0.20 35 / 0.35), 0 0 0 1px rgba(255,255,255,0.12), 0 0 40px -14px oklch(0.64 0.22 15 / 0.20);
+  --warm-btn-glow: 0 10px 24px -8px oklch(0.64 0.22 15 / 0.32), inset 0 1px 0 rgba(255,255,255,0.45);
 }
 
 @keyframes tier-pulse {
@@ -363,40 +370,40 @@
   .flicker, .marquee, .glitch:hover { animation: none; }
 }
 
-/* ── Tonight card premium cherry blossom skin ── */
+/* ── Tonight card warm sunset glow ── */
 @layer utilities {
   .tonight-card {
     position: relative;
     overflow: hidden;
-    border-radius: 10px;
-    padding: 5px 8px;
-    background: linear-gradient(160deg, #1a1016 0%, #150d13 45%, #0f0b10 100%);
-    border: 1px solid rgba(248, 200, 216, 0.16);
-    box-shadow: var(--cherry-glow);
+    border-radius: 16px;
+    padding: 6px 10px;
+    background: linear-gradient(135deg, var(--warm-orange) 0%, var(--warm-rose) 55%, var(--warm-amber) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: var(--warm-glow);
   }
   .tonight-card::before {
     content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(254, 240, 245, 0.06), transparent 60%);
+    background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(255, 255, 255, 0.12), transparent 60%);
   }
   .tonight-card > * { position: relative; z-index: 1; }
 
   .tonight-label {
-    font-family: 'Barlow', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 6px;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.18em;
-    color: var(--cherry-400);
+    color: rgba(255, 255, 255, 0.85);
   }
 
   .tonight-title {
-    font-family: 'Barlow Condensed', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    font-weight: 800;
+    letter-spacing: -0.02em;
     line-height: 1.05;
     color: #ffffff;
   }
@@ -406,14 +413,14 @@
     width: 100%;
     height: 20px;
     border-radius: 9999px;
-    font-family: 'Bebas Neue', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 8px;
-    font-weight: 400;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: #0d0d0d;
-    background: linear-gradient(90deg, var(--cherry-400) 0%, var(--cherry-600) 100%);
-    box-shadow: var(--cherry-btn-glow);
+    letter-spacing: 0.1em;
+    color: var(--warm-rose);
+    background: #ffffff;
+    box-shadow: var(--warm-btn-glow);
     transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
     overflow: hidden;
   }
@@ -421,33 +428,32 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    background: linear-gradient(90deg, transparent, rgba(244, 63, 94, 0.12), transparent);
     transform: translateX(-100%);
     transition: transform 0.6s ease;
   }
   .tonight-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 10px 24px -10px rgba(196,92,124,0.50), inset 0 1px 0 rgba(255,255,255,0.35);
+    box-shadow: 0 10px 24px -10px oklch(0.64 0.22 15 / 0.45), inset 0 1px 0 rgba(255,255,255,0.45);
   }
   .tonight-btn:hover::after { transform: translateX(100%); }
   .tonight-btn:active { transform: scale(0.98) translateY(0); }
 
-
   .tonight-input {
     width: 100%;
     border-radius: 12px;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(248, 200, 216, 0.12);
-    padding: 8px 11px;
-    font-size: 13px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 7px 10px;
+    font-size: 12px;
     color: #ffffff;
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
-  .tonight-input::placeholder { color: rgba(255,255,255,0.35); }
+  .tonight-input::placeholder { color: rgba(255,255,255,0.40); }
   .tonight-input:focus {
-    border-color: rgba(232, 138, 171, 0.45);
-    box-shadow: 0 0 0 3px rgba(232, 138, 171, 0.10);
+    border-color: rgba(255, 255, 255, 0.45);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.10);
   }
 
   .tonight-venue-row {
@@ -455,25 +461,25 @@
     align-items: center;
     gap: 8px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(248, 200, 216, 0.08);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     padding: 7px 10px;
   }
 
   .tonight-ghost-btn {
     flex: 1;
-    height: 36px;
+    height: 32px;
     border-radius: 9999px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(248,200,216,0.12);
-    color: rgba(255,255,255,0.75);
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.9);
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     transition: background 0.15s ease, border-color 0.15s ease;
   }
-  .tonight-ghost-btn:hover { background: rgba(255,255,255,0.10); border-color: rgba(248,200,216,0.22); }
+  .tonight-ghost-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.30); }
 
   .tonight-icon-btn {
     display: inline-flex;
@@ -482,69 +488,68 @@
     width: 18px;
     height: 18px;
     border-radius: 9999px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(248,200,216,0.12);
-    color: rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.9);
     transition: background 0.15s ease, color 0.15s ease;
   }
-  .tonight-icon-btn:hover { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.9); }
-
+  .tonight-icon-btn:hover { background: rgba(255,255,255,0.28); color: #ffffff; }
 
   .tonight-chat-btn {
-    height: 28px;
-    padding: 0 10px;
+    height: 26px;
+    padding: 0 9px;
     border-radius: 9999px;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    background: rgba(255,255,255,0.10);
+    gap: 3px;
+    background: rgba(255,255,255,0.18);
     color: #ffffff;
-    font-size: 9px;
-    font-weight: 700;
+    font-size: 8px;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     transition: background 0.15s ease, transform 0.1s ease;
   }
-  .tonight-chat-btn:hover { background: rgba(255,255,255,0.18); }
+  .tonight-chat-btn:hover { background: rgba(255,255,255,0.28); }
   .tonight-chat-btn:active { transform: scale(0.95); }
 
   .tonight-join-btn {
-    height: 28px;
-    padding: 0 10px;
+    height: 26px;
+    padding: 0 9px;
     border-radius: 9999px;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    background: var(--cherry-400);
-    color: #0d0d0d;
-    font-size: 9px;
-    font-weight: 700;
+    gap: 3px;
+    background: #ffffff;
+    color: var(--warm-rose);
+    font-size: 8px;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     transition: background 0.15s ease, transform 0.1s ease;
   }
-  .tonight-join-btn:hover { background: var(--cherry-300); }
+  .tonight-join-btn:hover { background: rgba(255,255,255,0.92); }
   .tonight-join-btn:active { transform: scale(0.95); }
   .tonight-join-btn:disabled { opacity: 0.5; }
 
   .tonight-follow-btn {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border-radius: 9999px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: background 0.15s ease, color 0.15s ease;
   }
-  .tonight-follow-btn.active { background: rgba(196,92,124,0.18); color: var(--cherry-400); }
-  .tonight-follow-btn:not(.active) { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); }
-  .tonight-follow-btn:not(.active):hover { color: rgba(255,255,255,0.7); }
+  .tonight-follow-btn.active { background: rgba(255,255,255,0.22); color: #ffffff; }
+  .tonight-follow-btn:not(.active) { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.55); }
+  .tonight-follow-btn:not(.active):hover { color: #ffffff; }
 
-  @keyframes cherry-breathe {
-    0%, 100% { box-shadow: 0 0 24px -8px rgba(232,138,171,0.22); }
-    50% { box-shadow: 0 0 36px -8px rgba(232,138,171,0.34); }
+  @keyframes warm-breathe {
+    0%, 100% { box-shadow: 0 0 24px -8px oklch(0.65 0.20 35 / 0.25); }
+    50% { box-shadow: 0 0 36px -8px oklch(0.65 0.20 35 / 0.40); }
   }
-  .cherry-glow-anim { animation: cherry-breathe 4s ease-in-out infinite; }
+  .warm-glow-anim { animation: warm-breathe 4s ease-in-out infinite; }
 }
 
 /* ── MapLibre controls — OXI dark glass aesthetic ── */
