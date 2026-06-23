@@ -1,18 +1,24 @@
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useRouterState } from "@tanstack/react-router";
-import { memo, ReactNode } from "react";
+import { memo, ReactNode, useRef } from "react";
 
-// GPU-friendly transition: only `opacity` + `transform` (translate3d via `y`)
-// are animated, which the compositor can run off the main thread at 60fps.
-// No filters/blurs (cause layout/paint), no layout animations, no height/width.
-const variants = {
-  initial: { opacity: 0, y: 6 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0 },
-};
+// Top-level tab order used to derive slide direction. Anything not in this list
+// uses a neutral fade so deep links / detail pages don't jump sideways.
+const TAB_ORDER = ["/app", "/app/map", "/app/top", "/app/squad", "/app/inbox", "/app/me"];
+
+function tabIndex(pathname: string): number {
+  // Exact match wins (so /app doesn't always swallow /app/map).
+  const exact = TAB_ORDER.indexOf(pathname);
+  if (exact !== -1) return exact;
+  for (let i = TAB_ORDER.length - 1; i >= 0; i--) {
+    const t = TAB_ORDER[i];
+    if (t !== "/app" && pathname.startsWith(t + "/")) return i;
+  }
+  return -1;
+}
 
 const transition = {
-  duration: 0.14,
+  duration: 0.28,
   ease: [0.22, 1, 0.36, 1] as const,
 };
 
@@ -24,13 +30,26 @@ const style = {
 function PageTransitionImpl({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const prefersReducedMotion = useReducedMotion();
+  const prevRef = useRef<string>(pathname);
+
+  // Resolve direction BEFORE updating prev ref so we animate from old → new.
+  const prev = prevRef.current;
+  const a = tabIndex(prev);
+  const b = tabIndex(pathname);
+  let dir = 0;
+  if (a !== -1 && b !== -1 && a !== b) dir = b > a ? 1 : -1;
+  prevRef.current = pathname;
 
   if (prefersReducedMotion) {
     return <>{children}</>;
   }
 
-  // `mode="popLayout"` lets the new page mount immediately while the old fades —
-  // no perceived blank gap, feels instant on mid-range Android.
+  const variants = {
+    initial: { opacity: 0, x: dir === 0 ? 0 : dir * 28, y: dir === 0 ? 6 : 0 },
+    animate: { opacity: 1, x: 0, y: 0 },
+    exit:    { opacity: 0, x: dir === 0 ? 0 : dir * -28, y: 0 },
+  };
+
   return (
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.div
