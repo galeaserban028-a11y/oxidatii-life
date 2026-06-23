@@ -181,24 +181,6 @@ const VOYAGER_STYLE = {
         "text-halo-width": 1.4,
       },
     },
-    {
-      id: "place-city",
-      type: "symbol",
-      source: "omt",
-      "source-layer": "place",
-      filter: ["in", ["get", "class"], ["literal", ["city", "town"]]],
-      minzoom: 3,
-      layout: {
-        "text-field": ["get", "name:latin"],
-        "text-font": ["Noto Sans Regular"],
-        "text-size": ["interpolate", ["linear"], ["zoom"], 3, 10, 8, 14, 12, 18],
-      },
-      paint: {
-        "text-color": "rgba(255,255,255,0.88)",
-        "text-halo-color": "rgba(13,11,30,0.95)",
-        "text-halo-width": 1.2,
-      },
-    },
   ],
   sky: {
     "sky-color": "#0d0b1e",
