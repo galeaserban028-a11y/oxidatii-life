@@ -85,12 +85,46 @@ const FAQ = [
 ];
 
 function PremiumPage() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
+  const ent = useEntitlements();
+  const search = Route.useSearch();
   const [annual, setAnnual] = useState(false);
   const [checkout, setCheckout] = useState<{ priceId: string; title: string } | null>(null);
   const [openingPortal, setOpeningPortal] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const currentTier = (profile as any)?.premium_tier as PremiumTier;
+  const [syncingCheckout, setSyncingCheckout] = useState(false);
+  const currentTier = ent.tier;
+
+  // After returning from Stripe Embedded Checkout, activate the purchase
+  // immediately even if webhooks are delayed / not configured for this URL.
+  useEffect(() => {
+    const sessionId = search.session_id;
+    if (!sessionId || syncingCheckout) return;
+    setSyncingCheckout(true);
+    (async () => {
+      try {
+        const result = await syncCheckoutToProfile({
+          data: { sessionId, environment: getStripeEnvironment() },
+        });
+        if ("error" in result && !result.success) {
+          console.warn("syncCheckoutToProfile:", result.error);
+          return;
+        }
+        await refreshProfile();
+        if (result.tier) {
+          toast.success(`Abonamentul ${result.tier.toUpperCase()} este activ`, {
+            description: "Poți folosi funcțiile premium imediat.",
+          });
+        } else if (result.coinsAdded) {
+          toast.success(`${result.coinsAdded} șprițuri adăugate în cont`);
+        }
+      } catch (e) {
+        console.warn("Could not sync checkout:", e);
+      } finally {
+        setSyncingCheckout(false);
+      }
+    })();
+  }, [search.session_id]);
 
   const handleBuy = (tier: Tier) =>
     setCheckout({ priceId: `${tier.id}_${annual ? "yearly" : "monthly"}`, title: `${tier.name} ${annual ? "anual" : "lunar"}` });
