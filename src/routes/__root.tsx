@@ -165,6 +165,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => {
     import("@/hooks/useTheme").then((m) => m.initThemeEarly());
+    import("@/lib/pwa").then((m) => m.registerAppServiceWorker());
   }, []);
   return (
     <QueryClientProvider client={queryClient}>
@@ -179,3 +180,4 @@ function RootComponent() {
 
   );
 }
+
