@@ -18,6 +18,7 @@ import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
 import { PremiumExtrasCard } from "@/components/app/PremiumExtrasCard";
+import { FadeIn } from "@/components/app/FadeIn";
 import { getTheme } from "@/lib/premium-themes";
 import { ThemeAtmosphere } from "@/components/app/ThemeAtmosphere";
 import { AvatarAura } from "@/components/app/AvatarAura";
