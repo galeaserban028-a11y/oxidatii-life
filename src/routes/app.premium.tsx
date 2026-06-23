@@ -1,9 +1,9 @@
-import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Settings, ArrowUpRight, Plus, Minus, Check, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useEntitlements } from "@/lib/entitlements";
-import { PremiumBadge, type PremiumTier } from "@/components/app/PremiumBadge";
+import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
 import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
 import { CrystalBallCard } from "@/components/app/CrystalBallCard";
