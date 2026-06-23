@@ -18,7 +18,10 @@ export const Route = createFileRoute("/app")({
 
 function AppLayout() {
   const nav = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isMe = pathname === "/app/me" || pathname.startsWith("/app/me/");
   const { user, profile, loading } = useAuth();
+
 
   // Broadcast our live position to friends if we've granted location consent.
   useLiveLocation(user?.id ?? null, !!profile?.location_consent);
