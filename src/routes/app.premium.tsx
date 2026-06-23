@@ -1,17 +1,22 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Settings, ArrowUpRight, Plus, Minus, Check, Sparkles } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useEntitlements } from "@/lib/entitlements";
 import { PremiumBadge, type PremiumTier } from "@/components/app/PremiumBadge";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
 import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
 import { CrystalBallCard } from "@/components/app/CrystalBallCard";
-import { createPremiumPortalSession } from "@/lib/premium.functions";
+import { createPremiumPortalSession, syncCheckoutToProfile } from "@/lib/premium.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/premium")({
   head: () => ({ meta: [{ title: "Membership · OXIDAȚII" }] }),
+  validateSearch: (search: Record<string, unknown>): { checkout?: string; session_id?: string } => ({
+    checkout: typeof search.checkout === "string" ? search.checkout : undefined,
+    session_id: typeof search.session_id === "string" ? search.session_id : undefined,
+  }),
   component: PremiumPage,
 });
 
