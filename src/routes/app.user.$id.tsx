@@ -221,8 +221,9 @@ function UserPage() {
           {/* Header */}
           {(() => {
             const theme = getTheme(profile.profile_theme_id);
-            const isPremium = !!profile.premium_tier && profile.premium_until && new Date(profile.premium_until) > new Date();
+            const isPremium = !!badge?.has_active_premium;
             const bgUrl: string | null = isPremium ? profile.profile_bg_url ?? null : null;
+
             const isVideo = bgUrl ? /\.(mp4|webm|mov)$/i.test(bgUrl) : false;
             return (
           <div
@@ -260,7 +261,7 @@ function UserPage() {
                 <div className="font-display font-bold text-2xl truncate flex items-center gap-1.5 flex-wrap">
                   @{handle}
                   {!isPublic && <Lock size={14} className="text-neon-crimson shrink-0" />}
-                  <PremiumBadge tier={profile.premium_tier} size="sm" asLink={false} />
+                  <PremiumBadge tier={badge?.premium_tier ?? null} size="sm" asLink={false} />
                 </div>
                 {profile.city?.name && (
                   <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
