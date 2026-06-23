@@ -141,12 +141,12 @@
   --cherry-glow: 0 16px 44px -20px rgba(0,0,0,0.55), 0 0 0 1px rgba(196,92,124,0.08), 0 0 40px -18px rgba(232,138,171,0.18);
   --cherry-btn-glow: 0 10px 24px -8px rgba(196,92,124,0.40), inset 0 1px 0 rgba(255,255,255,0.35);
 
-  /* Warm sunset palette — friendly, inviting Tonight card glow */
-  --warm-orange: oklch(0.75 0.16 55);
-  --warm-rose:   oklch(0.64 0.22 15);
-  --warm-amber:  oklch(0.77 0.15 75);
-  --warm-glow: 0 16px 44px -14px oklch(0.65 0.20 35 / 0.35), 0 0 0 1px rgba(255,255,255,0.12), 0 0 40px -14px oklch(0.64 0.22 15 / 0.20);
-  --warm-btn-glow: 0 10px 24px -8px oklch(0.64 0.22 15 / 0.32), inset 0 1px 0 rgba(255,255,255,0.45);
+  /* Tonight card palette — aligned to Electric Night neon theme */
+  --warm-orange: var(--neon-pink);
+  --warm-rose:   var(--neon-violet);
+  --warm-amber:  var(--neon-cyan);
+  --warm-glow: 0 16px 44px -14px oklch(0.68 0.26 0 / 0.40), 0 0 0 1px rgba(255,255,255,0.10), 0 0 40px -14px oklch(0.60 0.30 310 / 0.30);
+  --warm-btn-glow: 0 10px 24px -8px oklch(0.68 0.26 0 / 0.45), inset 0 1px 0 rgba(255,255,255,0.40);
 }
 
 @keyframes tier-pulse {
