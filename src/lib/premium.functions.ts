@@ -23,16 +23,16 @@ const COIN_PACKS: Record<string, number> = {
   coins_legenda: 5000,
 };
 
-// price_id → premium tier. Must match webhook at src/routes/api/public/payments/webhook.tsx
-const TIER_MAP: Record<string, "vip" | "vip_plus" | "pro" | "elite"> = {
-  vip_monthly: "vip",
-  vip_yearly: "vip",
-  vip_plus_monthly: "vip_plus",
-  vip_plus_yearly: "vip_plus",
-  pro_monthly: "pro",
-  pro_yearly: "pro",
-  elite_monthly: "elite",
-  elite_yearly: "elite",
+// price_id → premium tier + one-time coin grant. Must match webhook at src/routes/api/public/payments/webhook.tsx
+const TIER_MAP: Record<string, { tier: "vip" | "vip_plus" | "pro" | "elite"; coins: number }> = {
+  vip_monthly: { tier: "vip", coins: 5 },
+  vip_yearly: { tier: "vip", coins: 60 },
+  vip_plus_monthly: { tier: "vip_plus", coins: 15 },
+  vip_plus_yearly: { tier: "vip_plus", coins: 180 },
+  pro_monthly: { tier: "pro", coins: 40 },
+  pro_yearly: { tier: "pro", coins: 480 },
+  elite_monthly: { tier: "elite", coins: 120 },
+  elite_yearly: { tier: "elite", coins: 1440 },
 };
 
 async function resolveCustomer(stripe: ReturnType<typeof createStripeClient>, userId: string, email?: string) {
