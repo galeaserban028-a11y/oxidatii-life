@@ -302,14 +302,9 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           const event = await verifyWebhook(request, env);
           switch (event.type) {
             case "checkout.session.completed":
-            case "checkout.session.async_payment_succeeded": {
-              const session = event.data.object as any;
-              if (session.payment_status === "paid" || session.payment_status === "no_payment_required") {
-                await handleWalletTopup(session);
-                await handleCoinPackPurchase(session, env);
-              }
+            case "checkout.session.async_payment_succeeded":
+              await handleCheckoutSessionCompleted(event.data.object, env);
               break;
-            }
             case "customer.subscription.created":
             case "customer.subscription.updated":
               await upsertSubscription(event.data.object, env);
