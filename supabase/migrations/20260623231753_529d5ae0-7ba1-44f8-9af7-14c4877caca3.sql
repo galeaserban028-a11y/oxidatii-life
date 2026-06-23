@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.has_active_premium(uuid, text) FROM anon;
