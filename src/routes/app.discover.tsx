@@ -151,10 +151,8 @@ function DiscoverPage() {
                 <Link to="/app/user/$id" params={{ id: p.id }} className="flex-1 min-w-0">
                   <div className="font-display text-sm truncate flex items-center gap-1.5">
                     {p.display_name ?? `@${p.handle ?? "—"}`}
-                    {(p.boost_until && new Date(p.boost_until) > new Date()) || p.premium_tier === "elite" ? (
-                      <span className="text-[8px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded-sm bg-gradient-to-r from-amber-300 to-fuchsia-400 text-black">featured</span>
-                    ) : null}
                   </div>
+
                   {p.display_name && p.handle && (
                     <div className="font-mono text-[10px] text-muted-foreground truncate">@{p.handle}</div>
                   )}
