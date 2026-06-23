@@ -315,49 +315,53 @@ function LiveSpritzStrip() {
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-neon-crimson">
+        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em]" style={{ color: "var(--warm-rose)" }}>
           <Flame size={12} /> șprițuri deschise · {visibleParties.length}
         </div>
-        <Link to="/app/squad" className="font-mono text-[10px] uppercase tracking-widest text-neon-purple">
+        <Link to="/app/squad" className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "var(--warm-orange)" }}>
           toate →
         </Link>
       </div>
 
-      {(
-
-        <div className="flex gap-2 overflow-x-auto -mx-4 px-4 no-scrollbar pb-1">
-          {visibleParties.map((p: any) => {
-            const taken = joins.filter((j: any) => j.party_id === p.id).length;
-            const free = Math.max(0, p.spots_total - taken);
-            return (
-              <Link
-                key={p.id}
-                to="/app/parties"
-                className="shrink-0 w-[220px] p-3 rounded-xl border border-foreground/10 bg-foreground/[0.04] hover:border-neon-crimson/40 space-y-1.5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-neon-crimson flex items-center gap-1">
-                    <Flame size={10} /> șpriț
-                  </span>
-                  <span className={`font-mono text-[9px] uppercase tracking-widest ${free === 0 ? "text-neon-crimson" : "text-neon-green"}`}>
-                    {free === 0 ? "plin" : `${free}/${p.spots_total} libere`}
-                  </span>
-                </div>
-                <div className="font-display font-bold text-sm leading-tight line-clamp-2">{p.title}</div>
-                <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                  <span className="flex items-center gap-1 truncate"><MapPin size={9} /> {p.location_text}</span>
-                </div>
-                <div className="flex items-center justify-between pt-1">
-                  {p.vibe && <span className="font-mono text-[9px] uppercase tracking-widest text-neon-purple truncate">{p.vibe}</span>}
-                  <span className="font-mono text-[9px] uppercase tracking-widest text-neon-green flex items-center gap-1 ml-auto">
-                    <Users size={9} /> {taken} vin
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+      <div className="flex gap-2 overflow-x-auto -mx-4 px-4 no-scrollbar pb-1">
+        {visibleParties.map((p: any) => {
+          const taken = joins.filter((j: any) => j.party_id === p.id).length;
+          const free = Math.max(0, p.spots_total - taken);
+          return (
+            <Link
+              key={p.id}
+              to="/app/parties"
+              className="shrink-0 w-[220px] p-3 rounded-2xl space-y-1.5 relative overflow-hidden transition-transform active:scale-[0.98]"
+              style={{
+                background: "linear-gradient(135deg, var(--warm-orange) 0%, var(--warm-rose) 55%, var(--warm-amber) 100%)",
+                border: "1px solid rgba(255,255,255,0.18)",
+                boxShadow: "var(--warm-glow)",
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
+            >
+              <div className="pointer-events-none absolute -top-4 -right-4 h-14 w-14 rounded-full blur-[24px] opacity-45" style={{ background: "var(--warm-amber)" }} />
+              <div className="relative flex items-center justify-between">
+                <span className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/85 flex items-center gap-1">
+                  <Flame size={10} /> șpriț
+                </span>
+                <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full bg-white/95" style={{ color: free === 0 ? "var(--warm-rose)" : "var(--warm-rose)" }}>
+                  {free === 0 ? "plin" : `${free}/${p.spots_total} libere`}
+                </span>
+              </div>
+              <div className="relative font-extrabold text-sm leading-tight line-clamp-2 text-white tracking-tight">{p.title}</div>
+              <div className="relative flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white/80">
+                <span className="flex items-center gap-1 truncate"><MapPin size={9} /> {p.location_text}</span>
+              </div>
+              <div className="relative flex items-center justify-between pt-1">
+                {p.vibe && <span className="text-[9px] font-extrabold uppercase tracking-widest text-white/90 truncate">{p.vibe}</span>}
+                <span className="text-[9px] font-extrabold uppercase tracking-widest text-white flex items-center gap-1 ml-auto px-2 py-0.5 rounded-full bg-white/20">
+                  <Users size={9} /> {taken} vin
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </section>
   );
 }
