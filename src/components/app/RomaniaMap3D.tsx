@@ -856,7 +856,7 @@ export function RomaniaMap3D({
       wrap.appendChild(pulse);
 
       const ring = document.createElement("div");
-      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:${f.is_me ? 18 : 14}px;border:2px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3d8b,#c724ff);box-shadow:0 0 14px ${accent},0 4px 12px rgba(0,0,0,0.55);aspect-ratio:1/1;animation:oxi-marker-pop 0.32s cubic-bezier(0.22,1,0.36,1) both;`;
+      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:9999px;border:2px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3d8b,#c724ff);box-shadow:0 0 14px ${accent},0 4px 12px rgba(0,0,0,0.55);aspect-ratio:1/1;animation:oxi-marker-pop 0.32s cubic-bezier(0.22,1,0.36,1) both;`;
 
       if (f.avatar_url) {
         const img = document.createElement("img");
