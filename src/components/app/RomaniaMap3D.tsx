@@ -599,31 +599,34 @@ export function RomaniaMap3D({
         }
         const theme = meta.theme || "#ff3d8b";
         const wrap = document.createElement("div");
-        wrap.style.cssText = "position:relative;width:42px;height:42px;cursor:pointer;transform:translateY(-50%);z-index:5;";
+        wrap.style.cssText = "position:relative;width:56px;height:62px;cursor:pointer;transform:translateY(-50%);z-index:5;";
 
         const pulse = document.createElement("div");
         pulse.style.cssText = `position:absolute;inset:-3px;border-radius:9999px;background:${theme};opacity:0.18;animation:oxi-pulse-strong 2.4s ease-out infinite;pointer-events:none;`;
         wrap.appendChild(pulse);
 
         const ring = document.createElement("div");
-        ring.style.cssText = `position:relative;width:42px;height:42px;border-radius:9999px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 10px ${theme}88,0 4px 10px rgba(0,0,0,0.55);`;
+        ring.style.cssText = `position:relative;width:56px;height:62px;border-radius:18px 18px 22px 22px;border:2px solid ${theme};overflow:visible;background:#06070a;box-shadow:0 0 14px ${theme}88,0 8px 16px rgba(0,0,0,0.58);padding:3px;`;
         if (meta.cover) {
+          const imgFrame = document.createElement("div");
+          imgFrame.style.cssText = "width:100%;height:100%;border-radius:14px 14px 18px 18px;overflow:hidden;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;";
           const img = document.createElement("img");
           img.src = meta.cover; img.alt = "";
           img.loading = "lazy";
-          img.style.cssText = "width:100%;height:100%;object-fit:cover;object-position:center top;";
-          ring.appendChild(img);
+          img.style.cssText = "width:100%;height:100%;object-fit:contain;object-position:center center;display:block;";
+          imgFrame.appendChild(img);
+          ring.appendChild(imgFrame);
         } else {
           const ini = document.createElement("div");
           ini.textContent = (v.name?.[0] ?? "?").toUpperCase();
-          ini.style.cssText = `width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${theme};font-weight:900;font-family:'DM Sans',sans-serif;font-size:18px;`;
+          ini.style.cssText = `width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${theme};font-weight:900;font-family:'DM Sans',sans-serif;font-size:20px;`;
           ring.appendChild(ini);
         }
         wrap.appendChild(ring);
 
         const badge = document.createElement("div");
         badge.textContent = "";
-        badge.style.cssText = `position:absolute;bottom:1px;right:1px;width:7px;height:7px;border-radius:9999px;background:${theme};border:1.5px solid #06070a;box-shadow:0 0 8px ${theme};`;
+        badge.style.cssText = `position:absolute;bottom:4px;right:4px;width:9px;height:9px;border-radius:9999px;background:${theme};border:1.5px solid #06070a;box-shadow:0 0 8px ${theme};`;
         wrap.appendChild(badge);
 
         // X dismiss button (top-right). Stops propagation so click doesn't
@@ -632,7 +635,7 @@ export function RomaniaMap3D({
         close.type = "button";
         close.setAttribute("aria-label", "Ascunde reclama");
         close.textContent = "×";
-        close.style.cssText = `position:absolute;top:-5px;right:-5px;width:14px;height:14px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'DM Sans',sans-serif;font-weight:900;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.78;`;
+        close.style.cssText = `position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'DM Sans',sans-serif;font-weight:900;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.78;`;
         close.onclick = (e) => {
           e.stopPropagation();
           e.preventDefault();
