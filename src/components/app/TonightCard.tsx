@@ -291,7 +291,7 @@ export default function TonightCard() {
         </div>
 
         {!myIntent && !showVenues && (
-          <button onClick={() => setShowVenues(true)} className="tonight-btn" style={{ width: 'auto', padding: '0 12px' }}>
+          <button onClick={() => setShowVenues(true)} className="tonight-btn" style={{ width: 'auto', padding: '0 10px' }}>
             mă bag ({count})
           </button>
         )}
@@ -300,7 +300,7 @@ export default function TonightCard() {
           <button
             onClick={() => setShowVenues(true)}
             className="tonight-btn"
-            style={{ width: 'auto', padding: '0 10px', background: "var(--cherry-400)", boxShadow: "0 8px 20px -8px rgba(232,138,171,0.32)" }}
+            style={{ width: 'auto', padding: '0 9px', background: "var(--cherry-400)", boxShadow: "0 6px 16px -6px rgba(232,138,171,0.32)" }}
           >
             loc
           </button>
@@ -308,7 +308,7 @@ export default function TonightCard() {
 
         {myIntent && myIntent.venue_id && !showVenues && (
           <button onClick={cancel} className="tonight-icon-btn" aria-label="Anulează">
-            <X size={11} />
+            <X size={10} />
           </button>
         )}
       </div>
