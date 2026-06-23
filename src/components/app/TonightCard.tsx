@@ -275,7 +275,7 @@ export default function TonightCard() {
           <div className="tonight-label flex items-center gap-0.5">
             <Sparkles size={7} /> diseară
           </div>
-          <h3 className="tonight-title mt-0.5 text-[13px]">
+          <h3 className="tonight-title mt-0.5">
             {myIntent ? (
               <>Te-ai băgat. <span style={{ color: "var(--cherry-400)" }}>{count}</span> pers.</>
             ) : (
@@ -283,8 +283,8 @@ export default function TonightCard() {
             )}
           </h3>
           {myIntent && (myIntent.venue?.name || myIntent.note) && (
-            <div className="mt-0.5 text-[9px] text-white/70 flex items-center gap-1" style={{ fontFamily: "'Barlow', sans-serif" }}>
-              {myIntent.venue?.name && <><MapPin size={8} style={{ color: "var(--cherry-400)" }} /> {myIntent.venue.name}</>}
+            <div className="mt-0.5 text-[8px] text-white/70 flex items-center gap-1" style={{ fontFamily: "'Barlow', sans-serif" }}>
+              {myIntent.venue?.name && <><MapPin size={7} style={{ color: "var(--cherry-400)" }} /> {myIntent.venue.name}</>}
               {myIntent.note && <span className="text-white/50">· {myIntent.note}</span>}
             </div>
           )}
