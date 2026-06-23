@@ -6,6 +6,7 @@ import { AppHeader } from "@/components/app/AppHeader";
 import { InstallBanner } from "@/components/app/InstallBanner";
 import { PageTransition } from "@/components/app/PageTransition";
 import { PullToRefresh } from "@/components/app/PullToRefresh";
+import { SwipeNavigator } from "@/components/app/SwipeNavigator";
 
 import { useLiveLocation } from "@/hooks/useLiveLocation";
 import { TutorialOverlay } from "@/components/app/TutorialOverlay";
@@ -54,9 +55,11 @@ function AppLayout() {
         {!isMe && <InstallBanner />}
         {!isMe && <AppHeader />}
         <PullToRefresh>
-          <PageTransition>
-            <Outlet />
-          </PageTransition>
+          <SwipeNavigator>
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
+          </SwipeNavigator>
         </PullToRefresh>
       </div>
       <BottomTabBar />
