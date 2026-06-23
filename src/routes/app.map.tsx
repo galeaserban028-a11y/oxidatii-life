@@ -563,28 +563,50 @@ function MapPage() {
   useEffect(() => {
     if (autoLocated) return;
     setAutoLocated(true);
-    getPrecisePosition()
-      .then((pos) => {
-        // Always show the local "tu ești aici" pin, even without consent.
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setGeo({ lat, lng });
-        // Center the map once on first load, then let the user pan freely.
-        setFocusCity((prev) => prev ?? { lat, lng, zoom: 14 });
-        // Only broadcast to friends if consent + not ghost/hidden.
-        if (
-          user &&
-          profile?.location_consent &&
-          !privacyQ.data?.settings?.map_ghost &&
-          privacyQ.data?.settings?.map_visibility !== "nobody"
-        ) {
-          publishPosition(pos).catch(() => {});
+
+    // Only auto-trigger the OS prompt when permission is already granted.
+    // Otherwise we'd re-pop the iOS "Allow Location" dialog on every map visit
+    // until the user picks "Always Allow". When status is `prompt`/`denied`
+    // we wait for an explicit tap on the live-OFF banner / consent button.
+    const start = async () => {
+      try {
+        const perms: any = (navigator as any).permissions;
+        const status = perms?.query
+          ? await perms.query({ name: "geolocation" as PermissionName }).catch(() => null)
+          : null;
+        const fallbackToCity = () => {
+          const fallback = privacyQ.data?.cityCenter;
+          if (fallback) setFocusCity((prev) => prev ?? { lat: fallback.lat, lng: fallback.lng, zoom: 12.5 });
+        };
+        if (status && status.state !== "granted") {
+          fallbackToCity();
+          return;
         }
-      })
-      .catch(() => {
-        const fallback = privacyQ.data?.cityCenter;
-        if (fallback) setFocusCity((prev) => prev ?? { lat: fallback.lat, lng: fallback.lng, zoom: 12.5 });
-      });
+
+        // Cheap, cached read — no prompt, no high-accuracy spin-up.
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            setGeo({ lat, lng });
+            setFocusCity((prev) => prev ?? { lat, lng, zoom: 14 });
+            if (
+              user &&
+              profile?.location_consent &&
+              !privacyQ.data?.settings?.map_ghost &&
+              privacyQ.data?.settings?.map_visibility !== "nobody"
+            ) {
+              publishPosition(pos).catch(() => {});
+            }
+          },
+          () => fallbackToCity(),
+          { enableHighAccuracy: false, maximumAge: 60_000, timeout: 8_000 },
+        );
+      } catch {
+        /* silent */
+      }
+    };
+    start();
   }, [autoLocated, privacyQ.data?.cityCenter, privacyQ.data?.settings?.map_ghost, privacyQ.data?.settings?.map_visibility, profile?.location_consent, publishPosition, user]);
 
 
