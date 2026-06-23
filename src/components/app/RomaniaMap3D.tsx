@@ -712,7 +712,9 @@ export function RomaniaMap3D({
       const bottleStage = document.createElement("div");
       bottleStage.style.cssText = "position:relative;display:block;transition:transform 160ms ease;";
       bottleStage.innerHTML = bottleSVG(bottleSize, color);
+      bottleStage.style.animation = "oxi-marker-pop 0.34s cubic-bezier(0.22,1,0.36,1) both";
       wrap.appendChild(bottleStage);
+
 
       const label = document.createElement("div");
       label.textContent = c.name;
