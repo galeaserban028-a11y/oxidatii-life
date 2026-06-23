@@ -12,4 +12,15 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    // MapLibre runs part of its code in a Web Worker blob. If Vite/esbuild
+    // transpiles that dependency below ES2022, helper functions can be stripped
+    // out of the worker scope and the map crashes with errors like
+    // "_ is not defined" / missing helper references.
+    build: { target: "es2022" },
+    optimizeDeps: {
+      include: ["maplibre-gl"],
+      esbuildOptions: { target: "es2022" },
+    },
+  },
 });
