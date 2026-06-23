@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
+import { useEntitlements } from "@/lib/entitlements";
 import { supabase } from "@/integrations/supabase/client";
 import {
   LogOut, Camera, Lock, Globe2, UserPlus, ShieldOff, ChevronDown, Menu, Plus,
@@ -46,6 +47,7 @@ const RANK_LABELS: Record<string, string> = {
 function MePage() {
   const nav = useNavigate();
   const { user, profile, signOut, refreshProfile } = useAuth();
+  const ent = useEntitlements();
   const { isStaff, isAdmin } = useIsAdmin();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -355,10 +357,10 @@ function MePage() {
             <nav className="py-2">
               <MenuItem to="/app/settings" icon={<Settings size={16} className="text-[#ffea00]" />} onSelect={() => setMenuOpen(false)} label="Setări" />
               <MenuItem to="/app/premium" icon={<Gem size={16} className="text-[#c724ff]" />} onSelect={() => setMenuOpen(false)} label="Șpriț Premium ✨" />
-              {["vip_plus", "pro", "elite"].includes((profile as any)?.premium_tier ?? "") && (
+              {ent.isVipPlus && (
                 <MenuItem to="/app/me/raters" icon={<Gem size={16} className="text-rose-400" />} onSelect={() => setMenuOpen(false)} label="Cine ți-a dat rating" />
               )}
-              {["pro", "elite"].includes((profile as any)?.premium_tier ?? "") && (
+              {ent.isPro && (
                 <MenuItem to="/app/me/reputation" icon={<Gem size={16} className="text-emerald-400" />} onSelect={() => setMenuOpen(false)} label="Reputation analytics" />
               )}
               <MenuItem to="/app/biz" icon={<Rocket size={16} className="text-[#00e5ff]" />} onSelect={() => setMenuOpen(false)} label="Business · Promovare" />
@@ -465,7 +467,7 @@ function MePage() {
         <div className="mt-6 space-y-1.5">
           <div style={instrument} className="text-2xl leading-tight flex items-center gap-2 flex-wrap tracking-tight">
             <span>{profile.display_name || `@${profile.handle ?? "—"}`}</span>
-            <PremiumBadge tier={(profile as any).premium_tier} size="sm" />
+            <PremiumBadge tier={ent.tier} size="sm" />
           </div>
           {profile.display_name && profile.handle && (
             <div className="text-[12px] font-mono text-white/40">@{profile.handle}</div>
@@ -482,7 +484,7 @@ function MePage() {
         </div>
 
         {/* Premium CTA — only when not subscribed */}
-        {!(profile as any).premium_tier && (
+        {!ent.isActive && (
           <Link
             to="/app/premium"
             className="mt-8 relative flex items-center gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-[#ff3d8b]/15 via-[#c724ff]/10 to-transparent p-4 active:scale-[0.99] transition group overflow-hidden"
@@ -504,7 +506,7 @@ function MePage() {
           {editingPremium ? (
             <PremiumExtrasCard onClose={() => setEditingPremium(false)} />
           ) : (
-            (profile as any).premium_tier && (
+            ent.isActive && (
               <button
                 onClick={() => setEditingPremium(true)}
                 className="w-full flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 active:scale-[0.99] transition"

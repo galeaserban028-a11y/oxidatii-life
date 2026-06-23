@@ -2366,6 +2366,10 @@ export type Database = {
         }[]
       }
       get_streak_status: { Args: { _user_id?: string }; Returns: Json }
+      has_active_premium: {
+        Args: { _min_tier?: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

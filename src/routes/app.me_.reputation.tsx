@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
+import { useEntitlements } from "@/lib/entitlements";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, BarChart3, Lock } from "lucide-react";
 
@@ -21,9 +22,8 @@ const CAT_LABELS: Record<string, string> = {
 const CATS = ["respect", "reliability", "energy", "friendliness", "contribution", "trust"];
 
 function ReputationAnalyticsPage() {
-  const { user, profile } = useAuth();
-  const tier = profile?.premium_tier;
-  const isPro = tier === "pro" || tier === "elite";
+  const { user } = useAuth();
+  const { isPro } = useEntitlements();
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-reputation", user?.id],
