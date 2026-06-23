@@ -599,24 +599,24 @@ export function RomaniaMap3D({
         }
         const theme = meta.theme || "#ff3d8b";
         const wrap = document.createElement("div");
-        wrap.style.cssText = "position:relative;width:32px;height:32px;cursor:pointer;transform:translateY(-50%);z-index:5;";
+        wrap.style.cssText = "position:relative;width:42px;height:42px;cursor:pointer;transform:translateY(-50%);z-index:5;";
 
         const pulse = document.createElement("div");
         pulse.style.cssText = `position:absolute;inset:-3px;border-radius:9999px;background:${theme};opacity:0.18;animation:oxi-pulse-strong 2.4s ease-out infinite;pointer-events:none;`;
         wrap.appendChild(pulse);
 
         const ring = document.createElement("div");
-        ring.style.cssText = `position:relative;width:32px;height:32px;border-radius:9999px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 10px ${theme}88,0 4px 10px rgba(0,0,0,0.55);`;
+        ring.style.cssText = `position:relative;width:42px;height:42px;border-radius:9999px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 10px ${theme}88,0 4px 10px rgba(0,0,0,0.55);`;
         if (meta.cover) {
           const img = document.createElement("img");
           img.src = meta.cover; img.alt = "";
           img.loading = "lazy";
-          img.style.cssText = "width:100%;height:100%;object-fit:cover;";
+          img.style.cssText = "width:100%;height:100%;object-fit:cover;object-position:center top;";
           ring.appendChild(img);
         } else {
           const ini = document.createElement("div");
           ini.textContent = (v.name?.[0] ?? "?").toUpperCase();
-          ini.style.cssText = `width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${theme};font-weight:900;font-family:'DM Sans',sans-serif;font-size:16px;`;
+          ini.style.cssText = `width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:${theme};font-weight:900;font-family:'DM Sans',sans-serif;font-size:18px;`;
           ring.appendChild(ini);
         }
         wrap.appendChild(ring);
