@@ -359,7 +359,10 @@ function MePage() {
       )}
       <div className="relative z-10" style={theme ? ({ ["--theme-accent" as any]: theme.accent, ["--theme-border" as any]: theme.cardBorder }) : undefined}>
       {/* Top bar — sunset glass */}
-      <header className="px-3 h-12 flex items-center justify-between">
+      <header
+        className="sticky top-0 z-30 px-3 h-12 flex items-center justify-between bg-[#050505]/80 backdrop-blur-md"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.25rem)", height: "calc(env(safe-area-inset-top) + 3rem)" }}
+      >
         <Link to="/app/scan" className="p-1.5 -ml-1.5 active:scale-95 transition text-white/80 hover:text-[#ffea00]" aria-label="Adaugă">
           <Plus size={24} strokeWidth={2.2} />
         </Link>
