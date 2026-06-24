@@ -108,23 +108,13 @@ const VOYAGER_STYLE = {
     },
   },
   layers: [
-    // Background acts as the LAND colour. Water layer below paints oceans on top.
-    // Without this, OpenMapTiles has no global land mask and continents disappear into the void.
-    { id: "background", type: "background", paint: { "background-color": "#1a0d33" } },
-    {
-      id: "landuse-residential",
-      type: "fill",
-      source: "omt",
-      "source-layer": "landuse",
-      filter: ["in", ["get", "class"], ["literal", ["residential", "suburb", "neighbourhood"]]],
-      paint: { "fill-color": "#241047", "fill-opacity": 0.55 },
-    },
+    { id: "background", type: "background", paint: { "background-color": "#0d0b1e" } },
     {
       id: "water",
       type: "fill",
       source: "omt",
       "source-layer": "water",
-      paint: { "fill-color": "#05030f" },
+      paint: { "fill-color": "#070514" },
     },
     {
       id: "landcover",
@@ -132,7 +122,7 @@ const VOYAGER_STYLE = {
       source: "omt",
       "source-layer": "landcover",
       filter: ["==", ["get", "class"], "wood"],
-      paint: { "fill-color": "rgba(40,20,70,0.45)", "fill-opacity": 0.5 },
+      paint: { "fill-color": "rgba(40,20,70,0.35)", "fill-opacity": 0.5 },
     },
     // Soft glow under roads
     {
@@ -165,8 +155,8 @@ const VOYAGER_STYLE = {
       "source-layer": "boundary",
       filter: ["<=", ["get", "admin_level"], 4],
       paint: {
-        "line-color": "rgba(199,121,255,0.85)",
-        "line-width": ["interpolate", ["linear"], ["zoom"], 2, 1.1, 6, 1.8, 10, 2.2],
+        "line-color": "rgba(168,85,247,0.55)",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 2, 0.6, 6, 1.1, 10, 1.6],
         "line-dasharray": [2, 2],
       },
     },
