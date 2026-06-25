@@ -47,5 +47,31 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>OXIDAȚII folosește locația ta pentru a-ți arăta prietenii și locațiile din apropiere pe hartă.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>OXIDAȚII folosește locația ta pentru a-ți arăta prietenii și hotspot-urile active, chiar și când aplicația rulează în fundal.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>OXIDAȚII folosește camera pentru a face poze la check-in-uri, sprit proofs și poza de profil.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>OXIDAȚII accesează galeria pentru a încărca poze la check-in-uri și la profil.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>OXIDAȚII salvează în galerie verdictele de seară pentru a le putea distribui.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>OXIDAȚII folosește microfonul pentru mesaje vocale și video stories.</string>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>OXIDAȚII îți trimite notificări pentru mesaje noi, invitații la spritz și hotspot-uri active.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+	</dict>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
