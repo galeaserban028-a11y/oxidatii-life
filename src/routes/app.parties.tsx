@@ -1,10 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Plus, MapPin, Clock, X, Flame, Trash2, Check, UserX, ChevronDown, ChevronUp } from "lucide-react";
+import { openOrCreateDM } from "@/lib/chat";
+import { Plus, MapPin, Clock, X, Flame, Trash2, Check, UserX, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/parties")({
