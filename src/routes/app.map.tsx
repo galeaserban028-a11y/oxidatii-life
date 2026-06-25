@@ -250,6 +250,7 @@ function MapPage() {
   const [country, setCountry] = useState<string | "all">("all");
   const [cityId, setCityId] = useState<string | "all">("all");
   const [maxKm, setMaxKm] = useState(0);
+  const [heatNowCells, setHeatNowCells] = useState<HeatNowCell[]>([]);
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
   const [visible, setVisible] = useState(40);
   const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
