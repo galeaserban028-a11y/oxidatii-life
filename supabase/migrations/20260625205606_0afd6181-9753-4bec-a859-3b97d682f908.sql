@@ -1,0 +1,35 @@
+
+CREATE INDEX IF NOT EXISTS idx_venues_geo_name ON public.venues (name) WHERE lat IS NOT NULL AND lng IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_venues_city_id ON public.venues (city_id);
+CREATE INDEX IF NOT EXISTS idx_venues_lat_lng ON public.venues (lat, lng);
+CREATE INDEX IF NOT EXISTS idx_cities_chaos_level ON public.cities (chaos_level DESC);
+CREATE INDEX IF NOT EXISTS idx_conv_members_user ON public.conversation_members (user_id);
+CREATE INDEX IF NOT EXISTS idx_conv_members_conv ON public.conversation_members (conversation_id);
+CREATE INDEX IF NOT EXISTS idx_messages_conv_created ON public.messages (conversation_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_check_ins_venue_created ON public.check_ins (venue_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_check_ins_user_created ON public.check_ins (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_created ON public.notifications (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_follows_follower ON public.follows (follower_id);
+CREATE INDEX IF NOT EXISTS idx_follows_following ON public.follows (following_id);
+CREATE INDEX IF NOT EXISTS idx_friendships_requester ON public.friendships (requester_id);
+CREATE INDEX IF NOT EXISTS idx_friendships_addressee ON public.friendships (addressee_id);
+CREATE INDEX IF NOT EXISTS idx_live_locations_user ON public.live_locations (user_id);
+CREATE INDEX IF NOT EXISTS idx_live_locations_updated ON public.live_locations (updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_stories_user_created ON public.stories (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_stories_expires ON public.stories (expires_at);
+CREATE INDEX IF NOT EXISTS idx_parties_starts_at ON public.parties (starts_at DESC);
+CREATE INDEX IF NOT EXISTS idx_party_joins_party ON public.party_joins (party_id);
+CREATE INDEX IF NOT EXISTS idx_party_joins_user ON public.party_joins (user_id);
+
+ANALYZE public.venues;
+ANALYZE public.cities;
+ANALYZE public.conversation_members;
+ANALYZE public.messages;
+ANALYZE public.check_ins;
+ANALYZE public.notifications;
+ANALYZE public.follows;
+ANALYZE public.friendships;
+ANALYZE public.live_locations;
+ANALYZE public.stories;
+ANALYZE public.parties;
+ANALYZE public.party_joins;
