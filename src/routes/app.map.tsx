@@ -258,6 +258,9 @@ function MapPage() {
 
   const { data: citiesData, isLoading } = useQuery({
     queryKey: ["cities"],
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cities")
@@ -271,6 +274,10 @@ function MapPage() {
 
   const { data: venues = [] } = useQuery({
     queryKey: ["map-venues-all"],
+    staleTime: 15 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
     queryFn: async () => {
       // fetch ALL venues, paginating past the 1000 row default
       const all: Venue[] = [];
