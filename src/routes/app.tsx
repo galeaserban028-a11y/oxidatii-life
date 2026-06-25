@@ -43,9 +43,10 @@ function AppLayout() {
 
   return (
     <main
-      className="min-h-screen bg-background text-foreground overflow-x-hidden"
+      className={`min-h-screen bg-background text-foreground overflow-x-hidden ${compact ? "oxi-compact" : ""}`}
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)" }}
     >
+
       {/* iOS status-bar tint — solid background under the Dynamic Island / notch
           so the area never shows transparent content. Sits behind the sticky header. */}
       <div
