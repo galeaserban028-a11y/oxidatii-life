@@ -108,13 +108,13 @@ const VOYAGER_STYLE = {
     },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#0d0b1e" } },
+    { id: "background", type: "background", paint: { "background-color": "#1a1330" } },
     {
       id: "water",
       type: "fill",
       source: "omt",
       "source-layer": "water",
-      paint: { "fill-color": "#070514" },
+      paint: { "fill-color": "#05030f" },
     },
     {
       id: "landcover",
@@ -122,7 +122,7 @@ const VOYAGER_STYLE = {
       source: "omt",
       "source-layer": "landcover",
       filter: ["==", ["get", "class"], "wood"],
-      paint: { "fill-color": "rgba(40,20,70,0.35)", "fill-opacity": 0.5 },
+      paint: { "fill-color": "rgba(60,30,100,0.35)", "fill-opacity": 0.55 },
     },
     // Soft glow under roads
     {
@@ -301,7 +301,10 @@ export function RomaniaMap3D({
       loadedRef.current = true;
       setMapFailed(false);
       if (isSmall) {
-        for (const layerId of ["roads-glow", "landcover", "admin-boundaries", "place-city"] as const) {
+        // Keep admin-boundaries & landcover so the user can still SEE the
+        // shape of countries on small screens; only the heavy roads-glow
+        // blur layer is dropped for perf.
+        for (const layerId of ["roads-glow"] as const) {
           try { if (map.getLayer(layerId)) map.removeLayer(layerId); } catch {}
         }
       }
