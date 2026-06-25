@@ -50,7 +50,8 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
       onClose();
       setTimeout(() => navigate({ to: "/app/chat/$id", params: { id: convId } }), 200);
     } catch (e: any) {
-      toast.error(e.message ?? "Eroare la trimitere");
+      const { prettifyAntiSpamError } = await import("@/lib/antispam");
+      toast.error(prettifyAntiSpamError(e) || "Eroare la trimitere");
     } finally {
       setSending(null);
     }
