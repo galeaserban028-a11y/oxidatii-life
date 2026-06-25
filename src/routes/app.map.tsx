@@ -317,6 +317,9 @@ function MapPage() {
   // and show the brand logo in place of the bottle silhouette.
   const { data: promotedMeta = {} } = useQuery({
     queryKey: ["promoted-venues"],
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
     queryFn: async () => {
       const nowIso = new Date().toISOString();
       const { data, error } = await supabase
