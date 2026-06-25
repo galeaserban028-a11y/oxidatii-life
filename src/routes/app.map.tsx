@@ -369,14 +369,14 @@ function MapPage() {
     if (!user?.id) return;
     const userId = user.id;
     const channelName = `live-presence:${userId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
+    // Throttle: under heavy load (many global check-ins) coalesce to 1 refetch / 2s
+    const refresh = throttle(() => {
+      qc.invalidateQueries({ queryKey: ["friend-pins", userId] });
+    }, 2000);
     const ch = supabase
       .channel(channelName)
-      .on("postgres_changes", { event: "*", schema: "public", table: "check_ins" }, () => {
-        qc.invalidateQueries({ queryKey: ["friend-pins", userId] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "live_locations" }, () => {
-        qc.invalidateQueries({ queryKey: ["friend-pins", userId] });
-      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "check_ins" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_locations" }, refresh)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user?.id, qc]);
