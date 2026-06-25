@@ -485,8 +485,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
     border-radius: 9999px;
     background: rgba(255,255,255,0.18);
     border: 1px solid rgba(255,255,255,0.25);
