@@ -99,6 +99,7 @@ function makePinImage(color: string, lowEnd = false): ImageData {
 // keeps roads, countries and labels visible while our live pins render on top.
 const OXI_MAP_STYLE = {
   version: 8,
+  glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
   sources: {
     carto: {
       type: "raster",
