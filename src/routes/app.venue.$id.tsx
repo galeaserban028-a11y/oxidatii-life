@@ -226,6 +226,8 @@ function VenuePage() {
               if (!user) { toast.error("Trebuie să fii logat"); return; }
               const { guardRateLimit } = await import("@/lib/rateLimit");
               if (!(await guardRateLimit("check_in"))) { toast.error("Prea multe check-in-uri. Încearcă peste un minut."); return; }
+              const { haptic } = await import("@/lib/native");
+              haptic("medium");
               const { error } = await supabase.from("check_ins").insert({ venue_id: id, user_id: user.id });
               if (error) { toast.error(error.message); return; }
               toast.success("Ești aici · vizibil 4h");
