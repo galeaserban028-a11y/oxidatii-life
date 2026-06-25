@@ -633,7 +633,7 @@ function NewMessageSheet({ onClose, onOpen }: { onClose: () => void; onOpen: (id
 
       <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
         {friends.length === 0 ? (
-          <div className="text-center py-10 text-xs text-muted-foreground">nu ai încă prieteni adăugați</div>
+          <div className="text-center py-10 text-xs text-muted-foreground">nu ai prieteni sau persoane urmărite încă</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-10 text-xs text-muted-foreground">nimeni nu se potrivește</div>
         ) : filtered.map((f: any) => {
