@@ -869,6 +869,7 @@ function MapPage() {
           <HeatNowButton
             cityId={cityId === "all" ? null : cityId}
             onFocus={(lat, lng) => setFocusCity({ lat, lng, zoom: 14.5 })}
+            onCellsChange={setHeatNowCells}
           />
 
         </div>
