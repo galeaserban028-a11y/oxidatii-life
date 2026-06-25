@@ -452,9 +452,11 @@ export function RomaniaMap3D({
             "rgba(255,140,90,0.55)",
           ],
           "circle-radius": ["step", ["get", "point_count"], 14, 80, 17, 240, 20],
-          "circle-blur": 0.45,
+          "circle-blur": isSmall ? 0.2 : 0.45,
+          "circle-opacity": isSmall ? 0.7 : 1,
         },
       });
+
 
       map.addLayer({
         id: "venues-clusters",
