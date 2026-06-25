@@ -308,7 +308,7 @@ export default function TonightCard() {
 
         {myIntent && myIntent.venue_id && !showVenues && (
           <button onClick={cancel} className="tonight-icon-btn" aria-label="Anulează">
-            <X size={10} />
+            <X size={8} />
           </button>
         )}
       </div>
@@ -361,7 +361,7 @@ export default function TonightCard() {
               <Users size={10} /> unde se adună
             </div>
             <button onClick={() => setShowVenues(false)} className="tonight-icon-btn" aria-label="Închide">
-              <X size={12} />
+              <X size={10} />
             </button>
           </div>
           <div className="space-y-1.5">
