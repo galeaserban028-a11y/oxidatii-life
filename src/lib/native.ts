@@ -62,6 +62,25 @@ export async function bootstrapNative(): Promise<void> {
       });
     } catch {}
 
+    // Deep linking: oxidatii.life/<path>  ->  navigate to /<path> in app.
+    try {
+      App.addListener("appUrlOpen", ({ url }) => {
+        try {
+          const u = new URL(url);
+          // Acceptăm doar host-urile noastre (custom URL schemes ar avea alt host).
+          const okHost =
+            u.host === "oxidatii.life" ||
+            u.host === "www.oxidatii.life" ||
+            u.host.endsWith(".lovable.app");
+          if (!okHost) return;
+          const path = `${u.pathname}${u.search}${u.hash}` || "/";
+          // Folosim history.pushState + popstate ca TanStack Router să preia ruta.
+          window.history.pushState({}, "", path);
+          window.dispatchEvent(new PopStateEvent("popstate"));
+        } catch {}
+      });
+    } catch {}
+
     // Try to register native push (no-op if not yet authenticated; can be
     // called again later from app boot after sign-in).
     try {
