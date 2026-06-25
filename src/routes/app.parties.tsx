@@ -245,120 +245,137 @@ function PartiesPage() {
               const pct = Math.min(100, (taken / p.spots_total) * 100);
 
               return (
-                <article
-                  key={p.id}
-                  className={`bg-[#111] rounded-3xl p-5 border border-white/5 shadow-xl ${
-                    isHost ? "border-l-4 border-l-[#c724ff]" : ""
-                  }`}
-                >
-                  {/* host row */}
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex gap-3 min-w-0 flex-1">
-                      <div className="w-11 h-11 rounded-xl overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#00e5ff] flex items-center justify-center text-sm shrink-0 text-white" style={ARCHIVO}>
-                        {host?.avatar_url
-                          ? <img src={host.avatar_url} alt="" className="h-full w-full object-cover" />
-                          : initial}
+                <article key={p.id} className="relative">
+                  {isHost && (
+                    <div className="absolute left-0 top-6 bottom-6 w-1.5 bg-[#c724ff] rounded-r-full shadow-[0_0_15px_rgba(199,36,255,0.6)] z-10" />
+                  )}
+                  <div className={`relative overflow-hidden bg-[#0f0f12] border border-white/10 rounded-[2rem] p-6 ${isHost ? "pl-8" : ""} shadow-xl`}>
+                    <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#c724ff]/5 rounded-full blur-[60px] pointer-events-none" />
+
+                    <div className="relative z-10">
+                      {/* host row */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex gap-4 min-w-0 flex-1">
+                          <div className="relative shrink-0">
+                            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#00e5ff] flex items-center justify-center text-base text-white ring-1 ring-white/10 shadow-xl" style={ARCHIVO}>
+                              {host?.avatar_url
+                                ? <img src={host.avatar_url} alt="" className="h-full w-full object-cover" />
+                                : initial}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#00e5ff] border-[3px] border-[#0f0f12] rounded-full shadow-[0_0_8px_#00e5ff]" />
+                          </div>
+                          <div className="pt-1 min-w-0 flex-1">
+                            <h3 className="text-white font-bold text-lg tracking-tight truncate">{p.title}</h3>
+                            <p className="text-white/40 text-[11px] mt-0.5 flex items-center gap-1.5 truncate">
+                              <span className={`font-bold uppercase tracking-wide ${isHost ? "text-[#00e5ff]" : "text-white/60"}`}>
+                                {isHost ? "Tu (Host)" : `@${host?.handle ?? host?.display_name ?? "anonim"}`}
+                              </span>
+                              {city && <><span className="text-white/20">·</span><MapPin size={10} className="inline shrink-0" />{city}</>}
+                            </p>
+                          </div>
+                        </div>
+                        {isHost ? (
+                          <button
+                            onClick={() => handleDelete(p.id, p.title)}
+                            disabled={deleteMutation.isPending}
+                            aria-label="șterge șpriț"
+                            className="p-2 text-white/20 hover:text-[#ff3d8b] hover:bg-[#ff3d8b]/10 rounded-xl disabled:opacity-30 transition-all shrink-0"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        ) : (
+                          <div className="px-2 py-1 bg-[#ff3d8b]/10 border border-[#ff3d8b]/20 rounded-lg shrink-0 flex items-center gap-1">
+                            <Clock size={9} className="text-[#ff3d8b]" />
+                            <p className="text-[10px] font-bold text-[#ff3d8b]">{timeLabel(p.starts_at)}</p>
+                          </div>
+                        )}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-bold text-white truncate">{p.title}</h3>
-                        <p className="text-[10px] text-white/40 truncate flex items-center gap-1">
-                          {isHost ? "Tu (Host)" : `@${host?.handle ?? host?.display_name ?? "anonim"}`}
-                          {city && <><span className="text-white/20">·</span><MapPin size={9} />{city}</>}
+
+                      {/* description */}
+                      {p.description?.trim() && (
+                        <p className="mt-5 px-1 text-white/70 italic text-sm font-medium leading-snug line-clamp-2">
+                          „{p.description.trim()}"
                         </p>
+                      )}
+
+                      {/* meta + vibe */}
+                      <div className="mt-5 flex items-center gap-2 flex-wrap">
+                        <span className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] uppercase tracking-widest text-white/60 font-black flex items-center gap-1">
+                          <MapPin size={10} />{p.location_text}
+                        </span>
+                        {p.vibe && (
+                          <span className="text-[#00e5ff] text-[10px] font-black tracking-widest uppercase border border-[#00e5ff]/30 px-3 py-1.5 rounded-lg bg-[#00e5ff]/5">
+                            {p.vibe}
+                          </span>
+                        )}
                       </div>
-                    </div>
-                    {isHost ? (
-                      <button
-                        onClick={() => handleDelete(p.id, p.title)}
-                        disabled={deleteMutation.isPending}
-                        aria-label="șterge șpriț"
-                        className="p-2 text-white/20 hover:text-[#c724ff] disabled:opacity-30 transition-colors shrink-0"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    ) : (
-                      <div className="px-2 py-1 bg-[#ff3d8b]/10 border border-[#ff3d8b]/20 rounded-lg shrink-0 flex items-center gap-1">
-                        <Clock size={9} className="text-[#ff3d8b]" />
-                        <p className="text-[10px] font-bold text-[#ff3d8b]">{timeLabel(p.starts_at)}</p>
+
+                      {/* spots progress */}
+                      <div className="mt-5">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] uppercase tracking-widest font-black">
+                            <span className="text-white">{taken}</span>
+                            <span className="text-white/30">/{p.spots_total}</span>
+                            <span className="ml-1.5 text-white/40">vin</span>
+                          </span>
+                          <span className={`text-[10px] uppercase tracking-widest font-black ${free === 0 ? "text-[#c724ff]" : "text-white/40"}`}>
+                            {free === 0 ? "plin" : `${free} locuri`}
+                          </span>
+                        </div>
+                        <div className="h-1 rounded-full bg-white/5 overflow-hidden">
+                          <div
+                            className={`h-full ${free === 0 ? "bg-[#c724ff]" : "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff]"}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
                       </div>
-                    )}
-                  </div>
 
-                  {/* description */}
-                  {p.description?.trim() && (
-                    <p className="text-xs text-white/60 leading-snug mb-4 line-clamp-2">„{p.description.trim()}"</p>
-                  )}
+                      {/* CTA */}
+                      <div className="mt-5 flex justify-end">
+                        {isHost ? (
+                          <div className="group/btn relative">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] rounded-2xl blur-md opacity-50 group-hover/btn:opacity-100 transition duration-500" />
+                            <div className="relative bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] px-5 py-3 rounded-2xl flex items-center gap-2 shadow-2xl">
+                              <span className="text-white text-[11px] font-black tracking-[0.12em] uppercase">Gestionezi</span>
+                              <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => joinMutation.mutate({ partyId: p.id, joinId: myJoin?.id ?? null })}
+                            disabled={!user || joinMutation.isPending || (full && !myJoin)}
+                            className={`px-5 py-2.5 text-[10px] font-bold rounded-full uppercase tracking-wider active:scale-95 disabled:opacity-30 transition-transform ${
+                              myStatus === "accepted"
+                                ? "bg-white/5 border border-[#00e5ff]/40 text-[#00e5ff]"
+                                : myStatus === "pending"
+                                  ? "bg-white/5 border border-white/15 text-white/60"
+                                  : full
+                                    ? "bg-white/5 text-white/40"
+                                    : "bg-[#ff3d8b] text-white shadow-[0_0_18px_-4px_#ff3d8b]"
+                            }`}
+                          >
+                            {myStatus === "accepted" ? "✓ vii" : myStatus === "pending" ? "în așteptare" : full ? "plin" : "vin și eu"}
+                          </button>
+                        )}
+                      </div>
 
-                  {/* meta + vibe */}
-                  <div className="flex items-center gap-2 mb-4 flex-wrap">
-                    <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-[9px] uppercase tracking-wider text-white/60 font-bold flex items-center gap-1">
-                      <MapPin size={9} />{p.location_text}
-                    </span>
-                    {p.vibe && (
-                      <span className="px-2 py-0.5 rounded-full bg-[#00e5ff]/10 border border-[#00e5ff]/20 text-[9px] uppercase tracking-wider text-[#00e5ff] font-bold">
-                        {p.vibe}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* spots progress */}
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-[10px] uppercase tracking-widest font-bold">
-                        <span className="text-white">{taken}</span>
-                        <span className="text-white/30">/{p.spots_total}</span>
-                        <span className="ml-1.5 text-white/40">vin</span>
-                      </span>
-                      <span className={`text-[10px] uppercase tracking-widest font-bold ${free === 0 ? "text-[#c724ff]" : "text-white/40"}`}>
-                        {free === 0 ? "plin" : `${free} locuri`}
-                      </span>
+                      {/* Host management */}
+                      {isHost && partyJoins.length > 0 && (
+                        <div className="mt-5">
+                          <HostJoinsPanel
+                            pending={pending}
+                            accepted={accepted}
+                            profileMap={profileMap}
+                            onAccept={(id) => acceptMutation.mutate(id)}
+                            onReject={(id) => kickMutation.mutate(id)}
+                            busy={acceptMutation.isPending || kickMutation.isPending}
+                          />
+                        </div>
+                      )}
                     </div>
-                    <div className="h-1 rounded-full bg-white/5 overflow-hidden">
-                      <div
-                        className={`h-full ${free === 0 ? "bg-[#c724ff]" : "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff]"}`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
                   </div>
-
-                  {/* CTA */}
-                  <div className="flex justify-end">
-                    {isHost ? (
-                      <span className="px-5 py-2.5 bg-white/5 border border-white/10 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
-                        gestionezi
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => joinMutation.mutate({ partyId: p.id, joinId: myJoin?.id ?? null })}
-                        disabled={!user || joinMutation.isPending || (full && !myJoin)}
-                        className={`px-5 py-2.5 text-[10px] font-bold rounded-full uppercase tracking-wider active:scale-95 disabled:opacity-30 transition-transform ${
-                          myStatus === "accepted"
-                            ? "bg-white/5 border border-[#00e5ff]/40 text-[#00e5ff]"
-                            : myStatus === "pending"
-                              ? "bg-white/5 border border-white/15 text-white/60"
-                              : full
-                                ? "bg-white/5 text-white/40"
-                                : "bg-[#ff3d8b] text-white shadow-[0_0_18px_-4px_#ff3d8b]"
-                        }`}
-                      >
-                        {myStatus === "accepted" ? "✓ vii" : myStatus === "pending" ? "în așteptare" : full ? "plin" : "vin și eu"}
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Host management */}
-                  {isHost && partyJoins.length > 0 && (
-                    <div className="mt-4">
-                      <HostJoinsPanel
-                        pending={pending}
-                        accepted={accepted}
-                        profileMap={profileMap}
-                        onAccept={(id) => acceptMutation.mutate(id)}
-                        onReject={(id) => kickMutation.mutate(id)}
-                        busy={acceptMutation.isPending || kickMutation.isPending}
-                      />
-                    </div>
-                  )}
                 </article>
               );
             })}
