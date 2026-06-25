@@ -114,8 +114,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "OXIDAȚII" },
       { property: "og:description", content: "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România." },
       { name: "twitter:description", content: "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/9rpc36iJ15WW2iHyJU4gj6AejqE2/social-images/social-1780918264308-ed751cf5-3801-4374-b73b-2ad6c8f1398a.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/9rpc36iJ15WW2iHyJU4gj6AejqE2/social-images/social-1780918264308-ed751cf5-3801-4374-b73b-2ad6c8f1398a.webp" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/84jcXRlpV5UmDY7k2qZ9BQoT7s43/social-images/social-1782423756310-ChatGPT_Image_26_iun._2026,_00_42_14.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/84jcXRlpV5UmDY7k2qZ9BQoT7s43/social-images/social-1782423756310-ChatGPT_Image_26_iun._2026,_00_42_14.webp" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
@@ -166,7 +166,6 @@ function RootComponent() {
   useEffect(() => {
     import("@/hooks/useTheme").then((m) => m.initThemeEarly());
     import("@/lib/pwa").then((m) => m.registerAppServiceWorker());
-    import("@/lib/native").then((m) => m.bootstrapNative());
   }, []);
   return (
     <QueryClientProvider client={queryClient}>
