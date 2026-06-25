@@ -94,68 +94,66 @@ function makePinImage(color: string, lowEnd = false): ImageData {
 
 
 
-// Neon night style — deep violet background with magenta/pink glow on borders
-// and roads, mirroring the original "neon" look the user asked to bring back.
-// Uses OpenFreeMap vector tiles so we get real geometry to style with glow.
-const NEON_NIGHT_STYLE = {
-  version: 8,
-  glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
-  sources: {
-    openmaptiles: {
-      type: "vector",
-      url: "https://tiles.openfreemap.org/planet",
-    },
-  },
-  layers: [
+function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
+  const glowBlur = lowEnd ? 3 : 6;
+  const adminGlowBlur = lowEnd ? 3 : 6;
+  const layers: any[] = [
     { id: "background", type: "background", paint: { "background-color": "#0d0b1e" } },
-    {
-      id: "landcover",
-      type: "fill",
-      source: "openmaptiles",
-      "source-layer": "landcover",
-      paint: { "fill-color": "#15102a", "fill-opacity": 0.55 },
-    },
-    {
-      id: "park",
-      type: "fill",
-      source: "openmaptiles",
-      "source-layer": "park",
-      paint: { "fill-color": "#1a1430", "fill-opacity": 0.6 },
-    },
-    {
-      id: "water",
-      type: "fill",
-      source: "openmaptiles",
-      "source-layer": "water",
-      paint: { "fill-color": "#05030f", "fill-outline-color": "#2a1145" },
-    },
-    // Road glow — wide, blurred magenta halo behind the roads
-    {
-      id: "roads-glow",
-      type: "line",
-      source: "openmaptiles",
-      "source-layer": "transportation",
-      filter: ["in", "class", "motorway", "trunk", "primary"],
-      paint: {
-        "line-color": "#ff3df0",
-        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 4, 14, 9, 18, 22],
-        "line-blur": 6,
-        "line-opacity": 0.55,
+  ];
+  if (!lowEnd) {
+    layers.push(
+      {
+        id: "landcover",
+        type: "fill",
+        source: "openmaptiles",
+        "source-layer": "landcover",
+        paint: { "fill-color": "#15102a", "fill-opacity": 0.55 },
       },
-    },
-    {
-      id: "roads-major",
-      type: "line",
-      source: "openmaptiles",
-      "source-layer": "transportation",
-      filter: ["in", "class", "motorway", "trunk", "primary"],
-      paint: {
-        "line-color": "#ff5cf0",
-        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 10, 1.4, 14, 3, 18, 7],
-        "line-opacity": 0.95,
+      {
+        id: "park",
+        type: "fill",
+        source: "openmaptiles",
+        "source-layer": "park",
+        paint: { "fill-color": "#1a1430", "fill-opacity": 0.6 },
       },
+    );
+  }
+  layers.push({
+    id: "water",
+    type: "fill",
+    source: "openmaptiles",
+    "source-layer": "water",
+    paint: { "fill-color": "#05030f", "fill-outline-color": "#2a1145" },
+  });
+  // Road glow — narrower/less blurred on mobile to keep frame budget healthy
+  layers.push({
+    id: "roads-glow",
+    type: "line",
+    source: "openmaptiles",
+    "source-layer": "transportation",
+    filter: ["in", "class", "motorway", "trunk", "primary"],
+    minzoom: lowEnd ? 6 : 0,
+    paint: {
+      "line-color": "#ff3df0",
+      "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.2, 10, 3, 14, 7, 18, 18],
+      "line-blur": glowBlur,
+      "line-opacity": lowEnd ? 0.4 : 0.55,
     },
-    {
+  });
+  layers.push({
+    id: "roads-major",
+    type: "line",
+    source: "openmaptiles",
+    "source-layer": "transportation",
+    filter: ["in", "class", "motorway", "trunk", "primary"],
+    paint: {
+      "line-color": "#ff5cf0",
+      "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 10, 1.4, 14, 3, 18, 7],
+      "line-opacity": 0.95,
+    },
+  });
+  if (!lowEnd) {
+    layers.push({
       id: "roads-secondary",
       type: "line",
       source: "openmaptiles",
@@ -167,8 +165,9 @@ const NEON_NIGHT_STYLE = {
         "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.4, 14, 1.4, 18, 4],
         "line-opacity": 0.75,
       },
-    },
-    // Admin glow — wide blurred magenta halo behind country borders
+    });
+  }
+  layers.push(
     {
       id: "admin-glow",
       type: "line",
@@ -177,9 +176,9 @@ const NEON_NIGHT_STYLE = {
       filter: ["<=", "admin_level", 2],
       paint: {
         "line-color": "#ff3df0",
-        "line-width": 6,
-        "line-blur": 6,
-        "line-opacity": 0.55,
+        "line-width": lowEnd ? 4 : 6,
+        "line-blur": adminGlowBlur,
+        "line-opacity": lowEnd ? 0.45 : 0.55,
       },
     },
     {
@@ -194,7 +193,9 @@ const NEON_NIGHT_STYLE = {
         "line-opacity": 1,
       },
     },
-    {
+  );
+  if (!lowEnd) {
+    layers.push({
       id: "admin-region",
       type: "line",
       source: "openmaptiles",
@@ -207,32 +208,42 @@ const NEON_NIGHT_STYLE = {
         "line-dasharray": [2, 2],
         "line-opacity": 0.7,
       },
+    });
+  }
+  layers.push({
+    id: "place-city",
+    type: "symbol",
+    source: "openmaptiles",
+    "source-layer": "place",
+    filter: ["in", "class", "city", "town"],
+    minzoom: 4,
+    layout: {
+      "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
+      "text-font": ["Noto Sans Regular"],
+      "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 13, 12, 17],
+      "text-letter-spacing": 0.08,
+      "text-transform": "uppercase",
     },
-    {
-      id: "place-city",
-      type: "symbol",
-      source: "openmaptiles",
-      "source-layer": "place",
-      filter: ["in", "class", "city", "town"],
-      minzoom: 4,
-      layout: {
-        "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
-        "text-font": ["Noto Sans Regular"],
-        "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 13, 12, 17],
-        "text-letter-spacing": 0.08,
-        "text-transform": "uppercase",
-      },
-      paint: {
-        "text-color": "#ffffff",
-        "text-halo-color": "#ff3df0",
-        "text-halo-width": 2,
-        "text-halo-blur": 3,
+    paint: {
+      "text-color": "#ffffff",
+      "text-halo-color": "#ff3df0",
+      "text-halo-width": lowEnd ? 1.2 : 2,
+      "text-halo-blur": lowEnd ? 1.5 : 3,
+    },
+  });
+  return {
+    version: 8,
+    glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+    sources: {
+      openmaptiles: {
+        type: "vector",
+        url: "https://tiles.openfreemap.org/planet",
       },
     },
-  ],
-} as unknown as maplibregl.StyleSpecification;
+    layers,
+  } as unknown as maplibregl.StyleSpecification;
+}
 
-const OXI_MAP_STYLE = NEON_NIGHT_STYLE;
 
 
 
@@ -316,7 +327,7 @@ export function RomaniaMap3D({
     try {
       map = new maplibregl.Map({
         container: containerRef.current,
-        style: OXI_MAP_STYLE,
+        style: buildNeonStyle(isSmall),
         center: [25.0, 45.9],
         zoom: isSmall ? 3.2 : 3.8,
         minZoom: 2.5,
@@ -328,8 +339,9 @@ export function RomaniaMap3D({
         fadeDuration: isSmall ? 0 : 80,
         refreshExpiredTiles: false,
         maxPitch: isSmall ? 45 : 60,
-        pixelRatio: isSmall ? Math.min(window.devicePixelRatio || 1, 1.25) : undefined,
+        pixelRatio: isSmall ? Math.min(window.devicePixelRatio || 1, 1) : Math.min(window.devicePixelRatio || 1, 1.75),
         antialias: !isSmall,
+        maxTileCacheSize: isSmall ? 40 : 80,
       } as any);
     } catch (error) {
       console.warn("Map init failed", error);
@@ -440,9 +452,11 @@ export function RomaniaMap3D({
             "rgba(255,140,90,0.55)",
           ],
           "circle-radius": ["step", ["get", "point_count"], 14, 80, 17, 240, 20],
-          "circle-blur": 0.45,
+          "circle-blur": isSmall ? 0.2 : 0.45,
+          "circle-opacity": isSmall ? 0.7 : 1,
         },
       });
+
 
       map.addLayer({
         id: "venues-clusters",
@@ -551,7 +565,20 @@ export function RomaniaMap3D({
 
     map.on("error", (event) => { console.warn("Map tile error", event.error); });
     const refreshLabels = () => requestAnimationFrame(() => resolveCityLabelCollisions(containerRef.current, compactMapRef.current));
-    map.on("moveend", refreshLabels);
+    let moveIdleTimer: number | null = null;
+    const onMoveStart = () => {
+      containerRef.current?.classList.add("oxi-map-moving");
+      if (moveIdleTimer) { clearTimeout(moveIdleTimer); moveIdleTimer = null; }
+    };
+    const onMoveEnd = () => {
+      if (moveIdleTimer) clearTimeout(moveIdleTimer);
+      moveIdleTimer = window.setTimeout(() => {
+        containerRef.current?.classList.remove("oxi-map-moving");
+      }, 120);
+      refreshLabels();
+    };
+    map.on("movestart", onMoveStart);
+    map.on("moveend", onMoveEnd);
     map.on("zoomend", refreshLabels);
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
@@ -984,6 +1011,10 @@ export function RomaniaMap3D({
         .maplibregl-ctrl-group { background: rgba(3,4,10,0.9) !important; border: 1px solid rgba(198,107,255,0.25) !important; }
         .maplibregl-ctrl-group button { background-color: transparent !important; }
         .maplibregl-ctrl-group button span { filter: invert(1) brightness(1.2); }
+        .oxi-map-moving .maplibregl-marker * { animation-play-state: paused !important; }
+        @media (prefers-reduced-motion: reduce) {
+          .maplibregl-marker * { animation: none !important; }
+        }
       `}</style>
 
       <div ref={containerRef} className="absolute inset-0" />
