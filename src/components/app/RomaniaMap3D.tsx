@@ -284,6 +284,13 @@ function resolveCityLabelCollisions(container: HTMLElement | null, compact: bool
   }
 }
 
+export type HeatNowCell = {
+  cell_id: string;
+  lat: number;
+  lng: number;
+  heat_score: number;
+};
+
 export function RomaniaMap3D({
   cities,
   venues = [],
@@ -292,6 +299,7 @@ export function RomaniaMap3D({
   focusCity,
   fitBounds,
   promotedMeta = {},
+  heatNowCells = [],
 }: {
   cities: City[];
   venues?: Venue[];
@@ -300,6 +308,7 @@ export function RomaniaMap3D({
   focusCity?: { lat: number; lng: number; zoom?: number } | null;
   fitBounds?: [[number, number], [number, number]] | null;
   promotedMeta?: Record<string, { theme: string; cover: string | null; campaignId?: string }>;
+  heatNowCells?: HeatNowCell[];
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
