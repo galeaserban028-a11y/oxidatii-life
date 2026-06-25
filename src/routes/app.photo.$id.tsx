@@ -123,7 +123,11 @@ function PhotoPage() {
     setSending(true);
     const { error } = await supabase.from("photo_comments").insert({ photo_id: id, user_id: user.id, body: text });
     setSending(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      const { prettifyAntiSpamError } = await import("@/lib/antispam");
+      toast.error(prettifyAntiSpamError(error));
+      return;
+    }
     setBody("");
     qc.invalidateQueries({ queryKey: ["photo-comments-list", id] });
     qc.invalidateQueries({ queryKey: ["photo-detail", id] });

@@ -37,7 +37,11 @@ export function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () =
       photo_id: photo.id, user_id: user.id, body: text,
     });
     setSending(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      const { prettifyAntiSpamError } = await import("@/lib/antispam");
+      toast.error(prettifyAntiSpamError(error));
+      return;
+    }
     setBody("");
     qc.invalidateQueries({ queryKey: ["photo-comments", photo.id] });
     qc.invalidateQueries({ queryKey: ["faze"] });
