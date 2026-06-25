@@ -301,7 +301,10 @@ export function RomaniaMap3D({
       loadedRef.current = true;
       setMapFailed(false);
       if (isSmall) {
-        for (const layerId of ["roads-glow", "landcover", "admin-boundaries", "place-city"] as const) {
+        // Keep admin-boundaries & landcover so the user can still SEE the
+        // shape of countries on small screens; only the heavy roads-glow
+        // blur layer is dropped for perf.
+        for (const layerId of ["roads-glow"] as const) {
           try { if (map.getLayer(layerId)) map.removeLayer(layerId); } catch {}
         }
       }
