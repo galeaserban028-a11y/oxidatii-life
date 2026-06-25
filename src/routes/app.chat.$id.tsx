@@ -153,7 +153,12 @@ function ChatPage() {
     }
     const { error } = await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, body });
     setSending(false);
-    if (error) { alert(error.message); if (!override) setText(body); return; }
+    if (error) {
+      const { prettifyAntiSpamError } = await import("@/lib/antispam");
+      alert(prettifyAntiSpamError(error));
+      if (!override) setText(body);
+      return;
+    }
     notifyChatMessage({ data: { conversationId: id, preview: body } }).catch(() => {});
   };
 
@@ -189,7 +194,8 @@ function ChatPage() {
       if (error) throw error;
       notifyChatMessage({ data: { conversationId: id, preview: body.slice(0, 80) } }).catch(() => {});
     } catch (e: any) {
-      alert(e.message ?? "nu am putut trimite");
+      const { prettifyAntiSpamError } = await import("@/lib/antispam");
+      alert(prettifyAntiSpamError(e) || "nu am putut trimite");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
