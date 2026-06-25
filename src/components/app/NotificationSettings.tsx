@@ -17,6 +17,7 @@ type Prefs = {
   party_join: boolean;
   friend_live: boolean;
   challenge: boolean;
+  heat_now: boolean;
 };
 
 const DEFAULT_PREFS: Prefs = {
@@ -24,6 +25,7 @@ const DEFAULT_PREFS: Prefs = {
   party_join: true,
   friend_live: true,
   challenge: true,
+  heat_now: true,
 };
 
 const PREF_LABELS: { key: keyof Prefs; label: string; hint: string }[] = [
@@ -31,6 +33,7 @@ const PREF_LABELS: { key: keyof Prefs; label: string; hint: string }[] = [
   { key: "party_join", label: "Cineva s-a alăturat petrecerii tale", hint: "Spot ocupat la party-ul tău" },
   { key: "friend_live", label: "Prieten live pe hartă", hint: "Un prieten a făcut check-in" },
   { key: "challenge", label: "Provocare nouă", hint: "Cineva te-a provocat la șpriț" },
+  { key: "heat_now", label: "Hotspot fierbinte în oraș", hint: "Când o zonă depășește pragul de Heat Now" },
 ];
 
 export function NotificationSettings() {
