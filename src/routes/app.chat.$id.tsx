@@ -181,9 +181,14 @@ function ChatPage() {
     notifyChatMessage({ data: { conversationId: id, preview: body } }).catch(() => {});
   };
 
-  const deleteMessage = async (msgId: string) => {
-    if (!user) return;
-    if (!confirm("Ștergi acest mesaj?")) return;
+  const deleteMessage = (msgId: string) => {
+    setDeleteTarget(msgId);
+  };
+
+  const confirmDelete = async () => {
+    const msgId = deleteTarget;
+    if (!msgId || !user) return;
+    setDeleteTarget(null);
     // optimistic
     qc.setQueryData(["chat", id, user.id], (old: any) => {
       if (!old) return old;
@@ -195,6 +200,8 @@ function ChatPage() {
       qc.invalidateQueries({ queryKey: ["chat", id, user.id] });
     }
   };
+
+  const cancelDelete = () => setDeleteTarget(null);
 
   const insertEmoji = (e: string) => {
     setText(t => t + e);
