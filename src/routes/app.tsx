@@ -10,7 +10,9 @@ import { SwipeNavigator } from "@/components/app/SwipeNavigator";
 
 import { useLiveLocation } from "@/hooks/useLiveLocation";
 import { TutorialOverlay } from "@/components/app/TutorialOverlay";
+import { useCompactMode } from "@/lib/compactMode";
 import logoSticker from "@/assets/logo-oxidatii.png";
+
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
@@ -22,6 +24,8 @@ function AppLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isMe = pathname === "/app/me" || pathname.startsWith("/app/me/");
   const { user, profile, loading } = useAuth();
+  const { compact } = useCompactMode();
+
 
 
   // Broadcast our live position to friends if we've granted location consent.
@@ -39,9 +43,10 @@ function AppLayout() {
 
   return (
     <main
-      className="min-h-screen bg-background text-foreground overflow-x-hidden"
+      className={`min-h-screen bg-background text-foreground overflow-x-hidden ${compact ? "oxi-compact" : ""}`}
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)" }}
     >
+
       {/* iOS status-bar tint — solid background under the Dynamic Island / notch
           so the area never shows transparent content. Sits behind the sticky header. */}
       <div
