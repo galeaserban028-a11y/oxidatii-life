@@ -1858,6 +1858,27 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          action: string
+          count: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          action: string
+          count?: number
+          user_id: string
+          window_start: string
+        }
+        Update: {
+          action?: string
+          count?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
           created_at: string
@@ -2448,6 +2469,14 @@ export type Database = {
       cast_decision_vote: {
         Args: { _option_id: string; _poll_id: string }
         Returns: Json
+      }
+      check_rate_limit: {
+        Args: {
+          _action: string
+          _max_per_window: number
+          _window_seconds?: number
+        }
+        Returns: boolean
       }
       claim_business_offer: {
         Args: { _check_in_id?: string; _offer_id: string }
