@@ -511,6 +511,14 @@ function HostJoinsPanel({
                       </div>
                     </Link>
                     <button
+                      onClick={() => onMessage(j.user_id)}
+                      aria-label="mesaj"
+                      title="Mesaj"
+                      className="h-8 w-8 rounded-full flex items-center justify-center bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] text-white shadow-[0_0_12px_-4px_#c724ff] active:scale-95"
+                    >
+                      <MessageCircle size={14} strokeWidth={2.5} />
+                    </button>
+                    <button
                       onClick={() => onReject(j.id)} disabled={busy}
                       aria-label="elimină"
                       className="h-8 w-8 rounded-full flex items-center justify-center text-white/40 border border-white/10 hover:text-[#c724ff] hover:border-[#c724ff]/40 active:scale-95 disabled:opacity-40"
