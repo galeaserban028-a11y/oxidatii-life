@@ -122,6 +122,8 @@ function PartiesPage() {
       if (joinId) {
         await supabase.from("party_joins").delete().eq("id", joinId);
       } else {
+        const { guardRateLimit } = await import("@/lib/rateLimit");
+        if (!(await guardRateLimit("party_join"))) throw new Error("Prea multe cereri. Așteaptă un minut.");
         await supabase.from("party_joins").insert({ party_id: partyId, user_id: user.id, status: "pending" });
         try {
           const { notifyPartyJoin } = await import("@/lib/notifications.functions");

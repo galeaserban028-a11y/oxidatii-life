@@ -247,6 +247,8 @@ export function DecisionPollCard({ pollId }: { pollId: string }) {
 
   const vote = useMutation({
     mutationFn: async (optionId: string) => {
+      const { guardRateLimit } = await import("@/lib/rateLimit");
+      if (!(await guardRateLimit("vote"))) throw new Error("Prea multe voturi. Așteaptă un minut.");
       const { error } = await supabase.rpc("cast_decision_vote", {
         _poll_id: pollId,
         _option_id: optionId,

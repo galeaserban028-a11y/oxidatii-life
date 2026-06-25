@@ -36,6 +36,8 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
     if (!user) return;
     setSending(friendId);
     try {
+      const { guardRateLimit } = await import("@/lib/rateLimit");
+      if (!(await guardRateLimit("message"))) throw new Error("Trimiți prea repede. Așteaptă puțin.");
       const convId = await openOrCreateDM(user.id, friendId);
       const body = `📸 Fază OXI: ${photo.photo_url}${photo.caption ? `\n${photo.caption}` : ""}`;
       const { error } = await supabase.from("messages").insert({

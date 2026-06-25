@@ -144,6 +144,13 @@ function ChatPage() {
     if (!body || sending) return;
     if (!override) setText("");
     setSending(true);
+    const { guardRateLimit } = await import("@/lib/rateLimit");
+    if (!(await guardRateLimit("message"))) {
+      setSending(false);
+      alert("Trimiți prea repede. Așteaptă puțin.");
+      if (!override) setText(body);
+      return;
+    }
     const { error } = await supabase.from("messages").insert({ conversation_id: id, sender_id: user.id, body });
     setSending(false);
     if (error) { alert(error.message); if (!override) setText(body); return; }

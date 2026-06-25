@@ -100,8 +100,13 @@ function SquadPage() {
   const joinMutation = useMutation({
     mutationFn: async ({ partyId, joined }: { partyId: string; joined: boolean }) => {
       if (!user) throw new Error("login");
-      if (joined) await supabase.from("party_joins").delete().eq("party_id", partyId).eq("user_id", user.id);
-      else await supabase.from("party_joins").insert({ party_id: partyId, user_id: user.id });
+      if (joined) {
+        await supabase.from("party_joins").delete().eq("party_id", partyId).eq("user_id", user.id);
+      } else {
+        const { guardRateLimit } = await import("@/lib/rateLimit");
+        if (!(await guardRateLimit("party_join"))) throw new Error("Prea multe cereri. Așteaptă un minut.");
+        await supabase.from("party_joins").insert({ party_id: partyId, user_id: user.id });
+      }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["squad-joins"] }),
   });
