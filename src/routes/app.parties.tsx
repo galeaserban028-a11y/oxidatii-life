@@ -429,13 +429,14 @@ function PartiesPage() {
 type JoinRow = { id: string; party_id: string; user_id: string; status: string; created_at: string };
 
 function HostJoinsPanel({
-  pending, accepted, profileMap, onAccept, onReject, busy,
+  pending, accepted, profileMap, onAccept, onReject, onMessage, busy,
 }: {
   pending: JoinRow[];
   accepted: JoinRow[];
   profileMap: Map<string, Host>;
   onAccept: (joinId: string) => void;
   onReject: (joinId: string) => void;
+  onMessage: (userId: string) => void;
   busy: boolean;
 }) {
   const [open, setOpen] = useState(pending.length > 0);
