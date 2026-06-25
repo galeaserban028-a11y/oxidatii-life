@@ -43,9 +43,19 @@ export function AppHeader() {
         />
       </div>
       <div className="flex items-center gap-1.5">
+        <button
+          onClick={toggle}
+          aria-label={compact ? "Dezactivează modul compact" : "Activează modul compact"}
+          aria-pressed={compact}
+          className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-foreground/5 active:scale-95 transition text-foreground/70"
+          title={compact ? "Mod compact: ON" : "Mod compact: OFF"}
+        >
+          {compact ? <Maximize2 size={15} /> : <Minimize2 size={15} />}
+        </button>
         <HeaderSpritzPill />
         <GlobalSearch />
       </div>
+
     </header>
   );
 }
