@@ -1,0 +1,18 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.oxidatii.app"],
+        "components": [
+          { "/": "/app/*", "comment": "Tot ce e după /app deschide în native" },
+          { "/": "/auth/callback*", "comment": "OAuth callback" },
+          { "/": "/", "exclude": true }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["TEAMID.com.oxidatii.app"]
+  }
+}
