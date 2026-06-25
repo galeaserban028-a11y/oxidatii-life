@@ -24,6 +24,8 @@ function AppLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isMe = pathname === "/app/me" || pathname.startsWith("/app/me/");
   const { user, profile, loading } = useAuth();
+  const { compact } = useCompactMode();
+
 
 
   // Broadcast our live position to friends if we've granted location consent.
