@@ -517,8 +517,25 @@ export function RomaniaMap3D({
           "icon-ignore-placement": true,
           "icon-anchor": "center",
           "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
+          // Numele localului apare doar de la zoom 12+ ca să nu se aglomereze
+          // harta la zoom mic.
+          "text-field": ["step", ["zoom"], "", 12, ["get", "name"]],
+          "text-font": ["Noto Sans Bold"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 12, 10, 16, 13],
+          "text-offset": [0, 1.4],
+          "text-anchor": "top",
+          "text-optional": true,
+          "text-letter-spacing": 0.04,
+          "text-max-width": 8,
+        },
+        paint: {
+          "text-color": "#ffffff",
+          "text-halo-color": "rgba(6,7,10,0.92)",
+          "text-halo-width": 1.4,
+          "text-halo-blur": 0.6,
         },
       });
+
 
 
       // click → zoom into cluster / navigate to venue
