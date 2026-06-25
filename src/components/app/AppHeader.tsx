@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import logoBanner from "@/assets/logo-oxidatii.png";
 
 import { GlobalSearch } from "./GlobalSearch";
+import { HeaderSpritzPill } from "./HeaderSpritzPill";
 
 export function AppHeader() {
   const location = useLocation();
@@ -37,7 +38,8 @@ export function AppHeader() {
           className="h-14 w-auto object-contain drop-shadow-[0_4px_14px_rgba(255,49,88,0.55)]"
         />
       </div>
-      <div className="flex items-center gap-0.5">
+      <div className="flex items-center gap-1.5">
+        <HeaderSpritzPill />
         <GlobalSearch />
       </div>
     </header>
