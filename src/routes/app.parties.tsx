@@ -354,21 +354,37 @@ function PartiesPage() {
                               </svg>
                             </div>
                           </div>
+                        ) : myStatus === "accepted" ? (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => openDM(p.host_id)}
+                              className="h-10 w-10 rounded-full flex items-center justify-center bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] text-white shadow-[0_0_18px_-4px_#c724ff] active:scale-95 transition-transform"
+                              aria-label="mesaj host"
+                              title="Mesaj host"
+                            >
+                              <MessageCircle size={16} strokeWidth={2.5} />
+                            </button>
+                            <button
+                              onClick={() => joinMutation.mutate({ partyId: p.id, joinId: myJoin?.id ?? null })}
+                              disabled={joinMutation.isPending}
+                              className="px-5 py-2.5 text-[10px] font-bold rounded-full uppercase tracking-wider bg-white/5 border border-[#00e5ff]/40 text-[#00e5ff] active:scale-95 disabled:opacity-30 transition-transform"
+                            >
+                              ✓ vii
+                            </button>
+                          </div>
                         ) : (
                           <button
                             onClick={() => joinMutation.mutate({ partyId: p.id, joinId: myJoin?.id ?? null })}
                             disabled={!user || joinMutation.isPending || (full && !myJoin)}
                             className={`px-5 py-2.5 text-[10px] font-bold rounded-full uppercase tracking-wider active:scale-95 disabled:opacity-30 transition-transform ${
-                              myStatus === "accepted"
-                                ? "bg-white/5 border border-[#00e5ff]/40 text-[#00e5ff]"
-                                : myStatus === "pending"
-                                  ? "bg-white/5 border border-white/15 text-white/60"
-                                  : full
-                                    ? "bg-white/5 text-white/40"
-                                    : "bg-[#ff3d8b] text-white shadow-[0_0_18px_-4px_#ff3d8b]"
+                              myStatus === "pending"
+                                ? "bg-white/5 border border-white/15 text-white/60"
+                                : full
+                                  ? "bg-white/5 text-white/40"
+                                  : "bg-[#ff3d8b] text-white shadow-[0_0_18px_-4px_#ff3d8b]"
                             }`}
                           >
-                            {myStatus === "accepted" ? "✓ vii" : myStatus === "pending" ? "în așteptare" : full ? "plin" : "vin și eu"}
+                            {myStatus === "pending" ? "în așteptare" : full ? "plin" : "vin și eu"}
                           </button>
                         )}
                       </div>
@@ -382,6 +398,7 @@ function PartiesPage() {
                             profileMap={profileMap}
                             onAccept={(id) => acceptMutation.mutate(id)}
                             onReject={(id) => kickMutation.mutate(id)}
+                            onMessage={(uid) => openDM(uid)}
                             busy={acceptMutation.isPending || kickMutation.isPending}
                           />
                         </div>
