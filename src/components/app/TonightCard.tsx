@@ -267,8 +267,8 @@ export default function TonightCard() {
   return (
     <div className="tonight-card warm-glow-anim animate-fade-in">
       {/* Warm sunset glow orbs */}
-      <div className="pointer-events-none absolute -top-4 -right-4 h-12 w-12 rounded-full blur-[26px] opacity-50" style={{ background: "var(--warm-orange)" }} />
-      <div className="pointer-events-none absolute -bottom-3 -left-3 h-8 w-8 rounded-full blur-[20px] opacity-35" style={{ background: "var(--warm-rose)" }} />
+      <div className="pointer-events-none absolute -top-2 -right-2 h-8 w-8 rounded-full blur-[18px] opacity-50" style={{ background: "var(--warm-orange)" }} />
+      <div className="pointer-events-none absolute -bottom-2 -left-2 h-5 w-5 rounded-full blur-[14px] opacity-35" style={{ background: "var(--warm-rose)" }} />
 
       <div className="relative flex items-center justify-between gap-2">
         <div className="flex-1 min-w-0">
