@@ -114,6 +114,14 @@ function ChatPage() {
           return { ...old, messages: [...old.messages, m] };
         });
       })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` }, (payload) => {
+        qc.setQueryData(["chat", id, userId], (old: any) => {
+          if (!old) return old;
+          const oldId = (payload.old as any)?.id;
+          if (!oldId) return old;
+          return { ...old, messages: old.messages.filter((x: Msg) => x.id !== oldId) };
+        });
+      })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [id, user?.id, qc]);
@@ -160,6 +168,21 @@ function ChatPage() {
       return;
     }
     notifyChatMessage({ data: { conversationId: id, preview: body } }).catch(() => {});
+  };
+
+  const deleteMessage = async (msgId: string) => {
+    if (!user) return;
+    if (!confirm("Ștergi acest mesaj?")) return;
+    // optimistic
+    qc.setQueryData(["chat", id, user.id], (old: any) => {
+      if (!old) return old;
+      return { ...old, messages: old.messages.filter((x: Msg) => x.id !== msgId) };
+    });
+    const { error } = await supabase.from("messages").delete().eq("id", msgId).eq("sender_id", user.id);
+    if (error) {
+      alert("Nu s-a putut șterge: " + error.message);
+      qc.invalidateQueries({ queryKey: ["chat", id, user.id] });
+    }
   };
 
   const insertEmoji = (e: string) => {
@@ -348,7 +371,7 @@ function ChatPage() {
                         @{sender?.handle ?? sender?.display_name ?? "?"}
                       </div>
                     )}
-                    {g.items.map((m, i) => <MessageBubble key={m.id} body={m.body} mine={g.mine} first={i === 0} last={i === g.items.length - 1} groupLen={g.items.length} theme={theme} />)}
+                    {g.items.map((m, i) => <MessageBubble key={m.id} body={m.body} mine={g.mine} first={i === 0} last={i === g.items.length - 1} groupLen={g.items.length} theme={theme} onDelete={g.mine ? () => deleteMessage(m.id) : undefined} />)}
                     <div className="text-[10px] text-muted-foreground px-2.5">
                       {new Date(last.created_at).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" })}
                     </div>
@@ -509,16 +532,44 @@ function fmtRec(ms: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-function MessageBubble({ body, mine, first, last, groupLen, theme }: { body: string; mine: boolean; first: boolean; last: boolean; groupLen: number; theme: Theme }) {
+function MessageBubble({ body, mine, first, last, groupLen, theme, onDelete }: { body: string; mine: boolean; first: boolean; last: boolean; groupLen: number; theme: Theme; onDelete?: () => void }) {
   const imgMatch = body.startsWith("📷 ") ? body.slice(2).trim() : null;
   const giftMatch = body.startsWith("🎁 ") ? body.slice(2).trim() : null;
   const voiceMatch = body.startsWith("🎤 ") ? body.slice(2).trim() : null;
+
+  // Long-press / right-click handlers for delete on own messages
+  const pressTimer = useRef<number | null>(null);
+  const longPressFired = useRef(false);
+  const startPress = () => {
+    if (!onDelete) return;
+    longPressFired.current = false;
+    pressTimer.current = window.setTimeout(() => {
+      longPressFired.current = true;
+      onDelete();
+    }, 500);
+  };
+  const endPress = () => {
+    if (pressTimer.current) { clearTimeout(pressTimer.current); pressTimer.current = null; }
+  };
+  const onCtx = (e: React.MouseEvent) => {
+    if (!onDelete) return;
+    e.preventDefault();
+    onDelete();
+  };
+  const pressProps = onDelete ? {
+    onPointerDown: startPress,
+    onPointerUp: endPress,
+    onPointerLeave: endPress,
+    onPointerCancel: endPress,
+    onContextMenu: onCtx,
+    style: { touchAction: "manipulation" as const, userSelect: "none" as const, WebkitUserSelect: "none" as const },
+  } : {};
 
   if (giftMatch) {
     const [emoji, ...rest] = giftMatch.split(" ");
     const name = rest.join(" ");
     return (
-      <div className="px-3 py-3 rounded-3xl bg-gradient-to-br from-neon-purple/25 via-neon-crimson/15 to-transparent border border-foreground/10 flex items-center gap-3">
+      <div {...pressProps} className="px-3 py-3 rounded-3xl bg-gradient-to-br from-neon-purple/25 via-neon-crimson/15 to-transparent border border-foreground/10 flex items-center gap-3">
         <div className="text-5xl leading-none drop-shadow-[0_4px_12px_rgba(198,107,255,0.55)] animate-pulse">{emoji}</div>
         <div className="leading-tight">
           <div className="font-display font-black text-sm">{name || "Cadou"}</div>
@@ -530,12 +581,14 @@ function MessageBubble({ body, mine, first, last, groupLen, theme }: { body: str
 
   if (voiceMatch) {
     const [url, sec] = voiceMatch.split("|");
-    return <VoiceBubble url={url} seconds={Number(sec) || 0} mine={mine} theme={theme} />;
+    return <div {...pressProps}><VoiceBubble url={url} seconds={Number(sec) || 0} mine={mine} theme={theme} /></div>;
   }
 
   if (imgMatch) {
     return (
-      <a href={imgMatch} target="_blank" rel="noreferrer" className="block max-w-[260px] rounded-3xl overflow-hidden border border-foreground/10 shadow-lg">
+      <a {...pressProps} href={imgMatch} target="_blank" rel="noreferrer"
+        onClick={(e) => { if (longPressFired.current) { e.preventDefault(); longPressFired.current = false; } }}
+        className="block max-w-[260px] rounded-3xl overflow-hidden border border-foreground/10 shadow-lg">
         <img src={imgMatch} alt="" className="w-full h-auto object-cover" />
       </a>
     );
@@ -544,14 +597,14 @@ function MessageBubble({ body, mine, first, last, groupLen, theme }: { body: str
   const stripped = body.replace(/\s/g, "");
   const isEmojiOnly = stripped.length > 0 && stripped.length <= 12 && /^[\p{Emoji}\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F\u200D]+$/u.test(stripped);
   if (isEmojiOnly && groupLen === 1) {
-    return <div className="text-5xl leading-none py-1">{body}</div>;
+    return <div {...pressProps} className="text-5xl leading-none py-1">{body}</div>;
   }
 
   const radius = mine
     ? `rounded-3xl ${first ? "" : "rounded-tr-md"} ${last ? "" : "rounded-br-md"}`
     : `rounded-3xl ${first ? "" : "rounded-tl-md"} ${last ? "" : "rounded-bl-md"}`;
   return (
-    <div className={`px-4 py-2 text-[15px] leading-snug break-words ${radius} ${
+    <div {...pressProps} className={`px-4 py-2 text-[15px] leading-snug break-words ${radius} ${
       mine
         ? `text-white bg-gradient-to-br ${theme.mine} ${theme.mineShadow}`
         : "bg-foreground/[0.08] text-foreground backdrop-blur-sm"
