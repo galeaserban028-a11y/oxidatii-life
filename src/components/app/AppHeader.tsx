@@ -1,10 +1,12 @@
 import { useLocation } from "@tanstack/react-router";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Minimize2, Maximize2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import logoBanner from "@/assets/logo-oxidatii.png";
 
 import { GlobalSearch } from "./GlobalSearch";
 import { HeaderSpritzPill } from "./HeaderSpritzPill";
+import { useCompactMode } from "@/lib/compactMode";
+
 
 export function AppHeader() {
   const location = useLocation();
