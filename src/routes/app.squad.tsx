@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM } from "@/lib/chat";
 import { useNavigate } from "@tanstack/react-router";
-import { Plus, MessageCircle, Trash2, UsersRound, Flame, MapPin } from "lucide-react";
+import { Plus, MessageCircle, Trash2, UsersRound, Flame, MapPin, Vote } from "lucide-react";
+import { useState } from "react";
+import { CreateDecisionPollSheet, DecisionPollCard } from "@/components/app/DecisionMode";
 
 export const Route = createFileRoute("/app/squad")({
   head: () => ({
@@ -43,6 +45,12 @@ function SquadPage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const qc = useQueryClient();
+  const [decisionOpen, setDecisionOpen] = useState(false);
+  const [activePollId, setActivePollId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("oxi-active-poll");
+  });
+
 
   const { data: liveParties = [] } = useQuery({
     queryKey: ["squad-live-parties"],
@@ -217,6 +225,49 @@ function SquadPage() {
           <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-[#c724ff]/15 rounded-full blur-xl pointer-events-none" />
         </Link>
       </div>
+
+      {/* DECISION MODE */}
+      <div className="px-6 mb-10">
+        <button
+          onClick={() => setDecisionOpen(true)}
+          className="relative overflow-hidden w-full bg-gradient-to-br from-[#1a0e2a] to-[#0a0a0a] p-5 rounded-3xl border border-[#ffea00]/30 active:scale-[0.98] transition-all shadow-lg flex items-center gap-4"
+        >
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ffea00] to-[#ffb000] grid place-items-center shadow-[0_0_24px_rgba(255,234,0,0.45)]">
+            <Vote className="w-6 h-6 text-black" strokeWidth={2.5} />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-sm uppercase tracking-tight text-white" style={ARCHIVO}>decide unde mergem</p>
+            <p className="text-[10px] text-white/50 mt-0.5">vot rapid pentru grup • sugestii live</p>
+          </div>
+          <span className="text-2xl">🗳️</span>
+        </button>
+
+        {activePollId && (
+          <div className="mt-4">
+            <DecisionPollCard pollId={activePollId} />
+            <button
+              onClick={() => {
+                setActivePollId(null);
+                localStorage.removeItem("oxi-active-poll");
+              }}
+              className="mt-2 text-[10px] uppercase tracking-widest text-white/30"
+            >
+              închide votul
+            </button>
+          </div>
+        )}
+      </div>
+
+      <CreateDecisionPollSheet
+        open={decisionOpen}
+        onOpenChange={setDecisionOpen}
+        onCreated={(id) => {
+          setActivePollId(id);
+          if (typeof window !== "undefined") localStorage.setItem("oxi-active-poll", id);
+        }}
+      />
+
+
 
       {/* LIVE ȘPRIȚURI */}
       <section id="live" className="px-6 mb-10 scroll-mt-4">

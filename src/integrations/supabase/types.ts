@@ -1003,6 +1003,135 @@ export type Database = {
           },
         ]
       }
+      decision_options: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          poll_id: string
+          score_snapshot: number | null
+          source: string
+          venue_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          poll_id: string
+          score_snapshot?: number | null
+          source?: string
+          venue_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          poll_id?: string
+          score_snapshot?: number | null
+          source?: string
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_options_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "decision_polls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decision_options_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      decision_polls: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          expires_at: string
+          host_id: string
+          id: string
+          party_id: string | null
+          status: string
+          title: string | null
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          expires_at?: string
+          host_id: string
+          id?: string
+          party_id?: string | null
+          status?: string
+          title?: string | null
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          expires_at?: string
+          host_id?: string
+          id?: string
+          party_id?: string | null
+          status?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_polls_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decision_polls_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "parties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      decision_votes: {
+        Row: {
+          created_at: string
+          option_id: string
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          option_id: string
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          option_id?: string
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decision_votes_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "decision_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decision_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "decision_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exclusive_partner_slots: {
         Row: {
           business_id: string | null
@@ -2289,6 +2418,10 @@ export type Database = {
         Args: { _target: string; _viewer: string }
         Returns: boolean
       }
+      cast_decision_vote: {
+        Args: { _option_id: string; _poll_id: string }
+        Returns: Json
+      }
       claim_business_offer: {
         Args: { _check_in_id?: string; _offer_id: string }
         Returns: Json
@@ -2302,6 +2435,15 @@ export type Database = {
       compute_business_score: {
         Args: { _business_id: string }
         Returns: number
+      }
+      create_decision_poll: {
+        Args: {
+          _conversation_id: string
+          _expires_minutes?: number
+          _title?: string
+          _venue_ids: string[]
+        }
+        Returns: string
       }
       current_weekend_window: {
         Args: never
@@ -2335,6 +2477,7 @@ export type Database = {
         }[]
       }
       get_crystal_ball: { Args: never; Returns: Json }
+      get_decision_poll: { Args: { _poll_id: string }; Returns: Json }
       get_featured_tonight: {
         Args: { _city_id: string; _limit?: number }
         Returns: {
@@ -2347,6 +2490,26 @@ export type Database = {
           score: number
           tier: Database["public"]["Enums"]["business_tier"]
           venue_id: string
+        }[]
+      }
+      get_heat_now: {
+        Args: {
+          _city_id?: string
+          _max_lat?: number
+          _max_lng?: number
+          _min_lat?: number
+          _min_lng?: number
+        }
+        Returns: {
+          cell_id: string
+          heat_score: number
+          lat: number
+          lng: number
+          prior_count: number
+          recent_count: number
+          top_venue_id: string
+          top_venue_name: string
+          trend: string
         }[]
       }
       get_my_account_state: {

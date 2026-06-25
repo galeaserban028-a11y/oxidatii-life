@@ -8,6 +8,7 @@ import { UserPlus, Users, MapPin, Clock, X, Beer, List, Navigation, Sparkles, Se
 import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilters";
 import { AddVenueSheet } from "@/components/app/AddVenueSheet";
 import { MapSettingsSheet } from "@/components/app/MapSettingsSheet";
+import { HeatNowButton } from "@/components/app/HeatNowSheet";
 import { FadeIn } from "@/components/app/FadeIn";
 import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
 import { PromoBanner, BusinessVisibilityCTA, type PromoMeta } from "@/components/app/map/PromoBanner";
@@ -851,6 +852,11 @@ function MapPage() {
               )}
             </button>
           )}
+
+          <HeatNowButton
+            cityId={cityId === "all" ? null : cityId}
+            onFocus={(lat, lng) => setFocusCity({ lat, lng, zoom: 14.5 })}
+          />
 
         </div>
 
