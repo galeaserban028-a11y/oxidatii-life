@@ -62,6 +62,7 @@ import { Route as AppAdminContentRouteImport } from './routes/app.admin.content'
 import { Route as AppAdminCampaignsRouteImport } from './routes/app.admin.campaigns'
 import { Route as AppAdminBusinessesRouteImport } from './routes/app.admin.businesses'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicCronHeatAlertsRouteImport } from './routes/api/public/cron.heat-alerts'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -329,6 +330,11 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronHeatAlertsRoute = ApiPublicCronHeatAlertsRouteImport.update({
+  id: '/api/public/cron/heat-alerts',
+  path: '/api/public/cron/heat-alerts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -383,6 +389,7 @@ export interface FileRoutesByFullPath {
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin/': typeof AppAdminIndexRoute
+  '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -436,6 +443,7 @@ export interface FileRoutesByTo {
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin': typeof AppAdminIndexRoute
+  '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -492,6 +500,7 @@ export interface FileRoutesById {
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin/': typeof AppAdminIndexRoute
+  '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -549,6 +558,7 @@ export interface FileRouteTypes {
     | '/app/user/$id'
     | '/app/venue/$id'
     | '/app/admin/'
+    | '/api/public/cron/heat-alerts'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -602,6 +612,7 @@ export interface FileRouteTypes {
     | '/app/user/$id'
     | '/app/venue/$id'
     | '/app/admin'
+    | '/api/public/cron/heat-alerts'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -657,6 +668,7 @@ export interface FileRouteTypes {
     | '/app/user/$id'
     | '/app/venue/$id'
     | '/app/admin/'
+    | '/api/public/cron/heat-alerts'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -672,6 +684,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  ApiPublicCronHeatAlertsRoute: typeof ApiPublicCronHeatAlertsRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -1048,6 +1061,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/heat-alerts': {
+      id: '/api/public/cron/heat-alerts'
+      path: '/api/public/cron/heat-alerts'
+      fullPath: '/api/public/cron/heat-alerts'
+      preLoaderRoute: typeof ApiPublicCronHeatAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1172,6 +1192,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  ApiPublicCronHeatAlertsRoute: ApiPublicCronHeatAlertsRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport

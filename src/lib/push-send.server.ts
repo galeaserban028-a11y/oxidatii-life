@@ -58,7 +58,7 @@ export async function sendPushToUsers(userIds: string[], payload: PushPayload): 
   return { sent, failed };
 }
 
-type PrefKey = "new_party_in_city" | "party_join" | "friend_live" | "challenge";
+type PrefKey = "new_party_in_city" | "party_join" | "friend_live" | "challenge" | "heat_now";
 
 export async function filterByPref(userIds: string[], pref: PrefKey): Promise<string[]> {
   if (!userIds.length) return [];

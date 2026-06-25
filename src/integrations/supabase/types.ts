@@ -1231,6 +1231,30 @@ export type Database = {
         }
         Relationships: []
       }
+      heat_alerts_sent: {
+        Row: {
+          alerted_at: string
+          cell_id: string
+          city_id: string | null
+          heat_score: number
+          id: string
+        }
+        Insert: {
+          alerted_at?: string
+          cell_id: string
+          city_id?: string | null
+          heat_score: number
+          id?: string
+        }
+        Update: {
+          alerted_at?: string
+          cell_id?: string
+          city_id?: string | null
+          heat_score?: number
+          id?: string
+        }
+        Relationships: []
+      }
       live_locations: {
         Row: {
           accuracy: number | null
@@ -1351,6 +1375,7 @@ export type Database = {
           challenge: boolean
           daily_spin: boolean
           friend_live: boolean
+          heat_now: boolean
           new_party_in_city: boolean
           party_join: boolean
           streak_risk: boolean
@@ -1362,6 +1387,7 @@ export type Database = {
           challenge?: boolean
           daily_spin?: boolean
           friend_live?: boolean
+          heat_now?: boolean
           new_party_in_city?: boolean
           party_join?: boolean
           streak_risk?: boolean
@@ -1373,6 +1399,7 @@ export type Database = {
           challenge?: boolean
           daily_spin?: boolean
           friend_live?: boolean
+          heat_now?: boolean
           new_party_in_city?: boolean
           party_join?: boolean
           streak_risk?: boolean
@@ -2452,6 +2479,19 @@ export type Database = {
           is_active: boolean
           prize_at: string
           starts_at: string
+        }[]
+      }
+      find_new_hot_cells: {
+        Args: { _cooldown_minutes?: number; _threshold?: number }
+        Returns: {
+          cell_id: string
+          city_id: string
+          heat_score: number
+          lat: number
+          lng: number
+          recent_count: number
+          top_venue_id: string
+          top_venue_name: string
         }[]
       }
       get_business_contact: {
