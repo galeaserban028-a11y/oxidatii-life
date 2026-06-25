@@ -1011,6 +1011,10 @@ export function RomaniaMap3D({
         .maplibregl-ctrl-group { background: rgba(3,4,10,0.9) !important; border: 1px solid rgba(198,107,255,0.25) !important; }
         .maplibregl-ctrl-group button { background-color: transparent !important; }
         .maplibregl-ctrl-group button span { filter: invert(1) brightness(1.2); }
+        .oxi-map-moving .maplibregl-marker * { animation-play-state: paused !important; }
+        @media (prefers-reduced-motion: reduce) {
+          .maplibregl-marker * { animation: none !important; }
+        }
       `}</style>
 
       <div ref={containerRef} className="absolute inset-0" />
