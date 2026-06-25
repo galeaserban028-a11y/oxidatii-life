@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { isNative } from "@/lib/native";
 
 /**
  * Broadcasts the current user's GPS position to public.live_locations every
