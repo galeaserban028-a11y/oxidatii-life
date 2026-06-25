@@ -64,14 +64,14 @@ function InboxPage() {
     if (!user?.id) return;
     const userId = user.id;
     const channelName = `inbox-stream:${userId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
+    // Throttle: messages stream is global; coalesce bursts to 1 refetch / 1.5s
+    const refresh = throttle(() => {
+      qc.invalidateQueries({ queryKey: ["inbox", userId] });
+    }, 1500);
     const ch = supabase
       .channel(channelName)
-      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, () => {
-        qc.invalidateQueries({ queryKey: ["inbox", userId] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_members", filter: `user_id=eq.${userId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["inbox", userId] });
-      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_members", filter: `user_id=eq.${userId}` }, refresh)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user?.id, qc]);
