@@ -327,7 +327,7 @@ export function RomaniaMap3D({
     try {
       map = new maplibregl.Map({
         container: containerRef.current,
-        style: OXI_MAP_STYLE,
+        style: buildNeonStyle(isSmall),
         center: [25.0, 45.9],
         zoom: isSmall ? 3.2 : 3.8,
         minZoom: 2.5,
@@ -339,8 +339,9 @@ export function RomaniaMap3D({
         fadeDuration: isSmall ? 0 : 80,
         refreshExpiredTiles: false,
         maxPitch: isSmall ? 45 : 60,
-        pixelRatio: isSmall ? Math.min(window.devicePixelRatio || 1, 1.25) : undefined,
+        pixelRatio: isSmall ? Math.min(window.devicePixelRatio || 1, 1) : Math.min(window.devicePixelRatio || 1, 1.75),
         antialias: !isSmall,
+        maxTileCacheSize: isSmall ? 40 : 80,
       } as any);
     } catch (error) {
       console.warn("Map init failed", error);
