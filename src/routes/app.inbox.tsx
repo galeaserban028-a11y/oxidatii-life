@@ -648,9 +648,14 @@ function NewMessageSheet({ onClose, onOpen }: { onClose: () => void; onOpen: (id
               </div>
               <div className="flex-1 text-left min-w-0">
                 <div className="font-display font-bold text-sm truncate">@{f.handle ?? f.display_name}</div>
-                {f.display_name && f.handle && (
-                  <div className="text-[11px] text-muted-foreground truncate">{f.display_name}</div>
-                )}
+                <div className="flex items-center gap-2 mt-0.5">
+                  {f.display_name && f.handle && (
+                    <div className="text-[11px] text-muted-foreground truncate">{f.display_name}</div>
+                  )}
+                  <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${f.isFriend ? "bg-lime-400/15 text-lime-400" : "bg-fuchsia-500/15 text-fuchsia-400"}`}>
+                    {f.isFriend ? "prieten" : "urmărești"}
+                  </span>
+                </div>
               </div>
               <div className={`h-5 w-5 rounded-full border flex items-center justify-center ${isSel ? "bg-foreground border-foreground" : "border-foreground/25"}`}>
                 {isSel && <Check size={12} className="text-background" />}
