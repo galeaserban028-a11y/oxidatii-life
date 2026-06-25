@@ -815,6 +815,7 @@ function MapPage() {
                 friends={mapFriendPins}
                 focusCity={focusCity}
                 fitBounds={fitBounds}
+                heatNowCells={heatNowCells}
                 onCityClick={(c) => {
                   setCityId(c.id);
                   setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
