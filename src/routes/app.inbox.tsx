@@ -617,7 +617,7 @@ function NewMessageSheet({ onClose, onOpen }: { onClose: () => void; onOpen: (id
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="caută prieten…"
+            placeholder="caută prieten sau pe cine urmărești…"
             className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-foreground/5 border border-foreground/15 text-sm"
           />
         </div>
