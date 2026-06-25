@@ -18,7 +18,7 @@ const AASA = {
 };
 
 export const Route = createFileRoute(
-  "/[.]well-known/apple-app-site-association",
+  "/.well-known/apple-app-site-association",
 )({
   server: {
     handlers: {
