@@ -178,6 +178,7 @@ function ChatPage() {
       if (!override) setText(body);
       return;
     }
+    import("@/lib/native").then(({ haptic }) => haptic("light"));
     notifyChatMessage({ data: { conversationId: id, preview: body } }).catch(() => {});
   };
 
