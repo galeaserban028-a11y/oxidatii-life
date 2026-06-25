@@ -52,7 +52,7 @@ export function NotificationSettings() {
       if (user?.id) {
         const { data } = await supabase
           .from("notification_prefs")
-          .select("new_party_in_city, party_join, friend_live, challenge")
+          .select("new_party_in_city, party_join, friend_live, challenge, heat_now")
           .eq("user_id", user.id)
           .maybeSingle();
         if (data) setPrefs(data as Prefs);
