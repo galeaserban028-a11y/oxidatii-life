@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { ArrowLeft, Send, Smile, Image as ImageIcon, Users, Gift, X, Loader2, Mic, Palette, Play, Pause, MoreVertical } from "lucide-react";
+import { ArrowLeft, Send, Smile, Image as ImageIcon, Users, Gift, X, Loader2, Mic, Palette, Play, Pause, MoreVertical, Trash2 } from "lucide-react";
 import { notifyChatMessage } from "@/lib/notifications-extra.functions";
 import { ReportDialog } from "@/components/app/ReportDialog";
 import {
@@ -13,6 +13,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/app/chat/$id")({
   head: () => ({ meta: [{ title: "Chat · OXIDAȚII" }] }),
@@ -69,6 +79,7 @@ function ChatPage() {
   const [showGifts, setShowGifts] = useState(false);
   const [showThemes, setShowThemes] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -170,9 +181,14 @@ function ChatPage() {
     notifyChatMessage({ data: { conversationId: id, preview: body } }).catch(() => {});
   };
 
-  const deleteMessage = async (msgId: string) => {
-    if (!user) return;
-    if (!confirm("Ștergi acest mesaj?")) return;
+  const deleteMessage = (msgId: string) => {
+    setDeleteTarget(msgId);
+  };
+
+  const confirmDelete = async () => {
+    const msgId = deleteTarget;
+    if (!msgId || !user) return;
+    setDeleteTarget(null);
     // optimistic
     qc.setQueryData(["chat", id, user.id], (old: any) => {
       if (!old) return old;
@@ -184,6 +200,8 @@ function ChatPage() {
       qc.invalidateQueries({ queryKey: ["chat", id, user.id] });
     }
   };
+
+  const cancelDelete = () => setDeleteTarget(null);
 
   const insertEmoji = (e: string) => {
     setText(t => t + e);
@@ -414,6 +432,28 @@ function ChatPage() {
         onChange={e => { const f = e.target.files?.[0]; if (f) onPickImage(f); }} />
 
       {showGifts && <GiftSheet onClose={() => setShowGifts(false)} onSend={sendGift} />}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent className="border-foreground/10 bg-background/95 backdrop-blur-2xl max-w-sm rounded-2xl">
+          <AlertDialogHeader className="space-y-3">
+            <div className="mx-auto h-12 w-12 rounded-full bg-neon-crimson/10 flex items-center justify-center">
+              <Trash2 size={22} className="text-neon-crimson" />
+            </div>
+            <AlertDialogTitle className="text-center font-display font-black text-lg">Ștergi mesajul?</AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-sm text-muted-foreground">
+              Mesajul va fi șters pentru tine și pentru celălalt utilizator. Acțiunea este definitivă.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-col-reverse gap-2">
+            <AlertDialogCancel onClick={cancelDelete} className="w-full rounded-xl h-11 font-semibold border-foreground/10 bg-foreground/[0.04] hover:bg-foreground/[0.08]">
+              Anulează
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="w-full rounded-xl h-11 font-semibold bg-gradient-to-r from-neon-crimson to-neon-purple text-white hover:opacity-90">
+              Șterge
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 
