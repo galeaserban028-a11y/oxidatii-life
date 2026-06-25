@@ -88,7 +88,10 @@ export function useFollowMutations(viewerId: string | null | undefined, targetId
       // Fire-and-forget push notification
       notifyFollow({ data: { targetId } }).catch(() => {});
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      import("@/lib/native").then(({ haptic }) => haptic("medium"));
+      invalidate();
+    },
   });
 
   const unfollow = useMutation({
