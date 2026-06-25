@@ -375,7 +375,7 @@ function PartiesPage() {
                         </div>
                       )}
                     </div>
-                  )}
+                  </div>
                 </article>
               );
             })}
