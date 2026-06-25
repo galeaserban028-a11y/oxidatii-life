@@ -47,6 +47,17 @@ function timeLabel(iso: string) {
 
 function PartiesPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  async function openDM(otherId: string) {
+    if (!user) return;
+    try {
+      const cid = await openOrCreateDM(user.id, otherId);
+      navigate({ to: "/app/chat/$id", params: { id: cid } });
+    } catch (e) {
+      toast.error("Nu am putut deschide chat-ul");
+    }
+  }
   const qc = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
 
