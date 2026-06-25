@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      antispam_log: {
+        Row: {
+          body_hash: string
+          created_at: string
+          id: number
+          scope: string
+          user_id: string
+        }
+        Insert: {
+          body_hash: string
+          created_at?: string
+          id?: number
+          scope: string
+          user_id: string
+        }
+        Update: {
+          body_hash?: string
+          created_at?: string
+          id?: number
+          scope?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       avatar_frames: {
         Row: {
           created_at: string
@@ -2454,6 +2478,17 @@ export type Database = {
           premium_until: string
           rank: string
         }[]
+      }
+      antispam_guard: {
+        Args: {
+          _body: string
+          _dup_window_seconds: number
+          _flood_max: number
+          _flood_window_seconds: number
+          _scope: string
+          _user_id: string
+        }
+        Returns: undefined
       }
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       buy_boost: { Args: { _kind: string; _target_id?: string }; Returns: Json }
