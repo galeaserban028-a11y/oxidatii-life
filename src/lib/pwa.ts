@@ -4,6 +4,7 @@
 // The Firebase/push service worker (/push-sw.js) is handled separately.
 
 const APP_SW_URL = "/sw.js";
+const RELOAD_ON_SW_UPDATE_KEY = "oxi-pwa-reloaded-for-update-v1";
 
 function isInIframe(): boolean {
   try {
@@ -61,7 +62,19 @@ export async function registerAppServiceWorker(): Promise<void> {
   }
 
   try {
-    await navigator.serviceWorker.register(APP_SW_URL, { scope: "/" });
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (refreshing) return;
+      refreshing = true;
+      try {
+        if (sessionStorage.getItem(RELOAD_ON_SW_UPDATE_KEY) === "1") return;
+        sessionStorage.setItem(RELOAD_ON_SW_UPDATE_KEY, "1");
+      } catch {}
+      window.location.reload();
+    });
+
+    const reg = await navigator.serviceWorker.register(APP_SW_URL, { scope: "/", updateViaCache: "none" });
+    await reg.update().catch(() => {});
   } catch (err) {
     console.warn("[pwa] sw registration failed", err);
   }
