@@ -61,6 +61,13 @@ export async function bootstrapNative(): Promise<void> {
         }
       });
     } catch {}
+
+    // Try to register native push (no-op if not yet authenticated; can be
+    // called again later from app boot after sign-in).
+    try {
+      const { registerNativePush } = await import("./native-push");
+      registerNativePush().catch(() => {});
+    } catch {}
   } catch (err) {
     console.warn("[native] bootstrap failed", err);
   }
