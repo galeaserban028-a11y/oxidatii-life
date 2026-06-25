@@ -527,21 +527,40 @@ function NewMessageSheet({ onClose, onOpen }: { onClose: () => void; onOpen: (id
   const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const { data: friends = [] } = useQuery({
-    queryKey: ["friends-for-message", user?.id],
+  const { data: people = [] } = useQuery({
+    queryKey: ["people-for-message", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data: rows } = await supabase
-        .from("friendships")
-        .select("requester_id,addressee_id,status")
-        .eq("status", "accepted")
-        .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`);
-      const ids = (rows ?? []).map((r: any) => r.requester_id === user!.id ? r.addressee_id : r.requester_id);
-      if (!ids.length) return [];
-      const { data: profs } = await supabase.from("profiles").select("id,handle,display_name,avatar_url").in("id", ids);
-      return profs ?? [];
+      const [{ data: friendRows }, { data: followRows }] = await Promise.all([
+        supabase
+          .from("friendships")
+          .select("requester_id,addressee_id,status")
+          .eq("status", "accepted")
+          .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`),
+        supabase
+          .from("follows")
+          .select("following_id")
+          .eq("follower_id", user!.id)
+          .eq("status", "accepted"),
+      ]);
+      const friendIds = new Set((friendRows ?? []).map((r: any) =>
+        r.requester_id === user!.id ? r.addressee_id : r.requester_id
+      ));
+      const followIds = new Set((followRows ?? []).map((r: any) => r.following_id));
+      const allIds = Array.from(new Set([...friendIds, ...followIds]));
+      if (!allIds.length) return [];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id,handle,display_name,avatar_url")
+        .in("id", allIds);
+      return (profs ?? []).map((p: any) => ({
+        ...p,
+        isFriend: friendIds.has(p.id),
+        isFollowing: followIds.has(p.id),
+      }));
     },
   });
+  const friends = people;
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
