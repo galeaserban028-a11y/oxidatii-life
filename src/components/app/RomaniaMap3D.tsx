@@ -728,6 +728,26 @@ export function RomaniaMap3D({
   // 60fps even when nothing else was happening. The base heatmap layer
   // already looks alive thanks to the cluster glow + DOM pulse animations.
 
+  // HEAT NOW → live hot zones (overlay circles)
+  useEffect(() => {
+    const map = mapRef.current; if (!map) return;
+    const apply = () => {
+      const src = map.getSource("heat-now-src") as maplibregl.GeoJSONSource | undefined;
+      if (!src) return;
+      src.setData({
+        type: "FeatureCollection",
+        features: heatNowCells
+          .filter((c) => isValidLngLat(c.lng, c.lat))
+          .map((c) => ({
+            type: "Feature" as const,
+            geometry: { type: "Point" as const, coordinates: [Number(c.lng), Number(c.lat)] },
+            properties: { score: Math.round(c.heat_score), id: c.cell_id },
+          })),
+      });
+    };
+    if (loadedRef.current) apply(); else map.once("load", apply);
+  }, [heatNowCells, retryKey]);
+
 
 
   // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
