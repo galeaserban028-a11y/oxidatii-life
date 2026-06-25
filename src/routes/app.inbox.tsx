@@ -527,21 +527,40 @@ function NewMessageSheet({ onClose, onOpen }: { onClose: () => void; onOpen: (id
   const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const { data: friends = [] } = useQuery({
-    queryKey: ["friends-for-message", user?.id],
+  const { data: people = [] } = useQuery({
+    queryKey: ["people-for-message", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data: rows } = await supabase
-        .from("friendships")
-        .select("requester_id,addressee_id,status")
-        .eq("status", "accepted")
-        .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`);
-      const ids = (rows ?? []).map((r: any) => r.requester_id === user!.id ? r.addressee_id : r.requester_id);
-      if (!ids.length) return [];
-      const { data: profs } = await supabase.from("profiles").select("id,handle,display_name,avatar_url").in("id", ids);
-      return profs ?? [];
+      const [{ data: friendRows }, { data: followRows }] = await Promise.all([
+        supabase
+          .from("friendships")
+          .select("requester_id,addressee_id,status")
+          .eq("status", "accepted")
+          .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`),
+        supabase
+          .from("follows")
+          .select("following_id")
+          .eq("follower_id", user!.id)
+          .eq("status", "accepted"),
+      ]);
+      const friendIds = new Set((friendRows ?? []).map((r: any) =>
+        r.requester_id === user!.id ? r.addressee_id : r.requester_id
+      ));
+      const followIds = new Set((followRows ?? []).map((r: any) => r.following_id));
+      const allIds = Array.from(new Set([...friendIds, ...followIds]));
+      if (!allIds.length) return [];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id,handle,display_name,avatar_url")
+        .in("id", allIds);
+      return (profs ?? []).map((p: any) => ({
+        ...p,
+        isFriend: friendIds.has(p.id),
+        isFollowing: followIds.has(p.id),
+      }));
     },
   });
+  const friends = people;
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -598,7 +617,7 @@ function NewMessageSheet({ onClose, onOpen }: { onClose: () => void; onOpen: (id
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="caută prieten…"
+            placeholder="caută prieten sau pe cine urmărești…"
             className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-foreground/5 border border-foreground/15 text-sm"
           />
         </div>
@@ -614,7 +633,7 @@ function NewMessageSheet({ onClose, onOpen }: { onClose: () => void; onOpen: (id
 
       <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
         {friends.length === 0 ? (
-          <div className="text-center py-10 text-xs text-muted-foreground">nu ai încă prieteni adăugați</div>
+          <div className="text-center py-10 text-xs text-muted-foreground">nu ai prieteni sau persoane urmărite încă</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-10 text-xs text-muted-foreground">nimeni nu se potrivește</div>
         ) : filtered.map((f: any) => {
@@ -629,9 +648,14 @@ function NewMessageSheet({ onClose, onOpen }: { onClose: () => void; onOpen: (id
               </div>
               <div className="flex-1 text-left min-w-0">
                 <div className="font-display font-bold text-sm truncate">@{f.handle ?? f.display_name}</div>
-                {f.display_name && f.handle && (
-                  <div className="text-[11px] text-muted-foreground truncate">{f.display_name}</div>
-                )}
+                <div className="flex items-center gap-2 mt-0.5">
+                  {f.display_name && f.handle && (
+                    <div className="text-[11px] text-muted-foreground truncate">{f.display_name}</div>
+                  )}
+                  <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${f.isFriend ? "bg-lime-400/15 text-lime-400" : "bg-fuchsia-500/15 text-fuchsia-400"}`}>
+                    {f.isFriend ? "prieten" : "urmărești"}
+                  </span>
+                </div>
               </div>
               <div className={`h-5 w-5 rounded-full border flex items-center justify-center ${isSel ? "bg-foreground border-foreground" : "border-foreground/25"}`}>
                 {isSel && <Check size={12} className="text-background" />}
