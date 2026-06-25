@@ -371,7 +371,7 @@ function ChatPage() {
                         @{sender?.handle ?? sender?.display_name ?? "?"}
                       </div>
                     )}
-                    {g.items.map((m, i) => <MessageBubble key={m.id} body={m.body} mine={g.mine} first={i === 0} last={i === g.items.length - 1} groupLen={g.items.length} theme={theme} />)}
+                    {g.items.map((m, i) => <MessageBubble key={m.id} body={m.body} mine={g.mine} first={i === 0} last={i === g.items.length - 1} groupLen={g.items.length} theme={theme} onDelete={g.mine ? () => deleteMessage(m.id) : undefined} />)}
                     <div className="text-[10px] text-muted-foreground px-2.5">
                       {new Date(last.created_at).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" })}
                     </div>
