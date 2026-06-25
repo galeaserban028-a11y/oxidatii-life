@@ -11,6 +11,8 @@ import { useCompactMode } from "@/lib/compactMode";
 export function AppHeader() {
   const location = useLocation();
   const { t } = useTranslation();
+  const { compact, toggle } = useCompactMode();
+
 
   const isHome = location.pathname === "/app" || location.pathname === "/app/";
   const showBack = !isHome;
