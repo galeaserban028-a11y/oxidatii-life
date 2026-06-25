@@ -170,6 +170,21 @@ function ChatPage() {
     notifyChatMessage({ data: { conversationId: id, preview: body } }).catch(() => {});
   };
 
+  const deleteMessage = async (msgId: string) => {
+    if (!user) return;
+    if (!confirm("Ștergi acest mesaj?")) return;
+    // optimistic
+    qc.setQueryData(["chat", id, user.id], (old: any) => {
+      if (!old) return old;
+      return { ...old, messages: old.messages.filter((x: Msg) => x.id !== msgId) };
+    });
+    const { error } = await supabase.from("messages").delete().eq("id", msgId).eq("sender_id", user.id);
+    if (error) {
+      alert("Nu s-a putut șterge: " + error.message);
+      qc.invalidateQueries({ queryKey: ["chat", id, user.id] });
+    }
+  };
+
   const insertEmoji = (e: string) => {
     setText(t => t + e);
     setShowEmoji(false);
