@@ -586,6 +586,64 @@ export function RomaniaMap3D({
         map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
       }
 
+      // HEAT NOW overlay — live hotspots fed from get_heat_now RPC. Rendered as
+      // pulsing glow + score circle so users see WHERE the night is happening.
+      map.addSource("heat-now-src", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      map.addLayer({
+        id: "heat-now-glow",
+        type: "circle",
+        source: "heat-now-src",
+        paint: {
+          "circle-color": [
+            "interpolate", ["linear"], ["get", "score"],
+            0, "rgba(57,255,210,0.35)",
+            50, "rgba(255,176,0,0.55)",
+            80, "rgba(255,61,139,0.75)",
+            100, "rgba(255,234,0,0.85)",
+          ],
+          "circle-radius": ["interpolate", ["linear"], ["get", "score"], 0, 18, 100, 56],
+          "circle-blur": 0.85,
+          "circle-opacity": 0.9,
+        },
+      });
+      map.addLayer({
+        id: "heat-now-core",
+        type: "circle",
+        source: "heat-now-src",
+        paint: {
+          "circle-color": "rgba(10,6,18,0.92)",
+          "circle-radius": ["interpolate", ["linear"], ["get", "score"], 0, 9, 100, 18],
+          "circle-stroke-width": 2,
+          "circle-stroke-color": [
+            "interpolate", ["linear"], ["get", "score"],
+            0, "#39ffd2",
+            50, "#ffb000",
+            80, "#ff3d8b",
+            100, "#ffea00",
+          ],
+        },
+      });
+      map.addLayer({
+        id: "heat-now-label",
+        type: "symbol",
+        source: "heat-now-src",
+        layout: {
+          "text-field": ["to-string", ["get", "score"]],
+          "text-font": ["Noto Sans Bold"],
+          "text-size": 11,
+          "text-allow-overlap": true,
+          "text-ignore-placement": true,
+        },
+        paint: {
+          "text-color": "#ffffff",
+          "text-halo-color": "rgba(6,7,10,0.85)",
+          "text-halo-width": 1.2,
+        },
+      });
+
       requestAnimationFrame(() => map.resize());
     });
 
