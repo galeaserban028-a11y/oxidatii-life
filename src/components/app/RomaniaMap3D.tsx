@@ -94,30 +94,145 @@ function makePinImage(color: string, lowEnd = false): ImageData {
 
 
 
-// Stable raster basemap. The previous custom vector style could look like a
-// blank dark canvas on phones when vector tiles/glyphs were slow or failed; this
-// keeps roads, countries and labels visible while our live pins render on top.
-const OXI_MAP_STYLE = {
+// Neon night style — deep violet background with magenta/pink glow on borders
+// and roads, mirroring the original "neon" look the user asked to bring back.
+// Uses OpenFreeMap vector tiles so we get real geometry to style with glow.
+const NEON_NIGHT_STYLE = {
   version: 8,
   glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
   sources: {
-    carto: {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-      ],
-      tileSize: 256,
-      attribution: "© OpenStreetMap contributors © CARTO",
+    openmaptiles: {
+      type: "vector",
+      url: "https://tiles.openfreemap.org/planet",
     },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#080a12" } },
-    { id: "carto-dark", type: "raster", source: "carto", paint: { "raster-opacity": 1 } },
+    { id: "background", type: "background", paint: { "background-color": "#0d0b1e" } },
+    {
+      id: "landcover",
+      type: "fill",
+      source: "openmaptiles",
+      "source-layer": "landcover",
+      paint: { "fill-color": "#15102a", "fill-opacity": 0.55 },
+    },
+    {
+      id: "park",
+      type: "fill",
+      source: "openmaptiles",
+      "source-layer": "park",
+      paint: { "fill-color": "#1a1430", "fill-opacity": 0.6 },
+    },
+    {
+      id: "water",
+      type: "fill",
+      source: "openmaptiles",
+      "source-layer": "water",
+      paint: { "fill-color": "#05030f", "fill-outline-color": "#2a1145" },
+    },
+    // Road glow — wide, blurred magenta halo behind the roads
+    {
+      id: "roads-glow",
+      type: "line",
+      source: "openmaptiles",
+      "source-layer": "transportation",
+      filter: ["in", "class", "motorway", "trunk", "primary"],
+      paint: {
+        "line-color": "#ff3df0",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.5, 10, 4, 14, 9, 18, 22],
+        "line-blur": 6,
+        "line-opacity": 0.55,
+      },
+    },
+    {
+      id: "roads-major",
+      type: "line",
+      source: "openmaptiles",
+      "source-layer": "transportation",
+      filter: ["in", "class", "motorway", "trunk", "primary"],
+      paint: {
+        "line-color": "#ff5cf0",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 10, 1.4, 14, 3, 18, 7],
+        "line-opacity": 0.95,
+      },
+    },
+    {
+      id: "roads-secondary",
+      type: "line",
+      source: "openmaptiles",
+      "source-layer": "transportation",
+      filter: ["in", "class", "secondary", "tertiary"],
+      minzoom: 8,
+      paint: {
+        "line-color": "#7a3df0",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.4, 14, 1.4, 18, 4],
+        "line-opacity": 0.75,
+      },
+    },
+    // Admin glow — wide blurred magenta halo behind country borders
+    {
+      id: "admin-glow",
+      type: "line",
+      source: "openmaptiles",
+      "source-layer": "boundary",
+      filter: ["<=", "admin_level", 2],
+      paint: {
+        "line-color": "#ff3df0",
+        "line-width": 6,
+        "line-blur": 6,
+        "line-opacity": 0.55,
+      },
+    },
+    {
+      id: "admin-country",
+      type: "line",
+      source: "openmaptiles",
+      "source-layer": "boundary",
+      filter: ["<=", "admin_level", 2],
+      paint: {
+        "line-color": "#ff5cf0",
+        "line-width": 1.5,
+        "line-opacity": 1,
+      },
+    },
+    {
+      id: "admin-region",
+      type: "line",
+      source: "openmaptiles",
+      "source-layer": "boundary",
+      filter: ["all", [">", "admin_level", 2], ["<=", "admin_level", 4]],
+      minzoom: 5,
+      paint: {
+        "line-color": "#a855f7",
+        "line-width": 0.8,
+        "line-dasharray": [2, 2],
+        "line-opacity": 0.7,
+      },
+    },
+    {
+      id: "place-city",
+      type: "symbol",
+      source: "openmaptiles",
+      "source-layer": "place",
+      filter: ["in", "class", "city", "town"],
+      minzoom: 4,
+      layout: {
+        "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 13, 12, 17],
+        "text-letter-spacing": 0.08,
+        "text-transform": "uppercase",
+      },
+      paint: {
+        "text-color": "#ffffff",
+        "text-halo-color": "#ff3df0",
+        "text-halo-width": 2,
+        "text-halo-blur": 3,
+      },
+    },
   ],
 } as unknown as maplibregl.StyleSpecification;
+
+const OXI_MAP_STYLE = NEON_NIGHT_STYLE;
 
 
 
