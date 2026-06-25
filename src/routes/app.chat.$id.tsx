@@ -114,6 +114,14 @@ function ChatPage() {
           return { ...old, messages: [...old.messages, m] };
         });
       })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` }, (payload) => {
+        qc.setQueryData(["chat", id, userId], (old: any) => {
+          if (!old) return old;
+          const oldId = (payload.old as any)?.id;
+          if (!oldId) return old;
+          return { ...old, messages: old.messages.filter((x: Msg) => x.id !== oldId) };
+        });
+      })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [id, user?.id, qc]);
