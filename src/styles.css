@@ -692,3 +692,45 @@ html, body { overscroll-behavior-x: none; }
   transform: scale(0.9);
   box-shadow: 0 4px 14px rgba(255,82,82,0.6), 0 0 0 4px rgba(15,13,28,0.78), 0 0 30px rgba(255,82,82,0.5) !important;
 }
+
+/* ── Compact Mode (toggle in AppHeader) ──
+   Applies a global scale-down to /app pages without touching individual
+   components. Targets the inner phone-column wrapper. */
+main.oxi-compact {
+  font-size: 14.5px;
+}
+main.oxi-compact .px-5 { padding-left: 0.875rem; padding-right: 0.875rem; }
+main.oxi-compact .px-4 { padding-left: 0.75rem; padding-right: 0.75rem; }
+main.oxi-compact .px-3 { padding-left: 0.625rem; padding-right: 0.625rem; }
+main.oxi-compact .py-6 { padding-top: 1rem; padding-bottom: 1rem; }
+main.oxi-compact .py-5 { padding-top: 0.875rem; padding-bottom: 0.875rem; }
+main.oxi-compact .py-4 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+main.oxi-compact .pt-6 { padding-top: 1rem; }
+main.oxi-compact .pt-8 { padding-top: 1.25rem; }
+main.oxi-compact .pb-8 { padding-bottom: 1.25rem; }
+main.oxi-compact .pb-6 { padding-bottom: 1rem; }
+main.oxi-compact .p-5  { padding: 0.875rem; }
+main.oxi-compact .p-4  { padding: 0.75rem; }
+main.oxi-compact .p-3  { padding: 0.625rem; }
+
+main.oxi-compact .space-y-8 > * + * { margin-top: 1.25rem; }
+main.oxi-compact .space-y-7 > * + * { margin-top: 1rem; }
+main.oxi-compact .space-y-6 > * + * { margin-top: 0.875rem; }
+main.oxi-compact .space-y-5 > * + * { margin-top: 0.75rem; }
+main.oxi-compact .space-y-4 > * + * { margin-top: 0.625rem; }
+main.oxi-compact .space-y-3 > * + * { margin-top: 0.5rem; }
+
+main.oxi-compact .gap-4 { gap: 0.625rem; }
+main.oxi-compact .gap-3 { gap: 0.5rem; }
+
+/* Bring down hero typography a notch in compact mode */
+main.oxi-compact h1 { font-size: 1.85rem !important; line-height: 1; }
+main.oxi-compact h2 { font-size: 1.35rem !important; }
+
+/* Card min-heights / rounded corners */
+main.oxi-compact .min-h-\[170px\] { min-height: 130px; }
+main.oxi-compact .rounded-3xl { border-radius: 1.1rem; }
+main.oxi-compact .rounded-2xl { border-radius: 0.85rem; }
+
+/* Skeleton placeholders */
+main.oxi-compact .h-72 { height: 12rem; }
