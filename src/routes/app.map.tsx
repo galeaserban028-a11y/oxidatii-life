@@ -10,7 +10,6 @@ import { AddVenueSheet } from "@/components/app/AddVenueSheet";
 import { MapSettingsSheet } from "@/components/app/MapSettingsSheet";
 import { FadeIn } from "@/components/app/FadeIn";
 import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
-import { tierConfig } from "@/lib/biz/tiers";
 import { PromoBanner, BusinessVisibilityCTA, type PromoMeta } from "@/components/app/map/PromoBanner";
 
 export const Route = createFileRoute("/app/map")({
