@@ -131,7 +131,11 @@ function PartiesPage() {
         } catch {}
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
+    onSuccess: async () => {
+      const { haptic } = await import("@/lib/native");
+      haptic("light");
+      qc.invalidateQueries({ queryKey: ["party-joins"] });
+    },
   });
 
   const acceptMutation = useMutation({
@@ -139,7 +143,11 @@ function PartiesPage() {
       const { error } = await supabase.from("party_joins").update({ status: "accepted" }).eq("id", joinId);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["party-joins"] }),
+    onSuccess: async () => {
+      const { haptic } = await import("@/lib/native");
+      haptic("medium");
+      qc.invalidateQueries({ queryKey: ["party-joins"] });
+    },
   });
 
   const kickMutation = useMutation({

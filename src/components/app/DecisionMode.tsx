@@ -255,7 +255,11 @@ export function DecisionPollCard({ pollId }: { pollId: string }) {
       } as never);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["decision-poll", pollId] }),
+    onSuccess: async () => {
+      const { haptic } = await import("@/lib/native");
+      haptic("light");
+      qc.invalidateQueries({ queryKey: ["decision-poll", pollId] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
