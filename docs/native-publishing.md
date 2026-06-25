@@ -101,3 +101,37 @@ bunx cap open ios
 bunx cap open android
 # → Build → Generate Signed Bundle (AAB) → upload în Play Console
 ```
+
+## 8. Checklist final pre-submit
+
+### Pre-build
+- [ ] `bun run build` rulează curat (no warnings critice)
+- [ ] `bunx cap sync` → 10 pluginuri detectate pe iOS + Android
+- [ ] `capacitor.config.ts` NU are `server.url` setat (doar în dev cu `CAP_SERVER_URL`)
+- [ ] `dist/client` < 50MB
+- [ ] Icon-uri + splash generate (`resources/` → `bunx @capacitor/assets generate`)
+
+### iOS
+- [ ] Xcode → Signing & Capabilities: **Push Notifications** + **Background Modes** (Remote notifications + Location updates)
+- [ ] Xcode → Associated Domains: `applinks:oxidatii.life`
+- [ ] Apple Team ID înlocuit în `public/.well-known/apple-app-site-association` (înlocuiește `TEAMID`)
+- [ ] Bundle version + build number incrementate
+- [ ] App Store Connect: descriere RO + EN, 3+ screenshots 6.7", privacy policy URL
+- [ ] Age rating: 17+
+
+### Android
+- [ ] `android/app/google-services.json` adăugat (Firebase pentru FCM)
+- [ ] `versionCode` + `versionName` incrementate în `android/app/build.gradle`
+- [ ] SHA-256 al cheii de release înlocuit în `public/.well-known/assetlinks.json` (`keytool -list -v -keystore release.keystore | grep SHA256`)
+- [ ] Signed AAB generat: `bunx cap open android` → Build → Generate Signed Bundle
+- [ ] Play Console: Data Safety form completat (locație, mesaje, poze, push token)
+
+### Smoke test pe device fizic
+- [ ] Login + Google OAuth merge
+- [ ] Locația cere permisiune o singură dată și rămâne activă
+- [ ] Push token se înregistrează în `push_subscriptions` (verifică în DB)
+- [ ] Camera funcționează (avatar + faze)
+- [ ] Haptics: check-in, vote, follow, like, send message
+- [ ] Native share: Night Wrap deschide share sheet-ul nativ
+- [ ] Deep link: deschide `https://oxidatii.life/app/venue/<id>` din Notes/Safari → aplicația preia ruta
+- [ ] Offline: ecranul de eroare apare, nu crash
