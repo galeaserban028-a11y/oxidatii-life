@@ -108,7 +108,11 @@ function SquadPage() {
         await supabase.from("party_joins").insert({ party_id: partyId, user_id: user.id });
       }
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["squad-joins"] }),
+    onSuccess: async () => {
+      const { haptic } = await import("@/lib/native");
+      haptic("light");
+      qc.invalidateQueries({ queryKey: ["squad-joins"] });
+    },
   });
 
   const deleteMutation = useMutation({
