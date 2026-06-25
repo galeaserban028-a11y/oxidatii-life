@@ -1,10 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Plus, MapPin, Clock, X, Flame, Trash2, Check, UserX, ChevronDown, ChevronUp } from "lucide-react";
+import { openOrCreateDM } from "@/lib/chat";
+import { Plus, MapPin, Clock, X, Flame, Trash2, Check, UserX, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/parties")({
@@ -46,6 +47,17 @@ function timeLabel(iso: string) {
 
 function PartiesPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  async function openDM(otherId: string) {
+    if (!user) return;
+    try {
+      const cid = await openOrCreateDM(user.id, otherId);
+      navigate({ to: "/app/chat/$id", params: { id: cid } });
+    } catch (e) {
+      toast.error("Nu am putut deschide chat-ul");
+    }
+  }
   const qc = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
 
@@ -342,21 +354,37 @@ function PartiesPage() {
                               </svg>
                             </div>
                           </div>
+                        ) : myStatus === "accepted" ? (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => openDM(p.host_id)}
+                              className="h-10 w-10 rounded-full flex items-center justify-center bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] text-white shadow-[0_0_18px_-4px_#c724ff] active:scale-95 transition-transform"
+                              aria-label="mesaj host"
+                              title="Mesaj host"
+                            >
+                              <MessageCircle size={16} strokeWidth={2.5} />
+                            </button>
+                            <button
+                              onClick={() => joinMutation.mutate({ partyId: p.id, joinId: myJoin?.id ?? null })}
+                              disabled={joinMutation.isPending}
+                              className="px-5 py-2.5 text-[10px] font-bold rounded-full uppercase tracking-wider bg-white/5 border border-[#00e5ff]/40 text-[#00e5ff] active:scale-95 disabled:opacity-30 transition-transform"
+                            >
+                              ✓ vii
+                            </button>
+                          </div>
                         ) : (
                           <button
                             onClick={() => joinMutation.mutate({ partyId: p.id, joinId: myJoin?.id ?? null })}
                             disabled={!user || joinMutation.isPending || (full && !myJoin)}
                             className={`px-5 py-2.5 text-[10px] font-bold rounded-full uppercase tracking-wider active:scale-95 disabled:opacity-30 transition-transform ${
-                              myStatus === "accepted"
-                                ? "bg-white/5 border border-[#00e5ff]/40 text-[#00e5ff]"
-                                : myStatus === "pending"
-                                  ? "bg-white/5 border border-white/15 text-white/60"
-                                  : full
-                                    ? "bg-white/5 text-white/40"
-                                    : "bg-[#ff3d8b] text-white shadow-[0_0_18px_-4px_#ff3d8b]"
+                              myStatus === "pending"
+                                ? "bg-white/5 border border-white/15 text-white/60"
+                                : full
+                                  ? "bg-white/5 text-white/40"
+                                  : "bg-[#ff3d8b] text-white shadow-[0_0_18px_-4px_#ff3d8b]"
                             }`}
                           >
-                            {myStatus === "accepted" ? "✓ vii" : myStatus === "pending" ? "în așteptare" : full ? "plin" : "vin și eu"}
+                            {myStatus === "pending" ? "în așteptare" : full ? "plin" : "vin și eu"}
                           </button>
                         )}
                       </div>
@@ -370,6 +398,7 @@ function PartiesPage() {
                             profileMap={profileMap}
                             onAccept={(id) => acceptMutation.mutate(id)}
                             onReject={(id) => kickMutation.mutate(id)}
+                            onMessage={(uid) => openDM(uid)}
                             busy={acceptMutation.isPending || kickMutation.isPending}
                           />
                         </div>
@@ -400,13 +429,14 @@ function PartiesPage() {
 type JoinRow = { id: string; party_id: string; user_id: string; status: string; created_at: string };
 
 function HostJoinsPanel({
-  pending, accepted, profileMap, onAccept, onReject, busy,
+  pending, accepted, profileMap, onAccept, onReject, onMessage, busy,
 }: {
   pending: JoinRow[];
   accepted: JoinRow[];
   profileMap: Map<string, Host>;
   onAccept: (joinId: string) => void;
   onReject: (joinId: string) => void;
+  onMessage: (userId: string) => void;
   busy: boolean;
 }) {
   const [open, setOpen] = useState(pending.length > 0);
@@ -480,6 +510,14 @@ function HostJoinsPanel({
                         <div className="text-xs font-bold text-white truncate group-hover:underline">@{u?.handle ?? u?.display_name ?? "anonim"}</div>
                       </div>
                     </Link>
+                    <button
+                      onClick={() => onMessage(j.user_id)}
+                      aria-label="mesaj"
+                      title="Mesaj"
+                      className="h-8 w-8 rounded-full flex items-center justify-center bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] text-white shadow-[0_0_12px_-4px_#c724ff] active:scale-95"
+                    >
+                      <MessageCircle size={14} strokeWidth={2.5} />
+                    </button>
                     <button
                       onClick={() => onReject(j.id)} disabled={busy}
                       aria-label="elimină"
