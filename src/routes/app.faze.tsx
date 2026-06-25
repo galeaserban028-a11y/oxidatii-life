@@ -195,6 +195,7 @@ function FazePage() {
       await supabase.from("photo_likes").delete().eq("photo_id", it.id).eq("user_id", user.id);
     } else {
       await supabase.from("photo_likes").insert({ photo_id: it.id, user_id: user.id });
+      import("@/lib/native").then(({ haptic }) => haptic("light"));
     }
     qc.invalidateQueries({ queryKey: ["faze"] });
   }
