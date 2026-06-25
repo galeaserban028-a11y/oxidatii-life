@@ -166,6 +166,7 @@ function RootComponent() {
   useEffect(() => {
     import("@/hooks/useTheme").then((m) => m.initThemeEarly());
     import("@/lib/pwa").then((m) => m.registerAppServiceWorker());
+    import("@/lib/native").then((m) => m.bootstrapNative());
   }, []);
   return (
     <QueryClientProvider client={queryClient}>
