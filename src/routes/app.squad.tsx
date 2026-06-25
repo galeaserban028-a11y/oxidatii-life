@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM } from "@/lib/chat";
 import { useNavigate } from "@tanstack/react-router";
-import { Plus, MessageCircle, Trash2, UsersRound, Flame, MapPin } from "lucide-react";
+import { Plus, MessageCircle, Trash2, UsersRound, Flame, MapPin, Vote } from "lucide-react";
+import { useState } from "react";
+import { CreateDecisionPollSheet, DecisionPollCard } from "@/components/app/DecisionMode";
 
 export const Route = createFileRoute("/app/squad")({
   head: () => ({
