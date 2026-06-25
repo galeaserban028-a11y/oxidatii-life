@@ -45,6 +45,12 @@ function SquadPage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const qc = useQueryClient();
+  const [decisionOpen, setDecisionOpen] = useState(false);
+  const [activePollId, setActivePollId] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("oxi-active-poll");
+  });
+
 
   const { data: liveParties = [] } = useQuery({
     queryKey: ["squad-live-parties"],
