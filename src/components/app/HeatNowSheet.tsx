@@ -39,13 +39,9 @@ export function HeatNowButton({
     enabled: enabled,
     refetchInterval: 60_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_heat_now", {
-        _city_id: cityId && cityId !== "all" ? cityId : null,
-        _min_lat: null,
-        _min_lng: null,
-        _max_lat: null,
-        _max_lng: null,
-      });
+      const args: Record<string, unknown> = {};
+      if (cityId && cityId !== "all") args._city_id = cityId;
+      const { data, error } = await supabase.rpc("get_heat_now", args as never);
       if (error) throw error;
       return (data ?? []) as HeatCell[];
     },
