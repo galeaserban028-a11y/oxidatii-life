@@ -58,8 +58,35 @@ export function useLiveLocation(userId: string | null | undefined, enabled: bool
       );
     };
 
-    const start = () => {
-      if (watchId != null) return;
+    let nativeWatchId: string | null = null;
+
+    const start = async () => {
+      if (watchId != null || nativeWatchId != null) return;
+      if (isNative()) {
+        try {
+          const { Geolocation } = await import("@capacitor/geolocation");
+          const perm = await Geolocation.checkPermissions();
+          if (perm.location !== "granted") {
+            const req = await Geolocation.requestPermissions({ permissions: ["location"] });
+            if (req.location !== "granted") return;
+          }
+          nativeWatchId = await Geolocation.watchPosition(
+            { enableHighAccuracy: true, timeout: 30_000 },
+            (pos, err) => {
+              if (err || !pos) return;
+              push(
+                pos.coords.latitude,
+                pos.coords.longitude,
+                pos.coords.heading ?? null,
+                pos.coords.accuracy ?? null,
+              );
+            },
+          );
+          return;
+        } catch {
+          // fall through to web geolocation
+        }
+      }
       watchId = navigator.geolocation.watchPosition(
         (pos) =>
           push(
@@ -79,6 +106,13 @@ export function useLiveLocation(userId: string | null | undefined, enabled: bool
       if (watchId != null) {
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
+      }
+      if (nativeWatchId != null) {
+        const id = nativeWatchId;
+        nativeWatchId = null;
+        import("@capacitor/geolocation")
+          .then(({ Geolocation }) => Geolocation.clearWatch({ id }))
+          .catch(() => {});
       }
     };
 
