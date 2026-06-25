@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { ArrowLeft, Send, Smile, Image as ImageIcon, Users, Gift, X, Loader2, Mic, Palette, Play, Pause, MoreVertical } from "lucide-react";
+import { ArrowLeft, Send, Smile, Image as ImageIcon, Users, Gift, X, Loader2, Mic, Palette, Play, Pause, MoreVertical, Trash2 } from "lucide-react";
 import { notifyChatMessage } from "@/lib/notifications-extra.functions";
 import { ReportDialog } from "@/components/app/ReportDialog";
 import {
@@ -13,6 +13,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/app/chat/$id")({
   head: () => ({ meta: [{ title: "Chat · OXIDAȚII" }] }),
