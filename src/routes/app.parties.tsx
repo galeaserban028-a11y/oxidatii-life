@@ -105,14 +105,13 @@ function PartiesPage() {
 
   useEffect(() => {
     const channelName = `parties-feed:${Date.now()}:${Math.random().toString(36).slice(2)}`;
+    // Throttle: global parties + joins streams — coalesce bursts
+    const refreshParties = throttle(() => qc.invalidateQueries({ queryKey: ["parties"] }), 2000);
+    const refreshJoins = throttle(() => qc.invalidateQueries({ queryKey: ["party-joins"] }), 2000);
     const ch = supabase
       .channel(channelName)
-      .on("postgres_changes", { event: "*", schema: "public", table: "parties" }, () => {
-        qc.invalidateQueries({ queryKey: ["parties"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "party_joins" }, () => {
-        qc.invalidateQueries({ queryKey: ["party-joins"] });
-      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "parties" }, refreshParties)
+      .on("postgres_changes", { event: "*", schema: "public", table: "party_joins" }, refreshJoins)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [qc]);
