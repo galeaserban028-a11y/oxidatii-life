@@ -42,6 +42,7 @@ import { Route as AppDiscoverRouteImport } from './routes/app.discover'
 import { Route as AppBlockedRouteImport } from './routes/app.blocked'
 import { Route as AppBizRouteImport } from './routes/app.biz'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
+import { Route as DotwellKnownFileRouteImport } from './routes/[.]well-known.$file'
 import { Route as AppAdminIndexRouteImport } from './routes/app.admin.index'
 import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
@@ -229,6 +230,11 @@ const AppAdminRoute = AppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
+const DotwellKnownFileRoute = DotwellKnownFileRouteImport.update({
+  id: '/.well-known/$file',
+  path: '/.well-known/$file',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -348,6 +354,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.well-known/$file': typeof DotwellKnownFileRoute
   '/app/admin': typeof AppAdminRouteWithChildren
   '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
@@ -403,6 +410,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.well-known/$file': typeof DotwellKnownFileRoute
   '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
   '/app/discover': typeof AppDiscoverRoute
@@ -459,6 +467,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.well-known/$file': typeof DotwellKnownFileRoute
   '/app/admin': typeof AppAdminRouteWithChildren
   '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
@@ -517,6 +526,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/terms'
+    | '/.well-known/$file'
     | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
@@ -572,6 +582,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/terms'
+    | '/.well-known/$file'
     | '/app/biz'
     | '/app/blocked'
     | '/app/discover'
@@ -627,6 +638,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/terms'
+    | '/.well-known/$file'
     | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
@@ -684,6 +696,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  DotwellKnownFileRoute: typeof DotwellKnownFileRoute
   ApiPublicCronHeatAlertsRoute: typeof ApiPublicCronHeatAlertsRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
@@ -920,6 +933,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/admin'
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/.well-known/$file': {
+      id: '/.well-known/$file'
+      path: '/.well-known/$file'
+      fullPath: '/.well-known/$file'
+      preLoaderRoute: typeof DotwellKnownFileRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/app/admin/': {
       id: '/app/admin/'
@@ -1192,6 +1212,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  DotwellKnownFileRoute: DotwellKnownFileRoute,
   ApiPublicCronHeatAlertsRoute: ApiPublicCronHeatAlertsRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }

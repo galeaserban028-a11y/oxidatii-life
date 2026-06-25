@@ -32,7 +32,7 @@ const ASSETLINKS = [
   },
 ];
 
-export const Route = createFileRoute("/[.]well-known/$file")({
+export const Route = createFileRoute("/.well-known/$file")({
   server: {
     handlers: {
       GET: async ({ params }) => {
