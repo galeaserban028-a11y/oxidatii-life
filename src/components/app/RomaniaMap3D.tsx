@@ -94,100 +94,28 @@ function makePinImage(color: string, lowEnd = false): ImageData {
 
 
 
-// Custom "Nightlife Neon" vector basemap: deep purple background, dark purple
-// water, glowing gold roads, dashed purple admin boundaries. Uses OpenFreeMap's
-// free vector tiles (OpenMapTiles schema, no API key required).
-const VOYAGER_STYLE = {
+// Stable raster basemap. The previous custom vector style could look like a
+// blank dark canvas on phones when vector tiles/glyphs were slow or failed; this
+// keeps roads, countries and labels visible while our live pins render on top.
+const OXI_MAP_STYLE = {
   version: 8,
-  glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
   sources: {
-    omt: {
-      type: "vector",
-      url: "https://tiles.openfreemap.org/planet",
-      attribution: "© OpenFreeMap © OpenMapTiles © OpenStreetMap contributors",
+    carto: {
+      type: "raster",
+      tiles: [
+        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      ],
+      tileSize: 256,
+      attribution: "© OpenStreetMap contributors © CARTO",
     },
   },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#1a1330" } },
-    {
-      id: "water",
-      type: "fill",
-      source: "omt",
-      "source-layer": "water",
-      paint: { "fill-color": "#05030f" },
-    },
-    {
-      id: "landcover",
-      type: "fill",
-      source: "omt",
-      "source-layer": "landcover",
-      filter: ["==", ["get", "class"], "wood"],
-      paint: { "fill-color": "rgba(60,30,100,0.35)", "fill-opacity": 0.55 },
-    },
-    // Soft glow under roads
-    {
-      id: "roads-glow",
-      type: "line",
-      source: "omt",
-      "source-layer": "transportation",
-      filter: ["!", ["in", ["get", "class"], ["literal", ["ferry", "rail"]]]],
-      paint: {
-        "line-color": "rgba(212,175,55,0.22)",
-        "line-width": ["interpolate", ["linear"], ["zoom"], 4, 1.2, 8, 3, 12, 6, 16, 14],
-        "line-blur": 3,
-      },
-    },
-    {
-      id: "roads",
-      type: "line",
-      source: "omt",
-      "source-layer": "transportation",
-      filter: ["!", ["in", ["get", "class"], ["literal", ["ferry", "rail"]]]],
-      paint: {
-        "line-color": "rgba(232,196,90,0.55)",
-        "line-width": ["interpolate", ["linear"], ["zoom"], 4, 0.4, 8, 0.8, 12, 1.4, 16, 2.4],
-      },
-    },
-    {
-      id: "admin-boundaries",
-      type: "line",
-      source: "omt",
-      "source-layer": "boundary",
-      filter: ["<=", ["get", "admin_level"], 4],
-      paint: {
-        "line-color": "rgba(168,85,247,0.55)",
-        "line-width": ["interpolate", ["linear"], ["zoom"], 2, 0.6, 6, 1.1, 10, 1.6],
-        "line-dasharray": [2, 2],
-      },
-    },
-    {
-      id: "place-country",
-      type: "symbol",
-      source: "omt",
-      "source-layer": "place",
-      filter: ["==", ["get", "class"], "country"],
-      minzoom: 2,
-      maxzoom: 7,
-      layout: {
-        "text-field": ["get", "name:latin"],
-        "text-font": ["Noto Sans Bold"],
-        "text-size": ["interpolate", ["linear"], ["zoom"], 2, 10, 6, 16],
-        "text-letter-spacing": 0.12,
-        "text-transform": "uppercase",
-      },
-      paint: {
-        "text-color": "rgba(230,220,255,0.85)",
-        "text-halo-color": "rgba(13,11,30,0.9)",
-        "text-halo-width": 1.4,
-      },
-    },
+    { id: "background", type: "background", paint: { "background-color": "#080a12" } },
+    { id: "carto-dark", type: "raster", source: "carto", paint: { "raster-opacity": 1 } },
   ],
-  sky: {
-    "sky-color": "#0d0b1e",
-    "horizon-color": "#1a0b3a",
-    "fog-color": "#070514",
-    "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 6, 0.5, 10, 0],
-  },
 } as unknown as maplibregl.StyleSpecification;
 
 
@@ -267,11 +195,12 @@ export function RomaniaMap3D({
     if (!containerRef.current || mapRef.current) return;
     setMapFailed(false);
     let map: MlMap;
+    let resizeObserver: ResizeObserver | null = null;
     const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
     try {
       map = new maplibregl.Map({
         container: containerRef.current,
-        style: VOYAGER_STYLE,
+        style: OXI_MAP_STYLE,
         center: [25.0, 45.9],
         zoom: isSmall ? 3.2 : 3.8,
         minZoom: 2.5,
@@ -295,19 +224,16 @@ export function RomaniaMap3D({
     map.touchZoomRotate.disableRotation();
     map.dragRotate.disable();
     compactMapRef.current = isSmall;
+    if (typeof ResizeObserver !== "undefined" && containerRef.current) {
+      resizeObserver = new ResizeObserver(() => requestAnimationFrame(() => map.resize()));
+      resizeObserver.observe(containerRef.current);
+    }
     // dragPan + scrollZoom rămân activate ca să se poată naviga și da zoom
 
     map.on("load", () => {
       loadedRef.current = true;
       setMapFailed(false);
-      if (isSmall) {
-        // Keep admin-boundaries & landcover so the user can still SEE the
-        // shape of countries on small screens; only the heavy roads-glow
-        // blur layer is dropped for perf.
-        for (const layerId of ["roads-glow"] as const) {
-          try { if (map.getLayer(layerId)) map.removeLayer(layerId); } catch {}
-        }
-      }
+      requestAnimationFrame(() => map.resize());
       // GPU-rendered venue layer + clustering — handles thousands of points at 60fps
       // Enable real clustering so the cluster layers below actually render
       // (previously cluster:false meant clusters were declared but never used,
@@ -508,21 +434,9 @@ export function RomaniaMap3D({
     });
 
     map.on("error", (event) => { console.warn("Map tile error", event.error); });
-    if (isSmall) {
-      const movingOn = () => containerRef.current?.classList.add("oxi-map-moving");
-      const movingOff = () => {
-        containerRef.current?.classList.remove("oxi-map-moving");
-        requestAnimationFrame(() => resolveCityLabelCollisions(containerRef.current, compactMapRef.current));
-      };
-      map.on("movestart", movingOn);
-      map.on("zoomstart", movingOn);
-      map.on("moveend", movingOff);
-      map.on("zoomend", movingOff);
-    } else {
-      const refreshLabels = () => requestAnimationFrame(() => resolveCityLabelCollisions(containerRef.current, compactMapRef.current));
-      map.on("moveend", refreshLabels);
-      map.on("zoomend", refreshLabels);
-    }
+    const refreshLabels = () => requestAnimationFrame(() => resolveCityLabelCollisions(containerRef.current, compactMapRef.current));
+    map.on("moveend", refreshLabels);
+    map.on("zoomend", refreshLabels);
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
       event.preventDefault();
@@ -539,6 +453,7 @@ export function RomaniaMap3D({
       friendMarkers.current.forEach(m => m.remove()); friendMarkers.current.clear();
       promotedMarkers.current.forEach(m => m.remove()); promotedMarkers.current.clear();
       try { map.remove(); } catch {}
+      resizeObserver?.disconnect();
       mapRef.current = null; loadedRef.current = false;
     };
   }, [retryKey]);
@@ -733,13 +648,6 @@ export function RomaniaMap3D({
       bottleStage.style.animation = "oxi-marker-pop 0.34s cubic-bezier(0.22,1,0.36,1) both";
       wrap.appendChild(bottleStage);
 
-
-      const label = document.createElement("div");
-      label.textContent = c.name;
-      label.className = "oxi-city-label";
-      label.dataset.priority = String(c.chaos_level);
-      label.style.cssText = `font-family:'Plus Jakarta Sans','DM Sans',sans-serif;font-weight:800;font-size:${compactMapRef.current ? 9 : 11}px;letter-spacing:0.02em;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,0.95),0 0 6px rgba(0,0,0,0.7);white-space:nowrap;margin-top:3px;padding:1px 4px;background:rgba(0,0,0,0.35);border-radius:6px;backdrop-filter:blur(2px);`;
-      wrap.appendChild(label);
 
       let shattering = false;
       const shatter = () => {
@@ -956,7 +864,6 @@ export function RomaniaMap3D({
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas { outline:none !important; }
         .maplibregl-marker { position:absolute !important; top:0; left:0; will-change:transform; contain:layout style; z-index:2; }
-        .oxi-map-moving .maplibregl-marker { visibility:hidden; pointer-events:none; }
         .maplibregl-ctrl-top-right { position:absolute; top:10px; right:10px; z-index:3; display:flex; flex-direction:column; gap:8px; }
         .maplibregl-ctrl-group { background: rgba(3,4,10,0.9) !important; border: 1px solid rgba(198,107,255,0.25) !important; }
         .maplibregl-ctrl-group button { background-color: transparent !important; }
@@ -1009,9 +916,9 @@ export function RomaniaMap3D({
       </div>
 
 
-      {/* Soft vignette only — no decorative blobs over the map. */}
+      {/* Subtle edge fade only; keep streets and venue pins visible. */}
       <div className="pointer-events-none absolute inset-0 z-[1]"
-           style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 38%, rgba(3,4,10,0.28) 74%, rgba(3,4,10,0.82) 100%)" }} />
+           style={{ background: "linear-gradient(180deg, rgba(3,4,10,0.18), transparent 24%, transparent 76%, rgba(3,4,10,0.22))" }} />
     </div>
   );
 }
