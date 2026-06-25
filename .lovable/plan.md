@@ -1,77 +1,46 @@
-## Ce livrez
+# Heat Now + Decision Mode
 
-Un raport scris în română, salvat ca `/mnt/documents/oxidatii-revizie.md` (deschidere imediată în chat), cu **5 capitole**. Fără modificări de cod în această rundă — doar diagnostic + recomandări.
+Două features noi, livrate împreună pentru că împart aceleași semnale (check-ins, photos, Spritz Index).
 
-## Structura raportului
+## 1. Heat Now — hotspot live pe hartă
 
-### 1. Verdict pe scurt (1 pagină)
-- Ce e deja unic față de Snap Map / Untappd / Partiful (proof-of-night, spritz index, harta neon, squad-first DM)
-- 3 capcane majore (ex: feature creep admin, ecrane care arată ca un Untappd cu skin neon, lipsă "moment-hero" pe care să-l postezi)
-- Verdict: unde stăm pe scala "yet another social" → "categorie nouă"
+**Backend**
+- RPC nouă `get_heat_now(_city_id uuid, _bbox jsonb)` care întoarce zone agregate: lat/lng centroid, radius, `heat_score` (0–100), `trend` (`rising` | `flat` | `cooling`), top 1–2 venues, count check-ins/photos din ultimele 90 min.
+- Agregare prin grid simplu (~250m) peste `check_ins` + `venue_photos` din ultimele 90 min, ponderat cu `parties` active. Reutilizează formula din `get_spritz_index`, dar pe celulă.
+- Grant `EXECUTE TO authenticated`.
 
-### 2. Audit ecran-cu-ecran (partea grea)
-Pentru fiecare rută importantă: claritate, ierarhie, motion, friction, ce să tai / ce să amplifici. Acoper:
+**Frontend** (`src/components/app/RomaniaMap3D.tsx` + `src/routes/app.map.tsx`)
+- Toggle „🔥 Heat Now" lângă controalele existente, persistat în localStorage.
+- Când activ: heatmap MapLibre (`heatmap` layer) din GeoJSON-ul RPC-ului, refresh la 60s + pe `moveend`.
+- Tap pe o zonă fierbinte → bottom sheet cu top venues, score, trend, CTA „Vezi pe hartă".
+- Alertă (toast + haptic) când în zona vizibilă apare un hotspot nou cu `heat_score ≥ 75` sau `trend = rising` cu delta ≥ 20 față de poll-ul anterior. Throttled la max 1/3 min.
 
-- **Onboarding + auth** — primul minut decide totul
-- **`/app` (feed)** — primul ecran după login
-- **`/app/map`** — eroul produsului (neon, prieteni, venues)
-- **`/app/squad`** + **`/app/parties`** — proaspăt redesigned, verific consistența
-- **`/app/inbox` + `/app/chat`** — DM, grupuri
-- **`/app/spritz-index` + `/app/scan`** — mecanica proof-of-night
-- **`/app/top` + `/app/faze`** — leaderboard / momente
-- **`/app/me` + `/app/me_.reputation`** — profil, reputație
-- **`/app/discover` + `/app/city/$slug` + `/app/venue/$id`** — descoperire localuri
-- **`/app/premium` + `/app/shop`** — monetizare
-- **`/app/notifications` + `/app/settings`** — igienă
-- **Admin & biz** (scurt) — doar dacă blochează experiența user-ului
+## 2. Decision Mode — vot rapid în grup
 
-Fiecare ecran primește: ✅ ce merge · ⚠️ ce strică flow-ul · 🔧 fix concret (S/M/L effort).
+**Backend**
+- Tabel `decision_polls`: `id`, `host_id`, `conversation_id` (nullable — direct pe DM/grup), `party_id` (nullable), `expires_at`, `status`, `created_at`.
+- Tabel `decision_options`: `id`, `poll_id`, `venue_id`, `source` (`spritz_index` | `manual` | `friend_going`), `score_snapshot`.
+- Tabel `decision_votes`: `poll_id`, `user_id`, `option_id`, `created_at` (UNIQUE poll+user).
+- RPC `create_decision_poll(_conversation_id, _venue_ids[], _expires_minutes)` care:
+  - Generează 3–5 opțiuni: 2 din top Spritz Index pe orașul user-ului, 1–2 unde au check-in prieteni live, restul manual.
+  - Postează un mesaj în conversație cu marker `📊 decision:<id>`.
+- RPC `cast_decision_vote(_poll_id, _option_id)` + `get_decision_poll(_poll_id)` cu rezultate live.
+- RLS: vizibil doar membrilor conversației / host-ului. Realtime publication pe `decision_votes`.
 
-### 3. Performanță & PWA
-- FPS hartă (markeri, halouri, blur), tile cache, raster fallback
-- Bundle size pe rută (rute >500 linii: `me`, `parties`, `premium`, `settings`, `squad`, `user`)
-- Service worker: kill-switch funcționează? caching corect pe HTML?
-- Imagini (avatare, venue photos) — webp/avif, lazy, srcset
-- Realtime: câte canale supabase deschidem simultan, leak-uri pe unmount
-- LCP / TTI estimate pe `/app` și `/app/map`
+**Frontend**
+- `src/components/app/DecisionModeSheet.tsx`: deschis din butonul existent „decide unde mergem" în `app.squad.tsx` și din chat (header chat → icon 📊).
+- Pas 1: pickează venues (cu sugestii pre-populate din Spritz Index + prieteni live).
+- Pas 2: trimite în chat — apare card vot cu progress-bar per opțiune, countdown.
+- Realtime subscribe la `decision_votes` pentru update live.
+- La expirare: highlight câștigător + CTA „Creează spritz" (pre-fills `parties` form cu venue-ul votat).
 
-### 4. Funcționalități noi — 12 idei diferențiatoare
-Filtrate pe axa "doar OXIDAȚII poate face asta", grupate pe 3 piloni:
+## Detalii tehnice
+- Migration unică cu cele 3 tabele + 3 RPC + 1 RPC heat + GRANTs + RLS + adăugare la `supabase_realtime` publication.
+- Server fn-uri în `src/lib/heat.functions.ts` și `src/lib/decisions.functions.ts` (cu `requireSupabaseAuth`).
+- Polling heat: simplu `setInterval` în componenta map, nu realtime (overhead prea mare).
+- Hotspot alert dedup prin `useRef` cu set de `cell_id` deja notificate în sesiune.
 
-**A. Proof-of-night dur (vs Untappd)**
-- "Night Verdict" — la 9 dimineața primești un card auto-generat cu noaptea ta (loc, gașcă, spritz consumați, traseu pe hartă) → unul singur, shareable pe IG story
-- "Streak fragil" — pierzi streak-ul dacă nu ești la un local cu cel puțin 1 prieten în 7 zile (forțează ieșitul împreună, nu solo check-in)
-- "Spritz Forensics" — fiecare proof primește un scor (foto + locație + ora + martori prezenți) → reputație ne-trișabilă
-
-**B. Squad-first social (vs BeReal)**
-- "Trupa Vede Live" — doar trupa ta vede unde ești în timp real, restul văd doar dimineața. Anti-stalker prin design.
-- "Decision Mode" — buton mare în chat "unde mergem?" → votare cu localuri din apropiere, top 3, gașca decide în <2min
-- "Ghost Hours" — între 04:00–10:00 toate pozele se blurează automat pentru cei din afara squad-ului (regret-proofing)
-
-**C. Discovery cu autoritate locală (vs Partiful/Eventbrite)**
-- "Heat Now" — hartă cu pulse real-time (cine e la ce local ACUM, doar friends-of-friends) → înlocuiește "trending"
-- "Locul Lunii pe Stradă" — micro-leaderboard per stradă (nu per oraș), forțează descoperire hyper-local
-- "Verdictul Trupei" — un local nu primește rating de la individ, ci de la grupul care a fost împreună (mai greu de trișat, mai relevant)
-
-**D. Format-uri media native pentru noapte**
-- "Audio Proof 10s" — în loc de poză, înregistrare ambientală de 10s (zgomot bar, muzică) → mult mai intim, mai greu de fake
-- "Boomerang Spritz" — format video specific pentru clink-ul de pahar, 1 buton, auto-share
-- "Morning Mosaic" — colaj automat din toate proof-urile squad-ului din noaptea trecută, livrat ca single image shareable
-
-Fiecare idee primește: effort estimate (S/M/L), risc (low/med/high), de ce e defensibil.
-
-### 5. Roadmap propus (opțional — doar dacă vrei)
-Ordonare quick-wins → big bets, cu dependențe.
-
-## Cum lucrez
-
-- Citesc rutele și componentele relevante (nu fac modificări)
-- Generez raportul ca un singur fișier `.md` în `/mnt/documents`
-- Adaug `<presentation-artifact>` ca să-l deschizi cu un click
-- La final, întreb dacă vrei să atac top 3 quick-wins imediat (rundă separată în build mode)
-
-## Ce NU includ
-- Cod modificat (asta vine după ce aprobi raportul + alegi prioritățile)
-- Audit de securitate (separat, scanner-ul are tool propriu)
-- Audit SEO (separat)
-- Mock-uri vizuale (separat, prin design directions dacă vrei)
+## Ce NU includ acum (pot veni iterativ)
+- Push notifications pentru hotspots când app-ul e închis.
+- Decision Mode cu „swipe Tinder-style" — rămâne vot clasic.
+- Heat Now istoric / replay seara — doar live.
