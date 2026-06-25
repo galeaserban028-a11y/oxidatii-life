@@ -36,19 +36,26 @@ export function NightWrapSheet({ wrap, onClose }: { wrap: any; onClose: () => vo
   const handleShareImage = async () => {
     setBusy("share");
     try {
+      const { haptic, nativeShare, isNative } = await import("@/lib/native");
+      haptic("light");
       const blob = await generatePng();
       if (!blob) return;
       const file = new File([blob], `oxidatii-night-${wrap.night_date}.png`, { type: "image/png" });
       const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
-      if (nav.canShare && nav.canShare({ files: [file] })) {
+      if (!isNative() && nav.canShare && nav.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
           title: wrap.title,
           text: `${wrap.vibe_emoji} ${wrap.title} — pe Oxidații`,
         });
       } else {
-        // Fallback: download
+        // Native (iOS/Android) sau browser fără file share: descarcă + share text+URL
         triggerDownload(blob);
+        await nativeShare({
+          title: wrap.title,
+          text: `${wrap.vibe_emoji} ${wrap.title} — pe Oxidații`,
+          url: typeof window !== "undefined" ? window.location.href : undefined,
+        });
       }
     } catch {
       /* user cancelled */
