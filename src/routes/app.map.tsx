@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { throttle } from "@/lib/throttle";
-import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
+import { RomaniaMap3D, type FriendPin, type HeatNowCell } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
 import { UserPlus, Users, MapPin, Clock, X, Beer, List, Navigation, Sparkles, Settings, Ghost } from "lucide-react";
 import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilters";
@@ -250,6 +250,7 @@ function MapPage() {
   const [country, setCountry] = useState<string | "all">("all");
   const [cityId, setCityId] = useState<string | "all">("all");
   const [maxKm, setMaxKm] = useState(0);
+  const [heatNowCells, setHeatNowCells] = useState<HeatNowCell[]>([]);
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
   const [visible, setVisible] = useState(40);
   const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
@@ -814,6 +815,7 @@ function MapPage() {
                 friends={mapFriendPins}
                 focusCity={focusCity}
                 fitBounds={fitBounds}
+                heatNowCells={heatNowCells}
                 onCityClick={(c) => {
                   setCityId(c.id);
                   setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
@@ -867,6 +869,7 @@ function MapPage() {
           <HeatNowButton
             cityId={cityId === "all" ? null : cityId}
             onFocus={(lat, lng) => setFocusCity({ lat, lng, zoom: 14.5 })}
+            onCellsChange={setHeatNowCells}
           />
 
         </div>
