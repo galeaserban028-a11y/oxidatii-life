@@ -91,12 +91,33 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
 
     try {
       const stripe = createStripeClient(data.environment);
+      let stripePrice: any;
       const prices = await stripe.prices.list({ lookup_keys: [data.priceId], limit: 1 });
       const matchedPrices = Array.isArray(prices.data) ? prices.data : [];
-      if (!matchedPrices.length) return { error: "Preț indisponibil" };
-      const stripePrice = matchedPrices[0];
+      if (matchedPrices.length) {
+        stripePrice = matchedPrices[0];
+      } else if (ALACARTE_SKUS[data.priceId]) {
+        // Auto-provision à la carte SKU on first use so admins don't have to create it manually.
+        const sku = ALACARTE_SKUS[data.priceId];
+        const product = await stripe.products.create({
+          name: sku.name,
+          description: sku.description,
+          metadata: { lovable_sku: data.priceId },
+        });
+        stripePrice = await stripe.prices.create({
+          product: product.id,
+          unit_amount: sku.amount,
+          currency: sku.currency,
+          lookup_key: data.priceId,
+          nickname: sku.name,
+          metadata: { lovable_external_id: data.priceId },
+        });
+      } else {
+        return { error: "Preț indisponibil" };
+      }
       const isRecurring = stripePrice.type === "recurring";
       const isCoinPack = data.priceId.startsWith("coins_");
+      const alacarte = ALACARTE_SKUS[data.priceId];
 
       const customerId = await resolveCustomer(stripe, userId, email);
 
@@ -109,10 +130,11 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
         productDescription = product.name;
       }
 
-      const meta = {
+      const meta: Record<string, string> = {
         user_id: userId,
         price_id: data.priceId,
         ...(isCoinPack && { kind: "coin_pack", coins: String(COIN_PACKS[data.priceId] ?? 0) }),
+        ...(alacarte && { kind: alacarte.kind, ...(alacarte.days && { days: String(alacarte.days) }) }),
       };
 
       const session = await stripe.checkout.sessions.create({
