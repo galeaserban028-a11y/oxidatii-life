@@ -356,7 +356,7 @@ function PremiumPage() {
                       </span>
                     </div>
                     {annualSaved && (
-                      <p className="text-[10px] uppercase tracking-wider text-emerald-400/80 mt-1">
+                      <p className="text-[10px] uppercase tracking-wider text-emerald-300 mt-1">
                         economisești {annualSaved} RON
                       </p>
                     )}
@@ -364,7 +364,8 @@ function PremiumPage() {
                   <button
                     onClick={() => handleBuy(tier)}
                     disabled={isCurrent}
-                    className={`shrink-0 px-5 py-2.5 rounded-full font-bold text-xs transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
+                    className={`shrink-0 min-h-[40px] px-4 sm:px-5 py-2.5 rounded-full font-bold text-xs transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 ${
+
                       isCurrent
                         ? "bg-transparent border border-slate-700 text-slate-400"
                         : a.btn
