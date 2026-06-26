@@ -562,11 +562,16 @@ function PremiumPage() {
           <button
             onClick={handleManage}
             disabled={openingPortal}
-            className="w-full flex items-center justify-center gap-2 h-11 rounded-full border border-slate-700 uppercase text-[10px] tracking-[0.3em] font-semibold disabled:opacity-50 active:scale-[0.99] transition text-slate-300 hover:bg-slate-900"
+            className="w-full flex items-center justify-center gap-2 min-h-[44px] h-11 rounded-full border border-slate-600 uppercase text-[10px] tracking-[0.3em] font-semibold disabled:opacity-50 active:scale-[0.99] transition text-slate-200 hover:bg-slate-900"
           >
-            <Settings size={13} />
+            {openingPortal ? (
+              <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-slate-300 border-t-transparent animate-spin" />
+            ) : (
+              <Settings size={13} />
+            )}
             {openingPortal ? "se deschide…" : "Gestionează abonament"}
           </button>
+
         )}
 
         {/* FAQ */}
