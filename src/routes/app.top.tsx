@@ -498,15 +498,19 @@ function RulesModal({ onClose }: { onClose: () => void }) {
   ];
   if (typeof document === "undefined") return null;
 
+  const topClearance = "calc(max(env(safe-area-inset-top), 18px) + 76px)";
+  const bottomClearance = "calc(max(env(safe-area-inset-bottom), 18px) + 18px)";
+
   return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center overflow-y-auto bg-black/80 backdrop-blur-md"
+      className="fixed inset-0 flex items-start justify-center overflow-y-auto bg-black/90 backdrop-blur-md isolate"
       style={{
-        paddingTop: "calc(max(env(safe-area-inset-top), 18px) + 8px)",
-        paddingBottom: "calc(max(env(safe-area-inset-bottom), 18px) + 8px)",
+        zIndex: 2147483647,
+        paddingTop: topClearance,
+        paddingBottom: bottomClearance,
         paddingLeft: 12,
         paddingRight: 12,
       }}
@@ -521,7 +525,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
         className="relative w-full max-w-lg flex flex-col rounded-2xl border border-white/15 bg-[#0b0b0c] shadow-[0_30px_80px_-20px_rgba(199,36,255,0.35)] overflow-hidden"
         style={{
-          maxHeight: "calc(100dvh - max(env(safe-area-inset-top), 18px) - max(env(safe-area-inset-bottom), 18px) - 20px)",
+          maxHeight: `calc(100dvh - ${topClearance} - ${bottomClearance})`,
         }}
       >
         {/* Document header */}
