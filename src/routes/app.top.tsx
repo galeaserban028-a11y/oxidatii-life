@@ -479,3 +479,74 @@ function EmptyHint({ title, sub }: { title: string; sub: string }) {
     </div>
   );
 }
+
+function RulesModal({ onClose }: { onClose: () => void }) {
+  const instrument = { fontFamily: '"Instrument Serif", serif' };
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 40, opacity: 0 }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl border border-white/10 bg-[#0a0a0a] p-6 space-y-5"
+      >
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="text-[10px] uppercase tracking-[0.3em] text-white/40">reguli</div>
+            <h2 style={instrument} className="text-3xl mt-1">
+              Spritz<span className="text-[#ffea00]">.</span>{" "}
+              <em className="not-italic font-normal bg-gradient-to-r from-[#ff3d8b] via-[#ffea00] to-[#c724ff] bg-clip-text text-transparent">
+                Score
+              </em>
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white/50 hover:text-white text-2xl leading-none px-2"
+            aria-label="Închide"
+          >
+            ×
+          </button>
+        </div>
+
+        <p className="text-sm text-white/70 leading-relaxed">
+          Clasamentul lunar se resetează în prima zi a fiecărei luni. Câștigă puncte ieșind, explorând și aducând lume.
+        </p>
+
+        <div className="space-y-2">
+          <FormulaRow icon={<Sparkles size={12} className="text-[#ffea00]" />} label="Șprițuri (check-in)" weight="×10" />
+          <FormulaRow icon={<Compass size={12} className="text-[#3ec5ff]" />} label="Explorer · venue nou" weight="×5" />
+          <FormulaRow icon={<Compass size={12} className="text-[#3ec5ff]" />} label="Explorer · oraș nou" weight="×15" />
+          <FormulaRow icon={<Users size={12} className="text-[#ff3d8b]" />} label="Squad Maker · oameni noi (±2h)" weight="×8" />
+          <FormulaRow icon={<Moon size={12} className="text-[#c724ff]" />} label="Sunrise Index · 00:00–05:59" weight="×4" />
+          <FormulaRow icon={<TrendingUp size={12} className="text-[#00ff9d]" />} label="Trendsetter · lume după tine (≤2h)" weight="×6" />
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-2 text-[12px] text-white/65 leading-relaxed">
+          <div className="text-[10px] uppercase tracking-wider text-white/40">cum funcționează</div>
+          <p>• Doar profilurile <span className="text-white">publice</span> apar în clasament.</p>
+          <p>• Punctele se calculează doar pe luna curentă.</p>
+          <p>• Squad Maker = oameni cu care nu ești prieten, dar care s-au check-in la același loc ±2h.</p>
+          <p>• Trendsetter = persoane care vin după tine la același venue în ≤2h.</p>
+          <p>• Sunrise = scor crescător spre miezul nopții (6 − ora locală).</p>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white font-bold text-sm active:scale-[0.98] transition"
+        >
+          Am înțeles
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
