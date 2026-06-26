@@ -28,6 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { LastCallButton } from "@/components/app/LastCallButton";
 import {
   DropdownMenu,
   DropdownMenuContent,
