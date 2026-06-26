@@ -2720,6 +2720,15 @@ export type Database = {
           sender_id: string
         }[]
       }
+      get_my_spritz_score: {
+        Args: {
+          _city_id?: string
+          _country?: string
+          _month_start?: string
+          _scope?: string
+        }
+        Returns: Json
+      }
       get_profile_card: {
         Args: { _id: string }
         Returns: {
@@ -2742,6 +2751,32 @@ export type Database = {
           score: number
           slug: string
           vibe: string
+        }[]
+      }
+      get_spritz_score_leaderboard: {
+        Args: {
+          _city_id?: string
+          _country?: string
+          _limit?: number
+          _month_start?: string
+          _scope?: string
+        }
+        Returns: {
+          avatar_url: string
+          base_sprits: number
+          city_name: string
+          country: string
+          display_name: string
+          explorer_score: number
+          handle: string
+          rank: number
+          spritz_score: number
+          squad_maker: number
+          sunrise_index: number
+          trendsetter: number
+          unique_cities: number
+          unique_venues: number
+          user_id: string
         }[]
       }
       get_streak_status: { Args: { _user_id?: string }; Returns: Json }
