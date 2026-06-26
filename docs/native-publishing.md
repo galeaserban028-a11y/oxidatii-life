@@ -71,8 +71,11 @@ Pentru push 100% nativ (APNs + FCM) — separat de web push:
 
 1. iOS: descarcă cheia APNs de pe Apple Developer și uploadeaz-o în Firebase
    sau în providerul tău de push.
-2. Android: pune `google-services.json` în `android/app/`.
-3. Folosește `@capacitor/push-notifications` (deja instalat) ca să iei
+2. Android: descarcă `google-services.json` din Firebase Console și pune-l în
+   `android/app/` (șablon gata completat în `android/app/google-services.json.template`).
+3. iOS: descarcă `GoogleService-Info.plist` din Firebase Console și pune-l în
+   `ios/App/App/` (șablon gata completat în `ios/App/App/GoogleService-Info.plist.template`).
+4. Folosește `@capacitor/push-notifications` (deja instalat) ca să iei
    token-ul nativ și să-l trimiți în `push_subscriptions` cu un canal
    separat (`apns` / `fcm`).
 
@@ -81,15 +84,17 @@ iOS nativ.
 
 ## 6. Materiale pentru store
 
-- **Icon**: 1024×1024 PNG (fără transparență pentru iOS).
-- **Splash**: 2732×2732 PNG, logo centrat pe `#1a120c`.
+- **Icon**: 1024×1024 PNG (fără transparență pentru iOS) — sursa este în `resources/icon.png`.
+- **Splash**: 2732×2732 PNG, logo centrat pe `#1a120c` — sursa este în `resources/splash.png`.
 - **Screenshots iOS**: 6.7" (iPhone 15 Pro Max) + 5.5" (legacy) — minim 3.
 - **Screenshots Android**: telefon (1080×1920) + 7" tabletă.
-- **Privacy policy URL**: oxidatii.life/privacy
-- **Support URL**: oxidatii.life/support
-- **App description** (RO + EN).
+- **Privacy policy URL**: https://oxidatii.life/privacy
+- **Support URL**: https://oxidatii.life/support
+- **App description** (RO + EN): `docs/store-listings.md`.
 - **Age rating**: 17+ (nightlife, alcool).
-- **Data safety form** (Play): declară colectarea de locație, mesaje, poze.
+- **Data safety form (Play)**: `docs/data-safety.md`.
+- **App Privacy Nutrition Label (App Store)**: `docs/app-privacy-nutrition.md`.
+
 
 ## 7. Build de release
 
@@ -117,18 +122,21 @@ bunx cap open android
 
 - [ ] Xcode → Signing & Capabilities: **Push Notifications** + **Background Modes** (Remote notifications + Location updates)
 - [ ] Xcode → Associated Domains: `applinks:oxidatii.life`
+- [ ] `ios/App/App/GoogleService-Info.plist` adăugat (șablon: `GoogleService-Info.plist.template`)
 - [ ] Apple Team ID înlocuit în `public/.well-known/apple-app-site-association` (înlocuiește `TEAMID`)
 - [ ] Bundle version + build number incrementate
 - [ ] App Store Connect: descriere RO + EN, 3+ screenshots 6.7", privacy policy URL
+- [ ] App Store Connect: App Privacy completat conform `docs/app-privacy-nutrition.md`
 - [ ] Age rating: 17+
 
 ### Android
 
-- [ ] `android/app/google-services.json` adăugat (Firebase pentru FCM)
+- [ ] `android/app/google-services.json` adăugat (șablon: `google-services.json.template`)
 - [ ] `versionCode` + `versionName` incrementate în `android/app/build.gradle`
 - [ ] SHA-256 al cheii de release înlocuit în `public/.well-known/assetlinks.json` (`keytool -list -v -keystore release.keystore | grep SHA256`)
 - [ ] Signed AAB generat: `bunx cap open android` → Build → Generate Signed Bundle
-- [ ] Play Console: Data Safety form completat (locație, mesaje, poze, push token)
+- [ ] Play Console: Data Safety form completat conform `docs/data-safety.md`
+
 
 ### Smoke test pe device fizic
 
