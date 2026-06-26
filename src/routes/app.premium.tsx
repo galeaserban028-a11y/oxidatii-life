@@ -219,15 +219,20 @@ function PremiumPage() {
 
   return (
     <div
-      className="min-h-screen pb-28 bg-[#050507] text-white antialiased"
-      style={{ fontFamily: "'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif" }}
+      className="min-h-screen pb-32 bg-[#050507] text-white antialiased"
+      style={{
+        fontFamily: "'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif",
+        paddingTop: "env(safe-area-inset-top)",
+        paddingLeft: "env(safe-area-inset-left)",
+        paddingRight: "env(safe-area-inset-right)",
+      }}
     >
       {/* Top bar */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-[#050507]/80 border-b border-white/5 px-4 h-14 flex items-center gap-2">
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-[#050507]/85 border-b border-white/5 px-4 h-14 flex items-center gap-2">
         <Link to="/app/me" className="p-2 -ml-2 active:scale-95 transition" aria-label="Înapoi">
           <ArrowLeft size={20} strokeWidth={2} />
         </Link>
-        <div className="text-[11px] font-medium tracking-[0.3em] text-slate-400 uppercase">
+        <div className="text-[11px] font-medium tracking-[0.3em] text-slate-300 uppercase">
           Membership
         </div>
         {currentTier && (
@@ -237,10 +242,20 @@ function PremiumPage() {
         )}
       </header>
 
-      <div className="w-full max-w-md mx-auto px-5 space-y-12 pt-10">
+      {/* Syncing banner */}
+      {syncingCheckout && (
+        <div className="px-4 pt-3">
+          <div className="max-w-md mx-auto flex items-center gap-3 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-2.5 text-[12px] text-violet-100">
+            <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-violet-300 border-t-transparent animate-spin" />
+            Confirmăm plata și activăm beneficiile…
+          </div>
+        </div>
+      )}
+
+      <div className="w-full max-w-md mx-auto px-5 sm:px-6 space-y-9 sm:space-y-12 pt-8 sm:pt-10">
         {/* HERO */}
         <div className="text-center space-y-3">
-          <h1 className="text-white text-4xl font-light tracking-tight leading-[1.1]">
+          <h1 className="text-white text-[2rem] sm:text-4xl font-light tracking-tight leading-[1.1]">
             Alege nivelul{" "}
             <span
               className="text-amber-200"
@@ -249,10 +264,11 @@ function PremiumPage() {
               Premium
             </span>
           </h1>
-          <p className="text-slate-400 text-sm max-w-[300px] mx-auto leading-relaxed">
+          <p className="text-slate-300 text-[13px] sm:text-sm max-w-[300px] mx-auto leading-relaxed">
             Deblochează experiența completă și conectează-te cu oameni extraordinari.
           </p>
         </div>
+
 
         {/* ACTIVE PLAN */}
         {currentTier &&
