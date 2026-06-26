@@ -497,9 +497,16 @@ function RulesModal({ onClose }: { onClose: () => void }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-6"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md"
+      style={{
+        paddingTop: "max(env(safe-area-inset-top), 16px)",
+        paddingBottom: "max(env(safe-area-inset-bottom), 16px)",
+        paddingLeft: 12,
+        paddingRight: 12,
+      }}
       onClick={onClose}
     >
+
       <motion.div
         initial={{ y: 20, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
