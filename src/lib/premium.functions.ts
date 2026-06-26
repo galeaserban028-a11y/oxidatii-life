@@ -29,6 +29,9 @@ const ALLOWED_PRICES = new Set([
   "coins_boss",
   "coins_legenda",
   "crystal_ball_7d",
+  "replay_night",
+  "last_call_send",
+  "last_call_reveal",
 ]);
 
 const COIN_PACKS: Record<string, number> = {
