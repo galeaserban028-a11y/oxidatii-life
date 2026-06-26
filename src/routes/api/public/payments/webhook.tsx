@@ -74,6 +74,64 @@ async function handleCrystalBallPurchase(session: any) {
   await supabaseAdmin.rpc("grant_crystal_ball_unlock", { _user_id: userId, _days: days });
 }
 
+async function handleReplayNightPurchase(session: any) {
+  const meta = session.metadata ?? {};
+  if (meta.kind !== "replay_night" && meta.price_id !== "replay_night") return;
+  const userId = meta.user_id ?? meta.userId;
+  if (!userId) return;
+  const replayDate =
+    meta.replay_date || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  await supabaseAdmin.rpc("grant_replay_unlock", {
+    _user_id: userId,
+    _date: replayDate,
+    _session: session.id,
+  });
+}
+
+async function handleLastCallSendPurchase(session: any) {
+  const meta = session.metadata ?? {};
+  if (meta.kind !== "last_call_send" && meta.price_id !== "last_call_send") return;
+  const userId = meta.user_id ?? meta.userId;
+  const targetId = meta.target_id;
+  if (!userId || !targetId) return;
+  // Idempotency: check if ping with this session already exists
+  const { data: existing } = await supabaseAdmin
+    .from("last_call_pings")
+    .select("id")
+    .eq("sender_stripe_session_id", session.id)
+    .maybeSingle();
+  if (existing) return;
+  // Direct insert via admin (auth.uid() unavailable in webhook context)
+  await supabaseAdmin.from("last_call_pings").insert({
+    sender_id: userId,
+    target_id: targetId,
+    sender_stripe_session_id: session.id,
+  });
+  await supabaseAdmin.from("notifications").insert({
+    user_id: targetId,
+    actor_id: null,
+    type: "last_call_received",
+  });
+}
+
+async function handleLastCallRevealPurchase(session: any) {
+  const meta = session.metadata ?? {};
+  if (meta.kind !== "last_call_reveal" && meta.price_id !== "last_call_reveal") return;
+  const userId = meta.user_id ?? meta.userId;
+  const pingId = meta.ping_id;
+  if (!userId || !pingId) return;
+  const { data: ping } = await supabaseAdmin
+    .from("last_call_pings")
+    .select("id, target_id, expires_at")
+    .eq("id", pingId)
+    .maybeSingle();
+  if (!ping || ping.target_id !== userId) return;
+  await supabaseAdmin
+    .from("last_call_pings")
+    .update({ revealed_at: new Date().toISOString(), reveal_stripe_session_id: session.id })
+    .eq("id", pingId);
+}
+
 async function handleCheckoutSessionCompleted(session: any, env: StripeEnv) {
   if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
 
@@ -81,6 +139,9 @@ async function handleCheckoutSessionCompleted(session: any, env: StripeEnv) {
   await handleWalletTopup(session);
   await handleCoinPackPurchase(session, env);
   await handleCrystalBallPurchase(session);
+  await handleReplayNightPurchase(session);
+  await handleLastCallSendPurchase(session);
+  await handleLastCallRevealPurchase(session);
 
   // Subscription created via checkout: if webhooks for customer.subscription.* are
   // delayed or misconfigured, make sure the profile still gets activated.
