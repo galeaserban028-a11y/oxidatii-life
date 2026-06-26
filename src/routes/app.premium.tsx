@@ -386,7 +386,7 @@ function PremiumPage() {
                 </p>
 
                 <div className="border-t border-slate-800/80 pt-4">
-                  <p className="text-[10px] uppercase font-semibold tracking-widest text-slate-500 mb-3">
+                  <p className="text-[10px] uppercase font-semibold tracking-widest text-slate-400 mb-3">
                     Ce primești
                   </p>
                   <ul className="space-y-2.5 text-[13px] text-slate-200">
