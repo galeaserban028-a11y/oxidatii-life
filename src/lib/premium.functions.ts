@@ -132,10 +132,24 @@ async function resolveCustomer(
 
 export const createPremiumCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { priceId: string; returnUrl: string; environment: StripeEnv }) => {
-    if (!ALLOWED_PRICES.has(data.priceId)) throw new Error("Invalid priceId");
-    return data;
-  })
+  .inputValidator(
+    (data: {
+      priceId: string;
+      returnUrl: string;
+      environment: StripeEnv;
+      extra?: { target_id?: string; ping_id?: string; date?: string };
+    }) => {
+      if (!ALLOWED_PRICES.has(data.priceId)) throw new Error("Invalid priceId");
+      const uuidRe = /^[0-9a-fA-F-]{36}$/;
+      const dateRe = /^\d{4}-\d{2}-\d{2}$/;
+      if (data.extra?.target_id && !uuidRe.test(data.extra.target_id))
+        throw new Error("Invalid target_id");
+      if (data.extra?.ping_id && !uuidRe.test(data.extra.ping_id))
+        throw new Error("Invalid ping_id");
+      if (data.extra?.date && !dateRe.test(data.extra.date)) throw new Error("Invalid date");
+      return data;
+    },
+  )
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
     const { userId, claims } = context;
     const email = (claims as any)?.email as string | undefined;
@@ -148,7 +162,6 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
       if (matchedPrices.length) {
         stripePrice = matchedPrices[0];
       } else if (ALACARTE_SKUS[data.priceId]) {
-        // Auto-provision à la carte SKU on first use so admins don't have to create it manually.
         const sku = ALACARTE_SKUS[data.priceId];
         const product = await stripe.products.create({
           name: sku.name,
@@ -188,6 +201,9 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
           kind: alacarte.kind,
           ...(alacarte.days && { days: String(alacarte.days) }),
         }),
+        ...(data.extra?.target_id && { target_id: data.extra.target_id }),
+        ...(data.extra?.ping_id && { ping_id: data.extra.ping_id }),
+        ...(data.extra?.date && { replay_date: data.extra.date }),
       };
 
       const session = await stripe.checkout.sessions.create({
