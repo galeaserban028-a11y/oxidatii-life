@@ -139,6 +139,12 @@ function InboxPage() {
         <p className="text-[10px] text-zinc-500 uppercase tracking-widest">
           DM-uri și grupuri cu trupa.
         </p>
+        <Link
+          to="/app/lastcalls"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neon-violet/15 border border-neon-violet/40 text-neon-violet text-xs font-display font-bold uppercase tracking-wider hover:bg-neon-violet/25 transition"
+        >
+          ⚡ Last Calls
+        </Link>
       </header>
 
       {/* Friends row (story-style) — only on Mesaje */}
