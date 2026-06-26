@@ -344,13 +344,14 @@ function PremiumPage() {
                 )}
 
                 <div className="flex justify-between items-start mb-5">
-                  <div>
+                    <div className="min-w-0">
                     <h3 className={`text-[11px] font-semibold uppercase tracking-widest mb-1 ${a.label}`}>
                       {tier.name}
                     </h3>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-bold text-white tabular-nums">{price}</span>
-                      <span className="text-slate-500 text-xs">
+                      <span className="text-[28px] sm:text-3xl font-bold text-white tabular-nums">{price}</span>
+                      <span className="text-slate-400 text-xs">
+
                         RON/{annual ? "an" : "lună"}
                       </span>
                     </div>
