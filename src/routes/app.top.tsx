@@ -482,71 +482,110 @@ function EmptyHint({ title, sub }: { title: string; sub: string }) {
 
 function RulesModal({ onClose }: { onClose: () => void }) {
   const instrument = { fontFamily: '"Instrument Serif", serif' };
+  const articles: Array<{ n: string; title: string; body: string; tag?: string; weight?: string }> = [
+    { n: "01", title: "Eligibilitate", body: "Doar profilurile publice apar în clasament. Profilurile private participă, dar nu sunt afișate." },
+    { n: "02", title: "Perioadă", body: "Clasamentul se calculează strict pentru luna curentă și se resetează în prima zi a lunii următoare, ora 00:00 (Europe/Bucharest)." },
+    { n: "03", title: "Șprițuri", body: "Fiecare check-in valid la un venue îți aduce punctaj de bază.", tag: "Bază", weight: "×10" },
+    { n: "04", title: "Explorer", body: "Primești bonus pentru fiecare venue nou (×5) și pentru fiecare oraș nou (×15) vizitat în luna curentă.", tag: "Descoperă", weight: "×5 / ×15" },
+    { n: "05", title: "Squad Maker", body: "Oameni cu care NU ești prieten și care s-au check-in la același loc ±2h față de tine. Se numără o singură dată per persoană.", tag: "Conexiuni", weight: "×8" },
+    { n: "06", title: "Sunrise Index", body: "Scor pentru check-in-uri între 00:00 și 05:59. Cu cât e mai târziu (mai aproape de 00:00), cu atât bonusul e mai mare.", tag: "Noctambul", weight: "×4" },
+    { n: "07", title: "Trendsetter", body: "Persoane distincte care se check-in la același venue la cel mult 2h DUPĂ tine. Tu ai setat trendul.", tag: "Influență", weight: "×6" },
+    { n: "08", title: "Fair play", body: "Check-in-urile false, conturile duplicate sau orice formă de fraudă duc la descalificare și pierderea punctajului lunii." },
+  ];
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-3 sm:p-6"
       onClick={onClose}
     >
       <motion.div
-        initial={{ y: 40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 40, opacity: 0 }}
+        initial={{ y: 20, opacity: 0, scale: 0.98 }}
+        animate={{ y: 0, opacity: 1, scale: 1 }}
+        exit={{ y: 20, opacity: 0, scale: 0.98 }}
         transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full sm:max-w-md max-h-[85vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl border border-white/10 bg-[#0a0a0a] p-6 space-y-5"
+        className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl border border-white/15 bg-[#0b0b0c] shadow-[0_30px_80px_-20px_rgba(199,36,255,0.35)] overflow-hidden"
       >
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.3em] text-white/40">reguli</div>
-            <h2 style={instrument} className="text-3xl mt-1">
-              Spritz<span className="text-[#ffea00]">.</span>{" "}
-              <em className="not-italic font-normal bg-gradient-to-r from-[#ff3d8b] via-[#ffea00] to-[#c724ff] bg-clip-text text-transparent">
-                Score
-              </em>
-            </h2>
-          </div>
+        {/* Document header */}
+        <div className="relative border-b border-white/10 px-6 pt-6 pb-5 bg-gradient-to-b from-white/[0.04] to-transparent">
           <button
             onClick={onClose}
-            className="text-white/50 hover:text-white text-2xl leading-none px-2"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white text-lg leading-none flex items-center justify-center transition"
             aria-label="Închide"
           >
             ×
           </button>
+          <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.32em] text-white/40">
+            <span className="h-px w-6 bg-white/30" />
+            Regulament oficial
+          </div>
+          <h2 style={instrument} className="text-3xl sm:text-4xl leading-[1] mt-3">
+            Spritz<span className="text-[#ffea00]">.</span>{" "}
+            <em className="not-italic font-normal bg-gradient-to-r from-[#ff3d8b] via-[#ffea00] to-[#c724ff] bg-clip-text text-transparent">
+              Score
+            </em>
+          </h2>
+          <div className="mt-2 flex items-center gap-3 text-[11px] text-white/45 font-mono uppercase tracking-wider">
+            <span>v1.0</span>
+            <span className="h-1 w-1 rounded-full bg-white/30" />
+            <span>{new Date().toLocaleDateString("ro-RO", { month: "long", year: "numeric" })}</span>
+            <span className="h-1 w-1 rounded-full bg-white/30" />
+            <span>8 articole</span>
+          </div>
         </div>
 
-        <p className="text-sm text-white/70 leading-relaxed">
-          Clasamentul lunar se resetează în prima zi a fiecărei luni. Câștigă puncte ieșind, explorând și aducând lume.
-        </p>
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          <p className="text-sm text-white/75 leading-relaxed border-l-2 border-[#ffea00]/70 pl-3 italic">
+            Spritz Score recompensează șprițuri, descoperire, conexiuni noi și nopți lungi. Punctele se acumulează lunar și se resetează la final de lună.
+          </p>
 
-        <div className="space-y-2">
-          <FormulaRow icon={<Sparkles size={12} className="text-[#ffea00]" />} label="Șprițuri (check-in)" weight="×10" />
-          <FormulaRow icon={<Compass size={12} className="text-[#3ec5ff]" />} label="Explorer · venue nou" weight="×5" />
-          <FormulaRow icon={<Compass size={12} className="text-[#3ec5ff]" />} label="Explorer · oraș nou" weight="×15" />
-          <FormulaRow icon={<Users size={12} className="text-[#ff3d8b]" />} label="Squad Maker · oameni noi (±2h)" weight="×8" />
-          <FormulaRow icon={<Moon size={12} className="text-[#c724ff]" />} label="Sunrise Index · 00:00–05:59" weight="×4" />
-          <FormulaRow icon={<TrendingUp size={12} className="text-[#00ff9d]" />} label="Trendsetter · lume după tine (≤2h)" weight="×6" />
+          <div className="space-y-4">
+            {articles.map((a) => (
+              <article key={a.n} className="group">
+                <div className="flex items-baseline gap-3">
+                  <span style={instrument} className="text-[#ffea00] text-xl leading-none w-8 shrink-0">
+                    {a.n}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-white">
+                        {a.title}
+                      </h3>
+                      {a.weight && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/70">
+                          {a.weight}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1.5 text-[13px] text-white/65 leading-relaxed">{a.body}</p>
+                  </div>
+                </div>
+                <div className="ml-11 mt-3 border-b border-dashed border-white/5" />
+              </article>
+            ))}
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-[11px] text-white/50 leading-relaxed">
+            <span className="text-white/70 font-bold uppercase tracking-wider text-[10px]">Notă · </span>
+            Echipa OXIDAȚII poate ajusta ponderile pentru a păstra echilibrul clasamentului. Modificările se anunță înainte de luna în care intră în vigoare.
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-2 text-[12px] text-white/65 leading-relaxed">
-          <div className="text-[10px] uppercase tracking-wider text-white/40">cum funcționează</div>
-          <p>• Doar profilurile <span className="text-white">publice</span> apar în clasament.</p>
-          <p>• Punctele se calculează doar pe luna curentă.</p>
-          <p>• Squad Maker = oameni cu care nu ești prieten, dar care s-au check-in la același loc ±2h.</p>
-          <p>• Trendsetter = persoane care vin după tine la același venue în ≤2h.</p>
-          <p>• Sunrise = scor crescător spre miezul nopții (6 − ora locală).</p>
+        {/* Sticky footer */}
+        <div className="border-t border-white/10 px-6 py-4 bg-[#080808]">
+          <button
+            onClick={onClose}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white font-bold text-sm uppercase tracking-wider active:scale-[0.98] transition shadow-[0_8px_24px_-8px_rgba(199,36,255,0.7)]"
+          >
+            Am citit & am înțeles
+          </button>
         </div>
-
-        <button
-          onClick={onClose}
-          className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white font-bold text-sm active:scale-[0.98] transition"
-        >
-          Am înțeles
-        </button>
       </motion.div>
     </motion.div>
   );
 }
+
 
