@@ -232,11 +232,11 @@ function PremiumPage() {
   };
 
   return (
-    <div className="pb-24 min-h-screen text-white" style={{ background: "#050510" }}>
+    <div className="pb-24 min-h-screen text-white selection:bg-fuchsia-500" style={{ background: "#050505" }}>
       {/* Top bar */}
       <header
         className="sticky top-0 z-30 backdrop-blur-xl border-b border-white/10 px-3 h-12 flex items-center gap-2"
-        style={{ background: "rgba(5,5,16,0.7)" }}
+        style={{ background: "rgba(5,5,5,0.85)" }}
       >
         <Link to="/app/me" className="p-1.5 -ml-1.5 active:scale-95 transition" aria-label="Înapoi">
           <ArrowLeft size={22} strokeWidth={2.2} />
@@ -251,7 +251,30 @@ function PremiumPage() {
         )}
       </header>
 
-      <div className="w-full max-w-[420px] mx-auto px-4 sm:px-6 flex flex-col gap-12 pt-10 min-w-0">
+      <div className="w-full max-w-[440px] mx-auto px-4 sm:px-6 flex flex-col gap-12 pt-10 min-w-0">
+        {/* HERO — Editorial */}
+        <section className="text-center space-y-3">
+          <div className="inline-block">
+            <h1
+              className="font-display text-5xl font-black italic tracking-tighter uppercase leading-none drop-shadow-[0_0_15px_rgba(255,255,255,0.25)]"
+            >
+              OXIDAȚII
+            </h1>
+            <div
+              className="h-[2px] w-full mt-2"
+              style={{ background: `linear-gradient(to right, transparent, ${NEON.pink}, transparent)` }}
+            />
+          </div>
+          <p className="text-[9px] font-bold tracking-[0.35em] uppercase flex items-center justify-center gap-2" style={{ color: NEON.pink }}>
+            <span className="h-px w-5 opacity-50" style={{ background: NEON.pink }} />
+            The Nightlife Authority
+            <span className="h-px w-5 opacity-50" style={{ background: NEON.pink }} />
+          </p>
+          <p className="text-[11px] font-mono uppercase tracking-widest text-white/40 pt-1">
+            Alege ce funcții deblochezi. Toate prețurile în RON.
+          </p>
+        </section>
+
         {/* ACTIVE PLAN BANNER */}
         {currentTier &&
           (() => {
@@ -259,142 +282,48 @@ function PremiumPage() {
             if (!active) return null;
             return (
               <div
-                className="relative rounded-2xl p-4 flex items-center gap-3 overflow-hidden"
+                className="relative p-4 flex items-center gap-3 overflow-hidden"
                 style={{
-                  background: `linear-gradient(135deg, ${active.neon}22, transparent 70%)`,
-                  border: `1px solid ${active.neon}66`,
-                  boxShadow: `0 0 24px ${active.neon}33`,
+                  background: "#0a0a0a",
+                  borderLeft: `4px solid ${active.neon}`,
                 }}
               >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                  style={{ background: active.neon, boxShadow: `0 0 16px ${active.neon}99` }}
-                >
-                  <Sparkles size={18} strokeWidth={2.5} style={{ color: active.textOnNeon }} />
-                </div>
+                <Sparkles size={18} strokeWidth={2.5} style={{ color: active.neon }} />
                 <div className="min-w-0 flex-1">
-                  <p
-                    className="text-[9px] uppercase tracking-[0.3em] font-bold"
-                    style={{ color: active.neon }}
-                  >
-                    Planul tău activ
+                  <p className="text-[9px] uppercase tracking-[0.3em] font-bold font-mono" style={{ color: active.neon }}>
+                    Activ acum
                   </p>
-                  <p className="text-sm font-black uppercase truncate">
-                    {active.name}{" "}
-                    <span
-                      className="text-white/50 font-normal italic"
-                      style={{ fontFamily: "'Instrument Serif', serif" }}
-                    >
-                      · {active.coins} șprițuri/lună
-                    </span>
+                  <p className="text-sm font-black uppercase truncate italic mt-0.5">
+                    {active.name} · {active.coins} șprițuri/lună
                   </p>
                 </div>
               </div>
             );
           })()}
 
-        {/* À LA CARTE — one-off purchases */}
-        <section className="space-y-3">
-          <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/50 text-center">
-            Funcții à la carte
-          </div>
-          <CrystalBallCard />
-          <Link
-            to="/app/replay"
-            className="block p-4 rounded-2xl bg-gradient-to-br from-neon-violet/20 via-card to-neon-cyan/10 border border-neon-violet/40 hover:border-neon-violet transition"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-neon-violet/20 flex items-center justify-center text-2xl">
-                ✨
-              </div>
-              <div className="flex-1">
-                <div className="font-display font-black uppercase tracking-wide text-sm">
-                  Replay Night
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Retrăiește noaptea de aseară · 9.99 RON
-                </div>
-              </div>
-              <div className="text-xs font-mono text-neon-violet">→</div>
-            </div>
-          </Link>
-          <Link
-            to="/app/lastcalls"
-            className="block p-4 rounded-2xl bg-gradient-to-br from-neon-violet/20 via-card to-neon-pink/10 border border-neon-violet/40 hover:border-neon-violet transition"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-neon-violet/20 flex items-center justify-center text-2xl">
-                ⚡
-              </div>
-              <div className="flex-1">
-                <div className="font-display font-black uppercase tracking-wide text-sm">
-                  Last Call
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Ping anonim · 2.99 RON · reveal 4.99
-                </div>
-              </div>
-              <div className="text-xs font-mono text-neon-violet">→</div>
-            </div>
-          </Link>
-        </section>
-
-        {/* HERO */}
-        <section className="text-center space-y-4">
-          <div
-            className="inline-block px-3 py-1 border rounded-full text-[10px] tracking-[0.25em] uppercase font-bold"
-            style={{
-              borderColor: NEON.cyan,
-              color: NEON.cyan,
-              boxShadow: `0 0 12px ${NEON.cyan}55`,
-            }}
-          >
-            Upgrade Membership
-          </div>
-          <h1 className="font-display text-5xl font-black tracking-tighter uppercase italic leading-none">
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
-              OXIDATE
-            </span>
-            <span style={{ color: NEON.pink, textShadow: `0 0 10px ${NEON.pink}` }}>+</span>
-          </h1>
-          <p
-            className="text-xl text-white/60 max-w-[280px] mx-auto italic"
-            style={{ fontFamily: "'Instrument Serif', serif" }}
-          >
-            Alege nivelul care îți definește prezența în club.
-          </p>
-        </section>
-
         {/* BILLING TOGGLE */}
         <div className="flex items-center justify-center">
-          <div
-            className="p-1 rounded-full flex border border-white/10"
-            style={{ background: "#10101a" }}
-          >
+          <div className="p-1 flex border border-white/10" style={{ background: "#0a0a0a" }}>
             <button
               onClick={() => setAnnual(false)}
-              className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
-                !annual
-                  ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.25)]"
-                  : "text-white/50"
+              className={`px-6 py-2 text-[10px] font-black italic uppercase tracking-widest transition-all ${
+                !annual ? "bg-white text-black" : "text-white/40 hover:text-white/70"
               }`}
             >
               Lunar
             </button>
             <button
               onClick={() => setAnnual(true)}
-              className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${
-                annual
-                  ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.25)]"
-                  : "text-white/50"
+              className={`px-6 py-2 text-[10px] font-black italic uppercase tracking-widest transition-all flex items-center gap-2 ${
+                annual ? "bg-white text-black" : "text-white/40 hover:text-white/70"
               }`}
             >
               Anual
               <span
-                className="text-[9px] px-1.5 py-[1px] rounded-sm font-black"
+                className="text-[8px] px-1.5 py-[1px] font-black"
                 style={{
-                  background: annual ? "#050510" : NEON.yellow,
-                  color: annual ? NEON.yellow : "#050510",
+                  background: annual ? "#000" : NEON.yellow,
+                  color: annual ? NEON.yellow : "#000",
                 }}
               >
                 −17%
@@ -403,284 +332,312 @@ function PremiumPage() {
           </div>
         </div>
 
-        {/* TIERS */}
-        <div className="flex flex-col gap-8">
-          {TIERS.map((tier) => {
-            const isCurrent = currentTier === tier.id;
-            const price = annual ? (tier.price * 10).toFixed(2) : tier.price.toFixed(2);
-            const annualSaved = annual ? (tier.price * 12 - tier.price * 10).toFixed(2) : null;
-
-            return (
-              <div key={tier.id} className="relative group">
-                {/* outer glow */}
-                <div
-                  aria-hidden
-                  className="absolute -inset-0.5 rounded-2xl blur-xl pointer-events-none transition"
-                  style={{
-                    background: tier.neon,
-                    opacity: isCurrent ? 0.45 : 0.22,
-                  }}
-                />
-                {/* glass card */}
-                <div
-                  className="relative rounded-2xl p-5 sm:p-6 flex flex-col gap-5 backdrop-blur-xl min-w-0"
-                  style={{
-                    background: "rgba(10,10,21,0.85)",
-                    border: `1px solid ${tier.neon}${isCurrent ? "cc" : "55"}`,
-                    boxShadow: isCurrent ? `inset 0 0 24px ${tier.neon}22` : undefined,
-                  }}
-                >
-                  {/* top badges row — flexible, never overflows */}
-                  {(tier.badge || isCurrent) && (
-                    <div className="absolute -top-3 left-4 right-4 flex items-center gap-2 pointer-events-none">
-                      {isCurrent && (
-                        <span
-                          className="text-[9px] px-2.5 py-1 font-black uppercase tracking-widest rounded-full inline-flex items-center gap-1 max-w-full truncate"
-                          style={{
-                            background: tier.neon,
-                            color: tier.textOnNeon,
-                            boxShadow: `0 0 12px ${tier.neon}88`,
-                          }}
-                        >
-                          <Check size={10} strokeWidth={3} /> Planul tău
-                        </span>
-                      )}
-                      {tier.badge && !isCurrent && (
-                        <span
-                          className="text-[9px] px-2.5 py-1 font-black uppercase tracking-widest rounded-full max-w-full truncate"
-                          style={{ background: tier.neon, color: tier.textOnNeon }}
-                        >
-                          {tier.badge}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* title + price row — grid keeps it safe on 320px and landscape */}
-                  <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-                    <div className="min-w-0">
-                      <p
-                        className="text-[10px] uppercase tracking-[0.3em] font-bold truncate"
-                        style={{ color: tier.neon }}
-                      >
-                        Tier {tier.index}
-                      </p>
-                      <h3 className="font-display text-2xl sm:text-3xl font-black uppercase mt-1 truncate">
-                        {tier.name === "VIP+" ? (
-                          <>
-                            VIP<span style={{ color: tier.neon }}>+</span>
-                          </>
-                        ) : (
-                          tier.name
-                        )}
-                      </h3>
-                      <p
-                        className="italic text-sm sm:text-base text-white/55 mt-1 truncate"
-                        style={{ fontFamily: "'Instrument Serif', serif" }}
-                      >
-                        &amp; {tier.italic}
-                      </p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="font-display text-2xl sm:text-3xl font-black tabular-nums leading-none">
-                        {price}
-                      </p>
-                      <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1 whitespace-nowrap">
-                        Lei / {annual ? "an" : "lună"}
-                      </p>
-                      {annualSaved && (
-                        <p
-                          className="text-[10px] italic mt-1 text-white/55 whitespace-nowrap"
-                          style={{ fontFamily: "'Instrument Serif', serif" }}
-                        >
-                          −{annualSaved} lei
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <p
-                    className="italic text-base sm:text-lg leading-snug break-words"
-                    style={{ fontFamily: "'Instrument Serif', serif", color: `${tier.neon}cc` }}
-                  >
-                    „{tier.blurb}"
-                  </p>
-
-                  {/* perks — for the active tier, framed as "Beneficiile tale incluse" with checks */}
-                  {isCurrent && (
-                    <p
-                      className="text-[10px] font-bold uppercase tracking-[0.3em] -mb-1"
-                      style={{ color: tier.neon }}
-                    >
-                      Beneficiile tale incluse
-                    </p>
-                  )}
-                  <ul className="space-y-2.5">
-                    {tier.perks.map((p) => (
-                      <li
-                        key={p}
-                        className="flex items-start gap-3 text-[13px] text-white/85 min-w-0"
-                      >
-                        {isCurrent ? (
-                          <span
-                            className="mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0"
-                            style={{ background: tier.neon, boxShadow: `0 0 8px ${tier.neon}99` }}
-                          >
-                            <Check size={10} strokeWidth={3} style={{ color: tier.textOnNeon }} />
-                          </span>
-                        ) : (
-                          <span
-                            className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0"
-                            style={{ background: tier.neon, boxShadow: `0 0 6px ${tier.neon}` }}
-                          />
-                        )}
-                        <span className="leading-snug break-words min-w-0">{p}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    onClick={() => handleBuy(tier)}
-                    disabled={isCurrent}
-                    className="w-full py-4 font-black uppercase tracking-widest text-[11px] rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:cursor-not-allowed"
-                    style={
-                      isCurrent
-                        ? {
-                            background: `${tier.neon}1a`,
-                            border: `1px solid ${tier.neon}88`,
-                            color: tier.neon,
-                          }
-                        : {
-                            background: tier.neon,
-                            color: tier.textOnNeon,
-                            boxShadow: `0 0 24px ${tier.neon}66`,
-                          }
-                    }
-                  >
-                    {isCurrent ? (
-                      <>
-                        <Check size={14} strokeWidth={3} /> Activ
-                      </>
-                    ) : (
-                      <>
-                        Devino {tier.name}
-                        <ArrowUpRight size={14} strokeWidth={2.5} />
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* BAR — coin packs */}
-        <section className="space-y-6 pt-6">
-          <div className="flex flex-col gap-1">
-            <p
-              className="text-[10px] font-bold uppercase tracking-[0.4em]"
-              style={{ color: NEON.yellow }}
-            >
-              V. Bar
-            </p>
-            <h2 className="font-display text-3xl font-black uppercase leading-tight italic">
-              Șprițurile pe care le
-              <br />
-              <span style={{ color: NEON.yellow, textShadow: `0 0 14px ${NEON.yellow}` }}>
-                arunci pe masă.
-              </span>
-            </h2>
-            <p className="text-[13px] text-white/60 mt-2 max-w-[34ch]">
-              Cadouri, boost-uri, frame-uri. O dată plătite, le folosești când vrei. Nu expiră.
-            </p>
+        {/* TIERS — Editorial brutalist */}
+        <section className="space-y-2">
+          <div className="flex items-center gap-4 mb-2">
+            <h3 className="text-[10px] font-mono font-bold tracking-[0.4em] text-white/50 uppercase whitespace-nowrap italic">
+              Abonamente lunare
+            </h3>
+            <div className="h-px w-full bg-white/10" />
           </div>
 
-          <div className="space-y-3">
+          <div className="flex flex-col gap-5">
+            {TIERS.map((tier) => {
+              const isCurrent = currentTier === tier.id;
+              const price = annual ? (tier.price * 10).toFixed(2) : tier.price.toFixed(2);
+              const annualSaved = annual ? (tier.price * 12 - tier.price * 10).toFixed(2) : null;
+              const featured = tier.id === "elite";
+
+              return (
+                <div key={tier.id} className="group relative">
+                  {featured && (
+                    <div
+                      className="absolute -inset-0.5 blur opacity-50 animate-pulse pointer-events-none"
+                      style={{
+                        background: `linear-gradient(to right, ${NEON.pink}, ${NEON.violet}, ${NEON.cyan})`,
+                      }}
+                    />
+                  )}
+                  <div
+                    className="relative p-6 overflow-hidden"
+                    style={{
+                      background: featured ? "#0d0d0d" : "#0a0a0a",
+                      border: `1px solid ${isCurrent ? tier.neon : featured ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)"}`,
+                    }}
+                  >
+                    {/* Watermark */}
+                    <div className="absolute top-1 right-2 pointer-events-none opacity-[0.06]">
+                      <div className="text-5xl font-display font-black italic uppercase tracking-tighter">
+                        {tier.index}
+                      </div>
+                    </div>
+
+                    {/* Badge ribbon */}
+                    {(tier.badge || isCurrent) && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-5 py-1 -skew-x-12" style={{ background: tier.neon }}>
+                        <span className="text-[9px] font-black italic uppercase tracking-widest block skew-x-12" style={{ color: tier.textOnNeon }}>
+                          {isCurrent ? "Planul tău" : tier.badge}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Title + Price */}
+                    <div className="flex justify-between items-end mb-5 mt-2">
+                      <div className="min-w-0">
+                        <h2 className="font-display text-3xl font-black italic uppercase leading-none">
+                          {tier.name === "VIP+" ? (
+                            <>VIP<span style={{ color: tier.neon }}>+</span></>
+                          ) : (
+                            tier.name
+                          )}
+                        </h2>
+                        <p className="font-mono text-[9px] uppercase font-bold tracking-widest mt-2" style={{ color: tier.neon }}>
+                          {tier.italic.toUpperCase()} · {annual ? "Anual" : "Lunar"}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="flex items-baseline gap-1 justify-end">
+                          <span className="font-display text-3xl font-black tabular-nums tracking-tighter italic">{price}</span>
+                          <span className="text-[10px] font-mono font-bold text-white/50">RON</span>
+                        </div>
+                        {annualSaved && (
+                          <p className="text-[9px] font-mono mt-1" style={{ color: NEON.yellow }}>
+                            economisești {annualSaved} RON
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Blurb — explică pentru cine e */}
+                    <p className="text-[12px] text-white/60 leading-relaxed mb-4 italic">
+                      {tier.blurb}
+                    </p>
+
+                    {/* Perks — exact ce primește */}
+                    <ul className="space-y-2.5 mb-6">
+                      {tier.perks.map((p) => (
+                        <li key={p} className="flex items-start gap-3 text-[12px] font-mono text-white/85">
+                          <span className="w-2 h-2 border mt-1 rotate-45 shrink-0" style={{ borderColor: tier.neon }} />
+                          <span className="leading-snug break-words min-w-0 uppercase tracking-tight">{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Coins explainer */}
+                    <div className="mb-5 px-3 py-2 border border-white/10 flex items-center gap-2 text-[10px] font-mono text-white/60">
+                      <span style={{ color: tier.neon }}>●</span>
+                      Primești <b className="text-white">{tier.coins}</b> șprițuri / lună pentru cadouri & boost-uri.
+                    </div>
+
+                    <button
+                      onClick={() => handleBuy(tier)}
+                      disabled={isCurrent}
+                      className="w-full py-4 font-display font-black italic uppercase tracking-widest text-xs transition-all active:scale-[0.98] disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      style={
+                        isCurrent
+                          ? {
+                              background: "transparent",
+                              border: `1px solid ${tier.neon}`,
+                              color: tier.neon,
+                            }
+                          : featured
+                          ? {
+                              background: `linear-gradient(to right, ${NEON.pink}, ${NEON.violet})`,
+                              color: "#fff",
+                              boxShadow: `0 0 30px ${NEON.pink}66`,
+                            }
+                          : {
+                              background: "#fff",
+                              color: "#000",
+                            }
+                      }
+                    >
+                      {isCurrent ? (
+                        <><Check size={14} strokeWidth={3} /> Activ</>
+                      ) : (
+                        <>Devino {tier.name} <ArrowUpRight size={14} strokeWidth={2.5} /></>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* À LA CARTE — Tactical add-ons */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-4">
+            <h3 className="text-[10px] font-mono font-bold tracking-[0.4em] text-white/50 uppercase whitespace-nowrap italic">
+              Tactical Add-ons
+            </h3>
+            <div className="h-px w-full bg-white/10" />
+          </div>
+          <p className="text-[11px] font-mono text-white/40 uppercase tracking-wider">
+            Cumperi o singură dată. Nu se reînnoiește.
+          </p>
+
+          {/* Crystal Ball */}
+          <div className="p-4" style={{ background: "#0a0a0a", borderLeft: `4px solid ${NEON.cyan}` }}>
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="min-w-0">
+                <h4 className="font-display font-black italic uppercase text-sm tracking-wider" style={{ color: NEON.cyan }}>
+                  Crystal Ball
+                </h4>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mt-0.5">7 zile acces</p>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="font-display text-xl font-black italic tabular-nums">3<span className="text-[10px] font-mono text-white/50 ml-1">RON</span></div>
+              </div>
+            </div>
+            <p className="text-[11px] text-white/70 leading-relaxed mb-3">
+              <b className="text-white">Ce primești:</b> deblochezi lista cu cine ți-a dat like, follow sau ți-a vizitat profilul în ultimele 7 zile. Vezi nume + foto, nu silueta blur.
+            </p>
+            <CrystalBallCard />
+          </div>
+
+          {/* Replay Night */}
+          <Link
+            to="/app/replay"
+            className="block p-4 hover:bg-white/[0.02] transition-colors"
+            style={{ background: "#0a0a0a", borderLeft: `4px solid ${NEON.violet}` }}
+          >
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="min-w-0">
+                <h4 className="font-display font-black italic uppercase text-sm tracking-wider" style={{ color: NEON.violet }}>
+                  Replay Night
+                </h4>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mt-0.5">per noapte</p>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="font-display text-xl font-black italic tabular-nums">9.99<span className="text-[10px] font-mono text-white/50 ml-1">RON</span></div>
+              </div>
+            </div>
+            <p className="text-[11px] text-white/70 leading-relaxed mb-3">
+              <b className="text-white">Ce primești:</b> a doua zi dimineață, un wrap auto-generat al nopții tale — harta cu traseul, venue-urile vizitate, cine a fost cu tine, șprițurile băute, pozele din feed. Format 9:16, gata de Stories.
+            </p>
+            <div className="flex items-center justify-end gap-2 text-[10px] font-mono uppercase tracking-widest" style={{ color: NEON.violet }}>
+              Deschide <ArrowUpRight size={12} strokeWidth={2.5} />
+            </div>
+          </Link>
+
+          {/* Last Call */}
+          <Link
+            to="/app/lastcalls"
+            className="block p-4 hover:bg-white/[0.02] transition-colors"
+            style={{ background: "#0a0a0a", borderLeft: `4px solid ${NEON.pink}` }}
+          >
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <div className="min-w-0">
+                <h4 className="font-display font-black italic uppercase text-sm tracking-wider" style={{ color: NEON.pink }}>
+                  Last Call
+                </h4>
+                <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mt-0.5">ping + reveal</p>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="font-display text-xl font-black italic tabular-nums">2.99<span className="text-[10px] font-mono text-white/50 ml-1">RON</span></div>
+              </div>
+            </div>
+            <p className="text-[11px] text-white/70 leading-relaxed mb-3">
+              <b className="text-white">Ce primești:</b> trimiți un ping anonim cuiva — primește o notificare „cineva vrea să te vadă diseară" fără să afle cine ești. Dacă vrea să afle, plătește <b className="text-white">4.99 RON</b> ca să te dezvăluie. Câștigi atenție fără cringe.
+            </p>
+            <div className="flex items-center justify-end gap-2 text-[10px] font-mono uppercase tracking-widest" style={{ color: NEON.pink }}>
+              Trimite ping <ArrowUpRight size={12} strokeWidth={2.5} />
+            </div>
+          </Link>
+
+          {/* Profile Boost (doar dacă e activ premium) */}
+          {ent.isActive && (
+            <div className="p-4" style={{ background: "#0a0a0a", borderLeft: `4px solid ${NEON.yellow}` }}>
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="min-w-0">
+                  <h4 className="font-display font-black italic uppercase text-sm tracking-wider" style={{ color: NEON.yellow }}>
+                    Profile Boost
+                  </h4>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-white/40 mt-0.5">3 ore vizibilitate</p>
+                </div>
+              </div>
+              <p className="text-[11px] text-white/70 leading-relaxed mb-3">
+                <b className="text-white">Ce primești:</b> apari mai mare pe hartă + în topul feed-ului local timp de 3 ore. Ideal pentru vineri/sâmbătă seara când vrei să fii văzut.
+              </p>
+              <ProfileBoostCard />
+            </div>
+          )}
+        </section>
+
+        {/* COINS — Bar */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-4">
+            <h3 className="text-[10px] font-mono font-bold tracking-[0.4em] uppercase whitespace-nowrap italic" style={{ color: NEON.yellow }}>
+              V. Bar — Șprițuri
+            </h3>
+            <div className="h-px w-full bg-white/10" />
+          </div>
+          <p className="text-[11px] text-white/60 leading-relaxed">
+            <b className="text-white">Ce sunt:</b> monedă internă pentru cadouri în chat, frame-uri și boost-uri scurte. Plătești o dată, le folosești când vrei. <b className="text-white">Nu expiră.</b>
+          </p>
+
+          <div className="space-y-2.5">
             {COIN_PACKS.map((p) => (
               <button
                 key={p.id}
                 onClick={() => handleCoins(p)}
-                className="w-full p-4 rounded-xl grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 transition-colors text-left relative overflow-hidden"
+                className="w-full p-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 transition-colors text-left relative overflow-hidden hover:bg-white/[0.03]"
                 style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: `1px solid ${p.popular ? `${p.neon}55` : "rgba(255,255,255,0.1)"}`,
+                  background: "#0a0a0a",
+                  border: `1px solid ${p.popular ? p.neon : "rgba(255,255,255,0.08)"}`,
                   paddingTop: p.popular ? 22 : 16,
                 }}
               >
                 {p.popular && (
                   <span
-                    className="absolute top-0 left-0 right-0 text-[8px] font-black px-2 py-0.5 uppercase tracking-wider text-center"
-                    style={{ background: p.neon, color: "#050510" }}
+                    className="absolute top-0 left-0 right-0 text-[8px] font-black italic px-2 py-0.5 uppercase tracking-widest text-center"
+                    style={{ background: p.neon, color: "#000" }}
                   >
                     ales de mulți
                   </span>
                 )}
                 <div className="flex flex-col min-w-0">
-                  <span
-                    className="text-sm font-black uppercase tracking-wider truncate"
-                    style={{ color: p.neon }}
-                  >
+                  <span className="text-sm font-black italic uppercase tracking-wider truncate font-display" style={{ color: p.neon }}>
                     {p.label}
                   </span>
-                  <span
-                    className="text-[12px] italic text-white/55 mt-0.5 truncate"
-                    style={{ fontFamily: "'Instrument Serif', serif" }}
-                  >
-                    {p.coins} {p.coins === 1 ? "șpriț" : "șprițuri"}
+                  <span className="text-[11px] font-mono text-white/60 mt-1 truncate uppercase">
+                    {p.coins} șprițuri{p.bonus ? ` · ${p.bonus} cadou` : ""}
                   </span>
-                  {p.bonus && (
-                    <span
-                      className="text-[10px] font-bold uppercase mt-1"
-                      style={{ color: p.neon }}
-                    >
-                      {p.bonus} cadou
-                    </span>
-                  )}
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-display text-lg font-black tabular-nums leading-none whitespace-nowrap">
-                    {p.price}
+                  <div className="font-display text-lg font-black italic tabular-nums leading-none whitespace-nowrap">
+                    {p.price}<span className="text-[10px] font-mono text-white/50 ml-1">RON</span>
                   </div>
-                  <div className="text-[9px] uppercase tracking-widest text-white/40 mt-1">Lei</div>
                 </div>
               </button>
             ))}
           </div>
         </section>
 
-        {/* Manage subscription + boost */}
+        {/* Manage subscription */}
         {ent.isActive && (
-          <div className="space-y-3">
-            <ProfileBoostCard />
-            <button
-              onClick={handleManage}
-              disabled={openingPortal}
-              className="w-full flex items-center justify-center gap-2 h-11 rounded-full border border-white/20 font-mono uppercase text-[10px] tracking-[0.3em] disabled:opacity-50 active:scale-[0.99] transition text-white/80 hover:text-white"
-            >
-              <Settings size={13} />
-              {openingPortal ? "se deschide…" : "Gestionează abonament"}
-            </button>
-          </div>
+          <button
+            onClick={handleManage}
+            disabled={openingPortal}
+            className="w-full flex items-center justify-center gap-2 h-11 border border-white/20 font-mono italic uppercase text-[10px] tracking-[0.3em] disabled:opacity-50 active:scale-[0.99] transition text-white/70 hover:text-white hover:bg-white/5"
+          >
+            <Settings size={13} />
+            {openingPortal ? "se deschide…" : "Gestionează abonament"}
+          </button>
         )}
 
         {/* MANIFESTO */}
         <section className="py-10 border-y border-white/5">
-          <p
-            className="italic text-3xl leading-snug text-white/90"
-            style={{ fontFamily: "'Instrument Serif', serif" }}
-          >
+          <p className="italic text-2xl leading-snug text-white/90 font-display font-black tracking-tight">
             „Nu vindem locul <span className="text-white">întâi</span>. Vindem doar cum arăți când{" "}
             <span style={{ color: NEON.cyan, textShadow: `0 0 12px ${NEON.cyan}` }}>
               ajungi acolo
-            </span>
-            ."
+            </span>."
           </p>
           <div className="mt-6 flex items-center gap-4">
-            <div
-              className="h-px flex-1"
-              style={{ background: `linear-gradient(to right, ${NEON.cyan}, transparent)` }}
-            />
-            <p className="text-[9px] uppercase tracking-[0.4em] text-white/40 font-bold">
+            <div className="h-px flex-1" style={{ background: `linear-gradient(to right, ${NEON.cyan}, transparent)` }} />
+            <p className="text-[9px] font-mono uppercase tracking-[0.4em] text-white/40 font-bold">
               Echipa Oxidații
             </p>
           </div>
@@ -688,7 +645,7 @@ function PremiumPage() {
 
         {/* FAQ */}
         <section className="space-y-2">
-          <h4 className="text-xs font-black uppercase tracking-widest text-white/50 mb-2">
+          <h4 className="text-[10px] font-mono font-black uppercase tracking-[0.4em] text-white/50 mb-2 italic">
             Întrebări Frecvente
           </h4>
           <div className="divide-y divide-white/10">
@@ -700,26 +657,15 @@ function PremiumPage() {
                     onClick={() => setOpenFaq(open ? null : i)}
                     className="w-full py-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 text-left group"
                   >
-                    <span className="text-sm font-medium text-white/85 group-hover:text-white transition min-w-0 break-words">
+                    <span className="text-sm font-mono font-bold text-white/85 group-hover:text-white transition min-w-0 break-words uppercase tracking-tight">
                       {f.q}
                     </span>
-                    <span
-                      className="w-5 h-5 flex items-center justify-center shrink-0"
-                      style={{ color: NEON.pink }}
-                    >
-                      {open ? (
-                        <Minus size={16} strokeWidth={2.5} />
-                      ) : (
-                        <Plus size={16} strokeWidth={2.5} />
-                      )}
+                    <span className="w-5 h-5 flex items-center justify-center shrink-0" style={{ color: NEON.pink }}>
+                      {open ? <Minus size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
                     </span>
                   </button>
-
                   {open && (
-                    <div
-                      className="pb-5 pr-8 text-[13px] text-white/65 leading-relaxed italic"
-                      style={{ fontFamily: "'Instrument Serif', serif" }}
-                    >
+                    <div className="pb-5 pr-8 text-[12px] text-white/65 leading-relaxed">
                       {f.a}
                     </div>
                   )}
@@ -729,13 +675,13 @@ function PremiumPage() {
           </div>
         </section>
 
-        {/* Colophon */}
-        <footer className="pt-6 border-t border-white/10">
-          <div className="font-mono text-[9px] uppercase tracking-[0.35em] text-white/40 flex items-center justify-between">
-            <span>Oxidații Press</span>
-            <span>Vol. 04 · Nr. 06</span>
-          </div>
-          <p className="mt-3 text-[10px] text-white/40 leading-relaxed max-w-[40ch]">
+        {/* Footer */}
+        <footer className="pt-6 border-t border-white/10 space-y-4">
+          <div className="h-px w-24 mx-auto" style={{ background: `linear-gradient(to right, transparent, ${NEON.pink}, transparent)` }} />
+          <p className="text-center text-[9px] font-mono text-white/40 uppercase tracking-[0.3em] font-bold">
+            Secured · Oxidații Pay
+          </p>
+          <p className="text-[10px] text-white/40 leading-relaxed text-center max-w-[40ch] mx-auto">
             Toate plățile sunt securizate și finale. Anulezi abonamentul oricând, fără explicații.
           </p>
         </footer>
@@ -750,3 +696,4 @@ function PremiumPage() {
     </div>
   );
 }
+
