@@ -20,7 +20,10 @@ export type PushPayload = {
   data?: Record<string, unknown>;
 };
 
-export async function sendPushToUsers(userIds: string[], payload: PushPayload): Promise<{ sent: number; failed: number }> {
+export async function sendPushToUsers(
+  userIds: string[],
+  payload: PushPayload,
+): Promise<{ sent: number; failed: number }> {
   if (!userIds.length) return { sent: 0, failed: 0 };
   configure();
 
@@ -41,7 +44,7 @@ export async function sendPushToUsers(userIds: string[], payload: PushPayload): 
       try {
         await webpush.sendNotification(
           { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-          body
+          body,
         );
         sent++;
       } catch (err: any) {
@@ -49,7 +52,7 @@ export async function sendPushToUsers(userIds: string[], payload: PushPayload): 
         const code = err?.statusCode;
         if (code === 404 || code === 410) deadIds.push(s.id);
       }
-    })
+    }),
   );
 
   if (deadIds.length) {
@@ -67,9 +70,7 @@ export async function filterByPref(userIds: string[], pref: PrefKey): Promise<st
     .select("user_id, " + pref)
     .in("user_id", userIds);
   if (error) return userIds; // default: send if we can't read prefs
-  const opted = new Set(
-    (data as any[]).filter((r) => r[pref] !== false).map((r) => r.user_id)
-  );
+  const opted = new Set((data as any[]).filter((r) => r[pref] !== false).map((r) => r.user_id));
   // Users without a row default to opted-in (DB default true)
   const hasRow = new Set((data as any[]).map((r) => r.user_id));
   return userIds.filter((id) => !hasRow.has(id) || opted.has(id));

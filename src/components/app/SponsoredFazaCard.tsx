@@ -7,7 +7,10 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { recordCampaignEvent } from "@/lib/business-promotion.functions";
 
-const archivo = { fontFamily: '"Archivo Black", system-ui, sans-serif', letterSpacing: "-0.01em" } as const;
+const archivo = {
+  fontFamily: '"Archivo Black", system-ui, sans-serif',
+  letterSpacing: "-0.01em",
+} as const;
 
 export type AdCard = {
   id: string;
@@ -33,7 +36,9 @@ export function usePromoCards() {
       const nowIso = new Date().toISOString();
       const { data, error } = await supabase
         .from("campaigns")
-        .select("id, title, body, subtitle, theme_color, image_urls, video_url, cta_url, cta_text, venue_id, business_accounts!inner(logo_url, cover_url, brand_name, reputation_score, total_reviews)")
+        .select(
+          "id, title, body, subtitle, theme_color, image_urls, video_url, cta_url, cta_text, venue_id, business_accounts!inner(logo_url, cover_url, brand_name, reputation_score, total_reviews)",
+        )
         .eq("status", "active")
         .lte("starts_at", nowIso)
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
@@ -53,9 +58,13 @@ export function usePromoCards() {
         id: c.id as string,
         title: (c.title as string | null) ?? null,
         body: (c.body as string | null) ?? (c.subtitle as string | null) ?? null,
-        brand: (venuesMap.get(c.venue_id) ?? c.business_accounts?.brand_name ?? null) as string | null,
+        brand: (venuesMap.get(c.venue_id) ?? c.business_accounts?.brand_name ?? null) as
+          | string
+          | null,
         logo: (c.business_accounts?.logo_url ?? null) as string | null,
-        cover: ((c.image_urls?.[0] as string | undefined) ?? c.business_accounts?.cover_url ?? null) as string | null,
+        cover: ((c.image_urls?.[0] as string | undefined) ??
+          c.business_accounts?.cover_url ??
+          null) as string | null,
         video: (c.video_url as string | null) ?? null,
         ctaUrl: (c.cta_url as string | null) ?? null,
         ctaText: (c.cta_text as string | null) ?? null,
@@ -73,9 +82,17 @@ function useCampaignLikes(campaignId: string, userId: string | undefined) {
     queryKey: ["campaign-likes", campaignId, userId ?? null],
     queryFn: async () => {
       const [{ count }, mine] = await Promise.all([
-        supabase.from("campaign_likes").select("user_id", { count: "exact", head: true }).eq("campaign_id", campaignId),
+        supabase
+          .from("campaign_likes")
+          .select("user_id", { count: "exact", head: true })
+          .eq("campaign_id", campaignId),
         userId
-          ? supabase.from("campaign_likes").select("user_id").eq("campaign_id", campaignId).eq("user_id", userId).maybeSingle()
+          ? supabase
+              .from("campaign_likes")
+              .select("user_id")
+              .eq("campaign_id", campaignId)
+              .eq("user_id", userId)
+              .maybeSingle()
           : Promise.resolve({ data: null } as any),
       ]);
       return { count: count ?? 0, liked: !!mine.data };
@@ -110,11 +127,18 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
 
   const toggleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user) { toast.error("Trebuie să fii logat."); return; }
+    if (!user) {
+      toast.error("Trebuie să fii logat.");
+      return;
+    }
     if (busy) return;
     setBusy(true);
     if (liked) {
-      await supabase.from("campaign_likes").delete().eq("campaign_id", ad.id).eq("user_id", user.id);
+      await supabase
+        .from("campaign_likes")
+        .delete()
+        .eq("campaign_id", ad.id)
+        .eq("user_id", user.id);
     } else {
       await supabase.from("campaign_likes").insert({ campaign_id: ad.id, user_id: user.id });
     }
@@ -130,12 +154,20 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
   return (
     <article
       className="rounded-3xl border overflow-hidden shadow-[0_4px_24px_-12px_rgba(0,0,0,0.6)] animate-fade-in"
-      style={{ borderColor: `${ad.theme}66`, background: `linear-gradient(180deg, ${ad.theme}10, transparent 60%)` }}
+      style={{
+        borderColor: `${ad.theme}66`,
+        background: `linear-gradient(180deg, ${ad.theme}10, transparent 60%)`,
+      }}
     >
       {/* Sponsored ribbon — clearly marks the card as a paid placement */}
       <div
         className="flex items-center justify-between gap-2 px-3.5 py-1.5 text-[10px] uppercase tracking-[0.22em]"
-        style={{ ...archivo, background: `${ad.theme}22`, color: ad.theme, borderBottom: `1px solid ${ad.theme}33` }}
+        style={{
+          ...archivo,
+          background: `${ad.theme}22`,
+          color: ad.theme,
+          borderBottom: `1px solid ${ad.theme}33`,
+        }}
       >
         <span className="inline-flex items-center gap-1.5">
           <span className="size-1.5 rounded-full animate-pulse" style={{ background: ad.theme }} />
@@ -152,12 +184,18 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
       {/* Header */}
       <div className="flex items-center gap-3 px-3.5 py-3">
         <button onClick={openDetail} className="flex items-center gap-3 flex-1 min-w-0 text-left">
-          <div className="p-[2px] rounded-full" style={{ background: `linear-gradient(135deg, #ffea00, ${ad.theme})` }}>
+          <div
+            className="p-[2px] rounded-full"
+            style={{ background: `linear-gradient(135deg, #ffea00, ${ad.theme})` }}
+          >
             <div className="p-[2px] rounded-full bg-background">
               {ad.logo ? (
                 <img src={ad.logo} alt={handle} className="size-9 rounded-full object-cover" />
               ) : (
-                <div className="size-9 rounded-full flex items-center justify-center text-xs font-black" style={{ color: ad.theme, background: "rgba(255,255,255,0.05)" }}>
+                <div
+                  className="size-9 rounded-full flex items-center justify-center text-xs font-black"
+                  style={{ color: ad.theme, background: "rgba(255,255,255,0.05)" }}
+                >
                   {handle[0]?.toUpperCase()}
                 </div>
               )}
@@ -167,12 +205,13 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
             <div className="text-[14px] font-semibold truncate flex items-center gap-1.5">
               {handle}
               {ad.rating != null && ad.rating > 0 && (
-                <span className="text-[11px] font-normal text-amber-400 shrink-0">★ {ad.rating.toFixed(1)}{ad.reviewsCount ? ` (${ad.reviewsCount})` : ""}</span>
+                <span className="text-[11px] font-normal text-amber-400 shrink-0">
+                  ★ {ad.rating.toFixed(1)}
+                  {ad.reviewsCount ? ` (${ad.reviewsCount})` : ""}
+                </span>
               )}
             </div>
-            <div className="text-[11px] text-muted-foreground truncate">
-              Promovat de business
-            </div>
+            <div className="text-[11px] text-muted-foreground truncate">Promovat de business</div>
           </div>
         </button>
       </div>
@@ -181,26 +220,54 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
       <button onClick={openDetail} className="block w-full text-left">
         {ad.video ? (
           <div className="relative bg-black">
-            <video src={ad.video} className="w-full aspect-square object-cover" playsInline muted loop autoPlay preload="metadata" />
+            <video
+              src={ad.video}
+              className="w-full aspect-square object-cover"
+              playsInline
+              muted
+              loop
+              autoPlay
+              preload="metadata"
+            />
           </div>
         ) : ad.cover ? (
           <div className="relative bg-black">
-            <img src={ad.cover} alt={ad.title ?? handle} className="w-full aspect-square object-cover" loading="lazy" />
+            <img
+              src={ad.cover}
+              alt={ad.title ?? handle}
+              className="w-full aspect-square object-cover"
+              loading="lazy"
+            />
           </div>
         ) : null}
       </button>
 
       {/* Actions */}
       <div className="flex items-center gap-1 px-2 pt-2.5">
-        <button onClick={toggleLike} aria-label="Apreciază" className="size-10 flex items-center justify-center active:scale-90 transition">
-          <svg viewBox="0 0 24 24" className={`size-7 ${liked ? "fill-sunset-orange stroke-sunset-orange" : "fill-none stroke-foreground"}`} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+        <button
+          onClick={toggleLike}
+          aria-label="Apreciază"
+          className="size-10 flex items-center justify-center active:scale-90 transition"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className={`size-7 ${liked ? "fill-sunset-orange stroke-sunset-orange" : "fill-none stroke-foreground"}`}
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z" />
+          </svg>
         </button>
         {ad.ctaUrl && (
           <a
             href={ad.ctaUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(e) => { e.stopPropagation(); logClick(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              logClick();
+            }}
             className="ml-auto inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.14em] px-3 py-1.5 rounded-full"
             style={{ background: `${ad.theme}22`, color: ad.theme }}
           >
@@ -227,7 +294,10 @@ export function SponsoredFazaCard({ ad }: { ad: AdCard }) {
         </div>
       )}
 
-      <div className="px-4 pb-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground" style={archivo}>
+      <div
+        className="px-4 pb-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+        style={archivo}
+      >
         postare sponsorizată
       </div>
     </article>

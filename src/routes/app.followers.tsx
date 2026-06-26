@@ -62,9 +62,7 @@ function FollowersPage() {
   return (
     <div className="px-5 pt-8 pb-24 space-y-7">
       <header className="space-y-3">
-        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
-          conexiuni
-        </div>
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">conexiuni</div>
         <h1 className="font-display uppercase text-3xl leading-[0.95]">
           {tab === "followers" ? "Urmăritorii tăi." : "Urmărești."}
         </h1>
@@ -105,9 +103,7 @@ function FollowersPage() {
         <div className="rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-2">
           <div className="text-4xl opacity-40">👥</div>
           <p className="text-sm text-muted-foreground">
-            {tab === "followers"
-              ? "Nimeni nu te urmărește încă."
-              : "Nu urmărești pe nimeni încă."}
+            {tab === "followers" ? "Nimeni nu te urmărește încă." : "Nu urmărești pe nimeni încă."}
           </p>
           <Link
             to="/app/friends"

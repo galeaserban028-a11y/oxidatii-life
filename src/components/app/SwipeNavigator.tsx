@@ -41,7 +41,10 @@ export function SwipeNavigator({ children }: { children: ReactNode }) {
     let tracking = false;
     let decided: "h" | "v" | null = null;
 
-    const reset = () => { tracking = false; decided = null; };
+    const reset = () => {
+      tracking = false;
+      decided = null;
+    };
 
     const onStart = (e: TouchEvent) => {
       if (e.touches.length !== 1) return reset();
@@ -50,7 +53,11 @@ export function SwipeNavigator({ children }: { children: ReactNode }) {
       if (DISABLED_PREFIXES.some((d) => p === d || p.startsWith(d))) return reset();
       // Ignore drags that start on inherently swipable elements.
       const t = e.target as HTMLElement | null;
-      if (t && t.closest('[data-no-swipe], input, textarea, [contenteditable="true"], [role="slider"]')) return reset();
+      if (
+        t &&
+        t.closest('[data-no-swipe], input, textarea, [contenteditable="true"], [role="slider"]')
+      )
+        return reset();
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       startT = performance.now();
@@ -100,5 +107,9 @@ export function SwipeNavigator({ children }: { children: ReactNode }) {
     };
   }, [navigate]);
 
-  return <div ref={ref} style={{ touchAction: "pan-y" }}>{children}</div>;
+  return (
+    <div ref={ref} style={{ touchAction: "pan-y" }}>
+      {children}
+    </div>
+  );
 }

@@ -18,7 +18,11 @@ export const Route = createFileRoute("/app/notifications")({
 const labels: Record<NotificationType, { text: string; Icon: typeof Bell; tone: string }> = {
   follow_request: { text: "vrea să te urmărească", Icon: UserPlus, tone: "text-sunset-amber" },
   follow_accepted: { text: "ți-a acceptat cererea", Icon: UserCheck, tone: "text-sunset-amber" },
-  follow_accepted_auto: { text: "a început să te urmărească", Icon: UserCheck, tone: "text-sunset-magenta" },
+  follow_accepted_auto: {
+    text: "a început să te urmărească",
+    Icon: UserCheck,
+    tone: "text-sunset-magenta",
+  },
   follow_rejected: { text: "ți-a respins cererea", Icon: UserX, tone: "text-muted-foreground" },
 };
 
@@ -42,7 +46,6 @@ function NotificationsPage() {
     if (items && items.some((n) => !n.read_at)) {
       markAllRead.mutate();
     }
-     
   }, [user?.id, items?.length]);
 
   if (!user) {
@@ -89,13 +92,7 @@ function NotificationsPage() {
   );
 }
 
-function NotificationItem({
-  n,
-  onDelete,
-}: {
-  n: NotificationRow;
-  onDelete: () => void;
-}) {
+function NotificationItem({ n, onDelete }: { n: NotificationRow; onDelete: () => void }) {
   const meta = labels[n.type] ?? labels.follow_accepted_auto;
   const Icon = meta.Icon;
   const handle = n.actor?.handle ?? n.actor?.display_name ?? "anonim";
@@ -116,11 +113,19 @@ function NotificationItem({
           className="relative h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-sunset-orange to-sunset-magenta flex items-center justify-center text-white font-display font-bold shrink-0"
         >
           {n.actor.avatar_url ? (
-            <img src={n.actor.avatar_url} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+            <img
+              src={n.actor.avatar_url}
+              alt=""
+              className="h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
           ) : (
             initial
           )}
-          <span className={`absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-background flex items-center justify-center ${meta.tone}`}>
+          <span
+            className={`absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-background flex items-center justify-center ${meta.tone}`}
+          >
             <Icon size={11} strokeWidth={2.6} />
           </span>
         </Link>
@@ -131,9 +136,7 @@ function NotificationItem({
       )}
 
       <div className="flex-1 min-w-0">
-        <div className="font-display font-semibold truncate text-[14px]">
-          @{handle}
-        </div>
+        <div className="font-display font-semibold truncate text-[14px]">@{handle}</div>
         <div className="text-[11px] text-muted-foreground truncate">
           {meta.text} · {timeAgo(n.created_at)}
         </div>

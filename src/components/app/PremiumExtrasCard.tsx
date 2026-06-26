@@ -22,14 +22,22 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
   async function setTheme(id: string | null) {
     if (!user) return;
     setBusy("theme");
-    const { error } = await supabase.from("profiles").update({ profile_theme_id: id } as any).eq("id", user.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ profile_theme_id: id } as any)
+      .eq("id", user.id);
     setBusy(null);
     if (error) return toast.error(error.message);
     toast.success(id ? "Temă aplicată" : "Temă resetată");
     refreshProfile();
   }
 
-  async function upload(file: File, field: "music_clip_url" | "profile_bg_url", maxMB: number, kind: string) {
+  async function upload(
+    file: File,
+    field: "music_clip_url" | "profile_bg_url",
+    maxMB: number,
+    kind: string,
+  ) {
     if (!user) return;
     if (file.size > maxMB * 1024 * 1024) return toast.error(`Fișier prea mare (max ${maxMB}MB)`);
     setBusy(field);
@@ -51,14 +59,19 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
       }
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
       const path = `${user.id}/${field}-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("profile-media").upload(path, file, { upsert: true, contentType: file.type });
+      const { error: upErr } = await supabase.storage
+        .from("profile-media")
+        .upload(path, file, { upsert: true, contentType: file.type });
       if (upErr) throw upErr;
       // Bucket is private — use a long-lived signed URL (10 years)
       const { data: signed, error: signErr } = await supabase.storage
         .from("profile-media")
         .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
       if (signErr) throw signErr;
-      const { error } = await supabase.from("profiles").update({ [field]: signed.signedUrl } as any).eq("id", user.id);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ [field]: signed.signedUrl } as any)
+        .eq("id", user.id);
       if (error) throw error;
       toast.success(`${kind} actualizat`);
       refreshProfile();
@@ -69,10 +82,16 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
     }
   }
 
-  async function clearField(field: "music_clip_url" | "profile_bg_url" | "profile_theme_id", kind: string) {
+  async function clearField(
+    field: "music_clip_url" | "profile_bg_url" | "profile_theme_id",
+    kind: string,
+  ) {
     if (!user) return;
     setBusy(field);
-    const { error } = await supabase.from("profiles").update({ [field]: null } as any).eq("id", user.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ [field]: null } as any)
+      .eq("id", user.id);
     setBusy(null);
     if (error) return toast.error(error.message);
     toast.success(`${kind} șters`);
@@ -80,7 +99,13 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
   }
 
   // Theme intensity sliders (live preview + debounced save)
-  type Intensity = { gradient: number; aurora: number; sheen: number; grain: number; vignette: number };
+  type Intensity = {
+    gradient: number;
+    aurora: number;
+    sheen: number;
+    grain: number;
+    vignette: number;
+  };
   const defaultIntensity: Intensity = { gradient: 1, aurora: 1, sheen: 1, grain: 1, vignette: 1 };
   const initialIntensity: Intensity = {
     ...defaultIntensity,
@@ -94,7 +119,10 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
 
   async function saveIntensity(next: Intensity) {
     if (!user) return;
-    const { error } = await supabase.from("profiles").update({ theme_intensity: next } as any).eq("id", user.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ theme_intensity: next } as any)
+      .eq("id", user.id);
     if (error) return toast.error(error.message);
     refreshProfile();
   }
@@ -115,7 +143,10 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
       <div className="flex items-center justify-between">
         <div className="font-display uppercase text-sm tracking-wide">Personalizare profil</div>
         {onClose && (
-          <button onClick={onClose} className="h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-mono uppercase tracking-widest flex items-center gap-1.5 active:scale-95">
+          <button
+            onClick={onClose}
+            className="h-8 px-3 rounded-full bg-foreground text-background text-[11px] font-mono uppercase tracking-widest flex items-center gap-1.5 active:scale-95"
+          >
             <Check size={12} /> Salvează
           </button>
         )}
@@ -125,14 +156,18 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Palette size={14} className="text-foreground/70" />
-          <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">teme premium</div>
+          <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+            teme premium
+          </div>
         </div>
         {(["vip_plus", "pro", "elite"] as const).map((tierGroup) => {
           const list = PROFILE_THEMES.filter((t) => t.tier === tierGroup);
           const label = tierGroup === "vip_plus" ? "VIP+" : tierGroup === "pro" ? "PRO" : "ELITE";
           return (
             <div key={tierGroup} className="space-y-1.5">
-              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70">{label}</div>
+              <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/70">
+                {label}
+              </div>
               <div className="grid grid-cols-3 gap-2">
                 {list.map((t) => {
                   const active = currentTheme === t.id;
@@ -146,10 +181,18 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
                       style={{ background: t.cardBg, borderColor: t.cardBorder }}
                       title={t.description}
                     >
-                      <div className="absolute -top-3 -left-3 h-10 w-10 rounded-full blur-md" style={{ background: t.accent, opacity: 0.7 }} />
-                      <div className="absolute -bottom-3 -right-3 h-8 w-8 rounded-full blur-md" style={{ background: t.cardBorder, opacity: 0.6 }} />
+                      <div
+                        className="absolute -top-3 -left-3 h-10 w-10 rounded-full blur-md"
+                        style={{ background: t.accent, opacity: 0.7 }}
+                      />
+                      <div
+                        className="absolute -bottom-3 -right-3 h-8 w-8 rounded-full blur-md"
+                        style={{ background: t.cardBorder, opacity: 0.6 }}
+                      />
                       <div className="relative h-full flex items-end p-1.5">
-                        <div className="text-[10px] font-mono uppercase tracking-widest text-white drop-shadow">{t.name}</div>
+                        <div className="text-[10px] font-mono uppercase tracking-widest text-white drop-shadow">
+                          {t.name}
+                        </div>
                       </div>
                       {!allowed && (
                         <div className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/60 flex items-center justify-center">
@@ -169,23 +212,34 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
       {currentTheme && (
         <div className="space-y-2.5 rounded-xl border border-foreground/10 bg-foreground/[0.02] p-3">
           <div className="flex items-center justify-between">
-            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">intensitate</div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              intensitate
+            </div>
             <button
-              onClick={() => { setIntensity(defaultIntensity); saveIntensity(defaultIntensity); }}
+              onClick={() => {
+                setIntensity(defaultIntensity);
+                saveIntensity(defaultIntensity);
+              }}
               className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/80 hover:text-foreground"
-            >reset</button>
+            >
+              reset
+            </button>
           </div>
-          {([
-            ["gradient", "Gradient"],
-            ["aurora", "Auroră"],
-            ["sheen", "Sheen"],
-            ["grain", "Grain"],
-            ["vignette", "Vignette"],
-          ] as Array<[keyof Intensity, string]>).map(([key, label]) => (
+          {(
+            [
+              ["gradient", "Gradient"],
+              ["aurora", "Auroră"],
+              ["sheen", "Sheen"],
+              ["grain", "Grain"],
+              ["vignette", "Vignette"],
+            ] as Array<[keyof Intensity, string]>
+          ).map(([key, label]) => (
             <label key={key} className="block">
               <div className="flex items-center justify-between text-[11px] mb-0.5">
                 <span className="text-foreground/80">{label}</span>
-                <span className="font-mono text-foreground/50 tabular-nums">{Math.round(intensity[key] * 100)}%</span>
+                <span className="font-mono text-foreground/50 tabular-nums">
+                  {Math.round(intensity[key] * 100)}%
+                </span>
               </div>
               <input
                 type="range"
@@ -201,23 +255,43 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
         </div>
       )}
 
-
       {/* Pro-only: music + bg */}
       {isPro ? (
         <>
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Music size={14} className="text-foreground/70" />
-              <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">music clip 15s · Pro</div>
+              <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+                music clip 15s · Pro
+              </div>
             </div>
-            <input ref={musicRef} type="file" accept="audio/*" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], "music_clip_url", 5, "Music clip")} />
+            <input
+              ref={musicRef}
+              type="file"
+              accept="audio/*"
+              hidden
+              onChange={(e) =>
+                e.target.files?.[0] && upload(e.target.files[0], "music_clip_url", 5, "Music clip")
+              }
+            />
             <div className="flex items-center gap-2">
-              <button onClick={() => musicRef.current?.click()} disabled={busy === "music_clip_url"} className="flex-1 h-10 rounded-full bg-foreground/10 text-xs font-mono uppercase tracking-widest flex items-center justify-center gap-2 active:scale-[0.98]">
-                {busy === "music_clip_url" ? <Loader2 size={14} className="animate-spin" /> : <Music size={14} />}
+              <button
+                onClick={() => musicRef.current?.click()}
+                disabled={busy === "music_clip_url"}
+                className="flex-1 h-10 rounded-full bg-foreground/10 text-xs font-mono uppercase tracking-widest flex items-center justify-center gap-2 active:scale-[0.98]"
+              >
+                {busy === "music_clip_url" ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <Music size={14} />
+                )}
                 {profile?.music_clip_url ? "Schimbă" : "Încarcă"}
               </button>
               {profile?.music_clip_url && (
-                <button onClick={() => clearField("music_clip_url", "Music clip")} className="h-10 px-3 rounded-full border border-foreground/15 text-foreground/60 active:scale-95">
+                <button
+                  onClick={() => clearField("music_clip_url", "Music clip")}
+                  className="h-10 px-3 rounded-full border border-foreground/15 text-foreground/60 active:scale-95"
+                >
                   <Trash2 size={14} />
                 </button>
               )}
@@ -227,16 +301,37 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <ImageIcon size={14} className="text-foreground/70" />
-              <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">background animat · Pro</div>
+              <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+                background animat · Pro
+              </div>
             </div>
-            <input ref={bgRef} type="file" accept="video/mp4,image/gif,image/webp" hidden onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], "profile_bg_url", 10, "Background")} />
+            <input
+              ref={bgRef}
+              type="file"
+              accept="video/mp4,image/gif,image/webp"
+              hidden
+              onChange={(e) =>
+                e.target.files?.[0] && upload(e.target.files[0], "profile_bg_url", 10, "Background")
+              }
+            />
             <div className="flex items-center gap-2">
-              <button onClick={() => bgRef.current?.click()} disabled={busy === "profile_bg_url"} className="flex-1 h-10 rounded-full bg-foreground/10 text-xs font-mono uppercase tracking-widest flex items-center justify-center gap-2 active:scale-[0.98]">
-                {busy === "profile_bg_url" ? <Loader2 size={14} className="animate-spin" /> : <ImageIcon size={14} />}
+              <button
+                onClick={() => bgRef.current?.click()}
+                disabled={busy === "profile_bg_url"}
+                className="flex-1 h-10 rounded-full bg-foreground/10 text-xs font-mono uppercase tracking-widest flex items-center justify-center gap-2 active:scale-[0.98]"
+              >
+                {busy === "profile_bg_url" ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <ImageIcon size={14} />
+                )}
                 {profile?.profile_bg_url ? "Schimbă" : "Încarcă"}
               </button>
               {profile?.profile_bg_url && (
-                <button onClick={() => clearField("profile_bg_url", "Background")} className="h-10 px-3 rounded-full border border-foreground/15 text-foreground/60 active:scale-95">
+                <button
+                  onClick={() => clearField("profile_bg_url", "Background")}
+                  className="h-10 px-3 rounded-full border border-foreground/15 text-foreground/60 active:scale-95"
+                >
                   <Trash2 size={14} />
                 </button>
               )}
@@ -244,7 +339,9 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
           </div>
         </>
       ) : (
-        <div className="text-xs text-muted-foreground italic">Music clip și background animat: doar Pro și Elite.</div>
+        <div className="text-xs text-muted-foreground italic">
+          Music clip și background animat: doar Pro și Elite.
+        </div>
       )}
     </div>
   );

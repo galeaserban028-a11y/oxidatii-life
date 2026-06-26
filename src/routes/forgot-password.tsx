@@ -58,8 +58,8 @@ function ForgotPasswordPage() {
             <div className="rounded-xl border border-neon-green/40 bg-neon-green/10 p-4 space-y-2">
               <div className="font-display text-neon-green">Verifică inbox-ul.</div>
               <p className="text-xs text-muted-foreground">
-                Dacă există cont pe <b>{email}</b>, ți-am trimis un link de resetare.
-                Verifică și folderul de spam.
+                Dacă există cont pe <b>{email}</b>, ți-am trimis un link de resetare. Verifică și
+                folderul de spam.
               </p>
             </div>
           ) : (

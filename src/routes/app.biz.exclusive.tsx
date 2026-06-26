@@ -64,10 +64,15 @@ function ExclusivePage() {
       toast.error("Necesită plan Exclusive Partner.");
       return;
     }
-    const { data, error } = await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ data: { ok: boolean; error?: string; slot_index?: number } | null; error: unknown }>)(
-      "claim_exclusive_slot",
-      { _business_id: biz.id, _city_id: cityId },
-    );
+    const { data, error } = await (
+      supabase.rpc as unknown as (
+        fn: string,
+        args: Record<string, unknown>,
+      ) => Promise<{
+        data: { ok: boolean; error?: string; slot_index?: number } | null;
+        error: unknown;
+      }>
+    )("claim_exclusive_slot", { _business_id: biz.id, _city_id: cityId });
     if (error || !data?.ok) {
       toast.error(data?.error ?? "Nu am putut revendica slotul");
       return;
@@ -87,7 +92,10 @@ function ExclusivePage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <div className="mx-auto max-w-5xl px-4 py-6">
-        <Link to="/app/biz" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/app/biz"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="size-4" /> Înapoi
         </Link>
 
@@ -99,7 +107,8 @@ function ExclusivePage() {
             3 sloturi per oraș. Când sunt ocupate, alții așteaptă.
           </h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            Slotul tău este vizibil pe homepage, pe hartă cu marker signature și are garantat top 3 în Featured Tonight pentru orașul tău.
+            Slotul tău este vizibil pe homepage, pe hartă cu marker signature și are garantat top 3
+            în Featured Tonight pentru orașul tău.
           </p>
         </header>
 
@@ -132,7 +141,9 @@ function ExclusivePage() {
                       <div
                         key={idx}
                         className={`flex flex-col items-center justify-center rounded-xl border p-3 text-center text-xs ${
-                          taken ? "border-[var(--tier-exclusive)]/40 bg-[var(--tier-exclusive)]/10" : "border-dashed border-border/40"
+                          taken
+                            ? "border-[var(--tier-exclusive)]/40 bg-[var(--tier-exclusive)]/10"
+                            : "border-dashed border-border/40"
                         }`}
                       >
                         {taken ? (

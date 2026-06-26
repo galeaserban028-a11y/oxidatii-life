@@ -42,7 +42,9 @@ export function PremiumCheckoutDialog({
         if (!cancelled) setError(e instanceof Error ? e.message : "Eroare necunoscută");
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [open, priceId]);
 
   if (!open) return null;

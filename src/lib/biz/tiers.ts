@@ -23,8 +23,8 @@ export interface TierConfig {
     branding: "logo" | "gallery" | "theme" | "full";
     moderation: "pre" | "post";
   };
-  color: string;        // CSS var key
-  glowClass: string;    // tailwind utility from styles.css
+  color: string; // CSS var key
+  glowClass: string; // tailwind utility from styles.css
   badgeEmoji: string;
 }
 

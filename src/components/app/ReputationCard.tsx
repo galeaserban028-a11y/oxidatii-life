@@ -1,4 +1,14 @@
-import { Shield, Clock, Zap, Smile, GlassWater, Lock, Star, Sparkles, TrendingUp } from "lucide-react";
+import {
+  Shield,
+  Clock,
+  Zap,
+  Smile,
+  GlassWater,
+  Lock,
+  Star,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -10,20 +20,31 @@ import { toast } from "sonner";
 type CatKey = "respect" | "reliability" | "energy" | "friendliness" | "contribution" | "trust";
 
 const CATS: { key: CatKey; label: string; short: string; icon: any; color: string }[] = [
-  { key: "respect",      label: "Respect",       short: "respect",  icon: Shield,     color: "#c724ff" },
-  { key: "reliability",  label: "Fiabilitate",   short: "fiabil",   icon: Clock,      color: "#00e5ff" },
-  { key: "energy",       label: "Energie",       short: "energie",  icon: Zap,        color: "#ffea00" },
-  { key: "friendliness", label: "Prietenie",     short: "prieten",  icon: Smile,      color: "#ff3d8b" },
-  { key: "contribution", label: "Aport la fază", short: "aport",    icon: GlassWater, color: "#c724ff" },
-  { key: "trust",        label: "Încredere",     short: "trust",    icon: Lock,       color: "#00e5ff" },
+  { key: "respect", label: "Respect", short: "respect", icon: Shield, color: "#c724ff" },
+  { key: "reliability", label: "Fiabilitate", short: "fiabil", icon: Clock, color: "#00e5ff" },
+  { key: "energy", label: "Energie", short: "energie", icon: Zap, color: "#ffea00" },
+  { key: "friendliness", label: "Prietenie", short: "prieten", icon: Smile, color: "#ff3d8b" },
+  {
+    key: "contribution",
+    label: "Aport la fază",
+    short: "aport",
+    icon: GlassWater,
+    color: "#c724ff",
+  },
+  { key: "trust", label: "Încredere", short: "trust", icon: Lock, color: "#00e5ff" },
 ];
-
 
 // ---------- Calcul ----------
 type SelfInputs = {
-  sprits: number; streak: number; longestStreak: number;
-  followers: number; following: number; aura: number;
-  hasAvatar: boolean; hasBio: boolean; accountAgeDays: number;
+  sprits: number;
+  streak: number;
+  longestStreak: number;
+  followers: number;
+  following: number;
+  aura: number;
+  hasAvatar: boolean;
+  hasBio: boolean;
+  accountAgeDays: number;
 };
 type PeerAgg = Partial<Record<CatKey, { avg: number; n: number }>>;
 
@@ -31,16 +52,19 @@ const sat = (v: number, k: number) => 1 - Math.exp(-Math.max(0, v) / k);
 
 function selfMetrics(i: SelfInputs): Record<CatKey, number> {
   return {
-    respect:      Math.round(100 * (0.4 + 0.6 * sat(i.longestStreak, 14))),
-    reliability:  Math.round(100 * (0.3 + 0.7 * sat(i.streak, 10))),
-    energy:       Math.round(100 * sat(i.sprits, 40)),
+    respect: Math.round(100 * (0.4 + 0.6 * sat(i.longestStreak, 14))),
+    reliability: Math.round(100 * (0.3 + 0.7 * sat(i.streak, 10))),
+    energy: Math.round(100 * sat(i.sprits, 40)),
     friendliness: Math.round(100 * sat(i.followers + i.following * 0.5, 60)),
     contribution: Math.round(100 * sat(i.aura, 200)),
-    trust: Math.round(100 * (0.2
-      + 0.25 * sat(i.accountAgeDays, 60)
-      + 0.25 * (i.hasAvatar ? 1 : 0)
-      + 0.15 * (i.hasBio ? 1 : 0)
-      + 0.35 * sat(i.sprits, 20))),
+    trust: Math.round(
+      100 *
+        (0.2 +
+          0.25 * sat(i.accountAgeDays, 60) +
+          0.25 * (i.hasAvatar ? 1 : 0) +
+          0.15 * (i.hasBio ? 1 : 0) +
+          0.35 * sat(i.sprits, 20)),
+    ),
   };
 }
 
@@ -63,22 +87,26 @@ export function computeReputation(self: SelfInputs, peers: PeerAgg = {}) {
   }
 
   const score = Math.round(
-    0.10 * metrics.respect +
-    0.20 * metrics.reliability +
-    0.25 * metrics.energy +
-    0.15 * metrics.friendliness +
-    0.15 * metrics.contribution +
-    0.15 * metrics.trust
+    0.1 * metrics.respect +
+      0.2 * metrics.reliability +
+      0.25 * metrics.energy +
+      0.15 * metrics.friendliness +
+      0.15 * metrics.contribution +
+      0.15 * metrics.trust,
   );
 
   const tier =
-    score >= 90 ? { name: "LEGEND",   color: "#ffea00", glow: "#ffea00" } :
-    score >= 75 ? { name: "PLATINUM", color: "#00e5ff", glow: "#00e5ff" } :
-    score >= 60 ? { name: "GOLD",     color: "#ff3d8b", glow: "#ff3d8b" } :
-    score >= 40 ? { name: "SILVER",   color: "#c724ff", glow: "#c724ff" } :
-    score >= 20 ? { name: "BRONZE",   color: "#ff8c42", glow: "#ff8c42" } :
-                  { name: "STARTER",  color: "#9aa0b4", glow: "#9aa0b4" };
-
+    score >= 90
+      ? { name: "LEGEND", color: "#ffea00", glow: "#ffea00" }
+      : score >= 75
+        ? { name: "PLATINUM", color: "#00e5ff", glow: "#00e5ff" }
+        : score >= 60
+          ? { name: "GOLD", color: "#ff3d8b", glow: "#ff3d8b" }
+          : score >= 40
+            ? { name: "SILVER", color: "#c724ff", glow: "#c724ff" }
+            : score >= 20
+              ? { name: "BRONZE", color: "#ff8c42", glow: "#ff8c42" }
+              : { name: "STARTER", color: "#9aa0b4", glow: "#9aa0b4" };
 
   return { score, tier, metrics, totalPeerN };
 }
@@ -95,7 +123,11 @@ function usePeerAgg(userId?: string | null) {
         .eq("rated_id", userId!);
       const out: PeerAgg = {};
       const raters = new Set<string>();
-      for (const r of ((data ?? []) as unknown) as Array<{ category: CatKey; value: number; rater_id: string }>) {
+      for (const r of (data ?? []) as unknown as Array<{
+        category: CatKey;
+        value: number;
+        rater_id: string;
+      }>) {
         const cur = out[r.category] ?? { avg: 0, n: 0 };
         const n = cur.n + 1;
         out[r.category] = { avg: (cur.avg * cur.n + r.value) / n, n };
@@ -117,7 +149,7 @@ function useMyRatingsFor(raterId?: string | null, ratedId?: string | null) {
         .eq("rater_id", raterId!)
         .eq("rated_id", ratedId!);
       const out: Partial<Record<CatKey, number>> = {};
-      for (const r of ((data ?? []) as unknown) as Array<{ category: CatKey; value: number }>) {
+      for (const r of (data ?? []) as unknown as Array<{ category: CatKey; value: number }>) {
         out[r.category] = r.value;
       }
       return out;
@@ -154,17 +186,20 @@ export function ReputationCard(props: Props) {
     ? Math.max(0, Math.floor((Date.now() - +new Date(props.createdAt)) / 86_400_000))
     : 0;
 
-  const rep = computeReputation({
-    sprits: props.sprits,
-    streak: props.streak,
-    longestStreak: props.longestStreak,
-    followers: props.followers,
-    following: props.following,
-    aura: props.aura,
-    hasAvatar: props.hasAvatar,
-    hasBio: props.hasBio,
-    accountAgeDays: days,
-  }, peers);
+  const rep = computeReputation(
+    {
+      sprits: props.sprits,
+      streak: props.streak,
+      longestStreak: props.longestStreak,
+      followers: props.followers,
+      following: props.following,
+      aura: props.aura,
+      hasAvatar: props.hasAvatar,
+      hasBio: props.hasBio,
+      accountAgeDays: days,
+    },
+    peers,
+  );
 
   const canRate = !!props.allowRating && !!user && user.id !== props.userId;
 
@@ -213,7 +248,6 @@ export function ReputationCard(props: Props) {
                 </span>
               </div>
             </div>
-
 
             {/* tier + bar */}
             <div className="relative flex-1 min-w-0">
@@ -288,10 +322,14 @@ export function ReputationCard(props: Props) {
   );
 }
 
-
 // ---------- Sheet conținut ----------
 function ReputationDetail({
-  rep, peers, uniqueRaters, targetUserId, canRate, onClose,
+  rep,
+  peers,
+  uniqueRaters,
+  targetUserId,
+  canRate,
+  onClose,
 }: {
   rep: ReturnType<typeof computeReputation>;
   peers: PeerAgg;
@@ -393,11 +431,20 @@ function ReputationDetail({
                 {rep.tier.name}
               </div>
               <div className="flex items-start gap-2 text-[10px] font-mono uppercase tracking-wider text-white/55 leading-snug">
-                <TrendingUp size={11} className="shrink-0 mt-px" style={{ color: rep.tier.color }} />
+                <TrendingUp
+                  size={11}
+                  className="shrink-0 mt-px"
+                  style={{ color: rep.tier.color }}
+                />
                 <span>
-                  {uniqueRaters > 0
-                    ? <>{uniqueRaters} {uniqueRaters === 1 ? "vot" : "voturi"} din comunitate + activitatea ta</>
-                    : <>doar activitatea ta — nimeni nu te-a votat încă</>}
+                  {uniqueRaters > 0 ? (
+                    <>
+                      {uniqueRaters} {uniqueRaters === 1 ? "vot" : "voturi"} din comunitate +
+                      activitatea ta
+                    </>
+                  ) : (
+                    <>doar activitatea ta — nimeni nu te-a votat încă</>
+                  )}
                 </span>
               </div>
             </div>
@@ -502,7 +549,6 @@ function ReputationDetail({
   );
 }
 
-
 // ---------- Editor rating (stele 1..5 pe 6 categorii) ----------
 function RatingEditor({ targetUserId, onSaved }: { targetUserId: string; onSaved: () => void }) {
   const { user } = useAuth();
@@ -517,7 +563,10 @@ function RatingEditor({ targetUserId, onSaved }: { targetUserId: string; onSaved
       const rows = (Object.entries(draft) as [CatKey, number][])
         .filter(([, v]) => v >= 1 && v <= 5)
         .map(([category, value]) => ({
-          rater_id: user.id, rated_id: targetUserId, category, value,
+          rater_id: user.id,
+          rated_id: targetUserId,
+          category,
+          value,
         }));
       if (rows.length === 0) return;
       const { error } = await supabase

@@ -26,13 +26,17 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
-        const entries: { path: string; lastmod?: string; changefreq?: string; priority?: string }[] = [
-          ...STATIC_PATHS,
-        ];
+        const entries: {
+          path: string;
+          lastmod?: string;
+          changefreq?: string;
+          priority?: string;
+        }[] = [...STATIC_PATHS];
 
         try {
           const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-          const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+          const key =
+            process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
           if (url && key) {
             const sb = createClient(url, key);
             const [{ data: cities }, { data: venues }, { data: streets }] = await Promise.all([
@@ -41,13 +45,31 @@ export const Route = createFileRoute("/sitemap.xml")({
               sb.from("streets").select("id,updated_at").limit(1000),
             ]);
             for (const c of cities ?? []) {
-              if (c.slug) entries.push({ path: `/app/city/${c.slug}`, lastmod: c.updated_at ?? undefined, changefreq: "weekly", priority: "0.7" });
+              if (c.slug)
+                entries.push({
+                  path: `/app/city/${c.slug}`,
+                  lastmod: c.updated_at ?? undefined,
+                  changefreq: "weekly",
+                  priority: "0.7",
+                });
             }
             for (const s of streets ?? []) {
-              if (s.id) entries.push({ path: `/app/street/${s.id}`, lastmod: s.updated_at ?? undefined, changefreq: "weekly", priority: "0.6" });
+              if (s.id)
+                entries.push({
+                  path: `/app/street/${s.id}`,
+                  lastmod: s.updated_at ?? undefined,
+                  changefreq: "weekly",
+                  priority: "0.6",
+                });
             }
             for (const v of venues ?? []) {
-              if (v.id) entries.push({ path: `/app/venue/${v.id}`, lastmod: v.updated_at ?? undefined, changefreq: "weekly", priority: "0.8" });
+              if (v.id)
+                entries.push({
+                  path: `/app/venue/${v.id}`,
+                  lastmod: v.updated_at ?? undefined,
+                  changefreq: "weekly",
+                  priority: "0.8",
+                });
             }
           }
         } catch (e) {
@@ -62,7 +84,9 @@ export const Route = createFileRoute("/sitemap.xml")({
             e.changefreq ? `    <changefreq>${e.changefreq}</changefreq>` : null,
             e.priority ? `    <priority>${e.priority}</priority>` : null,
             `  </url>`,
-          ].filter(Boolean).join("\n"),
+          ]
+            .filter(Boolean)
+            .join("\n"),
         );
 
         const xml = [

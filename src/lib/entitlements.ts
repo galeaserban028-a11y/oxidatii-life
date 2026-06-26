@@ -68,10 +68,11 @@ export function computeEntitlements(
 export function useEntitlements(): Entitlements {
   const { profile } = useAuth();
   return useMemo(
-    () => computeEntitlements(
-      (profile as any)?.premium_tier ?? null,
-      (profile as any)?.premium_until ?? null,
-    ),
+    () =>
+      computeEntitlements(
+        (profile as any)?.premium_tier ?? null,
+        (profile as any)?.premium_until ?? null,
+      ),
     [(profile as any)?.premium_tier, (profile as any)?.premium_until],
   );
 }

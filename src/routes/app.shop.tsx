@@ -45,7 +45,10 @@ function ShopPage() {
     queryKey: ["owned-frames", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("user_frames").select("frame_id").eq("user_id", user!.id);
+      const { data } = await supabase
+        .from("user_frames")
+        .select("frame_id")
+        .eq("user_id", user!.id);
       return new Set((data ?? []).map((r: any) => r.frame_id));
     },
   });
@@ -76,27 +79,37 @@ function ShopPage() {
       qc.invalidateQueries({ queryKey: ["discover-suggestions"] });
     } catch (e: any) {
       toast.error(e.message || "Eroare");
-    } finally { setBusy(null); }
+    } finally {
+      setBusy(null);
+    }
   }
 
   async function buyPartyBoost(partyId: string) {
     if (!user) return;
     setBusy(`party-${partyId}`);
     try {
-      const { data, error } = await supabase.rpc("buy_boost", { _kind: "party", _target_id: partyId });
+      const { data, error } = await supabase.rpc("buy_boost", {
+        _kind: "party",
+        _target_id: partyId,
+      });
       if (error) throw error;
       const newBal = (data as any)?.balance ?? 0;
       toast.success(`Petrecere boostată 12h! Mai ai ${drink(newBal)}`);
       await refreshProfile();
     } catch (e: any) {
       toast.error(e.message || "Eroare");
-    } finally { setBusy(null); }
+    } finally {
+      setBusy(null);
+    }
   }
 
   async function buyFrame(frame: any) {
     if (!user) return;
     if (ownedFrames?.has(frame.id)) {
-      const { error } = await supabase.from("profiles").update({ active_frame_id: frame.id }).eq("id", user.id);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ active_frame_id: frame.id })
+        .eq("id", user.id);
       if (error) return toast.error(error.message);
       toast.success(`Rama "${frame.name}" activată`);
       await refreshProfile();
@@ -112,9 +125,10 @@ function ShopPage() {
       qc.invalidateQueries({ queryKey: ["owned-frames"] });
     } catch (e: any) {
       toast.error(e.message || "Eroare");
-    } finally { setBusy(null); }
+    } finally {
+      setBusy(null);
+    }
   }
-
 
   async function deactivateFrame() {
     if (!user) return;
@@ -126,20 +140,33 @@ function ShopPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
       <header className="flex items-center gap-3">
-        <button onClick={() => nav({ to: "/app/me" })} className="p-2 -ml-2 rounded-full hover:bg-white/5">
+        <button
+          onClick={() => nav({ to: "/app/me" })}
+          className="p-2 -ml-2 rounded-full hover:bg-white/5"
+        >
           <ArrowLeft size={20} />
         </button>
         <h1 className="font-display text-2xl tracking-wide flex-1 uppercase">Bar</h1>
-        <Link to="/app/premium" className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-sm font-semibold">
+        <Link
+          to="/app/premium"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-sm font-semibold"
+        >
           <Beer size={16} /> {balance}
         </Link>
       </header>
 
       {/* Weekly free drink — the new headline idea */}
-      <div className="relative overflow-hidden rounded-2xl border border-amber-400/30 p-5"
-        style={{ background: "linear-gradient(135deg, oklch(0.30 0.06 50 / 0.5), oklch(0.20 0.03 30 / 0.5))" }}>
+      <div
+        className="relative overflow-hidden rounded-2xl border border-amber-400/30 p-5"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.30 0.06 50 / 0.5), oklch(0.20 0.03 30 / 0.5))",
+        }}
+      >
         <div className="absolute -right-4 -top-4 text-7xl opacity-15 select-none">🍺</div>
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-amber-300/80">săptămâna asta</div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-amber-300/80">
+          săptămâna asta
+        </div>
         <div className="mt-1 font-display uppercase text-xl leading-tight">
           1 șpriț gratis, din partea casei
         </div>
@@ -153,15 +180,39 @@ function ShopPage() {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Șprițurile sunt moneda din bar. Le dai pe boost-uri, rame, cadouri în chat, sau pe boost de petrecere.
-        Rămân la tine — nu expiră. Mai vrei? <Link to="/app/premium" className="underline text-amber-300">Mai iei un rând</Link>.
+        Șprițurile sunt moneda din bar. Le dai pe boost-uri, rame, cadouri în chat, sau pe boost de
+        petrecere. Rămân la tine — nu expiră. Mai vrei?{" "}
+        <Link to="/app/premium" className="underline text-amber-300">
+          Mai iei un rând
+        </Link>
+        .
       </p>
 
       <nav className="flex gap-2 overflow-x-auto -mx-4 px-4">
-        <TabBtn active={tab === "boost"} onClick={() => setTab("boost")} icon={<Rocket size={14} />}>Boost profil</TabBtn>
-        <TabBtn active={tab === "frames"} onClick={() => setTab("frames")} icon={<Crown size={14} />}>Rame avatar</TabBtn>
-        <TabBtn active={tab === "gifts"} onClick={() => setTab("gifts")} icon={<Gift size={14} />}>Cadouri chat</TabBtn>
-        <TabBtn active={tab === "party"} onClick={() => setTab("party")} icon={<PartyPopper size={14} />}>Boost petrecere</TabBtn>
+        <TabBtn
+          active={tab === "boost"}
+          onClick={() => setTab("boost")}
+          icon={<Rocket size={14} />}
+        >
+          Boost profil
+        </TabBtn>
+        <TabBtn
+          active={tab === "frames"}
+          onClick={() => setTab("frames")}
+          icon={<Crown size={14} />}
+        >
+          Rame avatar
+        </TabBtn>
+        <TabBtn active={tab === "gifts"} onClick={() => setTab("gifts")} icon={<Gift size={14} />}>
+          Cadouri chat
+        </TabBtn>
+        <TabBtn
+          active={tab === "party"}
+          onClick={() => setTab("party")}
+          icon={<PartyPopper size={14} />}
+        >
+          Boost petrecere
+        </TabBtn>
       </nav>
 
       {tab === "boost" && (
@@ -182,7 +233,11 @@ function ShopPage() {
             disabled={!!busy || balance < 5}
             className="mt-4 w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-purple-600 font-display text-sm uppercase tracking-wide text-white disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {busy === "profile-boost" ? <Loader2 className="animate-spin" size={16} /> : <Beer size={16} />}
+            {busy === "profile-boost" ? (
+              <Loader2 className="animate-spin" size={16} />
+            ) : (
+              <Beer size={16} />
+            )}
             Dă rândul · {drink(5)}
           </button>
         </Card>
@@ -196,12 +251,17 @@ function ShopPage() {
             return (
               <Card key={f.id}>
                 <div className="flex flex-col items-center gap-3 py-2">
-                  <div className={`h-20 w-20 rounded-full bg-gradient-to-br from-purple-500/40 to-pink-500/40 ${f.css_class} grid place-items-center text-3xl`}>
+                  <div
+                    className={`h-20 w-20 rounded-full bg-gradient-to-br from-purple-500/40 to-pink-500/40 ${f.css_class} grid place-items-center text-3xl`}
+                  >
                     {f.emoji ?? "👤"}
                   </div>
                   <div className="font-display text-base">{f.name}</div>
                   {active ? (
-                    <button onClick={deactivateFrame} className="w-full py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs flex items-center justify-center gap-1.5">
+                    <button
+                      onClick={deactivateFrame}
+                      className="w-full py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs flex items-center justify-center gap-1.5"
+                    >
                       <Check size={14} /> Activă · scoate
                     </button>
                   ) : (
@@ -210,7 +270,11 @@ function ShopPage() {
                       disabled={!!busy || (!owned && balance < f.price_coins)}
                       className="w-full py-2 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
-                      {busy === `frame-${f.id}` ? <Loader2 className="animate-spin" size={12} /> : <Beer size={12} />}
+                      {busy === `frame-${f.id}` ? (
+                        <Loader2 className="animate-spin" size={12} />
+                      ) : (
+                        <Beer size={12} />
+                      )}
                       {owned ? "Activează" : drink(f.price_coins)}
                     </button>
                   )}
@@ -229,7 +293,10 @@ function ShopPage() {
           </p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {(gifts ?? []).map((g: any) => (
-              <div key={g.id} className="rounded-xl border border-white/10 bg-white/5 p-3 text-center">
+              <div
+                key={g.id}
+                className="rounded-xl border border-white/10 bg-white/5 p-3 text-center"
+              >
                 <div className="text-3xl">{g.emoji}</div>
                 <div className="text-xs mt-1">{g.name}</div>
                 <div className="text-[11px] text-amber-300 flex items-center justify-center gap-1 mt-1">
@@ -257,12 +324,19 @@ function ShopPage() {
           </div>
           {!myParties?.length ? (
             <div className="text-sm text-muted-foreground text-center py-6">
-              Nu ai nicio petrecere activă. <Link to="/app/parties" className="text-fuchsia-300 underline">Creează una</Link>.
+              Nu ai nicio petrecere activă.{" "}
+              <Link to="/app/parties" className="text-fuchsia-300 underline">
+                Creează una
+              </Link>
+              .
             </div>
           ) : (
             <div className="space-y-2">
               {myParties.map((p) => (
-                <div key={p.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-3"
+                >
                   <div className="min-w-0">
                     <div className="font-medium truncate">{p.title}</div>
                     <div className="text-[11px] text-muted-foreground">
@@ -274,7 +348,11 @@ function ShopPage() {
                     disabled={!!busy || balance < 15}
                     className="px-3 py-2 rounded-lg bg-pink-500/20 border border-pink-500/40 text-pink-200 text-xs disabled:opacity-50 flex items-center gap-1.5 shrink-0"
                   >
-                    {busy === `party-${p.id}` ? <Loader2 className="animate-spin" size={12} /> : <Rocket size={12} />}
+                    {busy === `party-${p.id}` ? (
+                      <Loader2 className="animate-spin" size={12} />
+                    ) : (
+                      <Rocket size={12} />
+                    )}
                     Boost · {drink(15)}
                   </button>
                 </div>
@@ -287,7 +365,17 @@ function ShopPage() {
   );
 }
 
-function TabBtn({ active, onClick, icon, children }: { active: boolean; onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
+function TabBtn({
+  active,
+  onClick,
+  icon,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <button
       onClick={onClick}

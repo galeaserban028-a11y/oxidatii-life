@@ -1,9 +1,25 @@
 import { Moment, archivo, hind, SHEET_BOTTOM } from "./shared";
 
-export function PostMenu({ photo: _photo, onClose, onDelete }: { photo: Moment; onClose: () => void; onDelete: () => void }) {
+export function PostMenu({
+  photo: _photo,
+  onClose,
+  onDelete,
+}: {
+  photo: Moment;
+  onClose: () => void;
+  onDelete: () => void;
+}) {
   return (
-    <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center" onClick={onClose} style={hind}>
-      <div className="w-full sm:max-w-[22rem] bg-background border-t sm:border border-foreground/10 sm:rounded-2xl rounded-t-2xl overflow-hidden" onClick={(e) => e.stopPropagation()} style={{ paddingBottom: `calc(${SHEET_BOTTOM})` }}>
+    <div
+      className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center"
+      onClick={onClose}
+      style={hind}
+    >
+      <div
+        className="w-full sm:max-w-[22rem] bg-background border-t sm:border border-foreground/10 sm:rounded-2xl rounded-t-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+        style={{ paddingBottom: `calc(${SHEET_BOTTOM})` }}
+      >
         <div className="py-2">
           <button
             onClick={onDelete}

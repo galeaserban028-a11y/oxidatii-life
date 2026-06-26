@@ -22,13 +22,17 @@ function PromoPage() {
     queryFn: async () => {
       const { data: campaign, error } = await supabase
         .from("campaigns")
-        .select("id,business_id,title,body,subtitle,cta_text,cta_url,image_urls,theme_color,starts_at,ends_at,impressions,clicks")
-        .eq("id", id).single();
+        .select(
+          "id,business_id,title,body,subtitle,cta_text,cta_url,image_urls,theme_color,starts_at,ends_at,impressions,clicks",
+        )
+        .eq("id", id)
+        .single();
       if (error) throw error;
       const biz = await supabase
         .from("business_accounts")
         .select("id,brand_name,logo_url,verified")
-        .eq("id", campaign.business_id).maybeSingle();
+        .eq("id", campaign.business_id)
+        .maybeSingle();
       return { campaign, biz: biz.data };
     },
   });
@@ -37,9 +41,17 @@ function PromoPage() {
     queryKey: ["campaign-likes", id, user?.id ?? null],
     queryFn: async () => {
       const [{ count }, mine] = await Promise.all([
-        supabase.from("campaign_likes").select("user_id", { count: "exact", head: true }).eq("campaign_id", id),
+        supabase
+          .from("campaign_likes")
+          .select("user_id", { count: "exact", head: true })
+          .eq("campaign_id", id),
         user
-          ? supabase.from("campaign_likes").select("user_id").eq("campaign_id", id).eq("user_id", user.id).maybeSingle()
+          ? supabase
+              .from("campaign_likes")
+              .select("user_id")
+              .eq("campaign_id", id)
+              .eq("user_id", user.id)
+              .maybeSingle()
           : Promise.resolve({ data: null } as any),
       ]);
       return { count: count ?? 0, liked: !!mine.data };
@@ -50,20 +62,28 @@ function PromoPage() {
   useEffect(() => {
     if (!data?.campaign || trackedRef.current) return;
     trackedRef.current = true;
-    supabase.rpc("increment_business_visit", { _business_id: data.campaign.business_id }).then(() => {});
+    supabase
+      .rpc("increment_business_visit", { _business_id: data.campaign.business_id })
+      .then(() => {});
     if (user) {
-      supabase.from("campaign_events").insert({
-        campaign_id: data.campaign.id,
-        user_id: user.id,
-        event_type: "view_detail",
-        cost_cents: 0,
-      }).then(() => {});
+      supabase
+        .from("campaign_events")
+        .insert({
+          campaign_id: data.campaign.id,
+          user_id: user.id,
+          event_type: "view_detail",
+          cost_cents: 0,
+        })
+        .then(() => {});
     }
   }, [data, user]);
 
   const [busyLike, setBusyLike] = useState(false);
   const toggleLike = async () => {
-    if (!user) { toast.error("Conectează-te ca să apreciezi."); return; }
+    if (!user) {
+      toast.error("Conectează-te ca să apreciezi.");
+      return;
+    }
     if (busyLike) return;
     setBusyLike(true);
     if (likeState?.liked) {
@@ -78,20 +98,21 @@ function PromoPage() {
   const handleCtaClick = () => {
     if (!data?.campaign?.cta_url) return;
     if (user) {
-      supabase.from("campaign_events").insert({
-        campaign_id: data.campaign.id,
-        user_id: user.id,
-        event_type: "click",
-        cost_cents: 0,
-      }).then(() => {});
+      supabase
+        .from("campaign_events")
+        .insert({
+          campaign_id: data.campaign.id,
+          user_id: user.id,
+          event_type: "click",
+          cost_cents: 0,
+        })
+        .then(() => {});
     }
     window.open(data.campaign.cta_url, "_blank", "noopener,noreferrer");
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black animate-pulse" />
-    );
+    return <div className="min-h-screen bg-black animate-pulse" />;
   }
   if (!data?.campaign) return <div className="p-6 text-sm">Promovare indisponibilă.</div>;
 
@@ -102,7 +123,7 @@ function PromoPage() {
   const body = (campaign.body ?? campaign.subtitle ?? "").trim();
   const title = (campaign.title ?? "").trim();
   const isInstagram = !!campaign.cta_url && /instagram\.com/i.test(campaign.cta_url);
-  const ctaLabel = isInstagram ? "Deschide Instagram" : (campaign.cta_text || "Deschide");
+  const ctaLabel = isInstagram ? "Deschide Instagram" : campaign.cta_text || "Deschide";
 
   // Split title into two lines for billboard typography
   const words = title ? title.split(/\s+/) : [];
@@ -142,7 +163,7 @@ function PromoPage() {
       >
         <div className="flex items-center gap-3">
           <button
-            onClick={() => history.length > 1 ? history.back() : navigate({ to: "/app" })}
+            onClick={() => (history.length > 1 ? history.back() : navigate({ to: "/app" }))}
             className="size-10 rounded-full bg-black/55 backdrop-blur-md border border-white/15 text-white flex items-center justify-center active:scale-95 transition"
             aria-label="Înapoi"
           >
@@ -151,7 +172,11 @@ function PromoPage() {
           <div className="flex items-center gap-2.5">
             <div className="size-10 rounded-full border-2 border-orange-500 p-0.5 bg-zinc-900">
               {biz?.logo_url ? (
-                <img src={biz.logo_url} alt={handle} className="w-full h-full rounded-full object-cover" />
+                <img
+                  src={biz.logo_url}
+                  alt={handle}
+                  className="w-full h-full rounded-full object-cover"
+                />
               ) : (
                 <div className="w-full h-full rounded-full bg-gradient-to-br from-orange-500 via-pink-500 to-purple-600 flex items-center justify-center text-white font-black text-sm shadow-[0_0_15px_rgba(249,115,22,0.4)]">
                   {handle[0]?.toUpperCase()}
@@ -162,14 +187,18 @@ function PromoPage() {
               <h3 className="text-white font-bold tracking-tight text-[14px]">{handle}</h3>
               <div className="flex items-center gap-1.5 mt-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                <p className="text-[9px] text-orange-400 font-bold tracking-[0.18em] uppercase">Postare Promovată</p>
+                <p className="text-[9px] text-orange-400 font-bold tracking-[0.18em] uppercase">
+                  Postare Promovată
+                </p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 mt-1">
-          <span className="text-[9px] font-black text-white uppercase tracking-[0.18em]">Sponsorizat</span>
+          <span className="text-[9px] font-black text-white uppercase tracking-[0.18em]">
+            Sponsorizat
+          </span>
         </div>
       </div>
 
@@ -221,7 +250,9 @@ function PromoPage() {
               <div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600" />
               <div className="relative m-[1.5px] bg-zinc-950 rounded-[10px] py-4 flex items-center justify-center gap-2">
                 {isInstagram && <Instagram size={16} className="text-pink-400" />}
-                <span className="text-white font-black uppercase tracking-[0.16em] text-[11px]">{ctaLabel}</span>
+                <span className="text-white font-black uppercase tracking-[0.16em] text-[11px]">
+                  {ctaLabel}
+                </span>
                 <ArrowRight size={14} className="text-orange-400" strokeWidth={3} />
               </div>
             </button>
@@ -241,7 +272,6 @@ function PromoPage() {
             />
           </button>
         </div>
-
 
         {/* Mandatory health warning */}
         <p className="text-[7px] text-zinc-500 text-center uppercase tracking-[0.22em] font-black pt-1">

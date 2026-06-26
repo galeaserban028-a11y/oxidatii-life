@@ -4,11 +4,22 @@ import maplibregl, { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Crosshair, Plus, Minus } from "lucide-react";
 
-type City = { id: string; slug: string; name: string; lat: number; lng: number; chaos_level: number };
+type City = {
+  id: string;
+  slug: string;
+  name: string;
+  lat: number;
+  lng: number;
+  chaos_level: number;
+};
 type Venue = {
-  id: string; name: string; type?: string;
-  lat: number | null; lng: number | null;
-  address?: string | null; cover_url?: string | null;
+  id: string;
+  name: string;
+  type?: string;
+  lat: number | null;
+  lng: number | null;
+  address?: string | null;
+  cover_url?: string | null;
 };
 export type FriendPin = {
   user_id: string;
@@ -26,18 +37,21 @@ const TYPE_COLOR: Record<string, string> = {
   bar: "#ffea00",
   pub: "#ff3d8b",
   terasa: "#00e5ff",
-  "terasă": "#00e5ff",
+  terasă: "#00e5ff",
   after: "#ff3d8b",
 };
 
 // Compact vector wine bottle. Kept non-circular so it reads as a bottle,
 // not as the old glowing dots/clusters.
 function makePinImage(color: string, lowEnd = false): ImageData {
-  const W = lowEnd ? 80 : 112, H = W;
+  const W = lowEnd ? 80 : 112,
+    H = W;
   const canvas = document.createElement("canvas");
-  canvas.width = W; canvas.height = H;
+  canvas.width = W;
+  canvas.height = H;
   const ctx = canvas.getContext("2d")!;
-  const cx = W / 2, cy = H / 2;
+  const cx = W / 2,
+    cy = H / 2;
   const s = W / 96;
 
   ctx.save();
@@ -89,10 +103,6 @@ function makePinImage(color: string, lowEnd = false): ImageData {
 
   return ctx.getImageData(0, 0, W, H);
 }
-
-
-
-
 
 function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
   const glowBlur = lowEnd ? 3 : 6;
@@ -244,10 +254,6 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
   } as unknown as maplibregl.StyleSpecification;
 }
 
-
-
-
-
 const VENUES_SRC = "venues-src";
 const HEAT_SRC = "venues-heat-src";
 const SMALL_CITY_LIMIT = 18;
@@ -261,20 +267,24 @@ function isValidLngLat(lng: unknown, lat: unknown) {
 
 function resolveCityLabelCollisions(container: HTMLElement | null, compact: boolean) {
   if (!container) return;
-  const labels = Array.from(container.querySelectorAll<HTMLElement>(".oxi-city-label"))
-    .sort((a, b) => Number(b.dataset.priority || 0) - Number(a.dataset.priority || 0));
+  const labels = Array.from(container.querySelectorAll<HTMLElement>(".oxi-city-label")).sort(
+    (a, b) => Number(b.dataset.priority || 0) - Number(a.dataset.priority || 0),
+  );
   const occupied: DOMRect[] = [];
   const pad = compact ? 9 : 6;
 
   for (const label of labels) {
     label.style.display = "inline-block";
     const rect = label.getBoundingClientRect();
-    const overlaps = occupied.some((other) => !(
-      rect.right + pad < other.left ||
-      rect.left - pad > other.right ||
-      rect.bottom + pad < other.top ||
-      rect.top - pad > other.bottom
-    ));
+    const overlaps = occupied.some(
+      (other) =>
+        !(
+          rect.right + pad < other.left ||
+          rect.left - pad > other.right ||
+          rect.bottom + pad < other.top ||
+          rect.top - pad > other.bottom
+        ),
+    );
 
     if (overlaps) {
       label.style.display = "none";
@@ -323,8 +333,12 @@ export function RomaniaMap3D({
   const [mapFailed, setMapFailed] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
-  useEffect(() => { navRef.current = nav; }, [nav]);
-  useEffect(() => { onCityClickRef.current = onCityClick; }, [onCityClick]);
+  useEffect(() => {
+    navRef.current = nav;
+  }, [nav]);
+  useEffect(() => {
+    onCityClickRef.current = onCityClick;
+  }, [onCityClick]);
 
   // INIT map once
   useEffect(() => {
@@ -348,7 +362,9 @@ export function RomaniaMap3D({
         fadeDuration: isSmall ? 0 : 80,
         refreshExpiredTiles: false,
         maxPitch: isSmall ? 45 : 60,
-        pixelRatio: isSmall ? Math.min(window.devicePixelRatio || 1, 1) : Math.min(window.devicePixelRatio || 1, 1.75),
+        pixelRatio: isSmall
+          ? Math.min(window.devicePixelRatio || 1, 1)
+          : Math.min(window.devicePixelRatio || 1, 1.75),
         antialias: !isSmall,
         maxTileCacheSize: isSmall ? 40 : 80,
       } as any);
@@ -399,12 +415,19 @@ export function RomaniaMap3D({
             "heatmap-weight": ["interpolate", ["linear"], ["get", "w"], 0, 0.08, 5, 0.55],
             "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 0, 0.18, 9, 0.45, 13, 0.75],
             "heatmap-color": [
-              "interpolate", ["linear"], ["heatmap-density"],
-              0, "rgba(3,4,10,0)",
-              0.18, "rgba(57,255,210,0.16)",
-              0.45, "rgba(198,107,255,0.22)",
-              0.75, "rgba(255,176,0,0.24)",
-              1, "rgba(255,49,134,0.28)",
+              "interpolate",
+              ["linear"],
+              ["heatmap-density"],
+              0,
+              "rgba(3,4,10,0)",
+              0.18,
+              "rgba(57,255,210,0.16)",
+              0.45,
+              "rgba(198,107,255,0.22)",
+              0.75,
+              "rgba(255,176,0,0.24)",
+              1,
+              "rgba(255,49,134,0.28)",
             ],
             "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 8, 6, 18, 11, 34, 13, 48],
             "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 4, 0.22, 10, 0.16, 13, 0.05],
@@ -436,9 +459,12 @@ export function RomaniaMap3D({
           filter: ["has", "point_count"],
           paint: {
             "circle-color": [
-              "step", ["get", "point_count"],
-              "rgba(255,43,214,0.42)", 80,
-              "rgba(255,255,255,0.28)", 240,
+              "step",
+              ["get", "point_count"],
+              "rgba(255,43,214,0.42)",
+              80,
+              "rgba(255,255,255,0.28)",
+              240,
               "rgba(255,140,90,0.42)",
             ],
             "circle-radius": ["step", ["get", "point_count"], 18, 80, 22, 240, 26],
@@ -455,9 +481,12 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         paint: {
           "circle-color": [
-            "step", ["get", "point_count"],
-            "rgba(255,43,214,0.55)", 80,
-            "rgba(255,255,255,0.38)", 240,
+            "step",
+            ["get", "point_count"],
+            "rgba(255,43,214,0.55)",
+            80,
+            "rgba(255,255,255,0.38)",
+            240,
             "rgba(255,140,90,0.55)",
           ],
           "circle-radius": ["step", ["get", "point_count"], 14, 80, 17, 240, 20],
@@ -466,7 +495,6 @@ export function RomaniaMap3D({
         },
       });
 
-
       map.addLayer({
         id: "venues-clusters",
         type: "circle",
@@ -474,17 +502,23 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         paint: {
           "circle-color": [
-            "step", ["get", "point_count"],
-            "rgba(10,6,18,0.92)", 80,
-            "rgba(20,14,26,0.92)", 240,
+            "step",
+            ["get", "point_count"],
+            "rgba(10,6,18,0.92)",
+            80,
+            "rgba(20,14,26,0.92)",
+            240,
             "rgba(48,28,22,0.92)",
           ],
           "circle-radius": ["step", ["get", "point_count"], 10, 80, 12, 240, 14],
           "circle-stroke-width": 1.6,
           "circle-stroke-color": [
-            "step", ["get", "point_count"],
-            "#c724ff", 80,
-            "#ffffff", 240,
+            "step",
+            ["get", "point_count"],
+            "#c724ff",
+            80,
+            "#ffffff",
+            240,
             "#ff3d8b",
           ],
         },
@@ -501,7 +535,11 @@ export function RomaniaMap3D({
           "text-font": ["Noto Sans Bold"],
           "text-allow-overlap": true,
         },
-        paint: { "text-color": "#ffffff", "text-halo-color": "rgba(0,0,0,0.85)", "text-halo-width": 1.2 },
+        paint: {
+          "text-color": "#ffffff",
+          "text-halo-color": "rgba(0,0,0,0.85)",
+          "text-halo-width": 1.2,
+        },
       });
 
       // unclustered points → clear wine-bottle pins
@@ -512,16 +550,37 @@ export function RomaniaMap3D({
         filter: ["!", ["has", "point_count"]],
         layout: {
           "icon-image": [
-            "match", ["get", "type"],
-            "club", "pin-bottle-v3-club",
-            "bar", "pin-bottle-v3-bar",
-            "pub", "pin-bottle-v3-pub",
-            "terasa", "pin-bottle-v3-terasa",
-            "terasă", "pin-bottle-v3-terasa",
-            "after", "pin-bottle-v3-after",
+            "match",
+            ["get", "type"],
+            "club",
+            "pin-bottle-v3-club",
+            "bar",
+            "pin-bottle-v3-bar",
+            "pub",
+            "pin-bottle-v3-pub",
+            "terasa",
+            "pin-bottle-v3-terasa",
+            "terasă",
+            "pin-bottle-v3-terasa",
+            "after",
+            "pin-bottle-v3-after",
             "pin-bottle-v3-bar",
           ],
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 3, 0.5, 6, 0.7, 10, 0.95, 14, 1.2, 17, 1.5],
+          "icon-size": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            3,
+            0.5,
+            6,
+            0.7,
+            10,
+            0.95,
+            14,
+            1.2,
+            17,
+            1.5,
+          ],
           "icon-allow-overlap": true,
           "icon-ignore-placement": true,
           "icon-anchor": "center",
@@ -545,22 +604,33 @@ export function RomaniaMap3D({
         },
       });
 
-
-
       // click → zoom into cluster / navigate to venue
       map.on("click", "venues-clusters", (e) => {
-        const f = e.features?.[0]; if (!f) return;
+        const f = e.features?.[0];
+        if (!f) return;
         const id = (f.properties as any).cluster_id;
-        (map.getSource(VENUES_SRC) as maplibregl.GeoJSONSource).getClusterExpansionZoom(id).then((zoom) => {
-          map.easeTo({ center: (f.geometry as any).coordinates, zoom: zoom + 0.2, duration: 500 });
-        }).catch(() => {});
+        (map.getSource(VENUES_SRC) as maplibregl.GeoJSONSource)
+          .getClusterExpansionZoom(id)
+          .then((zoom) => {
+            map.easeTo({
+              center: (f.geometry as any).coordinates,
+              zoom: zoom + 0.2,
+              duration: 500,
+            });
+          })
+          .catch(() => {});
       });
       map.on("click", "venues-points", (e) => {
-        const f = e.features?.[0]; if (!f) return;
+        const f = e.features?.[0];
+        if (!f) return;
         const p = f.properties as any;
         const coords = (f.geometry as any).coordinates.slice();
-        const cover = p.cover_url ? `<img src="${p.cover_url}" alt="" style="width:100%;height:120px;object-fit:cover;display:block;" loading="lazy"/>` : "";
-        const addr = p.address ? `<div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#aaa;margin-top:2px;">${p.address}</div>` : "";
+        const cover = p.cover_url
+          ? `<img src="${p.cover_url}" alt="" style="width:100%;height:120px;object-fit:cover;display:block;" loading="lazy"/>`
+          : "";
+        const addr = p.address
+          ? `<div style="font-family:'DM Sans',sans-serif;font-size:10px;color:#aaa;margin-top:2px;">${p.address}</div>`
+          : "";
         const typeColor = TYPE_COLOR[p.type] ?? "#ffea00";
         const html = `<div style="width:220px;background:#06070a;color:#fff;border-radius:12px;overflow:hidden;border:1px solid ${typeColor}55;">
           ${cover}
@@ -571,19 +641,32 @@ export function RomaniaMap3D({
             <a href="/app/venue/${p.id}" data-oxi-venue="${p.id}" style="margin-top:8px;display:block;text-align:center;padding:6px 10px;border-radius:8px;background:${typeColor};color:#06070a;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;text-decoration:none;">detalii →</a>
           </div>
         </div>`;
-        const popup = new maplibregl.Popup({ closeButton: true, closeOnClick: true, offset: 14, maxWidth: "240px", className: "oxi-popup" })
-          .setLngLat(coords).setHTML(html).addTo(map);
+        const popup = new maplibregl.Popup({
+          closeButton: true,
+          closeOnClick: true,
+          offset: 14,
+          maxWidth: "240px",
+          className: "oxi-popup",
+        })
+          .setLngLat(coords)
+          .setHTML(html)
+          .addTo(map);
         const root = popup.getElement();
         const link = root?.querySelector<HTMLAnchorElement>("a[data-oxi-venue]");
-        if (link) link.addEventListener("click", (ev) => {
-          ev.preventDefault();
-          popup.remove();
-          navRef.current({ to: "/app/venue/$id", params: { id: p.id } });
-        });
+        if (link)
+          link.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            popup.remove();
+            navRef.current({ to: "/app/venue/$id", params: { id: p.id } });
+          });
       });
       for (const layer of ["venues-clusters", "venues-points"]) {
-        map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
-        map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
+        map.on("mouseenter", layer, () => {
+          map.getCanvas().style.cursor = "pointer";
+        });
+        map.on("mouseleave", layer, () => {
+          map.getCanvas().style.cursor = "";
+        });
       }
 
       // HEAT NOW overlay — live hotspots fed from get_heat_now RPC. Rendered as
@@ -598,11 +681,17 @@ export function RomaniaMap3D({
         source: "heat-now-src",
         paint: {
           "circle-color": [
-            "interpolate", ["linear"], ["get", "score"],
-            0, "rgba(57,255,210,0.35)",
-            50, "rgba(255,176,0,0.55)",
-            80, "rgba(255,61,139,0.75)",
-            100, "rgba(255,234,0,0.85)",
+            "interpolate",
+            ["linear"],
+            ["get", "score"],
+            0,
+            "rgba(57,255,210,0.35)",
+            50,
+            "rgba(255,176,0,0.55)",
+            80,
+            "rgba(255,61,139,0.75)",
+            100,
+            "rgba(255,234,0,0.85)",
           ],
           "circle-radius": ["interpolate", ["linear"], ["get", "score"], 0, 18, 100, 56],
           "circle-blur": 0.85,
@@ -618,11 +707,17 @@ export function RomaniaMap3D({
           "circle-radius": ["interpolate", ["linear"], ["get", "score"], 0, 9, 100, 18],
           "circle-stroke-width": 2,
           "circle-stroke-color": [
-            "interpolate", ["linear"], ["get", "score"],
-            0, "#39ffd2",
-            50, "#ffb000",
-            80, "#ff3d8b",
-            100, "#ffea00",
+            "interpolate",
+            ["linear"],
+            ["get", "score"],
+            0,
+            "#39ffd2",
+            50,
+            "#ffb000",
+            80,
+            "#ff3d8b",
+            100,
+            "#ffea00",
           ],
         },
       });
@@ -647,12 +742,20 @@ export function RomaniaMap3D({
       requestAnimationFrame(() => map.resize());
     });
 
-    map.on("error", (event) => { console.warn("Map tile error", event.error); });
-    const refreshLabels = () => requestAnimationFrame(() => resolveCityLabelCollisions(containerRef.current, compactMapRef.current));
+    map.on("error", (event) => {
+      console.warn("Map tile error", event.error);
+    });
+    const refreshLabels = () =>
+      requestAnimationFrame(() =>
+        resolveCityLabelCollisions(containerRef.current, compactMapRef.current),
+      );
     let moveIdleTimer: number | null = null;
     const onMoveStart = () => {
       containerRef.current?.classList.add("oxi-map-moving");
-      if (moveIdleTimer) { clearTimeout(moveIdleTimer); moveIdleTimer = null; }
+      if (moveIdleTimer) {
+        clearTimeout(moveIdleTimer);
+        moveIdleTimer = null;
+      }
     };
     const onMoveEnd = () => {
       if (moveIdleTimer) clearTimeout(moveIdleTimer);
@@ -667,38 +770,59 @@ export function RomaniaMap3D({
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
       event.preventDefault();
-      canvas.addEventListener("webglcontextrestored", () => {
-        setMapFailed(false);
-        try { map.triggerRepaint(); } catch {}
-      }, { once: true });
+      canvas.addEventListener(
+        "webglcontextrestored",
+        () => {
+          setMapFailed(false);
+          try {
+            map.triggerRepaint();
+          } catch {}
+        },
+        { once: true },
+      );
     };
     canvas.addEventListener("webglcontextlost", onLost as any);
 
     mapRef.current = map;
     return () => {
-      cityMarkers.current.forEach(m => m.remove()); cityMarkers.current.clear();
-      friendMarkers.current.forEach(m => m.remove()); friendMarkers.current.clear();
-      promotedMarkers.current.forEach(m => m.remove()); promotedMarkers.current.clear();
-      try { map.remove(); } catch {}
+      cityMarkers.current.forEach((m) => m.remove());
+      cityMarkers.current.clear();
+      friendMarkers.current.forEach((m) => m.remove());
+      friendMarkers.current.clear();
+      promotedMarkers.current.forEach((m) => m.remove());
+      promotedMarkers.current.clear();
+      try {
+        map.remove();
+      } catch {}
       resizeObserver?.disconnect();
-      mapRef.current = null; loadedRef.current = false;
+      mapRef.current = null;
+      loadedRef.current = false;
     };
   }, [retryKey]);
 
   // VENUES → GeoJSON (GPU layer)
   useEffect(() => {
-    const map = mapRef.current; if (!map) return;
+    const map = mapRef.current;
+    if (!map) return;
     const apply = () => {
       const src = map.getSource(VENUES_SRC) as maplibregl.GeoJSONSource | undefined;
       if (!src) return;
-      const visibleVenues = venues.filter(v => isValidLngLat(v.lng, v.lat) && !promotedMeta[v.id]);
+      const visibleVenues = venues.filter(
+        (v) => isValidLngLat(v.lng, v.lat) && !promotedMeta[v.id],
+      );
       src.setData({
         type: "FeatureCollection",
-        features: visibleVenues.map(v => ({
-            type: "Feature",
-            geometry: { type: "Point", coordinates: [Number(v.lng), Number(v.lat)] },
-            properties: { id: v.id, name: v.name, type: v.type ?? "club", address: v.address ?? "", cover_url: v.cover_url ?? "" },
-          })),
+        features: visibleVenues.map((v) => ({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [Number(v.lng), Number(v.lat)] },
+          properties: {
+            id: v.id,
+            name: v.name,
+            type: v.type ?? "club",
+            address: v.address ?? "",
+            cover_url: v.cover_url ?? "",
+          },
+        })),
       });
       if (compactMapRef.current) return;
       const heat = map.getSource(HEAT_SRC) as maplibregl.GeoJSONSource | undefined;
@@ -706,8 +830,8 @@ export function RomaniaMap3D({
         heat.setData({
           type: "FeatureCollection",
           features: venues
-            .filter(v => isValidLngLat(v.lng, v.lat))
-            .map(v => {
+            .filter((v) => isValidLngLat(v.lng, v.lat))
+            .map((v) => {
               const promoted = !!promotedMeta[v.id];
               const t = v.type ?? "club";
               const baseWeight = t === "club" ? 3 : t === "after" ? 3.2 : t === "bar" ? 2 : 1.4;
@@ -720,7 +844,8 @@ export function RomaniaMap3D({
         });
       }
     };
-    if (loadedRef.current) apply(); else map.once("load", apply);
+    if (loadedRef.current) apply();
+    else map.once("load", apply);
   }, [venues, promotedMeta, retryKey]);
 
   // Heatmap pulse intentionally removed — it called setPaintProperty every
@@ -730,7 +855,8 @@ export function RomaniaMap3D({
 
   // HEAT NOW → live hot zones (overlay circles)
   useEffect(() => {
-    const map = mapRef.current; if (!map) return;
+    const map = mapRef.current;
+    if (!map) return;
     const apply = () => {
       const src = map.getSource("heat-now-src") as maplibregl.GeoJSONSource | undefined;
       if (!src) return;
@@ -745,19 +871,24 @@ export function RomaniaMap3D({
           })),
       });
     };
-    if (loadedRef.current) apply(); else map.once("load", apply);
+    if (loadedRef.current) apply();
+    else map.once("load", apply);
   }, [heatNowCells, retryKey]);
-
-
 
   // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
   // halo. Replaces the bottle silhouette so paying businesses are instantly
   // recognizable on the map. Diff-only: only re-creates markers when the set
   // of promoted venues or their coordinates change.
   useEffect(() => {
-    const map = mapRef.current; if (!map) return;
+    const map = mapRef.current;
+    if (!map) return;
     const build = () => {
-      if (compactMapRef.current && promotedMarkers.current.size === 0 && Object.keys(promotedMeta).length === 0) return;
+      if (
+        compactMapRef.current &&
+        promotedMarkers.current.size === 0 &&
+        Object.keys(promotedMeta).length === 0
+      )
+        return;
       // Read dismissed promo ids from sessionStorage so an X dismissal sticks
       // for the current browsing session without nuking the database.
       let dismissed = new Set<string>();
@@ -778,7 +909,8 @@ export function RomaniaMap3D({
         }
         const theme = meta.theme || "#ff3d8b";
         const wrap = document.createElement("div");
-        wrap.style.cssText = "position:relative;width:58px;height:58px;cursor:pointer;transform:translateY(-50%);z-index:5;";
+        wrap.style.cssText =
+          "position:relative;width:58px;height:58px;cursor:pointer;transform:translateY(-50%);z-index:5;";
 
         const pulse = document.createElement("div");
         pulse.style.cssText = `position:absolute;inset:-4px;border-radius:9999px;background:${theme};opacity:0.18;animation:oxi-pulse-strong 2.4s ease-out infinite;pointer-events:none;`;
@@ -788,11 +920,14 @@ export function RomaniaMap3D({
         ring.style.cssText = `position:relative;width:58px;height:58px;border-radius:9999px;border:2px solid ${theme};overflow:hidden;background:#06070a;box-shadow:0 0 14px ${theme}88,0 8px 16px rgba(0,0,0,0.58);animation:oxi-marker-pop 0.32s cubic-bezier(0.22,1,0.36,1) both;`;
         if (meta.cover) {
           const imgFrame = document.createElement("div");
-          imgFrame.style.cssText = "position:absolute;inset:3px;border-radius:9999px;overflow:hidden;background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;";
+          imgFrame.style.cssText =
+            "position:absolute;inset:3px;border-radius:9999px;overflow:hidden;background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;";
           const img = document.createElement("img");
-          img.src = meta.cover; img.alt = "";
+          img.src = meta.cover;
+          img.alt = "";
           img.loading = "lazy";
-          img.style.cssText = "width:100%;height:100%;object-fit:cover;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
+          img.style.cssText =
+            "width:100%;height:100%;object-fit:cover;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
           imgFrame.appendChild(img);
           ring.appendChild(imgFrame);
         } else {
@@ -802,7 +937,6 @@ export function RomaniaMap3D({
           ring.appendChild(ini);
         }
         wrap.appendChild(ring);
-
 
         const badge = document.createElement("div");
         badge.textContent = "";
@@ -821,13 +955,18 @@ export function RomaniaMap3D({
           e.preventDefault();
           if (meta.campaignId) {
             try {
-              const cur = new Set<string>(JSON.parse(sessionStorage.getItem("oxi_dismissed_promos") || "[]"));
+              const cur = new Set<string>(
+                JSON.parse(sessionStorage.getItem("oxi_dismissed_promos") || "[]"),
+              );
               cur.add(meta.campaignId);
               sessionStorage.setItem("oxi_dismissed_promos", JSON.stringify([...cur]));
             } catch {}
           }
           const m = promotedMarkers.current.get(v.id);
-          if (m) { m.remove(); promotedMarkers.current.delete(v.id); }
+          if (m) {
+            m.remove();
+            promotedMarkers.current.delete(v.id);
+          }
         };
         wrap.appendChild(close);
 
@@ -846,20 +985,24 @@ export function RomaniaMap3D({
         promotedMarkers.current.set(v.id, marker);
       }
       for (const [id, marker] of promotedMarkers.current) {
-        if (!seen.has(id)) { marker.remove(); promotedMarkers.current.delete(id); }
+        if (!seen.has(id)) {
+          marker.remove();
+          promotedMarkers.current.delete(id);
+        }
       }
     };
-    if (loadedRef.current) build(); else map.once("load", build);
+    if (loadedRef.current) build();
+    else map.once("load", build);
   }, [venues, promotedMeta, retryKey]);
-
 
   // CITIES → only the hottest cities get a tiny label; the basemap provides
   // the clean city/country typography, avoiding the previous label pile-up.
   useEffect(() => {
-    const map = mapRef.current; if (!map) return;
-      const markerCities = [...cities]
+    const map = mapRef.current;
+    if (!map) return;
+    const markerCities = [...cities]
       .sort((a, b) => b.chaos_level - a.chaos_level)
-        .slice(0, compactMapRef.current ? 12 : DESKTOP_CITY_LIMIT);
+      .slice(0, compactMapRef.current ? 12 : DESKTOP_CITY_LIMIT);
     const bottleSVG = (size: number, color: string) => `
       <svg width="${size}" height="${size * 2.2}" viewBox="0 0 20 44" xmlns="http://www.w3.org/2000/svg" style="display:block;${compactMapRef.current ? "" : `filter:drop-shadow(0 0 6px ${color}) drop-shadow(0 2px 3px rgba(0,0,0,0.7));`}">
         <rect x="8.5" y="0" width="3" height="6" rx="1" fill="#1a0f05"/>
@@ -884,23 +1027,29 @@ export function RomaniaMap3D({
       }
       const big = c.chaos_level >= 9;
       const color = big ? "#ff3d8b" : "#a855f7";
-      const bottleSize = compactMapRef.current ? (big ? 17 : 14) : (big ? 20 : 16);
+      const bottleSize = compactMapRef.current ? (big ? 17 : 14) : big ? 20 : 16;
       const wrap = document.createElement("button");
-      wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:0;padding:0;transform:translate(-50%,-100%);position:relative;";
+      wrap.style.cssText =
+        "display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:0;padding:0;transform:translate(-50%,-100%);position:relative;";
       wrap.title = c.name;
 
       const bottleStage = document.createElement("div");
-      bottleStage.style.cssText = "position:relative;display:block;transition:transform 160ms ease;";
+      bottleStage.style.cssText =
+        "position:relative;display:block;transition:transform 160ms ease;";
       bottleStage.innerHTML = bottleSVG(bottleSize, color);
       bottleStage.style.animation = "oxi-marker-pop 0.34s cubic-bezier(0.22,1,0.36,1) both";
       wrap.appendChild(bottleStage);
 
-
       let shattering = false;
       const shatter = () => {
-        if (shattering) return; shattering = true;
+        if (shattering) return;
+        shattering = true;
         const original = bottleStage.firstElementChild as HTMLElement | null;
-        if (original) { original.style.transition = "opacity 100ms, transform 100ms"; original.style.opacity = "0"; original.style.transform = "scale(0.6)"; }
+        if (original) {
+          original.style.transition = "opacity 100ms, transform 100ms";
+          original.style.opacity = "0";
+          original.style.transform = "scale(0.6)";
+        }
         const burstCount = compactMapRef.current ? 4 : 7;
         for (let i = 0; i < burstCount; i++) {
           const frag = document.createElement("div");
@@ -929,7 +1078,12 @@ export function RomaniaMap3D({
           navRef.current({ to: "/app/city/$slug", params: { slug: c.slug } });
         }, 600);
       };
-      const clear = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
+      const clear = () => {
+        if (pressTimer) {
+          clearTimeout(pressTimer);
+          pressTimer = null;
+        }
+      };
       wrap.onpointerup = wrap.onpointerleave = wrap.onpointercancel = clear;
       wrap.onclick = (e) => {
         e.stopPropagation();
@@ -937,18 +1091,29 @@ export function RomaniaMap3D({
         if (longPressed) return;
         shatter();
       };
-      cityMarkers.current.set(c.id, new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([c.lng, c.lat]).addTo(map));
+      cityMarkers.current.set(
+        c.id,
+        new maplibregl.Marker({ element: wrap, anchor: "bottom" })
+          .setLngLat([c.lng, c.lat])
+          .addTo(map),
+      );
     }
     // Remove markers for cities that disappeared from the list.
     for (const [id, marker] of cityMarkers.current) {
-      if (!seen.has(id)) { marker.remove(); cityMarkers.current.delete(id); }
+      if (!seen.has(id)) {
+        marker.remove();
+        cityMarkers.current.delete(id);
+      }
     }
-    requestAnimationFrame(() => resolveCityLabelCollisions(containerRef.current, compactMapRef.current));
+    requestAnimationFrame(() =>
+      resolveCityLabelCollisions(containerRef.current, compactMapRef.current),
+    );
   }, [cities, retryKey]);
 
   // FOCUS city programmatically. easeTo is lighter than flyTo on mobile GPUs.
   useEffect(() => {
-    const map = mapRef.current; if (!map || !focusCity) return;
+    const map = mapRef.current;
+    if (!map || !focusCity) return;
     map.easeTo({
       center: [focusCity.lng, focusCity.lat],
       zoom: focusCity.zoom ?? 12.4,
@@ -961,13 +1126,21 @@ export function RomaniaMap3D({
 
   // FIT BOUNDS — used for country/region zoom
   useEffect(() => {
-    const map = mapRef.current; if (!map || !fitBounds) return;
+    const map = mapRef.current;
+    if (!map || !fitBounds) return;
     const fit = () => {
       try {
-        map.fitBounds(fitBounds, { padding: 60, duration: compactMapRef.current ? 450 : 800, pitch: 0, bearing: 0, maxZoom: 9 });
+        map.fitBounds(fitBounds, {
+          padding: 60,
+          duration: compactMapRef.current ? 450 : 800,
+          pitch: 0,
+          bearing: 0,
+          maxZoom: 9,
+        });
       } catch {}
     };
-    if (loadedRef.current) fit(); else map.once("load", fit);
+    if (loadedRef.current) fit();
+    else map.once("load", fit);
   }, [fitBounds]);
 
   // FRIENDS → diff-only DOM markers. When a friend's coords change, smoothly
@@ -975,7 +1148,8 @@ export function RomaniaMap3D({
   // are walking, not teleporting.
   const friendAnims = useRef<Map<string, number>>(new Map());
   useEffect(() => {
-    const map = mapRef.current; if (!map) return;
+    const map = mapRef.current;
+    if (!map) return;
     const seen = new Set<string>();
     for (const f of friends) {
       if (!isValidLngLat(f.lng, f.lat)) continue;
@@ -989,20 +1163,26 @@ export function RomaniaMap3D({
           if (img) {
             if (img.src !== f.avatar_url) img.src = f.avatar_url;
           } else {
-            const ring = el.querySelector("div[style*='border-radius:'][style*='overflow:hidden']") as HTMLElement | null;
+            const ring = el.querySelector(
+              "div[style*='border-radius:'][style*='overflow:hidden']",
+            ) as HTMLElement | null;
             if (ring) {
               ring.innerHTML = "";
               const ni = document.createElement("img");
-              ni.src = f.avatar_url; ni.alt = "";
-              ni.style.cssText = "width:100%;height:100%;object-fit:cover;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
+              ni.src = f.avatar_url;
+              ni.alt = "";
+              ni.style.cssText =
+                "width:100%;height:100%;object-fit:cover;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
               ring.appendChild(ni);
             }
           }
         }
         const cur = existing.getLngLat();
         if (Math.abs(cur.lng - f.lng) < 1e-7 && Math.abs(cur.lat - f.lat) < 1e-7) continue;
-        const fromLng = cur.lng, fromLat = cur.lat;
-        const toLng = f.lng, toLat = f.lat;
+        const fromLng = cur.lng,
+          fromLat = cur.lat;
+        const toLng = f.lng,
+          toLat = f.lat;
         const dur = 1200;
         const start = performance.now();
         const prev = friendAnims.current.get(f.user_id);
@@ -1019,7 +1199,8 @@ export function RomaniaMap3D({
       }
 
       const wrap = document.createElement("div");
-      wrap.style.cssText = "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);z-index:10;";
+      wrap.style.cssText =
+        "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);z-index:10;";
 
       const accent = f.is_me ? "#ff3d8b" : "#00e5ff";
       const ringSize = f.is_me ? 56 : 44;
@@ -1034,13 +1215,16 @@ export function RomaniaMap3D({
 
       if (f.avatar_url) {
         const img = document.createElement("img");
-        img.src = f.avatar_url; img.alt = "";
-        img.style.cssText = "width:100%;height:100%;object-fit:cover;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
+        img.src = f.avatar_url;
+        img.alt = "";
+        img.style.cssText =
+          "width:100%;height:100%;object-fit:cover;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
         ring.appendChild(img);
       } else {
         const ini = document.createElement("div");
         ini.textContent = ((f.handle ?? f.display_name ?? "?")[0] ?? "?").toUpperCase();
-        ini.style.cssText = "width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:'DM Sans',sans-serif;font-size:14px;";
+        ini.style.cssText =
+          "width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-family:'DM Sans',sans-serif;font-size:14px;";
         ring.appendChild(ini);
       }
       wrap.appendChild(ring);
@@ -1052,32 +1236,41 @@ export function RomaniaMap3D({
       if (f.is_me) {
         const crown = document.createElement("div");
         crown.textContent = "TU";
-        crown.style.cssText = "position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:9999px;background:#ff3d8b;color:#fff;font-family:'DM Sans',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.08em;border:1.5px solid #06070a;box-shadow:0 0 8px #ff3d8b;";
+        crown.style.cssText =
+          "position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:9999px;background:#ff3d8b;color:#fff;font-family:'DM Sans',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.08em;border:1.5px solid #06070a;box-shadow:0 0 8px #ff3d8b;";
         wrap.appendChild(crown);
       }
 
-      const labelText = f.display_name ?? (f.handle ? `@${f.handle}` : (f.is_me ? "tu" : "live"));
+      const labelText = f.display_name ?? (f.handle ? `@${f.handle}` : f.is_me ? "tu" : "live");
       const pill = document.createElement("div");
       pill.textContent = labelText;
       pill.style.cssText = `display:none;`;
       wrap.appendChild(pill);
 
-      wrap.onclick = (e) => { e.stopPropagation(); navRef.current({ to: "/app/user/$id", params: { id: f.user_id } }); };
-      const marker = new maplibregl.Marker({ element: wrap, anchor: "bottom" }).setLngLat([f.lng, f.lat]).addTo(map);
+      wrap.onclick = (e) => {
+        e.stopPropagation();
+        navRef.current({ to: "/app/user/$id", params: { id: f.user_id } });
+      };
+      const marker = new maplibregl.Marker({ element: wrap, anchor: "bottom" })
+        .setLngLat([f.lng, f.lat])
+        .addTo(map);
       friendMarkers.current.set(f.user_id, marker);
     }
     // remove markers (and cancel anims) for friends no longer present
     for (const [id, marker] of friendMarkers.current) {
       if (!seen.has(id)) {
         const a = friendAnims.current.get(id);
-        if (a) { cancelAnimationFrame(a); friendAnims.current.delete(id); }
+        if (a) {
+          cancelAnimationFrame(a);
+          friendAnims.current.delete(id);
+        }
         marker.remove();
         friendMarkers.current.delete(id);
       }
     }
   }, [friends, retryKey]);
 
-  const mePin = friends.find(f => f.is_me);
+  const mePin = friends.find((f) => f.is_me);
 
   const handleRecenter = useCallback(() => {
     const map = mapRef.current;
@@ -1126,9 +1319,14 @@ export function RomaniaMap3D({
         <div className="absolute inset-0 z-20 grid place-items-center bg-background/95 px-6 text-center">
           <div>
             <div className="font-display font-black text-xl">harta se reîncarcă</div>
-            <div className="mt-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">telefonul a pierdut randarea hărții</div>
+            <div className="mt-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              telefonul a pierdut randarea hărții
+            </div>
             <button
-              onClick={() => { setMapFailed(false); setRetryKey(k => k + 1); }}
+              onClick={() => {
+                setMapFailed(false);
+                setRetryKey((k) => k + 1);
+              }}
               className="mt-4 rounded-lg border border-neon-green/40 px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-neon-green"
             >
               reîncarcă
@@ -1166,10 +1364,14 @@ export function RomaniaMap3D({
         )}
       </div>
 
-
       {/* Subtle edge fade only; keep streets and venue pins visible. */}
-      <div className="pointer-events-none absolute inset-0 z-[1]"
-           style={{ background: "linear-gradient(180deg, rgba(3,4,10,0.18), transparent 24%, transparent 76%, rgba(3,4,10,0.22))" }} />
+      <div
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(3,4,10,0.18), transparent 24%, transparent 76%, rgba(3,4,10,0.22))",
+        }}
+      />
     </div>
   );
 }

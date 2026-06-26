@@ -13,7 +13,9 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/premium")({
   head: () => ({ meta: [{ title: "Membership · OXIDAȚII" }] }),
-  validateSearch: (search: Record<string, unknown>): { checkout?: string; session_id?: string } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { checkout?: string; session_id?: string } => ({
     checkout: typeof search.checkout === "string" ? search.checkout : undefined,
     session_id: typeof search.session_id === "string" ? search.session_id : undefined,
   }),
@@ -30,58 +32,139 @@ type Tier = {
   coins: number;
   blurb: string;
   perks: string[];
-  neon: string;        // hex neon accent
-  textOnNeon: string;  // text color when sitting on the neon swatch
+  neon: string; // hex neon accent
+  textOnNeon: string; // text color when sitting on the neon swatch
   badge?: string;
 };
 
 const NEON = {
   yellow: "#ffea00",
-  pink:   "#ff3d8b",
+  pink: "#ff3d8b",
   violet: "#c724ff",
-  cyan:   "#00e5ff",
+  cyan: "#00e5ff",
 };
 
 const TIERS: Tier[] = [
   {
-    id: "vip", index: "I", name: "VIP", italic: "discret",
-    price: 2.99, coins: 5, neon: NEON.yellow, textOnNeon: "#050510",
+    id: "vip",
+    index: "I",
+    name: "VIP",
+    italic: "discret",
+    price: 2.99,
+    coins: 5,
+    neon: NEON.yellow,
+    textOnNeon: "#050510",
     blurb: "Pentru cei care vor doar să arate că au gust. Fără paradă.",
     perks: ["Insignă VIP auriu", "5 șprițuri pe lună"],
   },
   {
-    id: "vip_plus", index: "II", name: "VIP+", italic: "curat",
-    price: 4.99, coins: 15, neon: NEON.pink, textOnNeon: "#ffffff", badge: "cel mai luat",
+    id: "vip_plus",
+    index: "II",
+    name: "VIP+",
+    italic: "curat",
+    price: 4.99,
+    coins: 15,
+    neon: NEON.pink,
+    textOnNeon: "#ffffff",
+    badge: "cel mai luat",
     blurb: "Profilul tău începe să fie observat. Frame animat, teme, vederi.",
-    perks: ["Tot din VIP", "Frame animat pe avatar", "5 teme exclusive de profil", "15 șprițuri pe lună", "Vezi cine ți-a dat rating"],
+    perks: [
+      "Tot din VIP",
+      "Frame animat pe avatar",
+      "5 teme exclusive de profil",
+      "15 șprițuri pe lună",
+      "Vezi cine ți-a dat rating",
+    ],
   },
   {
-    id: "pro", index: "III", name: "Pro", italic: "serios",
-    price: 9.99, coins: 40, neon: NEON.violet, textOnNeon: "#ffffff",
+    id: "pro",
+    index: "III",
+    name: "Pro",
+    italic: "serios",
+    price: 9.99,
+    coins: 40,
+    neon: NEON.violet,
+    textOnNeon: "#ffffff",
     blurb: "Pentru regulari. Boost săptămânal, analytics, un music clip pe profil.",
-    perks: ["Tot din VIP+", "1× Profile Boost / săptămână", "Reputation analytics complet", "Music clip 15s pe profil", "40 șprițuri pe lună", "Animated background"],
+    perks: [
+      "Tot din VIP+",
+      "1× Profile Boost / săptămână",
+      "Reputation analytics complet",
+      "Music clip 15s pe profil",
+      "40 șprițuri pe lună",
+      "Animated background",
+    ],
   },
   {
-    id: "elite", index: "IV", name: "Elite", italic: "rar",
-    price: 14.99, coins: 120, neon: NEON.cyan, textOnNeon: "#050510", badge: "100 locuri",
+    id: "elite",
+    index: "IV",
+    name: "Elite",
+    italic: "rar",
+    price: 14.99,
+    coins: 120,
+    neon: NEON.cyan,
+    textOnNeon: "#050510",
+    badge: "100 locuri",
     blurb: "O sută de oameni pe an. Numele tău rămâne pe perete.",
-    perks: ["Tot din Pro", "Diamond badge holografic", "Featured pe Discover", "Founder recognition pe vecie", "Cadou aniversar fizic", "120 șprițuri pe lună", "Acces beta features"],
+    perks: [
+      "Tot din Pro",
+      "Diamond badge holografic",
+      "Featured pe Discover",
+      "Founder recognition pe vecie",
+      "Cadou aniversar fizic",
+      "120 șprițuri pe lună",
+      "Acces beta features",
+    ],
   },
 ];
 
 const COIN_PACKS = [
-  { id: "coins_mic",     coins: 5,   price: 4.99,  label: "Un rând",       neon: NEON.yellow },
-  { id: "coins_mediu",   coins: 15,  price: 12.99, label: "Pentru gașcă",  bonus: "+10%", neon: NEON.pink },
-  { id: "coins_mare",    coins: 40,  price: 29.99, label: "Petrecere",     bonus: "+20%", popular: true, neon: NEON.violet },
-  { id: "coins_boss",    coins: 100, price: 69.99, label: "Toată haita",   bonus: "+35%", neon: NEON.cyan },
-  { id: "coins_legenda", coins: 300, price: 179,   label: "Legendă",       bonus: "+50%", neon: NEON.pink },
+  { id: "coins_mic", coins: 5, price: 4.99, label: "Un rând", neon: NEON.yellow },
+  {
+    id: "coins_mediu",
+    coins: 15,
+    price: 12.99,
+    label: "Pentru gașcă",
+    bonus: "+10%",
+    neon: NEON.pink,
+  },
+  {
+    id: "coins_mare",
+    coins: 40,
+    price: 29.99,
+    label: "Petrecere",
+    bonus: "+20%",
+    popular: true,
+    neon: NEON.violet,
+  },
+  {
+    id: "coins_boss",
+    coins: 100,
+    price: 69.99,
+    label: "Toată haita",
+    bonus: "+35%",
+    neon: NEON.cyan,
+  },
+  { id: "coins_legenda", coins: 300, price: 179, label: "Legendă", bonus: "+50%", neon: NEON.pink },
 ];
 
 const FAQ = [
-  { q: "Pot să anulez oricând?", a: "Da. Un singur click. Beneficiile rămân până la final de perioadă." },
-  { q: "Plătesc, intru pe locul 1?", a: "Nu. Nu vindem locuri în top. Niciodată. Doar cum arăți când ajungi acolo." },
-  { q: "Ce sunt șprițurile?", a: "Sunt pentru lucruri cosmetice — cadouri în chat, boost-uri scurte, rame. Nu cumperi influență." },
-  { q: "Cum funcționează plata?", a: "Plătești o dată, primești instant. Toate plățile sunt finale, fără returnări." },
+  {
+    q: "Pot să anulez oricând?",
+    a: "Da. Un singur click. Beneficiile rămân până la final de perioadă.",
+  },
+  {
+    q: "Plătesc, intru pe locul 1?",
+    a: "Nu. Nu vindem locuri în top. Niciodată. Doar cum arăți când ajungi acolo.",
+  },
+  {
+    q: "Ce sunt șprițurile?",
+    a: "Sunt pentru lucruri cosmetice — cadouri în chat, boost-uri scurte, rame. Nu cumperi influență.",
+  },
+  {
+    q: "Cum funcționează plata?",
+    a: "Plătești o dată, primești instant. Toate plățile sunt finale, fără returnări.",
+  },
 ];
 
 function PremiumPage() {
@@ -127,14 +210,20 @@ function PremiumPage() {
   }, [search.session_id]);
 
   const handleBuy = (tier: Tier) =>
-    setCheckout({ priceId: `${tier.id}_${annual ? "yearly" : "monthly"}`, title: `${tier.name} ${annual ? "anual" : "lunar"}` });
-  const handleCoins = (p: typeof COIN_PACKS[0]) =>
+    setCheckout({
+      priceId: `${tier.id}_${annual ? "yearly" : "monthly"}`,
+      title: `${tier.name} ${annual ? "anual" : "lunar"}`,
+    });
+  const handleCoins = (p: (typeof COIN_PACKS)[0]) =>
     setCheckout({ priceId: p.id, title: `${p.coins} șprițuri · ${p.label}` });
   const handleManage = async () => {
     setOpeningPortal(true);
     try {
       const result = await createPremiumPortalSession({
-        data: { returnUrl: `${window.location.origin}/app/premium`, environment: getStripeEnvironment() },
+        data: {
+          returnUrl: `${window.location.origin}/app/premium`,
+          environment: getStripeEnvironment(),
+        },
       });
       if ("error" in result) throw new Error(result.error);
       window.open(result.url, "_blank");
@@ -148,50 +237,64 @@ function PremiumPage() {
   return (
     <div className="pb-24 min-h-screen text-white" style={{ background: "#050510" }}>
       {/* Top bar */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl border-b border-white/10 px-3 h-12 flex items-center gap-2"
-        style={{ background: "rgba(5,5,16,0.7)" }}>
+      <header
+        className="sticky top-0 z-30 backdrop-blur-xl border-b border-white/10 px-3 h-12 flex items-center gap-2"
+        style={{ background: "rgba(5,5,16,0.7)" }}
+      >
         <Link to="/app/me" className="p-1.5 -ml-1.5 active:scale-95 transition" aria-label="Înapoi">
           <ArrowLeft size={22} strokeWidth={2.2} />
         </Link>
-        <div className="font-mono uppercase text-[10px] tracking-[0.3em] text-white/50">Membership</div>
-        {currentTier && <div className="ml-auto"><PremiumBadge tier={currentTier} size="sm" asLink={false} /></div>}
+        <div className="font-mono uppercase text-[10px] tracking-[0.3em] text-white/50">
+          Membership
+        </div>
+        {currentTier && (
+          <div className="ml-auto">
+            <PremiumBadge tier={currentTier} size="sm" asLink={false} />
+          </div>
+        )}
       </header>
 
       <div className="w-full max-w-[420px] mx-auto px-4 sm:px-6 flex flex-col gap-12 pt-10 min-w-0">
-
         {/* ACTIVE PLAN BANNER */}
-        {currentTier && (() => {
-          const active = TIERS.find((t) => t.id === currentTier);
-          if (!active) return null;
-          return (
-            <div
-              className="relative rounded-2xl p-4 flex items-center gap-3 overflow-hidden"
-              style={{
-                background: `linear-gradient(135deg, ${active.neon}22, transparent 70%)`,
-                border: `1px solid ${active.neon}66`,
-                boxShadow: `0 0 24px ${active.neon}33`,
-              }}
-            >
+        {currentTier &&
+          (() => {
+            const active = TIERS.find((t) => t.id === currentTier);
+            if (!active) return null;
+            return (
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-                style={{ background: active.neon, boxShadow: `0 0 16px ${active.neon}99` }}
+                className="relative rounded-2xl p-4 flex items-center gap-3 overflow-hidden"
+                style={{
+                  background: `linear-gradient(135deg, ${active.neon}22, transparent 70%)`,
+                  border: `1px solid ${active.neon}66`,
+                  boxShadow: `0 0 24px ${active.neon}33`,
+                }}
               >
-                <Sparkles size={18} strokeWidth={2.5} style={{ color: active.textOnNeon }} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p
-                  className="text-[9px] uppercase tracking-[0.3em] font-bold"
-                  style={{ color: active.neon }}
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ background: active.neon, boxShadow: `0 0 16px ${active.neon}99` }}
                 >
-                  Planul tău activ
-                </p>
-                <p className="text-sm font-black uppercase truncate">
-                  {active.name} <span className="text-white/50 font-normal italic" style={{ fontFamily: "'Instrument Serif', serif" }}>· {active.coins} șprițuri/lună</span>
-                </p>
+                  <Sparkles size={18} strokeWidth={2.5} style={{ color: active.textOnNeon }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className="text-[9px] uppercase tracking-[0.3em] font-bold"
+                    style={{ color: active.neon }}
+                  >
+                    Planul tău activ
+                  </p>
+                  <p className="text-sm font-black uppercase truncate">
+                    {active.name}{" "}
+                    <span
+                      className="text-white/50 font-normal italic"
+                      style={{ fontFamily: "'Instrument Serif', serif" }}
+                    >
+                      · {active.coins} șprițuri/lună
+                    </span>
+                  </p>
+                </div>
               </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
 
         {/* À LA CARTE — one-off purchases */}
         <section className="space-y-3">
@@ -200,7 +303,6 @@ function PremiumPage() {
           </div>
           <CrystalBallCard />
         </section>
-
 
         {/* HERO */}
         <section className="text-center space-y-4">
@@ -230,11 +332,16 @@ function PremiumPage() {
 
         {/* BILLING TOGGLE */}
         <div className="flex items-center justify-center">
-          <div className="p-1 rounded-full flex border border-white/10" style={{ background: "#10101a" }}>
+          <div
+            className="p-1 rounded-full flex border border-white/10"
+            style={{ background: "#10101a" }}
+          >
             <button
               onClick={() => setAnnual(false)}
               className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all ${
-                !annual ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.25)]" : "text-white/50"
+                !annual
+                  ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.25)]"
+                  : "text-white/50"
               }`}
             >
               Lunar
@@ -242,7 +349,9 @@ function PremiumPage() {
             <button
               onClick={() => setAnnual(true)}
               className={`px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${
-                annual ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.25)]" : "text-white/50"
+                annual
+                  ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.25)]"
+                  : "text-white/50"
               }`}
             >
               Anual
@@ -292,7 +401,11 @@ function PremiumPage() {
                       {isCurrent && (
                         <span
                           className="text-[9px] px-2.5 py-1 font-black uppercase tracking-widest rounded-full inline-flex items-center gap-1 max-w-full truncate"
-                          style={{ background: tier.neon, color: tier.textOnNeon, boxShadow: `0 0 12px ${tier.neon}88` }}
+                          style={{
+                            background: tier.neon,
+                            color: tier.textOnNeon,
+                            boxShadow: `0 0 12px ${tier.neon}88`,
+                          }}
                         >
                           <Check size={10} strokeWidth={3} /> Planul tău
                         </span>
@@ -319,7 +432,9 @@ function PremiumPage() {
                       </p>
                       <h3 className="font-display text-2xl sm:text-3xl font-black uppercase mt-1 truncate">
                         {tier.name === "VIP+" ? (
-                          <>VIP<span style={{ color: tier.neon }}>+</span></>
+                          <>
+                            VIP<span style={{ color: tier.neon }}>+</span>
+                          </>
                         ) : (
                           tier.name
                         )}
@@ -367,7 +482,10 @@ function PremiumPage() {
                   )}
                   <ul className="space-y-2.5">
                     {tier.perks.map((p) => (
-                      <li key={p} className="flex items-start gap-3 text-[13px] text-white/85 min-w-0">
+                      <li
+                        key={p}
+                        className="flex items-start gap-3 text-[13px] text-white/85 min-w-0"
+                      >
                         {isCurrent ? (
                           <span
                             className="mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0"
@@ -418,7 +536,6 @@ function PremiumPage() {
                 </div>
               </div>
             );
-
           })}
         </div>
 
@@ -432,7 +549,8 @@ function PremiumPage() {
               V. Bar
             </p>
             <h2 className="font-display text-3xl font-black uppercase leading-tight italic">
-              Șprițurile pe care le<br />
+              Șprițurile pe care le
+              <br />
               <span style={{ color: NEON.yellow, textShadow: `0 0 14px ${NEON.yellow}` }}>
                 arunci pe masă.
               </span>
@@ -463,7 +581,10 @@ function PremiumPage() {
                   </span>
                 )}
                 <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-black uppercase tracking-wider truncate" style={{ color: p.neon }}>
+                  <span
+                    className="text-sm font-black uppercase tracking-wider truncate"
+                    style={{ color: p.neon }}
+                  >
                     {p.label}
                   </span>
                   <span
@@ -473,19 +594,23 @@ function PremiumPage() {
                     {p.coins} {p.coins === 1 ? "șpriț" : "șprițuri"}
                   </span>
                   {p.bonus && (
-                    <span className="text-[10px] font-bold uppercase mt-1" style={{ color: p.neon }}>
+                    <span
+                      className="text-[10px] font-bold uppercase mt-1"
+                      style={{ color: p.neon }}
+                    >
                       {p.bonus} cadou
                     </span>
                   )}
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-display text-lg font-black tabular-nums leading-none whitespace-nowrap">{p.price}</div>
+                  <div className="font-display text-lg font-black tabular-nums leading-none whitespace-nowrap">
+                    {p.price}
+                  </div>
                   <div className="text-[9px] uppercase tracking-widest text-white/40 mt-1">Lei</div>
                 </div>
               </button>
             ))}
           </div>
-
         </section>
 
         {/* Manage subscription + boost */}
@@ -547,7 +672,11 @@ function PremiumPage() {
                       className="w-5 h-5 flex items-center justify-center shrink-0"
                       style={{ color: NEON.pink }}
                     >
-                      {open ? <Minus size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
+                      {open ? (
+                        <Minus size={16} strokeWidth={2.5} />
+                      ) : (
+                        <Plus size={16} strokeWidth={2.5} />
+                      )}
                     </span>
                   </button>
 

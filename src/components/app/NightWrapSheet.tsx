@@ -177,7 +177,11 @@ export function NightWrapSheet({ wrap, onClose }: { wrap: any; onClose: () => vo
             disabled={busy !== null}
             className="py-4 rounded-2xl flex items-center justify-center gap-2 text-[12px] font-black uppercase tracking-[0.2em] text-black bg-white active:scale-95 transition-transform disabled:opacity-60"
           >
-            {busy === "share" ? <Loader2 size={16} className="animate-spin" /> : <Share2 size={16} />}
+            {busy === "share" ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Share2 size={16} />
+            )}
             Share
           </button>
           <button
@@ -185,7 +189,11 @@ export function NightWrapSheet({ wrap, onClose }: { wrap: any; onClose: () => vo
             disabled={busy !== null}
             className="py-4 rounded-2xl flex items-center justify-center gap-2 text-[12px] font-black uppercase tracking-[0.2em] text-white bg-white/10 border border-white/15 active:scale-95 transition-transform disabled:opacity-60"
           >
-            {busy === "download" ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            {busy === "download" ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Download size={16} />
+            )}
             Salvează
           </button>
         </div>
@@ -204,4 +212,3 @@ function StatBox({ label, value }: { label: string; value: number }) {
     </div>
   );
 }
-

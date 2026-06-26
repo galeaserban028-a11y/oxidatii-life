@@ -47,7 +47,7 @@ function PageTransitionImpl({ children }: { children: ReactNode }) {
   const variants = {
     initial: { opacity: 0, x: dir === 0 ? 0 : dir * 28, y: dir === 0 ? 6 : 0 },
     animate: { opacity: 1, x: 0, y: 0 },
-    exit:    { opacity: 0, x: dir === 0 ? 0 : dir * -28, y: 0 },
+    exit: { opacity: 0, x: dir === 0 ? 0 : dir * -28, y: 0 },
   };
 
   return (

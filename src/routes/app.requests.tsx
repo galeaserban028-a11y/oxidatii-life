@@ -39,10 +39,11 @@ function RequestsPage() {
 
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortOrder>("newest");
-  const [confirm, setConfirm] = useState<
-    | { id: string; action: "accept" | "reject"; name: string }
-    | null
-  >(null);
+  const [confirm, setConfirm] = useState<{
+    id: string;
+    action: "accept" | "reject";
+    name: string;
+  } | null>(null);
 
   const filtered = useMemo(() => {
     if (!reqs) return [];
@@ -82,10 +83,7 @@ function RequestsPage() {
 
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search
-            size={14}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500"
-          />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -132,7 +130,11 @@ function RequestsPage() {
                   className="h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center text-white font-display font-bold shrink-0"
                 >
                   {r.follower?.avatar_url ? (
-                    <img src={r.follower.avatar_url} alt="" className="h-full w-full object-cover" />
+                    <img
+                      src={r.follower.avatar_url}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     handle[0]?.toUpperCase()
                   )}

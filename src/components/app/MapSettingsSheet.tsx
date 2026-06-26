@@ -1,9 +1,26 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { Ghost, Eye, Crosshair, MapPin, EyeOff, Shuffle, Users, Plus, Trash2, X } from "lucide-react";
+import {
+  Ghost,
+  Eye,
+  Crosshair,
+  MapPin,
+  EyeOff,
+  Shuffle,
+  Users,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +44,13 @@ const DEFAULTS: MapSettings = {
   map_require_reciprocity: false,
 };
 
-export function MapSettingsSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+export function MapSettingsSheet({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const { user } = useAuth();
   const qc = useQueryClient();
 
@@ -63,7 +86,9 @@ export function MapSettingsSheet({ open, onOpenChange }: { open: boolean; onOpen
   });
 
   const [local, setLocal] = useState<MapSettings>(DEFAULTS);
-  useEffect(() => { if (settingsQ.data) setLocal(settingsQ.data); }, [settingsQ.data]);
+  useEffect(() => {
+    if (settingsQ.data) setLocal(settingsQ.data);
+  }, [settingsQ.data]);
 
   const save = useMutation({
     mutationFn: async (patch: Partial<MapSettings>) => {
@@ -88,27 +113,42 @@ export function MapSettingsSheet({ open, onOpenChange }: { open: boolean; onOpen
   useEffect(() => {
     if (!user || !open) return;
     if (local.map_ghost || local.map_visibility === "nobody") {
-      supabase.from("live_locations").delete().eq("user_id", user.id).then(() => {
-        qc.invalidateQueries({ queryKey: ["friend-pins"] });
-      });
+      supabase
+        .from("live_locations")
+        .delete()
+        .eq("user_id", user.id)
+        .then(() => {
+          qc.invalidateQueries({ queryKey: ["friend-pins"] });
+        });
     }
   }, [local.map_ghost, local.map_visibility, user, open, qc]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto rounded-t-3xl border-t border-foreground/10">
+      <SheetContent
+        side="bottom"
+        className="max-h-[90vh] overflow-y-auto rounded-t-3xl border-t border-foreground/10"
+      >
         <SheetHeader className="text-left">
-          <SheetTitle className="font-display text-2xl lowercase tracking-tight">setări hartă</SheetTitle>
-          <SheetDescription className="text-xs">cine te vede, cu ce precizie, și unde ești invizibil.</SheetDescription>
+          <SheetTitle className="font-display text-2xl lowercase tracking-tight">
+            setări hartă
+          </SheetTitle>
+          <SheetDescription className="text-xs">
+            cine te vede, cu ce precizie, și unde ești invizibil.
+          </SheetDescription>
         </SheetHeader>
 
         <div className="mt-5 space-y-4 pb-8">
           {/* Ghost mode */}
           <Row
-            icon={<Ghost size={18} className={local.map_ghost ? "text-fuchsia-400" : "text-zinc-400"} />}
+            icon={
+              <Ghost size={18} className={local.map_ghost ? "text-fuchsia-400" : "text-zinc-400"} />
+            }
             title="Ghost mode"
             subtitle={local.map_ghost ? "ești invizibil pe hartă" : "apari normal pentru prieteni"}
-            right={<Switch checked={local.map_ghost} onCheckedChange={(v) => update("map_ghost", v)} />}
+            right={
+              <Switch checked={local.map_ghost} onCheckedChange={(v) => update("map_ghost", v)} />
+            }
           />
 
           {/* Visibility */}
@@ -138,16 +178,22 @@ export function MapSettingsSheet({ open, onOpenChange }: { open: boolean; onOpen
             />
             <p className="mt-2 text-[11px] text-muted-foreground">
               {local.map_precision === "exact" && "pinul tău e exact unde ești."}
-              {local.map_precision === "approx" && "pinul e mutat random până la ~200m. Vede zona, nu adresa."}
-              {local.map_precision === "city" && "pinul stă pe centrul orașului. Doar 'sunt aici, prin oraș'."}
+              {local.map_precision === "approx" &&
+                "pinul e mutat random până la ~200m. Vede zona, nu adresa."}
+              {local.map_precision === "city" &&
+                "pinul stă pe centrul orașului. Doar 'sunt aici, prin oraș'."}
             </p>
           </Section>
 
-
           {/* Private locations */}
           <Section title="Locații private" icon={<MapPin size={14} />}>
-            <p className="text-[11px] text-muted-foreground mb-2">acasă, job, sala. Cât timp GPS-ul te plasează aici, pin-ul tău NU se publică.</p>
-            <PrivateLocations items={privateQ.data ?? []} onChange={() => qc.invalidateQueries({ queryKey: ["private-locations", user?.id] })} />
+            <p className="text-[11px] text-muted-foreground mb-2">
+              acasă, job, sala. Cât timp GPS-ul te plasează aici, pin-ul tău NU se publică.
+            </p>
+            <PrivateLocations
+              items={privateQ.data ?? []}
+              onChange={() => qc.invalidateQueries({ queryKey: ["private-locations", user?.id] })}
+            />
           </Section>
 
           {/* Hide from live list */}
@@ -155,7 +201,12 @@ export function MapSettingsSheet({ open, onOpenChange }: { open: boolean; onOpen
             icon={<EyeOff size={18} className="text-zinc-400" />}
             title="Apar în lista 'live'"
             subtitle="dezactivează ca să nu mai apari la oxidați activi"
-            right={<Switch checked={!local.map_hide_from_live_list} onCheckedChange={(v) => update("map_hide_from_live_list", !v)} />}
+            right={
+              <Switch
+                checked={!local.map_hide_from_live_list}
+                onCheckedChange={(v) => update("map_hide_from_live_list", !v)}
+              />
+            }
           />
 
           {/* Reciprocity */}
@@ -163,7 +214,12 @@ export function MapSettingsSheet({ open, onOpenChange }: { open: boolean; onOpen
             icon={<Shuffle size={18} className="text-zinc-400" />}
             title="Reciprocitate"
             subtitle="văd doar prietenii care mă văd și pe mine"
-            right={<Switch checked={local.map_require_reciprocity} onCheckedChange={(v) => update("map_require_reciprocity", v)} />}
+            right={
+              <Switch
+                checked={local.map_require_reciprocity}
+                onCheckedChange={(v) => update("map_require_reciprocity", v)}
+              />
+            }
           />
         </div>
       </SheetContent>
@@ -171,7 +227,17 @@ export function MapSettingsSheet({ open, onOpenChange }: { open: boolean; onOpen
   );
 }
 
-function Row({ icon, title, subtitle, right }: { icon: React.ReactNode; title: string; subtitle?: string; right: React.ReactNode }) {
+function Row({
+  icon,
+  title,
+  subtitle,
+  right,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  right: React.ReactNode;
+}) {
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-foreground/10 bg-card/60 px-4 py-3">
       <div className="shrink-0">{icon}</div>
@@ -184,7 +250,15 @@ function Row({ icon, title, subtitle, right }: { icon: React.ReactNode; title: s
   );
 }
 
-function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-2xl border border-foreground/10 bg-card/60 px-4 py-3">
       <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">
@@ -195,7 +269,15 @@ function Section({ title, icon, children }: { title: string; icon: React.ReactNo
   );
 }
 
-function Segment({ value, options, onChange }: { value: string; options: { value: string; label: string }[]; onChange: (v: string) => void }) {
+function Segment({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+}) {
   return (
     <div className="flex gap-1 rounded-full bg-background/60 p-1 border border-foreground/10">
       {options.map((o) => {
@@ -227,7 +309,9 @@ function CloseFriendsList() {
         .select("requester_id, addressee_id")
         .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`)
         .eq("status", "accepted");
-      const ids = (fs ?? []).map((f: any) => (f.requester_id === user!.id ? f.addressee_id : f.requester_id));
+      const ids = (fs ?? []).map((f: any) =>
+        f.requester_id === user!.id ? f.addressee_id : f.requester_id,
+      );
       if (ids.length === 0) return [];
       const { data: profs } = await supabase
         .from("profiles")
@@ -255,7 +339,11 @@ function CloseFriendsList() {
       if (on) {
         await supabase.from("close_friends").insert({ user_id: user.id, friend_id: friendId });
       } else {
-        await supabase.from("close_friends").delete().eq("user_id", user.id).eq("friend_id", friendId);
+        await supabase
+          .from("close_friends")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("friend_id", friendId);
       }
     },
     onSuccess: () => {
@@ -268,12 +356,16 @@ function CloseFriendsList() {
   const closeSet = closeQ.data ?? new Set<string>();
 
   if (friends.length === 0) {
-    return <div className="mt-3 text-[11px] text-muted-foreground">Nu ai încă prieteni acceptați.</div>;
+    return (
+      <div className="mt-3 text-[11px] text-muted-foreground">Nu ai încă prieteni acceptați.</div>
+    );
   }
 
   return (
     <div className="mt-3 space-y-1.5 max-h-56 overflow-y-auto">
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground"><Users size={11} /> close friends</div>
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
+        <Users size={11} /> close friends
+      </div>
       {friends.map((f: any) => {
         const on = closeSet.has(f.id);
         return (
@@ -289,9 +381,15 @@ function CloseFriendsList() {
             )}
             <div className="flex-1 min-w-0">
               <div className="text-xs truncate">{f.display_name ?? f.handle ?? "—"}</div>
-              {f.handle && <div className="text-[10px] text-muted-foreground truncate">@{f.handle}</div>}
+              {f.handle && (
+                <div className="text-[10px] text-muted-foreground truncate">@{f.handle}</div>
+              )}
             </div>
-            <div className={`text-[10px] font-mono uppercase ${on ? "text-fuchsia-300" : "text-muted-foreground"}`}>{on ? "close" : "+"}</div>
+            <div
+              className={`text-[10px] font-mono uppercase ${on ? "text-fuchsia-300" : "text-muted-foreground"}`}
+            >
+              {on ? "close" : "+"}
+            </div>
           </button>
         );
       })}
@@ -307,7 +405,10 @@ function PrivateLocations({ items, onChange }: { items: any[]; onChange: () => v
 
   const addHere = async () => {
     if (!user || !label.trim()) return;
-    if (!navigator.geolocation) { toast.error("GPS indisponibil"); return; }
+    if (!navigator.geolocation) {
+      toast.error("GPS indisponibil");
+      return;
+    }
     setBusy(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -318,11 +419,19 @@ function PrivateLocations({ items, onChange }: { items: any[]; onChange: () => v
           lng: pos.coords.longitude,
         });
         setBusy(false);
-        if (error) { toast.error(error.message); return; }
-        setLabel(""); setAdding(false); onChange();
+        if (error) {
+          toast.error(error.message);
+          return;
+        }
+        setLabel("");
+        setAdding(false);
+        onChange();
         toast.success("Locație privată salvată.");
       },
-      () => { setBusy(false); toast.error("Nu am putut citi locația."); },
+      () => {
+        setBusy(false);
+        toast.error("Nu am putut citi locația.");
+      },
       { enableHighAccuracy: true, timeout: 8000 },
     );
   };
@@ -338,13 +447,19 @@ function PrivateLocations({ items, onChange }: { items: any[]; onChange: () => v
         <div className="text-[11px] text-muted-foreground">nimic încă.</div>
       )}
       {items.map((p) => (
-        <div key={p.id} className="flex items-center gap-2 rounded-lg border border-foreground/10 bg-background/40 px-3 py-2">
+        <div
+          key={p.id}
+          className="flex items-center gap-2 rounded-lg border border-foreground/10 bg-background/40 px-3 py-2"
+        >
           <MapPin size={12} className="text-muted-foreground" />
           <div className="flex-1 min-w-0">
             <div className="text-xs truncate">{p.label}</div>
             <div className="text-[10px] text-muted-foreground">~{p.radius_m}m</div>
           </div>
-          <button onClick={() => remove(p.id)} className="text-muted-foreground hover:text-destructive">
+          <button
+            onClick={() => remove(p.id)}
+            className="text-muted-foreground hover:text-destructive"
+          >
             <Trash2 size={14} />
           </button>
         </div>
@@ -359,10 +474,23 @@ function PrivateLocations({ items, onChange }: { items: any[]; onChange: () => v
             maxLength={40}
           />
           <div className="flex gap-2">
-            <Button size="sm" variant="default" onClick={addHere} disabled={busy || !label.trim()} className="flex-1">
+            <Button
+              size="sm"
+              variant="default"
+              onClick={addHere}
+              disabled={busy || !label.trim()}
+              className="flex-1"
+            >
               {busy ? "..." : "Salvează (folosește locația actuală)"}
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => { setAdding(false); setLabel(""); }}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setAdding(false);
+                setLabel("");
+              }}
+            >
               <X size={14} />
             </Button>
           </div>

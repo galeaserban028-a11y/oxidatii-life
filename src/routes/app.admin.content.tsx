@@ -17,7 +17,10 @@ function AdminContent() {
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin-content", tab] });
 
-  const del = async (table: "parties" | "check_ins" | "sprit_proofs" | "venue_photos", id: string) => {
+  const del = async (
+    table: "parties" | "check_ins" | "sprit_proofs" | "venue_photos",
+    id: string,
+  ) => {
     if (!confirm("Șterg conținutul?")) return;
     const { error } = await supabase.from(table).delete().eq("id", id);
     if (error) return toast.error(error.message);
@@ -28,17 +31,21 @@ function AdminContent() {
   return (
     <div className="space-y-3">
       <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
-        {([
-          ["parties", "Petreceri", PartyPopper],
-          ["checkins", "Check-ins", MapPin],
-          ["proofs", "Sprits", Flame],
-          ["photos", "Poze", ImageIcon],
-        ] as const).map(([k, label, Icon]) => (
+        {(
+          [
+            ["parties", "Petreceri", PartyPopper],
+            ["checkins", "Check-ins", MapPin],
+            ["proofs", "Sprits", Flame],
+            ["photos", "Poze", ImageIcon],
+          ] as const
+        ).map(([k, label, Icon]) => (
           <button
             key={k}
             onClick={() => setTab(k)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-widest border ${
-              tab === k ? "bg-foreground text-background border-foreground" : "border-foreground/15 hover:bg-foreground/10"
+              tab === k
+                ? "bg-foreground text-background border-foreground"
+                : "border-foreground/15 hover:bg-foreground/10"
             }`}
           >
             <Icon size={11} /> {label}
@@ -75,7 +82,9 @@ function PartiesList({ onDelete }: { onDelete: (id: string) => void }) {
     queryFn: async () => {
       const { data } = await supabase
         .from("parties")
-        .select("id, title, location_text, vibe, starts_at, expires_at, host_id, profiles:host_id(handle, display_name)")
+        .select(
+          "id, title, location_text, vibe, starts_at, expires_at, host_id, profiles:host_id(handle, display_name)",
+        )
         .order("created_at", { ascending: false })
         .limit(100);
       return data ?? [];
@@ -87,7 +96,8 @@ function PartiesList({ onDelete }: { onDelete: (id: string) => void }) {
         <Row key={p.id} onDelete={() => onDelete(p.id)}>
           <div className="font-display text-sm truncate">{p.title}</div>
           <div className="font-mono text-[10px] text-muted-foreground truncate">
-            de @{p.profiles?.handle ?? "?"} · {p.location_text} · {p.vibe ?? "—"} · {new Date(p.starts_at).toLocaleString("ro-RO")}
+            de @{p.profiles?.handle ?? "?"} · {p.location_text} · {p.vibe ?? "—"} ·{" "}
+            {new Date(p.starts_at).toLocaleString("ro-RO")}
           </div>
         </Row>
       ))}
@@ -101,7 +111,9 @@ function CheckinsList({ onDelete }: { onDelete: (id: string) => void }) {
     queryFn: async () => {
       const { data } = await supabase
         .from("check_ins")
-        .select("id, created_at, expires_at, user_id, venues:venue_id(name), profiles:user_id(handle)")
+        .select(
+          "id, created_at, expires_at, user_id, venues:venue_id(name), profiles:user_id(handle)",
+        )
         .order("created_at", { ascending: false })
         .limit(100);
       return data ?? [];
@@ -111,9 +123,12 @@ function CheckinsList({ onDelete }: { onDelete: (id: string) => void }) {
     <div className="space-y-1.5">
       {data?.map((c: any) => (
         <Row key={c.id} onDelete={() => onDelete(c.id)}>
-          <div className="font-display text-sm truncate">@{c.profiles?.handle ?? "?"} la {c.venues?.name ?? "—"}</div>
+          <div className="font-display text-sm truncate">
+            @{c.profiles?.handle ?? "?"} la {c.venues?.name ?? "—"}
+          </div>
           <div className="font-mono text-[10px] text-muted-foreground">
-            {new Date(c.created_at).toLocaleString("ro-RO")} · expiră {new Date(c.expires_at).toLocaleTimeString("ro-RO")}
+            {new Date(c.created_at).toLocaleString("ro-RO")} · expiră{" "}
+            {new Date(c.expires_at).toLocaleTimeString("ro-RO")}
           </div>
         </Row>
       ))}
@@ -127,7 +142,9 @@ function ProofsList({ onDelete }: { onDelete: (id: string) => void }) {
     queryFn: async () => {
       const { data } = await supabase
         .from("sprit_proofs")
-        .select("id, photo_url, created_at, ai_verified, ai_confidence, ai_reason, profiles:user_id(handle), venues:venue_id(name)")
+        .select(
+          "id, photo_url, created_at, ai_verified, ai_confidence, ai_reason, profiles:user_id(handle), venues:venue_id(name)",
+        )
         .order("created_at", { ascending: false })
         .limit(60);
       return data ?? [];
@@ -136,12 +153,20 @@ function ProofsList({ onDelete }: { onDelete: (id: string) => void }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
       {data?.map((p: any) => (
-        <div key={p.id} className="rounded-xl border border-foreground/10 bg-foreground/[0.03] overflow-hidden">
-          {p.photo_url && <img src={p.photo_url} alt="" className="w-full aspect-square object-cover" />}
+        <div
+          key={p.id}
+          className="rounded-xl border border-foreground/10 bg-foreground/[0.03] overflow-hidden"
+        >
+          {p.photo_url && (
+            <img src={p.photo_url} alt="" className="w-full aspect-square object-cover" />
+          )}
           <div className="p-2 space-y-1">
-            <div className="font-mono text-[10px] truncate">@{p.profiles?.handle ?? "?"} · {p.venues?.name ?? "—"}</div>
+            <div className="font-mono text-[10px] truncate">
+              @{p.profiles?.handle ?? "?"} · {p.venues?.name ?? "—"}
+            </div>
             <div className="font-mono text-[9px] text-muted-foreground">
-              {p.ai_verified ? "✓ AI" : "✗"} {p.ai_confidence ? `(${Math.round(p.ai_confidence * 100)}%)` : ""}
+              {p.ai_verified ? "✓ AI" : "✗"}{" "}
+              {p.ai_confidence ? `(${Math.round(p.ai_confidence * 100)}%)` : ""}
             </div>
             <button
               onClick={() => onDelete(p.id)}
@@ -171,11 +196,22 @@ function PhotosList({ onDelete }: { onDelete: (id: string) => void }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
       {data?.map((p: any) => (
-        <div key={p.id} className="rounded-xl border border-foreground/10 bg-foreground/[0.03] overflow-hidden">
-          {p.photo_url && <img src={p.photo_url} alt="" className="w-full aspect-square object-cover" />}
+        <div
+          key={p.id}
+          className="rounded-xl border border-foreground/10 bg-foreground/[0.03] overflow-hidden"
+        >
+          {p.photo_url && (
+            <img src={p.photo_url} alt="" className="w-full aspect-square object-cover" />
+          )}
           <div className="p-2 space-y-1">
-            <div className="font-mono text-[10px] truncate">@{p.profiles?.handle ?? "?"} · {p.venues?.name ?? "—"}</div>
-            {p.caption && <div className="font-mono text-[9px] text-muted-foreground line-clamp-2">{p.caption}</div>}
+            <div className="font-mono text-[10px] truncate">
+              @{p.profiles?.handle ?? "?"} · {p.venues?.name ?? "—"}
+            </div>
+            {p.caption && (
+              <div className="font-mono text-[9px] text-muted-foreground line-clamp-2">
+                {p.caption}
+              </div>
+            )}
             <button
               onClick={() => onDelete(p.id)}
               className="w-full mt-1 text-[10px] font-mono uppercase tracking-widest px-2 py-1.5 rounded border border-neon-crimson/30 text-neon-crimson"

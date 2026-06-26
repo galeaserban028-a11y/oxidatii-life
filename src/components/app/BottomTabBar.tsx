@@ -31,7 +31,10 @@ function useUnreadCount() {
   const { user } = useAuth();
   const [unread, setUnread] = useState(0);
   useEffect(() => {
-    if (!user) { setUnread(0); return; }
+    if (!user) {
+      setUnread(0);
+      return;
+    }
     let cancelled = false;
     let scheduled = false;
     let convIds: string[] = [];
@@ -43,10 +46,17 @@ function useUnreadCount() {
         .select("conversation_id,last_read_at")
         .eq("user_id", user.id);
       if (cancelled) return;
-      if (!mems || mems.length === 0) { setUnread(0); convIds = []; return; }
+      if (!mems || mems.length === 0) {
+        setUnread(0);
+        convIds = [];
+        return;
+      }
       convIds = mems.map((m) => m.conversation_id);
       // One round-trip instead of N: pull recent unread messages and count client-side.
-      const oldest = mems.reduce((min, m) => (m.last_read_at && m.last_read_at < min ? m.last_read_at : min), new Date().toISOString());
+      const oldest = mems.reduce(
+        (min, m) => (m.last_read_at && m.last_read_at < min ? m.last_read_at : min),
+        new Date().toISOString(),
+      );
       const { data: msgs } = await supabase
         .from("messages")
         .select("conversation_id,sender_id,created_at")
@@ -75,14 +85,25 @@ function useUnreadCount() {
     const channelName = `bottombar-inbox:${user.id}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
     const ch = supabase
       .channel(channelName)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
-        const cid = (payload.new as any)?.conversation_id;
-        // Only react to messages in conversations we are part of.
-        if (cid && convIds.includes(cid)) refresh();
-      })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversation_members" }, refresh)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        (payload) => {
+          const cid = (payload.new as any)?.conversation_id;
+          // Only react to messages in conversations we are part of.
+          if (cid && convIds.includes(cid)) refresh();
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "conversation_members" },
+        refresh,
+      )
       .subscribe();
-    return () => { cancelled = true; supabase.removeChannel(ch); };
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(ch);
+    };
   }, [user]);
   return unread;
 }
@@ -153,10 +174,16 @@ const TabItem = memo(function TabItem({ tab, active, shrunk, iconSize, badge = 0
         />
         {tab.liveDot && (
           <>
-            <span className="absolute -top-0.5 -right-0.5 h-[6px] w-[6px] rounded-full" style={{ backgroundColor: "#ff3d8b" }} />
             <span
               className="absolute -top-0.5 -right-0.5 h-[6px] w-[6px] rounded-full"
-              style={{ backgroundColor: "#ff3d8b", animation: "pulse-waves 1.8s infinite ease-in-out" }}
+              style={{ backgroundColor: "#ff3d8b" }}
+            />
+            <span
+              className="absolute -top-0.5 -right-0.5 h-[6px] w-[6px] rounded-full"
+              style={{
+                backgroundColor: "#ff3d8b",
+                animation: "pulse-waves 1.8s infinite ease-in-out",
+              }}
             />
           </>
         )}
@@ -202,7 +229,9 @@ export function BottomTabBar() {
   });
   const dismissWarn = () => {
     setWarnDismissed(true);
-    try { window.sessionStorage.setItem("oxi-alc-warn", "1"); } catch {}
+    try {
+      window.sessionStorage.setItem("oxi-alc-warn", "1");
+    } catch {}
   };
 
   const hidden = loc.pathname.startsWith("/app/biz") || loc.pathname.startsWith("/app/admin");
@@ -210,7 +239,9 @@ export function BottomTabBar() {
   const activeMap = useMemo(() => {
     const m: Record<string, boolean> = {};
     for (const t of tabs) {
-      m[t.to] = t.exact ? loc.pathname === t.to : loc.pathname === t.to || loc.pathname.startsWith(t.to + "/");
+      m[t.to] = t.exact
+        ? loc.pathname === t.to
+        : loc.pathname === t.to || loc.pathname.startsWith(t.to + "/");
     }
     return m;
   }, [loc.pathname]);
@@ -239,7 +270,11 @@ export function BottomTabBar() {
               {tc("alcoholWarning")}
             </span>
           </div>
-          <button onClick={dismissWarn} aria-label="închide" className="text-white/40 hover:text-white transition-colors">
+          <button
+            onClick={dismissWarn}
+            aria-label="închide"
+            className="text-white/40 hover:text-white transition-colors"
+          >
             <X size={12} />
           </button>
         </div>
@@ -264,11 +299,20 @@ export function BottomTabBar() {
         }}
       >
         {tabs.slice(0, 3).map((t) => (
-          <TabItem key={t.to} tab={t} active={activeMap[t.to]} shrunk={shrunk} iconSize={iconSize} />
+          <TabItem
+            key={t.to}
+            tab={t}
+            active={activeMap[t.to]}
+            shrunk={shrunk}
+            iconSize={iconSize}
+          />
         ))}
 
         {/* Center POSTEAZĂ Button */}
-        <Link to="/app/scan" className="relative flex flex-col items-center justify-center shrink-0 tab-press-center">
+        <Link
+          to="/app/scan"
+          className="relative flex flex-col items-center justify-center shrink-0 tab-press-center"
+        >
           <div
             className="flex flex-col items-center justify-center"
             style={{
@@ -285,7 +329,10 @@ export function BottomTabBar() {
           >
             <Camera size={shrunk ? 18 : 22} strokeWidth={2} className="text-white" />
             {!shrunk && (
-              <span className="font-bold text-white uppercase" style={{ fontSize: 8, marginTop: 1, letterSpacing: "0.04em" }}>
+              <span
+                className="font-bold text-white uppercase"
+                style={{ fontSize: 8, marginTop: 1, letterSpacing: "0.04em" }}
+              >
                 POSTEAZĂ
               </span>
             )}

@@ -33,7 +33,8 @@ async function unregisterAppSw(): Promise<void> {
     const regs = await navigator.serviceWorker.getRegistrations();
     await Promise.allSettled(
       regs.map(async (reg) => {
-        const url = reg.active?.scriptURL ?? reg.waiting?.scriptURL ?? reg.installing?.scriptURL ?? "";
+        const url =
+          reg.active?.scriptURL ?? reg.waiting?.scriptURL ?? reg.installing?.scriptURL ?? "";
         if (url.endsWith(APP_SW_URL)) {
           await reg.unregister();
         }
@@ -73,7 +74,10 @@ export async function registerAppServiceWorker(): Promise<void> {
       window.location.reload();
     });
 
-    const reg = await navigator.serviceWorker.register(APP_SW_URL, { scope: "/", updateViaCache: "none" });
+    const reg = await navigator.serviceWorker.register(APP_SW_URL, {
+      scope: "/",
+      updateViaCache: "none",
+    });
     await reg.update().catch(() => {});
   } catch (err) {
     console.warn("[pwa] sw registration failed", err);

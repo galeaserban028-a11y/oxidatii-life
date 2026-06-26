@@ -16,20 +16,26 @@ function localDateBuc(): string {
 }
 
 function slugifyVenueName(name: string) {
-  const base = name
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 42) || "loc";
+  const base =
+    name
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 42) || "loc";
   return `${base}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
 export default function TonightCard() {
   const { user, profile } = useAuth();
   const [today, setToday] = useState<string>(localDateBuc());
-  const [myIntent, setMyIntent] = useState<{ id: string; venue_id: string | null; note: string | null; venue?: { name: string } | null } | null>(null);
+  const [myIntent, setMyIntent] = useState<{
+    id: string;
+    venue_id: string | null;
+    note: string | null;
+    venue?: { name: string } | null;
+  } | null>(null);
   const [count, setCount] = useState<number>(0);
   const [showVenues, setShowVenues] = useState(false);
   const [note, setNote] = useState("");
@@ -37,16 +43,24 @@ export default function TonightCard() {
   const [venues, setVenues] = useState<Array<{ id: string; name: string }>>([]);
   const [pickedVenue, setPickedVenue] = useState<{ id: string; name: string } | null>(null);
   const [saving, setSaving] = useState(false);
-  const [hotVenues, setHotVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
-  const [suggestedVenues, setSuggestedVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
+  const [hotVenues, setHotVenues] = useState<Array<{ id: string; name: string; count: number }>>(
+    [],
+  );
+  const [suggestedVenues, setSuggestedVenues] = useState<
+    Array<{ id: string; name: string; count: number }>
+  >([]);
   const [joining, setJoining] = useState<string | null>(null);
   const [follows, setFollows] = useState<Set<string>>(new Set());
-  const [followedVenues, setFollowedVenues] = useState<Array<{ id: string; name: string; count: number }>>([]);
+  const [followedVenues, setFollowedVenues] = useState<
+    Array<{ id: string; name: string; count: number }>
+  >([]);
   const [chatVenue, setChatVenue] = useState<{ id: string; name: string } | null>(null);
 
   // Show card only after 16:00 local time
   const showCard = useMemo(() => {
-    const h = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Bucharest" })).getHours();
+    const h = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Europe/Bucharest" }),
+    ).getHours();
     return h >= 16 || h < 4;
   }, []);
 
@@ -76,11 +90,16 @@ export default function TonightCard() {
       if (mineRes.data) {
         setNote((mineRes.data as any).note ?? "");
         if ((mineRes.data as any).venue?.name) {
-          setPickedVenue({ id: (mineRes.data as any).venue_id, name: (mineRes.data as any).venue.name });
+          setPickedVenue({
+            id: (mineRes.data as any).venue_id,
+            name: (mineRes.data as any).venue.name,
+          });
         }
       }
     })();
-    return () => { cancel = true; };
+    return () => {
+      cancel = true;
+    };
   }, [user?.id, today]);
 
   // Hot venues tonight — group intents by venue
@@ -100,7 +119,9 @@ export default function TonightCard() {
     });
     setHotVenues([...map.values()].sort((a, b) => b.count - a.count).slice(0, 5));
   }
-  useEffect(() => { if (user) refreshHotVenues(); }, [user?.id, today]);
+  useEffect(() => {
+    if (user) refreshHotVenues();
+  }, [user?.id, today]);
 
   useEffect(() => {
     if (!user || !(profile as any)?.city_id) return;
@@ -114,7 +135,9 @@ export default function TonightCard() {
         .limit(8);
       if (!cancel) setSuggestedVenues(((data ?? []) as any[]).map((v) => ({ ...v, count: 0 })));
     })();
-    return () => { cancel = true; };
+    return () => {
+      cancel = true;
+    };
   }, [user?.id, (profile as any)?.city_id]);
 
   // Load followed venues
@@ -126,7 +149,9 @@ export default function TonightCard() {
         .select("venue_id, venue:venues(id, name)")
         .eq("user_id", user.id);
       setFollows(new Set((data ?? []).map((r: any) => r.venue_id)));
-      setFollowedVenues((data ?? []).map((r: any) => ({ id: r.venue_id, name: r.venue?.name ?? "Loc", count: 0 })));
+      setFollowedVenues(
+        (data ?? []).map((r: any) => ({ id: r.venue_id, name: r.venue?.name ?? "Loc", count: 0 })),
+      );
     })();
   }, [user?.id]);
 
@@ -159,8 +184,12 @@ export default function TonightCard() {
     } else {
       next.add(v.id);
       setFollows(next);
-      setFollowedVenues((prev) => prev.some((item) => item.id === v.id) ? prev : [...prev, { ...v, count: 0 }]);
-      const { error } = await supabase.from("venue_follows").insert({ user_id: user.id, venue_id: v.id } as any);
+      setFollowedVenues((prev) =>
+        prev.some((item) => item.id === v.id) ? prev : [...prev, { ...v, count: 0 }],
+      );
+      const { error } = await supabase
+        .from("venue_follows")
+        .insert({ user_id: user.id, venue_id: v.id } as any);
       if (error) {
         next.delete(v.id);
         setFollows(new Set(next));
@@ -191,19 +220,24 @@ export default function TonightCard() {
     if (!user) return;
     setJoining(v.id);
     try {
-      const { error } = await supabase.from("daily_intents").upsert({
-        user_id: user.id,
-        intent_date: today,
-        venue_id: v.id,
-        note: note.trim() || null,
-      } as any, { onConflict: "user_id,intent_date" });
+      const { error } = await supabase.from("daily_intents").upsert(
+        {
+          user_id: user.id,
+          intent_date: today,
+          venue_id: v.id,
+          note: note.trim() || null,
+        } as any,
+        { onConflict: "user_id,intent_date" },
+      );
       if (error) throw error;
       toast.success(`Te-ai băgat la ${v.name}!`);
       setMyIntent({ id: "_", venue_id: v.id, note: note.trim() || null, venue: { name: v.name } });
       setPickedVenue(v);
       await refreshHotVenues();
       const { count: c } = await supabase
-        .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
+        .from("daily_intents")
+        .select("user_id", { count: "exact", head: true })
+        .eq("intent_date", today);
       setCount(c ?? 0);
     } catch (e: any) {
       toast.error(e.message ?? "Eroare");
@@ -213,7 +247,10 @@ export default function TonightCard() {
   }
 
   useEffect(() => {
-    if (!venueQuery.trim()) { setVenues([]); return; }
+    if (!venueQuery.trim()) {
+      setVenues([]);
+      return;
+    }
     const t = setTimeout(async () => {
       let q = supabase.from("venues").select("id, name").ilike("name", `%${venueQuery}%`).limit(6);
       if ((profile as any)?.city_id) q = q.eq("city_id", (profile as any).city_id);
@@ -228,19 +265,29 @@ export default function TonightCard() {
     setSaving(true);
     try {
       const venue = await ensurePickedVenue();
-      const { error } = await supabase.from("daily_intents").upsert({
-        user_id: user.id,
-        intent_date: today,
-        venue_id: venue?.id ?? null,
-        note: note.trim() || null,
-      } as any, { onConflict: "user_id,intent_date" });
+      const { error } = await supabase.from("daily_intents").upsert(
+        {
+          user_id: user.id,
+          intent_date: today,
+          venue_id: venue?.id ?? null,
+          note: note.trim() || null,
+        } as any,
+        { onConflict: "user_id,intent_date" },
+      );
       if (error) throw error;
       toast.success("Ai marcat seara!");
-      setMyIntent({ id: "_", venue_id: venue?.id ?? null, note: note.trim() || null, venue: venue ? { name: venue.name } : null });
+      setMyIntent({
+        id: "_",
+        venue_id: venue?.id ?? null,
+        note: note.trim() || null,
+        venue: venue ? { name: venue.name } : null,
+      });
       if (venue) setPickedVenue(venue);
       setShowVenues(false);
       const { count: c } = await supabase
-        .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
+        .from("daily_intents")
+        .select("user_id", { count: "exact", head: true })
+        .eq("intent_date", today);
       setCount(c ?? 0);
       await refreshHotVenues();
     } catch (e: any) {
@@ -257,7 +304,9 @@ export default function TonightCard() {
     setPickedVenue(null);
     setNote("");
     const { count: c } = await supabase
-      .from("daily_intents").select("user_id", { count: "exact", head: true }).eq("intent_date", today);
+      .from("daily_intents")
+      .select("user_id", { count: "exact", head: true })
+      .eq("intent_date", today);
     setCount(c ?? 0);
     await refreshHotVenues();
   }
@@ -267,8 +316,14 @@ export default function TonightCard() {
   return (
     <div className="tonight-card warm-glow-anim animate-fade-in">
       {/* Warm sunset glow orbs */}
-      <div className="pointer-events-none absolute -top-2 -right-2 h-8 w-8 rounded-full blur-[18px] opacity-50" style={{ background: "var(--warm-orange)" }} />
-      <div className="pointer-events-none absolute -bottom-2 -left-2 h-5 w-5 rounded-full blur-[14px] opacity-35" style={{ background: "var(--warm-rose)" }} />
+      <div
+        className="pointer-events-none absolute -top-2 -right-2 h-8 w-8 rounded-full blur-[18px] opacity-50"
+        style={{ background: "var(--warm-orange)" }}
+      />
+      <div
+        className="pointer-events-none absolute -bottom-2 -left-2 h-5 w-5 rounded-full blur-[14px] opacity-35"
+        style={{ background: "var(--warm-rose)" }}
+      />
 
       <div className="relative flex items-center justify-between gap-2">
         <div className="flex-1 min-w-0">
@@ -277,21 +332,40 @@ export default function TonightCard() {
           </div>
           <h3 className="tonight-title mt-0.5">
             {myIntent ? (
-              <>Te-ai băgat. <span className="text-white/95" style={{ textShadow: "0 0 12px rgba(255,255,255,0.35)" }}>{count}</span> pers.</>
+              <>
+                Te-ai băgat.{" "}
+                <span
+                  className="text-white/95"
+                  style={{ textShadow: "0 0 12px rgba(255,255,255,0.35)" }}
+                >
+                  {count}
+                </span>{" "}
+                pers.
+              </>
             ) : (
-              <>Unde <span className="italic text-white/95">ieși</span>?</>
+              <>
+                Unde <span className="italic text-white/95">ieși</span>?
+              </>
             )}
           </h3>
           {myIntent && (myIntent.venue?.name || myIntent.note) && (
             <div className="mt-0.5 text-[8px] text-white/80 flex items-center gap-1">
-              {myIntent.venue?.name && <><MapPin size={7} className="text-white/90" /> {myIntent.venue.name}</>}
+              {myIntent.venue?.name && (
+                <>
+                  <MapPin size={7} className="text-white/90" /> {myIntent.venue.name}
+                </>
+              )}
               {myIntent.note && <span className="text-white/55">· {myIntent.note}</span>}
             </div>
           )}
         </div>
 
         {!myIntent && !showVenues && (
-          <button onClick={() => setShowVenues(true)} className="tonight-btn" style={{ width: 'auto', padding: '0 10px' }}>
+          <button
+            onClick={() => setShowVenues(true)}
+            className="tonight-btn"
+            style={{ width: "auto", padding: "0 10px" }}
+          >
             mă bag ({count})
           </button>
         )}
@@ -300,7 +374,7 @@ export default function TonightCard() {
           <button
             onClick={() => setShowVenues(true)}
             className="tonight-btn"
-            style={{ width: 'auto', padding: '0 9px' }}
+            style={{ width: "auto", padding: "0 9px" }}
           >
             loc
           </button>
@@ -313,23 +387,34 @@ export default function TonightCard() {
         )}
       </div>
 
-
-
       {showVenues && (
         <div className="relative mt-3 space-y-2">
           <div className="relative">
             <input
               value={pickedVenue?.name ?? venueQuery}
-              onChange={(e) => { setVenueQuery(e.target.value); setPickedVenue(null); }}
+              onChange={(e) => {
+                setVenueQuery(e.target.value);
+                setPickedVenue(null);
+              }}
               placeholder="Unde? (opțional)"
               className="tonight-input"
             />
             {!pickedVenue && venues.length > 0 && (
-              <div className="absolute z-20 inset-x-0 mt-1 rounded-xl border overflow-hidden" style={{ background: "rgba(35, 14, 9, 0.98)", borderColor: "rgba(255,255,255,0.15)" }}>
-                {venues.map(v => (
+              <div
+                className="absolute z-20 inset-x-0 mt-1 rounded-xl border overflow-hidden"
+                style={{
+                  background: "rgba(35, 14, 9, 0.98)",
+                  borderColor: "rgba(255,255,255,0.15)",
+                }}
+              >
+                {venues.map((v) => (
                   <button
                     key={v.id}
-                    onClick={() => { setPickedVenue(v); setVenueQuery(""); setVenues([]); }}
+                    onClick={() => {
+                      setPickedVenue(v);
+                      setVenueQuery("");
+                      setVenues([]);
+                    }}
                     className="block w-full text-left px-3 py-2 text-sm text-white hover:bg-white/5 transition"
                   >
                     {v.name}
@@ -346,7 +431,9 @@ export default function TonightCard() {
             className="tonight-input"
           />
           <div className="flex gap-2">
-            <button onClick={() => setShowVenues(false)} className="tonight-ghost-btn">Renunță</button>
+            <button onClick={() => setShowVenues(false)} className="tonight-ghost-btn">
+              Renunță
+            </button>
             <button onClick={save} disabled={saving} className="tonight-btn" style={{ flex: 1 }}>
               {saving ? "..." : "salvează"}
             </button>
@@ -355,17 +442,24 @@ export default function TonightCard() {
       )}
 
       {showVenues && displayedVenues.length > 0 && (
-        <div className="relative mt-3 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.15)" }}>
+        <div
+          className="relative mt-3 pt-3"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.15)" }}
+        >
           <div className="flex items-center justify-between mb-2">
             <div className="tonight-label flex items-center gap-1.5 text-white/70">
               <Users size={10} /> unde se adună
             </div>
-            <button onClick={() => setShowVenues(false)} className="tonight-icon-btn" aria-label="Închide">
+            <button
+              onClick={() => setShowVenues(false)}
+              className="tonight-icon-btn"
+              aria-label="Închide"
+            >
               <X size={10} />
             </button>
           </div>
           <div className="space-y-1.5">
-            {displayedVenues.map(v => {
+            {displayedVenues.map((v) => {
               const mine = myIntent?.venue_id === v.id;
               const followed = follows.has(v.id);
               return (
@@ -374,9 +468,13 @@ export default function TonightCard() {
                   <div className="flex-1 min-w-0">
                     <div className="text-[12px] text-white truncate flex items-center gap-1.5">
                       {v.name}
-                      {followed && <span className="text-white/90 text-[7px] font-bold tracking-wider">★</span>}
+                      {followed && (
+                        <span className="text-white/90 text-[7px] font-bold tracking-wider">★</span>
+                      )}
                     </div>
-                    <div className="text-[9px] text-white/60">{v.count} {v.count === 1 ? "persoană" : "persoane"}</div>
+                    <div className="text-[9px] text-white/60">
+                      {v.count} {v.count === 1 ? "persoană" : "persoane"}
+                    </div>
                   </div>
                   <button
                     onClick={() => toggleFollow(v)}
@@ -415,5 +513,4 @@ export default function TonightCard() {
       )}
     </div>
   );
-
 }

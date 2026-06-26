@@ -19,14 +19,26 @@ function AdminPlaces() {
     queryKey: ["admin-places", tab],
     queryFn: async () => {
       if (tab === "venues") {
-        const { data } = await supabase.from("venues").select("id, name, type, address, slug, verified, cities:city_id(name)").order("name").limit(200);
+        const { data } = await supabase
+          .from("venues")
+          .select("id, name, type, address, slug, verified, cities:city_id(name)")
+          .order("name")
+          .limit(200);
         return data ?? [];
       }
       if (tab === "cities") {
-        const { data } = await supabase.from("cities").select("id, name, slug, country, region, chaos_level").order("name").limit(200);
+        const { data } = await supabase
+          .from("cities")
+          .select("id, name, slug, country, region, chaos_level")
+          .order("name")
+          .limit(200);
         return data ?? [];
       }
-      const { data } = await supabase.from("streets").select("id, name, slug, cities:city_id(name)").order("name").limit(200);
+      const { data } = await supabase
+        .from("streets")
+        .select("id, name, slug, cities:city_id(name)")
+        .order("name")
+        .limit(200);
       return data ?? [];
     },
   });
@@ -60,14 +72,19 @@ function AdminPlaces() {
             key={k}
             onClick={() => setTab(k)}
             className={`px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-widest border ${
-              tab === k ? "bg-foreground text-background border-foreground" : "border-foreground/15 hover:bg-foreground/10"
+              tab === k
+                ? "bg-foreground text-background border-foreground"
+                : "border-foreground/15 hover:bg-foreground/10"
             }`}
           >
             {k}
           </button>
         ))}
         {tab === "cities" && (
-          <button onClick={addCity} className="ml-auto px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-widest border border-neon-mint/30 text-neon-mint hover:bg-neon-mint/10 flex items-center gap-1">
+          <button
+            onClick={addCity}
+            className="ml-auto px-3 py-1.5 rounded-full font-mono text-[10px] uppercase tracking-widest border border-neon-mint/30 text-neon-mint hover:bg-neon-mint/10 flex items-center gap-1"
+          >
             <Plus size={11} /> Oraș
           </button>
         )}
@@ -75,16 +92,24 @@ function AdminPlaces() {
 
       <div className="space-y-1.5">
         {data?.map((row: any) => (
-          <div key={row.id} className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 flex items-center gap-3">
+          <div
+            key={row.id}
+            className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 flex items-center gap-3"
+          >
             <div className="min-w-0 flex-1">
               <div className="font-display text-sm truncate">{row.name}</div>
               <div className="font-mono text-[10px] text-muted-foreground truncate">
-                {tab === "venues" && `${row.type} · ${row.cities?.name ?? "—"} · ${row.address ?? "—"}${row.verified ? " · ✓" : ""}`}
-                {tab === "cities" && `${row.slug} · ${row.country}${row.region ? " · " + row.region : ""} · chaos ${row.chaos_level}`}
+                {tab === "venues" &&
+                  `${row.type} · ${row.cities?.name ?? "—"} · ${row.address ?? "—"}${row.verified ? " · ✓" : ""}`}
+                {tab === "cities" &&
+                  `${row.slug} · ${row.country}${row.region ? " · " + row.region : ""} · chaos ${row.chaos_level}`}
                 {tab === "streets" && `${row.slug} · ${row.cities?.name ?? "—"}`}
               </div>
             </div>
-            <button onClick={() => del(tab, row.id)} className="p-2 rounded-lg border border-neon-crimson/30 text-neon-crimson hover:bg-neon-crimson/10">
+            <button
+              onClick={() => del(tab, row.id)}
+              className="p-2 rounded-lg border border-neon-crimson/30 text-neon-crimson hover:bg-neon-crimson/10"
+            >
               <Trash2 size={13} />
             </button>
           </div>

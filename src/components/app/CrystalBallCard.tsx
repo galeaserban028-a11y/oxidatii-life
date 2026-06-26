@@ -6,7 +6,15 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
 
-type Visitor = { user_id: string; handle: string | null; display_name: string | null; avatar_url: string | null; last_visit: string; visit_count?: number; last_seen?: string };
+type Visitor = {
+  user_id: string;
+  handle: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  last_visit: string;
+  visit_count?: number;
+  last_seen?: string;
+};
 
 const PRICE_RON = 3;
 
@@ -22,7 +30,13 @@ export function CrystalBallCard() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_crystal_ball");
       if (error) throw error;
-      return data as { ok: boolean; unlocked: boolean; expires_at?: string; visitors?: Visitor[]; nearby?: Visitor[] };
+      return data as {
+        ok: boolean;
+        unlocked: boolean;
+        expires_at?: string;
+        visitors?: Visitor[];
+        nearby?: Visitor[];
+      };
     },
   });
 
@@ -51,7 +65,8 @@ export function CrystalBallCard() {
         <>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Vezi <span className="text-foreground">cine ți-a vizitat profilul</span> și
-            <span className="text-foreground"> cine a fost fizic aproape de tine</span> în ultimele 7 zile.
+            <span className="text-foreground"> cine a fost fizic aproape de tine</span> în ultimele
+            7 zile.
           </p>
           <button
             onClick={() => setCheckoutOpen(true)}
@@ -81,7 +96,14 @@ export function CrystalBallCard() {
             </button>
           </div>
 
-          <VisitorList items={tab === "visitors" ? visitors : nearby} emptyText={tab === "visitors" ? "Nimeni încă. Distribuie profilul!" : "Nimeni aproape (necesită locație live activă)."} />
+          <VisitorList
+            items={tab === "visitors" ? visitors : nearby}
+            emptyText={
+              tab === "visitors"
+                ? "Nimeni încă. Distribuie profilul!"
+                : "Nimeni aproape (necesită locație live activă)."
+            }
+          />
         </>
       )}
 
@@ -122,7 +144,8 @@ function VisitorList({ items, emptyText }: { items: Visitor[]; emptyText: string
               <div className="flex-1 min-w-0">
                 <div className="text-sm truncate">{v.display_name ?? v.handle ?? "Anonim"}</div>
                 <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground truncate">
-                  {v.handle ? `@${v.handle}` : ""} · {ago}{v.visit_count ? ` · ${v.visit_count}x` : ""}
+                  {v.handle ? `@${v.handle}` : ""} · {ago}
+                  {v.visit_count ? ` · ${v.visit_count}x` : ""}
                 </div>
               </div>
             </Link>

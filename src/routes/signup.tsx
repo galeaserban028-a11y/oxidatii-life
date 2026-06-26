@@ -96,20 +96,32 @@ function SignupPage() {
   return (
     <main className="min-h-screen flex flex-col bg-background text-foreground px-6 py-10">
       <div className="flex items-center justify-between mb-4">
-        <Link to="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
+        >
           <ChevronLeft size={16} /> înapoi
         </Link>
-        <Link to="/" className="font-display font-black text-xl tracking-widest text-gradient-chaos">OXIDAȚII</Link>
+        <Link
+          to="/"
+          className="font-display font-black text-xl tracking-widest text-gradient-chaos"
+        >
+          OXIDAȚII
+        </Link>
       </div>
       <div className="flex-1 flex items-center">
         <div className="w-full max-w-sm mx-auto space-y-6">
           <div>
             <h1 className="font-display font-black text-3xl">Fă-ți cont.</h1>
-            <p className="text-sm text-muted-foreground mt-1">Și intri în topul nopții. Doar 18+.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Și intri în topul nopții. Doar 18+.
+            </p>
           </div>
 
           <div>
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">data nașterii</label>
+            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              data nașterii
+            </label>
             <input
               type="date"
               required
@@ -123,24 +135,46 @@ function SignupPage() {
             </p>
           </div>
 
-          <button onClick={handleGoogle}
-            className="w-full rounded-xl border border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition py-3 font-medium">
+          <button
+            onClick={handleGoogle}
+            className="w-full rounded-xl border border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition py-3 font-medium"
+          >
             Continuă cu Google
           </button>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="flex-1 h-px bg-foreground/10" /> sau email <div className="flex-1 h-px bg-foreground/10" />
+            <div className="flex-1 h-px bg-foreground/10" /> sau email{" "}
+            <div className="flex-1 h-px bg-foreground/10" />
           </div>
           <form onSubmit={handleEmail} className="space-y-3">
-            <input type="email" required placeholder="email" value={email} onChange={e=>setEmail(e.target.value)}
-              className="w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm focus:outline-none focus:border-neon-purple" />
-            <input type="password" required minLength={6} placeholder="parolă (min 6)" value={pwd} onChange={e=>setPwd(e.target.value)}
-              className="w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm focus:outline-none focus:border-neon-purple" />
-            <button disabled={busy} className="w-full rounded-xl bg-neon-crimson/20 border border-neon-crimson/40 text-neon-crimson font-display font-bold tracking-widest uppercase py-3">
+            <input
+              type="email"
+              required
+              placeholder="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm focus:outline-none focus:border-neon-purple"
+            />
+            <input
+              type="password"
+              required
+              minLength={6}
+              placeholder="parolă (min 6)"
+              value={pwd}
+              onChange={(e) => setPwd(e.target.value)}
+              className="w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm focus:outline-none focus:border-neon-purple"
+            />
+            <button
+              disabled={busy}
+              className="w-full rounded-xl bg-neon-crimson/20 border border-neon-crimson/40 text-neon-crimson font-display font-bold tracking-widest uppercase py-3"
+            >
               {busy ? "..." : "Fă cont"}
             </button>
           </form>
           <p className="text-center text-sm text-muted-foreground">
-            Ai deja? <Link to="/login" className="text-neon-purple font-medium">Login</Link>
+            Ai deja?{" "}
+            <Link to="/login" className="text-neon-purple font-medium">
+              Login
+            </Link>
           </p>
         </div>
       </div>

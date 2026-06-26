@@ -6,9 +6,15 @@ export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
       { title: "Politica de confidențialitate — OXIDAȚII" },
-      { name: "description", content: "Cum colectăm, folosim și protejăm datele tale personale în aplicația OXIDAȚII." },
+      {
+        name: "description",
+        content: "Cum colectăm, folosim și protejăm datele tale personale în aplicația OXIDAȚII.",
+      },
       { property: "og:title", content: "Politica de confidențialitate — OXIDAȚII" },
-      { property: "og:description", content: "Cum colectăm, folosim și protejăm datele tale personale." },
+      {
+        property: "og:description",
+        content: "Cum colectăm, folosim și protejăm datele tale personale.",
+      },
       { name: "robots", content: "index,follow" },
     ],
   }),
@@ -25,7 +31,9 @@ function LangToggle({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
           key={l}
           onClick={() => setLang(l)}
           className={`px-3 py-1 rounded-full transition-colors ${
-            lang === l ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+            lang === l
+              ? "bg-foreground text-background"
+              : "text-muted-foreground hover:text-foreground"
           }`}
           aria-pressed={lang === l}
         >
@@ -56,18 +64,17 @@ function ContentRO() {
   return (
     <>
       <p>
-        Această politică explică ce date personale colectăm prin aplicația
-        OXIDAȚII („Aplicația"), în ce scop, cu cine le împărtășim și care sunt
-        drepturile tale conform Regulamentului General privind Protecția
-        Datelor (Regulamentul UE 2016/679 — „GDPR") și legislației române
+        Această politică explică ce date personale colectăm prin aplicația OXIDAȚII („Aplicația"),
+        în ce scop, cu cine le împărtășim și care sunt drepturile tale conform Regulamentului
+        General privind Protecția Datelor (Regulamentul UE 2016/679 — „GDPR") și legislației române
         aplicabile.
       </p>
 
       <h2>1. Operatorul datelor</h2>
       <p>
-        Operatorul datelor cu caracter personal este echipa OXIDAȚII. Ne poți
-        contacta oricând la <a href="mailto:privacy@oxidatii.life">privacy@oxidatii.life</a> pentru orice
-        întrebare privind prelucrarea datelor tale.
+        Operatorul datelor cu caracter personal este echipa OXIDAȚII. Ne poți contacta oricând la{" "}
+        <a href="mailto:privacy@oxidatii.life">privacy@oxidatii.life</a> pentru orice întrebare
+        privind prelucrarea datelor tale.
       </p>
 
       <h2>2. Ce date colectăm</h2>
@@ -97,18 +104,36 @@ function ContentRO() {
 
       <h2>3. Scopurile și temeiul prelucrării</h2>
       <ul>
-        <li><strong>Furnizarea serviciului</strong> — autentificare, postări, chat, hartă. Temei: executarea contractului (art. 6(1)(b) GDPR).</li>
-        <li><strong>Verificarea vârstei (18+)</strong> — accesul este permis exclusiv persoanelor majore. Temei: obligație legală și interes legitim.</li>
-        <li><strong>Securitate și anti-abuz</strong> — detectarea spam-ului, conținutului ilegal sau a fraudei. Temei: interes legitim (art. 6(1)(f) GDPR).</li>
-        <li><strong>Verificare AI a șprițului</strong> — clasificare automată a imaginilor, fără decizii automate cu efecte juridice. Temei: executarea contractului.</li>
-        <li><strong>Analiză și îmbunătățire</strong> — statistici anonime de utilizare. Temei: consimțământ sau interes legitim.</li>
+        <li>
+          <strong>Furnizarea serviciului</strong> — autentificare, postări, chat, hartă. Temei:
+          executarea contractului (art. 6(1)(b) GDPR).
+        </li>
+        <li>
+          <strong>Verificarea vârstei (18+)</strong> — accesul este permis exclusiv persoanelor
+          majore. Temei: obligație legală și interes legitim.
+        </li>
+        <li>
+          <strong>Securitate și anti-abuz</strong> — detectarea spam-ului, conținutului ilegal sau a
+          fraudei. Temei: interes legitim (art. 6(1)(f) GDPR).
+        </li>
+        <li>
+          <strong>Verificare AI a șprițului</strong> — clasificare automată a imaginilor, fără
+          decizii automate cu efecte juridice. Temei: executarea contractului.
+        </li>
+        <li>
+          <strong>Analiză și îmbunătățire</strong> — statistici anonime de utilizare. Temei:
+          consimțământ sau interes legitim.
+        </li>
       </ul>
 
       <h2>4. Cui transmitem datele</h2>
       <ul>
         <li>furnizori de infrastructură cloud și bază de date (Supabase / Lovable Cloud)</li>
         <li>furnizori de stocare media pentru pozele și clipurile tale</li>
-        <li>furnizori AI pentru clasificarea imaginilor (procesare temporară, fără antrenare pe datele tale)</li>
+        <li>
+          furnizori AI pentru clasificarea imaginilor (procesare temporară, fără antrenare pe datele
+          tale)
+        </li>
         <li>autorități, doar la cerere legală întemeiată</li>
       </ul>
       <p>Nu vindem datele tale către terți. Nu folosim datele tale pentru publicitate țintită.</p>
@@ -129,18 +154,28 @@ function ContentRO() {
         <li>de restricționare a prelucrării</li>
         <li>de opoziție</li>
         <li>de portabilitate a datelor</li>
-        <li>de a depune plângere la ANSPDCP (<a href="https://www.dataprotection.ro">dataprotection.ro</a>)</li>
+        <li>
+          de a depune plângere la ANSPDCP (
+          <a href="https://www.dataprotection.ro">dataprotection.ro</a>)
+        </li>
       </ul>
       <p>
         Îți poți exercita drepturile scriindu-ne la
-        <a href="mailto:privacy@oxidatii.life"> privacy@oxidatii.life</a> sau direct din ecranul „Profil → Setări".
+        <a href="mailto:privacy@oxidatii.life"> privacy@oxidatii.life</a> sau direct din ecranul
+        „Profil → Setări".
       </p>
 
       <h2>7. Minori</h2>
-      <p>Aplicația este destinată exclusiv persoanelor de peste 18 ani. Conturile create de minori sunt șterse imediat ce sunt identificate.</p>
+      <p>
+        Aplicația este destinată exclusiv persoanelor de peste 18 ani. Conturile create de minori
+        sunt șterse imediat ce sunt identificate.
+      </p>
 
       <h2>8. Modificări</h2>
-      <p>Putem actualiza această politică. Modificările substanțiale vor fi notificate în aplicație cu cel puțin 14 zile înainte de intrarea în vigoare.</p>
+      <p>
+        Putem actualiza această politică. Modificările substanțiale vor fi notificate în aplicație
+        cu cel puțin 14 zile înainte de intrarea în vigoare.
+      </p>
     </>
   );
 }
@@ -149,16 +184,16 @@ function ContentEN() {
   return (
     <>
       <p>
-        This policy explains what personal data we collect through the OXIDAȚII
-        app (the "App"), for what purpose, with whom we share it, and your
-        rights under the EU General Data Protection Regulation (Regulation EU
-        2016/679 — "GDPR") and applicable Romanian law.
+        This policy explains what personal data we collect through the OXIDAȚII app (the "App"), for
+        what purpose, with whom we share it, and your rights under the EU General Data Protection
+        Regulation (Regulation EU 2016/679 — "GDPR") and applicable Romanian law.
       </p>
 
       <h2>1. Data controller</h2>
       <p>
         The data controller is the OXIDAȚII team. You can contact us anytime at
-        <a href="mailto:privacy@oxidatii.life"> privacy@oxidatii.life</a> for any question regarding the processing of your data.
+        <a href="mailto:privacy@oxidatii.life"> privacy@oxidatii.life</a> for any question regarding
+        the processing of your data.
       </p>
 
       <h2>2. Data we collect</h2>
@@ -188,21 +223,40 @@ function ContentEN() {
 
       <h2>3. Purposes and legal basis</h2>
       <ul>
-        <li><strong>Providing the service</strong> — authentication, posting, chat, map. Basis: contract performance (art. 6(1)(b) GDPR).</li>
-        <li><strong>Age verification (18+)</strong> — access is restricted to adults. Basis: legal obligation and legitimate interest.</li>
-        <li><strong>Security and anti-abuse</strong> — detection of spam, illegal content, fraud. Basis: legitimate interest (art. 6(1)(f) GDPR).</li>
-        <li><strong>AI spritz verification</strong> — automated image classification, no legal-effect automated decisions. Basis: contract performance.</li>
-        <li><strong>Analytics and improvement</strong> — anonymous usage statistics. Basis: consent or legitimate interest.</li>
+        <li>
+          <strong>Providing the service</strong> — authentication, posting, chat, map. Basis:
+          contract performance (art. 6(1)(b) GDPR).
+        </li>
+        <li>
+          <strong>Age verification (18+)</strong> — access is restricted to adults. Basis: legal
+          obligation and legitimate interest.
+        </li>
+        <li>
+          <strong>Security and anti-abuse</strong> — detection of spam, illegal content, fraud.
+          Basis: legitimate interest (art. 6(1)(f) GDPR).
+        </li>
+        <li>
+          <strong>AI spritz verification</strong> — automated image classification, no legal-effect
+          automated decisions. Basis: contract performance.
+        </li>
+        <li>
+          <strong>Analytics and improvement</strong> — anonymous usage statistics. Basis: consent or
+          legitimate interest.
+        </li>
       </ul>
 
       <h2>4. Who we share data with</h2>
       <ul>
         <li>cloud infrastructure and database providers (Supabase / Lovable Cloud)</li>
         <li>media storage providers for your photos and videos</li>
-        <li>AI providers for image classification (temporary processing, no training on your data)</li>
+        <li>
+          AI providers for image classification (temporary processing, no training on your data)
+        </li>
         <li>authorities, only upon valid legal request</li>
       </ul>
-      <p>We do not sell your data to third parties. We do not use your data for targeted advertising.</p>
+      <p>
+        We do not sell your data to third parties. We do not use your data for targeted advertising.
+      </p>
 
       <h2>5. Retention</h2>
       <ul>
@@ -220,18 +274,28 @@ function ContentEN() {
         <li>restriction of processing</li>
         <li>objection</li>
         <li>data portability</li>
-        <li>to lodge a complaint with the Romanian DPA (ANSPDCP, <a href="https://www.dataprotection.ro">dataprotection.ro</a>)</li>
+        <li>
+          to lodge a complaint with the Romanian DPA (ANSPDCP,{" "}
+          <a href="https://www.dataprotection.ro">dataprotection.ro</a>)
+        </li>
       </ul>
       <p>
         You can exercise your rights by writing to
-        <a href="mailto:privacy@oxidatii.life"> privacy@oxidatii.life</a> or directly from the "Profile → Settings" screen.
+        <a href="mailto:privacy@oxidatii.life"> privacy@oxidatii.life</a> or directly from the
+        "Profile → Settings" screen.
       </p>
 
       <h2>7. Minors</h2>
-      <p>The app is intended exclusively for users over 18. Accounts created by minors are deleted as soon as they are identified.</p>
+      <p>
+        The app is intended exclusively for users over 18. Accounts created by minors are deleted as
+        soon as they are identified.
+      </p>
 
       <h2>8. Changes</h2>
-      <p>We may update this policy. Material changes will be notified in-app at least 14 days before they take effect.</p>
+      <p>
+        We may update this policy. Material changes will be notified in-app at least 14 days before
+        they take effect.
+      </p>
     </>
   );
 }

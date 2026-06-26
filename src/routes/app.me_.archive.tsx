@@ -52,18 +52,42 @@ async function loadArchive(userId: string) {
   ]);
 
   const items: Item[] = [
-    ...((photosRes.data ?? []).map((p): Item => ({
-      kind: "photo", id: p.id, created_at: p.taken_at, photo_url: p.photo_url, caption: p.caption, venue_id: p.venue_id,
-    }))),
-    ...((proofsRes.data ?? []).map((p): Item => ({
-      kind: "proof", id: p.id, created_at: p.created_at, photo_url: p.photo_url, venue_id: p.venue_id,
-    }))),
-    ...((partiesRes.data ?? []).map((p): Item => ({
-      kind: "party", id: p.id, created_at: p.created_at, title: p.title, location_text: p.location_text,
-    }))),
-    ...((checkinsRes.data ?? []).map((c): Item => ({
-      kind: "checkin", id: c.id, created_at: c.created_at, venue_id: c.venue_id,
-    }))),
+    ...(photosRes.data ?? []).map(
+      (p): Item => ({
+        kind: "photo",
+        id: p.id,
+        created_at: p.taken_at,
+        photo_url: p.photo_url,
+        caption: p.caption,
+        venue_id: p.venue_id,
+      }),
+    ),
+    ...(proofsRes.data ?? []).map(
+      (p): Item => ({
+        kind: "proof",
+        id: p.id,
+        created_at: p.created_at,
+        photo_url: p.photo_url,
+        venue_id: p.venue_id,
+      }),
+    ),
+    ...(partiesRes.data ?? []).map(
+      (p): Item => ({
+        kind: "party",
+        id: p.id,
+        created_at: p.created_at,
+        title: p.title,
+        location_text: p.location_text,
+      }),
+    ),
+    ...(checkinsRes.data ?? []).map(
+      (c): Item => ({
+        kind: "checkin",
+        id: c.id,
+        created_at: c.created_at,
+        venue_id: c.venue_id,
+      }),
+    ),
   ].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
 
   const venueIds = Array.from(new Set(items.map((i) => i.venue_id).filter(Boolean) as string[]));
@@ -119,7 +143,11 @@ function ArchivePage() {
   }, [filtered]);
 
   if (!user) {
-    return <div className="px-4 pt-6 text-center text-sm text-muted-foreground">Fă-ți cont ca să vezi arhiva.</div>;
+    return (
+      <div className="px-4 pt-6 text-center text-sm text-muted-foreground">
+        Fă-ți cont ca să vezi arhiva.
+      </div>
+    );
   }
 
   const total = items.length;
@@ -128,7 +156,10 @@ function ArchivePage() {
   return (
     <div className="px-5 pt-8 pb-24 space-y-7 max-w-xl mx-auto">
       <header className="space-y-4">
-        <Link to="/app/me" className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-zinc-500 hover:text-foreground">
+        <Link
+          to="/app/me"
+          className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-zinc-500 hover:text-foreground"
+        >
           <ArrowLeft size={12} /> înapoi la profil
         </Link>
         <div className="space-y-2">
@@ -136,9 +167,7 @@ function ArchivePage() {
           <h1 className="font-display uppercase text-3xl leading-[0.95]">
             <span className="text-gradient-sunset">Tot ce-ai făcut.</span>
           </h1>
-          <p className="text-xs text-zinc-500">
-            {total} momente · de la primul șpriț până azi.
-          </p>
+          <p className="text-xs text-zinc-500">{total} momente · de la primul șpriț până azi.</p>
         </div>
       </header>
 
@@ -152,13 +181,15 @@ function ArchivePage() {
       )}
 
       <div className="flex gap-2 overflow-x-auto scrollbar-none -mx-1 px-1">
-        {([
-          ["all", "Toate"],
-          ["photos", "Faze"],
-          ["proofs", "Șprițuri"],
-          ["parties", "Părți"],
-          ["checkins", "Check-in"],
-        ] as [Filter, string][]).map(([k, label]) => (
+        {(
+          [
+            ["all", "Toate"],
+            ["photos", "Faze"],
+            ["proofs", "Șprițuri"],
+            ["parties", "Părți"],
+            ["checkins", "Check-in"],
+          ] as [Filter, string][]
+        ).map(([k, label]) => (
           <button
             key={k}
             onClick={() => setFilter(k)}
@@ -183,9 +214,7 @@ function ArchivePage() {
         <div className="rounded-2xl border border-dashed border-border p-10 text-center space-y-2">
           <div className="text-4xl">🗃️</div>
           <div className="font-display font-semibold">Nimic în arhivă încă.</div>
-          <p className="text-xs text-muted-foreground">
-            Postează prima fază și începe colecția.
-          </p>
+          <p className="text-xs text-muted-foreground">Postează prima fază și începe colecția.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -226,13 +255,21 @@ function ArchivePage() {
                       key={`${it.kind}-${it.id}`}
                       className="aspect-square rounded-lg bg-gradient-to-br from-foreground/[0.05] to-foreground/[0.02] border border-foreground/10 p-2 flex flex-col justify-between"
                     >
-                      <Icon size={14} className={it.kind === "party" ? "text-neon-crimson" : "text-muted-foreground"} />
+                      <Icon
+                        size={14}
+                        className={
+                          it.kind === "party" ? "text-neon-crimson" : "text-muted-foreground"
+                        }
+                      />
                       <div className="space-y-0.5">
                         <div className="font-display text-[10px] uppercase leading-tight truncate">
-                          {it.title ?? (v ? v.name : it.location_text ?? "—")}
+                          {it.title ?? (v ? v.name : (it.location_text ?? "—"))}
                         </div>
                         <div className="font-mono text-[8px] uppercase tracking-widest text-muted-foreground">
-                          {new Date(it.created_at).toLocaleDateString("ro-RO", { day: "2-digit", month: "short" })}
+                          {new Date(it.created_at).toLocaleDateString("ro-RO", {
+                            day: "2-digit",
+                            month: "short",
+                          })}
                         </div>
                       </div>
                     </div>

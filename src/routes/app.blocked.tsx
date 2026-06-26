@@ -66,7 +66,11 @@ function BlockedPage() {
                   className="h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-foreground/30 to-foreground/10 flex items-center justify-center text-background font-display font-bold shrink-0"
                 >
                   {b.blocked?.avatar_url ? (
-                    <img src={b.blocked.avatar_url} alt="" className="h-full w-full object-cover grayscale" />
+                    <img
+                      src={b.blocked.avatar_url}
+                      alt=""
+                      className="h-full w-full object-cover grayscale"
+                    />
                   ) : (
                     handle[0]?.toUpperCase()
                   )}
@@ -89,11 +93,7 @@ function BlockedPage() {
         </ul>
       )}
 
-      <UnblockDialog
-        viewerId={user.id}
-        target={confirm}
-        onClose={() => setConfirm(null)}
-      />
+      <UnblockDialog viewerId={user.id} target={confirm} onClose={() => setConfirm(null)} />
     </div>
   );
 }

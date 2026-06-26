@@ -11,7 +11,11 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [venueQuery, setVenueQuery] = useState("");
-  const [selectedVenue, setSelectedVenue] = useState<{ id: string; name: string; city?: any } | null>(null);
+  const [selectedVenue, setSelectedVenue] = useState<{
+    id: string;
+    name: string;
+    city?: any;
+  } | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -27,14 +31,25 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
   });
 
   async function submit() {
-    if (!user) { toast.error("Trebuie să fii logat."); return; }
-    if (!file) { toast.error("Alege o poză sau un clip."); return; }
-    if (!selectedVenue) { toast.error("Alege locația."); return; }
+    if (!user) {
+      toast.error("Trebuie să fii logat.");
+      return;
+    }
+    if (!file) {
+      toast.error("Alege o poză sau un clip.");
+      return;
+    }
+    if (!selectedVenue) {
+      toast.error("Alege locația.");
+      return;
+    }
     setUploading(true);
     try {
       const ext = file.name.split(".").pop() ?? "jpg";
       const path = `${user.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, { upsert: false });
+      const { error: upErr } = await supabase.storage
+        .from("venue-photos")
+        .upload(path, file, { upsert: false });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
       const { error: insErr } = await supabase.from("venue_photos").insert({
@@ -57,38 +72,81 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end justify-center px-2" onClick={onClose} style={{ ...hind, paddingBottom: SHEET_BOTTOM, paddingTop: "1rem" }}>
-      <div className="w-full max-w-[22rem] bg-background border border-foreground/10 rounded-3xl p-4 space-y-3 overflow-y-auto" onClick={(e) => e.stopPropagation()} style={{ maxHeight: `calc(100dvh - ${SHEET_BOTTOM} - 2rem)` }}>
+    <div
+      className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end justify-center px-2"
+      onClick={onClose}
+      style={{ ...hind, paddingBottom: SHEET_BOTTOM, paddingTop: "1rem" }}
+    >
+      <div
+        className="w-full max-w-[22rem] bg-background border border-foreground/10 rounded-3xl p-4 space-y-3 overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxHeight: `calc(100dvh - ${SHEET_BOTTOM} - 2rem)` }}
+      >
         <div className="flex items-center justify-between">
-          <div className="uppercase text-sm tracking-[0.16em]" style={archivo}>Postează o fază</div>
-          <button onClick={onClose} className="text-muted-foreground text-2xl leading-none w-8 h-8 grid place-items-center">×</button>
+          <div className="uppercase text-sm tracking-[0.16em]" style={archivo}>
+            Postează o fază
+          </div>
+          <button
+            onClick={onClose}
+            className="text-muted-foreground text-2xl leading-none w-8 h-8 grid place-items-center"
+          >
+            ×
+          </button>
         </div>
 
-        <input ref={fileRef} type="file" accept="image/*,video/mp4,video/webm,video/quicktime" className="hidden" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*,video/mp4,video/webm,video/quicktime"
+          className="hidden"
+          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        />
         <button
           onClick={() => fileRef.current?.click()}
           className="w-full aspect-[4/3] rounded-2xl border border-dashed border-foreground/20 flex items-center justify-center overflow-hidden bg-foreground/[0.04]"
         >
           {file ? (
             file.type.startsWith("video/") ? (
-              <video src={URL.createObjectURL(file)} className="h-full w-full object-cover" playsInline muted autoPlay loop />
+              <video
+                src={URL.createObjectURL(file)}
+                className="h-full w-full object-cover"
+                playsInline
+                muted
+                autoPlay
+                loop
+              />
             ) : (
               <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
             )
           ) : (
             <div className="text-center space-y-1 text-muted-foreground">
               <div className="text-3xl">📸 🎬</div>
-              <div className="text-[10px] uppercase tracking-widest" style={archivo}>alege poză sau clip</div>
+              <div className="text-[10px] uppercase tracking-widest" style={archivo}>
+                alege poză sau clip
+              </div>
             </div>
           )}
         </button>
 
         <div className="space-y-1.5">
-          <label className="text-[10px] uppercase tracking-widest text-muted-foreground" style={archivo}>Locația</label>
+          <label
+            className="text-[10px] uppercase tracking-widest text-muted-foreground"
+            style={archivo}
+          >
+            Locația
+          </label>
           {selectedVenue ? (
             <div className="flex items-center justify-between p-2.5 rounded-xl bg-foreground/[0.06] border border-foreground/10">
-              <div className="text-[13px] truncate">{selectedVenue.name} · {selectedVenue.city?.name ?? ""}</div>
-              <button onClick={() => setSelectedVenue(null)} className="text-[10px] text-sunset-orange uppercase ml-2 shrink-0" style={archivo}>schimbă</button>
+              <div className="text-[13px] truncate">
+                {selectedVenue.name} · {selectedVenue.city?.name ?? ""}
+              </div>
+              <button
+                onClick={() => setSelectedVenue(null)}
+                className="text-[10px] text-sunset-orange uppercase ml-2 shrink-0"
+                style={archivo}
+              >
+                schimbă
+              </button>
             </div>
           ) : (
             <>
@@ -106,7 +164,12 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
                     className="w-full text-left p-2 rounded-lg hover:bg-foreground/[0.06] text-[13px]"
                   >
                     <div className="font-semibold">{v.name}</div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground" style={archivo}>{v.city?.name ?? ""}</div>
+                    <div
+                      className="text-[10px] uppercase tracking-widest text-muted-foreground"
+                      style={archivo}
+                    >
+                      {v.city?.name ?? ""}
+                    </div>
                   </button>
                 ))}
                 {venues && venues.length === 0 && (

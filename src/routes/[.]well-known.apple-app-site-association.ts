@@ -17,9 +17,7 @@ const AASA = {
   webcredentials: { apps: ["TEAMID.com.oxidatii.app"] },
 };
 
-export const Route = createFileRoute(
-  "/.well-known/apple-app-site-association",
-)({
+export const Route = createFileRoute("/.well-known/apple-app-site-association")({
   server: {
     handlers: {
       GET: async () =>

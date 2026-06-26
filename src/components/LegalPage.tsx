@@ -21,13 +21,25 @@ export function LegalPage({
             ← oxidații
           </Link>
           <div className="flex gap-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            <Link to="/privacy" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+            <Link
+              to="/privacy"
+              className="hover:text-foreground"
+              activeProps={{ className: "text-foreground" }}
+            >
               privacy
             </Link>
-            <Link to="/terms" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+            <Link
+              to="/terms"
+              className="hover:text-foreground"
+              activeProps={{ className: "text-foreground" }}
+            >
               termeni
             </Link>
-            <Link to="/cookies" className="hover:text-foreground" activeProps={{ className: "text-foreground" }}>
+            <Link
+              to="/cookies"
+              className="hover:text-foreground"
+              activeProps={{ className: "text-foreground" }}
+            >
               cookies
             </Link>
           </div>

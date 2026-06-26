@@ -37,16 +37,22 @@ export function pushSupported(): boolean {
 export function isIosStandalone(): boolean {
   // iOS only supports web push when the PWA is installed (added to Home Screen)
   // @ts-ignore — non-standard but iOS uses this
-  return window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone === true;
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as any).standalone === true
+  );
 }
 
 export function platformBlocksPush(): { blocked: boolean; reason?: string } {
-  if (!pushSupported()) return { blocked: true, reason: "Browserul nu suportă push notifications." };
+  if (!pushSupported())
+    return { blocked: true, reason: "Browserul nu suportă push notifications." };
   if (isInIframe() || isPreviewHost()) {
     return { blocked: true, reason: "Push merge doar pe site-ul publicat, nu în preview." };
   }
   const ua = navigator.userAgent;
-  const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && (navigator as any).maxTouchPoints > 1);
+  const isIOS =
+    /iPhone|iPad|iPod/.test(ua) ||
+    (navigator.platform === "MacIntel" && (navigator as any).maxTouchPoints > 1);
   if (isIOS && !isIosStandalone()) {
     return { blocked: true, reason: "Pe iOS trebuie să adaugi întâi aplicația pe Home Screen." };
   }
@@ -82,7 +88,9 @@ export async function enablePush(): Promise<{ ok: true } | { ok: false; reason: 
   const block = platformBlocksPush();
   if (block.blocked) return { ok: false, reason: block.reason! };
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { ok: false, reason: "Trebuie să fii autentificat." };
 
   const perm = await Notification.requestPermission();
@@ -109,7 +117,7 @@ export async function enablePush(): Promise<{ ok: true } | { ok: false; reason: 
       auth: json.keys.auth,
       user_agent: navigator.userAgent.slice(0, 240),
     },
-    { onConflict: "endpoint" }
+    { onConflict: "endpoint" },
   );
   if (error) return { ok: false, reason: error.message };
 
@@ -125,7 +133,9 @@ export async function disablePush(): Promise<void> {
   const sub = await getCurrentSubscription();
   if (sub) {
     const endpoint = sub.endpoint;
-    try { await sub.unsubscribe(); } catch {}
+    try {
+      await sub.unsubscribe();
+    } catch {}
     await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
   }
 }

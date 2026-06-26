@@ -1,20 +1,73 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
-import { LayoutDashboard, Users, Flame, Building2, Megaphone, MapPin, Flag, ShieldAlert, Bug } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  Flame,
+  Building2,
+  Megaphone,
+  MapPin,
+  Flag,
+  ShieldAlert,
+  Bug,
+} from "lucide-react";
 
 export const Route = createFileRoute("/app/admin")({
   component: AdminLayout,
 });
 
 export const adminNav = [
-  { to: "/app/admin", label: "Panou", icon: LayoutDashboard, exact: true, accent: "#ffffff", desc: "Vedere de ansamblu" },
-  { to: "/app/admin/users", label: "Useri", icon: Users, accent: "#00e5ff", desc: "Acordă coins, ranguri, roluri" },
-  { to: "/app/admin/content", label: "Conținut", icon: Flame, accent: "#ff3d8b", desc: "Faze, sprits, comentarii" },
-  { to: "/app/admin/businesses", label: "Businesses", icon: Building2, accent: "#00e5ff", desc: "Conturi, verificare, tier" },
-  { to: "/app/admin/campaigns", label: "Campanii", icon: Megaphone, accent: "#c724ff", desc: "Promo & boost-uri" },
-  { to: "/app/admin/places", label: "Locații", icon: MapPin, accent: "#ffd166", desc: "Orașe & venues" },
-  { to: "/app/admin/reports", label: "Rapoarte", icon: Flag, accent: "#ff3d8b", desc: "Cereri & flag-uri" },
+  {
+    to: "/app/admin",
+    label: "Panou",
+    icon: LayoutDashboard,
+    exact: true,
+    accent: "#ffffff",
+    desc: "Vedere de ansamblu",
+  },
+  {
+    to: "/app/admin/users",
+    label: "Useri",
+    icon: Users,
+    accent: "#00e5ff",
+    desc: "Acordă coins, ranguri, roluri",
+  },
+  {
+    to: "/app/admin/content",
+    label: "Conținut",
+    icon: Flame,
+    accent: "#ff3d8b",
+    desc: "Faze, sprits, comentarii",
+  },
+  {
+    to: "/app/admin/businesses",
+    label: "Businesses",
+    icon: Building2,
+    accent: "#00e5ff",
+    desc: "Conturi, verificare, tier",
+  },
+  {
+    to: "/app/admin/campaigns",
+    label: "Campanii",
+    icon: Megaphone,
+    accent: "#c724ff",
+    desc: "Promo & boost-uri",
+  },
+  {
+    to: "/app/admin/places",
+    label: "Locații",
+    icon: MapPin,
+    accent: "#ffd166",
+    desc: "Orașe & venues",
+  },
+  {
+    to: "/app/admin/reports",
+    label: "Rapoarte",
+    icon: Flag,
+    accent: "#ff3d8b",
+    desc: "Cereri & flag-uri",
+  },
   { to: "/app/admin/debug", label: "Debug", icon: Bug, accent: "#a0a0a0", desc: "Unelte tehnice" },
 ];
 
@@ -30,7 +83,8 @@ function AdminLayout() {
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Verific acces…</div>;
   if (!isStaff) return null;
 
-  const current = adminNav.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? adminNav[0];
+  const current =
+    adminNav.find((n) => (n.exact ? pathname === n.to : pathname.startsWith(n.to))) ?? adminNav[0];
 
   return (
     <div className="min-h-screen">
@@ -64,7 +118,11 @@ function AdminLayout() {
                     ? "bg-foreground text-background border-foreground shadow-sm"
                     : "bg-foreground/[0.04] border-foreground/15 hover:bg-foreground/10 text-foreground/80"
                 }`}
-                style={active ? { boxShadow: `0 0 0 1px ${item.accent}55, 0 4px 14px ${item.accent}33` } : undefined}
+                style={
+                  active
+                    ? { boxShadow: `0 0 0 1px ${item.accent}55, 0 4px 14px ${item.accent}33` }
+                    : undefined
+                }
               >
                 <Icon size={12} style={!active ? { color: item.accent } : undefined} /> {item.label}
               </Link>

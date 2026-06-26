@@ -21,7 +21,10 @@ export function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () =
         .order("created_at", { ascending: true });
       const ids = Array.from(new Set((data ?? []).map((c) => c.user_id)));
       const { data: profs } = ids.length
-        ? await supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", ids)
+        ? await supabase
+            .from("profiles")
+            .select("id, handle, display_name, avatar_url")
+            .in("id", ids)
         : { data: [] as any[] };
       const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
       return (data ?? []).map((c) => ({ ...c, profile: map.get(c.user_id) }));
@@ -29,12 +32,17 @@ export function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () =
   });
 
   async function submit() {
-    if (!user) { toast.error("Trebuie să fii logat."); return; }
+    if (!user) {
+      toast.error("Trebuie să fii logat.");
+      return;
+    }
     const text = body.trim();
     if (!text) return;
     setSending(true);
     const { error } = await supabase.from("photo_comments").insert({
-      photo_id: photo.id, user_id: user.id, body: text,
+      photo_id: photo.id,
+      user_id: user.id,
+      body: text,
     });
     setSending(false);
     if (error) {
@@ -48,15 +56,26 @@ export function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () =
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose} style={hind}>
+    <div
+      className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end"
+      onClick={onClose}
+      style={hind}
+    >
       <div
         className="w-full bg-background border-t border-foreground/10 rounded-t-3xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
         style={{ maxHeight: `calc(85dvh - ${SHEET_BOTTOM})`, marginBottom: SHEET_BOTTOM }}
       >
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-foreground/10">
-          <div className="uppercase text-sm tracking-[0.16em]" style={archivo}>Comentarii</div>
-          <button onClick={onClose} className="text-muted-foreground text-2xl leading-none w-8 h-8 grid place-items-center">×</button>
+          <div className="uppercase text-sm tracking-[0.16em]" style={archivo}>
+            Comentarii
+          </div>
+          <button
+            onClick={onClose}
+            className="text-muted-foreground text-2xl leading-none w-8 h-8 grid place-items-center"
+          >
+            ×
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
@@ -71,18 +90,34 @@ export function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () =
             comments.map((c: any) => (
               <div key={c.id} className="flex items-start gap-3">
                 {c.profile?.avatar_url ? (
-                  <img src={c.profile.avatar_url} alt="" className="size-9 rounded-full object-cover shrink-0" />
+                  <img
+                    src={c.profile.avatar_url}
+                    alt=""
+                    className="size-9 rounded-full object-cover shrink-0"
+                  />
                 ) : (
-                  <div className="size-9 rounded-full bg-foreground/10 shrink-0 grid place-items-center text-xs uppercase" style={archivo}>
+                  <div
+                    className="size-9 rounded-full bg-foreground/10 shrink-0 grid place-items-center text-xs uppercase"
+                    style={archivo}
+                  >
                     {(c.profile?.display_name ?? "?")[0]?.toUpperCase()}
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-[13px] font-semibold truncate">{c.profile?.display_name ?? c.profile?.handle ?? "Anonim"}</span>
-                    <span className="text-[9px] uppercase tracking-widest text-muted-foreground" style={archivo}>{timeAgo(c.created_at)}</span>
+                    <span className="text-[13px] font-semibold truncate">
+                      {c.profile?.display_name ?? c.profile?.handle ?? "Anonim"}
+                    </span>
+                    <span
+                      className="text-[9px] uppercase tracking-widest text-muted-foreground"
+                      style={archivo}
+                    >
+                      {timeAgo(c.created_at)}
+                    </span>
                   </div>
-                  <p className="text-[14px] leading-snug whitespace-pre-wrap break-words">{c.body}</p>
+                  <p className="text-[14px] leading-snug whitespace-pre-wrap break-words">
+                    {c.body}
+                  </p>
                 </div>
               </div>
             ))

@@ -59,7 +59,10 @@ export function useBlockedList(userId?: string | null) {
         const { data: profs } = await supabase
           .from("profiles")
           .select("id, handle, display_name, avatar_url")
-          .in("id", rows.map((r) => r.blocked_id));
+          .in(
+            "id",
+            rows.map((r) => r.blocked_id),
+          );
         const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
         return rows.map((r) => ({ ...r, blocked: map.get(r.blocked_id) ?? null })) as any;
       }

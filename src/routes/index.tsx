@@ -8,14 +8,19 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "OXIDAȚII — Aplicația de șpriț" },
-      { name: "description", content: "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă. Doar pentru +18." },
+      {
+        name: "description",
+        content:
+          "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă. Doar pentru +18.",
+      },
       { property: "og:title", content: "OXIDAȚII — Hai la șpriț în Dumnezeul oxidaților." },
-      { property: "og:description", content: "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă." },
+      {
+        property: "og:description",
+        content: "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă.",
+      },
       { property: "og:url", content: "https://oxidatii.lovable.app/" },
     ],
-    links: [
-      { rel: "canonical", href: "https://oxidatii.lovable.app/" },
-    ],
+    links: [{ rel: "canonical", href: "https://oxidatii.lovable.app/" }],
     scripts: [
       {
         type: "application/ld+json",
@@ -25,7 +30,8 @@ export const Route = createFileRoute("/")({
           name: "OXIDAȚII",
           url: "https://oxidatii.lovable.app/",
           inLanguage: "ro-RO",
-          description: "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă.",
+          description:
+            "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă.",
         }),
       },
     ],
@@ -43,17 +49,29 @@ function Index() {
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between px-6 py-6">
         <div className="flex items-center gap-3">
-          <img src={logoLight} alt="Logo OXIDAȚII" className="w-11 h-11 object-contain drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]" />
+          <img
+            src={logoLight}
+            alt="Logo OXIDAȚII"
+            className="w-11 h-11 object-contain drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]"
+          />
           <div>
             <h1 className="text-sm font-extrabold tracking-widest uppercase">Oxidații</h1>
-            <p className="font-mono text-[10px] text-orange-500/80 font-medium uppercase tracking-tight">1.2k Online Now</p>
+            <p className="font-mono text-[10px] text-orange-500/80 font-medium uppercase tracking-tight">
+              1.2k Online Now
+            </p>
           </div>
         </div>
         <div className="flex gap-2">
-          <button aria-label="Caută" className="p-2.5 rounded-full bg-white/5 border border-white/10 active:scale-95 transition">
+          <button
+            aria-label="Caută"
+            className="p-2.5 rounded-full bg-white/5 border border-white/10 active:scale-95 transition"
+          >
             <Search className="w-4 h-4 text-white/70" />
           </button>
-          <button aria-label="Notificări" className="p-2.5 rounded-full bg-white/5 border border-white/10 relative active:scale-95 transition">
+          <button
+            aria-label="Notificări"
+            className="p-2.5 rounded-full bg-white/5 border border-white/10 relative active:scale-95 transition"
+          >
             <Bell className="w-4 h-4 text-white/70" />
             <span className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full border-2 border-[#050510]" />
           </button>
@@ -65,14 +83,20 @@ function Index() {
         <div className="relative p-7 rounded-[32px] overflow-hidden border border-white/10 bg-gradient-to-b from-white/[0.08] to-transparent backdrop-blur-sm">
           <div className="absolute top-0 right-0 w-40 h-40 bg-orange-600/30 blur-3xl pointer-events-none" />
           <div className="inline-block px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 mb-4">
-            <span className="font-mono text-[10px] font-bold tracking-widest text-orange-400 uppercase">Sezonul Șprițului • 2026</span>
+            <span className="font-mono text-[10px] font-bold tracking-widest text-orange-400 uppercase">
+              Sezonul Șprițului • 2026
+            </span>
           </div>
           <h2 className="font-display text-[clamp(2.6rem,12vw,3.5rem)] font-extrabold leading-[0.85] tracking-tighter mb-4 uppercase">
-            Hai la<br />
-            <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">Șpriț</span>
+            Hai la
+            <br />
+            <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">
+              Șpriț
+            </span>
           </h2>
           <p className="text-sm text-white/60 leading-relaxed mb-7 max-w-[260px]">
-            Unde se bea șpriț <span className="text-white font-bold">acum</span>. Cu cine. Și cine-i <span className="text-orange-400">rege la masă</span>.
+            Unde se bea șpriț <span className="text-white font-bold">acum</span>. Cu cine. Și cine-i{" "}
+            <span className="text-orange-400">rege la masă</span>.
           </p>
           <div className="space-y-3">
             <Link
@@ -95,14 +119,40 @@ function Index() {
       {/* Features Grid */}
       <section className="relative z-10 px-4 mb-8">
         <div className="flex justify-between items-center mb-4 px-2">
-          <span className="font-mono text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase">Ce găsești în app</span>
+          <span className="font-mono text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase">
+            Ce găsești în app
+          </span>
           <span className="font-mono text-[10px] text-orange-500/60">4 ZONE</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Tile to="/app/map" icon={<MapPin className="w-5 h-5" />} label="Hartă" sub="Locuri Live" tone="orange" />
-          <Tile to="/app/faze" icon={<Flame className="w-5 h-5" />} label="Faze" sub="Postează seara" tone="pink" />
-          <Tile to="/app/top" icon={<Trophy className="w-5 h-5" />} label="Top" sub="Clasament zeu" tone="amber" />
-          <Tile to="/app/squad" icon={<Users className="w-5 h-5" />} label="Haita" sub="Oxidații tăi" tone="purple" />
+          <Tile
+            to="/app/map"
+            icon={<MapPin className="w-5 h-5" />}
+            label="Hartă"
+            sub="Locuri Live"
+            tone="orange"
+          />
+          <Tile
+            to="/app/faze"
+            icon={<Flame className="w-5 h-5" />}
+            label="Faze"
+            sub="Postează seara"
+            tone="pink"
+          />
+          <Tile
+            to="/app/top"
+            icon={<Trophy className="w-5 h-5" />}
+            label="Top"
+            sub="Clasament zeu"
+            tone="amber"
+          />
+          <Tile
+            to="/app/squad"
+            icon={<Users className="w-5 h-5" />}
+            label="Haita"
+            sub="Oxidații tăi"
+            tone="purple"
+          />
         </div>
       </section>
 
@@ -113,14 +163,18 @@ function Index() {
 
       {/* Live Activity */}
       <section className="relative z-10 px-4 mb-28">
-
         <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
           <div className="flex justify-between items-center mb-5">
             <div className="flex items-center gap-2">
               <Beer className="w-4 h-4 text-orange-400" />
-              <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em]">Se bea acum</span>
+              <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em]">
+                Se bea acum
+              </span>
             </div>
-            <Link to="/app" className="font-mono text-[10px] font-bold text-orange-400 uppercase tracking-widest flex items-center gap-1">
+            <Link
+              to="/app"
+              className="font-mono text-[10px] font-bold text-orange-400 uppercase tracking-widest flex items-center gap-1"
+            >
               Vezi tot <ChevronRight className="w-3 h-3" />
             </Link>
           </div>

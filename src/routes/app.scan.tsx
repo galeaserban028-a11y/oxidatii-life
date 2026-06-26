@@ -6,7 +6,6 @@ import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-
 export const Route = createFileRoute("/app/scan")({
   head: () => ({ meta: [{ title: "Pune un șpriț · OXIDAȚII" }] }),
   component: ScanPage,
@@ -21,7 +20,11 @@ function ScanPage() {
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [venueQuery, setVenueQuery] = useState("");
-  const [selectedVenue, setSelectedVenue] = useState<{ id: string; name: string; city?: any } | null>(null);
+  const [selectedVenue, setSelectedVenue] = useState<{
+    id: string;
+    name: string;
+    city?: any;
+  } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [postType, setPostType] = useState<"spritz" | "normal">("spritz");
   const [addOpen, setAddOpen] = useState(false);
@@ -37,7 +40,6 @@ function ScanPage() {
       return data ?? [];
     },
   });
-
 
   const { data: venues = [] } = useQuery({
     queryKey: ["scan-venues", venueQuery],
@@ -62,7 +64,8 @@ function ScanPage() {
 
       // For Spritz posts: enforce 1/day in Top
       if (postType === "spritz") {
-        const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
         const { count } = await supabase
           .from("sprit_proofs")
           .select("id", { count: "exact", head: true })
@@ -75,7 +78,9 @@ function ScanPage() {
         }
       }
 
-      const { error: upErr } = await supabase.storage.from("venue-photos").upload(path, file, { contentType: file.type });
+      const { error: upErr } = await supabase.storage
+        .from("venue-photos")
+        .upload(path, file, { contentType: file.type });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
 
@@ -103,8 +108,10 @@ function ScanPage() {
 
       toast.success(
         postType === "spritz"
-          ? (isVideo ? "Clipul tău e Șprițul zilei." : "Șprițul zilei e live.")
-          : "Postarea ta e live pe profil."
+          ? isVideo
+            ? "Clipul tău e Șprițul zilei."
+            : "Șprițul zilei e live."
+          : "Postarea ta e live pe profil.",
       );
       qc.invalidateQueries({ queryKey: ["faze"] });
       qc.invalidateQueries({ queryKey: ["app-feed"] });
@@ -126,13 +133,25 @@ function ScanPage() {
     if (!newVenueCityId) return toast.error("Alege orașul.");
     setCreating(true);
     try {
-      const slug = name.toLowerCase()
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
-        + "-" + Math.random().toString(36).slice(2, 6);
-      const { data, error } = await supabase.from("venues").insert({
-        name, slug, type: newVenueType, city_id: newVenueCityId,
-      }).select("id, name, city:cities(name)").single();
+      const slug =
+        name
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "") +
+        "-" +
+        Math.random().toString(36).slice(2, 6);
+      const { data, error } = await supabase
+        .from("venues")
+        .insert({
+          name,
+          slug,
+          type: newVenueType,
+          city_id: newVenueCityId,
+        })
+        .select("id, name, city:cities(name)")
+        .single();
       if (error) throw error;
       setSelectedVenue(data as any);
       setAddOpen(false);
@@ -145,19 +164,26 @@ function ScanPage() {
     }
   }
 
-
   const ready = !!file && !!selectedVenue && !uploading;
 
   return (
     <div className="px-5 pt-6 pb-6 max-w-xl mx-auto space-y-4">
       <header className="flex items-center justify-between">
         <h1 className="font-display font-bold text-2xl leading-tight">Pune un șpriț</h1>
-        <Link to="/app" className="text-xs text-muted-foreground">închide</Link>
+        <Link to="/app" className="text-xs text-muted-foreground">
+          închide
+        </Link>
       </header>
 
       {/* Hidden picker */}
-      <input ref={fileRef} type="file" accept="image/*,video/*" capture="environment" className="hidden"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*,video/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+      />
 
       {!file ? (
         /* STEP 1 — camera only, full-bleed prompt */
@@ -167,11 +193,16 @@ function ScanPage() {
             className="block w-full aspect-[3/4] rounded-3xl overflow-hidden bg-card border border-border active:scale-[0.99] transition relative"
           >
             <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-4">
-              <div className="h-20 w-20 rounded-full flex items-center justify-center shadow-[var(--shadow-elevated)]" style={{ background: "var(--gradient-sunset)" }}>
+              <div
+                className="h-20 w-20 rounded-full flex items-center justify-center shadow-[var(--shadow-elevated)]"
+                style={{ background: "var(--gradient-sunset)" }}
+              >
                 <Camera size={34} className="text-white" />
               </div>
               <div className="text-center space-y-1">
-                <div className="font-display font-bold text-foreground text-xl">fă o poză sau un clip</div>
+                <div className="font-display font-bold text-foreground text-xl">
+                  fă o poză sau un clip
+                </div>
                 <div className="text-xs">apasă să deschizi camera</div>
               </div>
             </div>
@@ -195,7 +226,14 @@ function ScanPage() {
             className="block w-full aspect-square rounded-3xl overflow-hidden bg-card border border-border active:scale-[0.99] transition relative"
           >
             {file.type.startsWith("video/") ? (
-              <video src={URL.createObjectURL(file)} className="h-full w-full object-cover" autoPlay muted loop playsInline />
+              <video
+                src={URL.createObjectURL(file)}
+                className="h-full w-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+              />
             ) : (
               <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
             )}
@@ -212,17 +250,24 @@ function ScanPage() {
             <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-primary/40">
               <div className="min-w-0">
                 <div className="font-display font-semibold truncate">📍 {selectedVenue.name}</div>
-                <div className="text-[11px] text-muted-foreground truncate">{selectedVenue.city?.name ?? ""}</div>
+                <div className="text-[11px] text-muted-foreground truncate">
+                  {selectedVenue.city?.name ?? ""}
+                </div>
               </div>
               <button onClick={() => setSelectedVenue(null)} className="p-2 text-muted-foreground">
-                <X size={16}/>
+                <X size={16} />
               </button>
             </div>
           ) : (
             <div className="space-y-2">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">unde ai făcut șprițul?</div>
+              <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                unde ai făcut șprițul?
+              </div>
               <div className="relative">
-                <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Search
+                  size={14}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
                 <input
                   value={venueQuery}
                   onChange={(e) => setVenueQuery(e.target.value)}
@@ -233,8 +278,11 @@ function ScanPage() {
               {venues.length > 0 && (
                 <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
                   {venues.map((v: any) => (
-                    <button key={v.id} onClick={() => setSelectedVenue(v)}
-                      className="shrink-0 px-3 py-2 rounded-full bg-card border border-border text-xs font-medium active:scale-95 transition">
+                    <button
+                      key={v.id}
+                      onClick={() => setSelectedVenue(v)}
+                      className="shrink-0 px-3 py-2 rounded-full bg-card border border-border text-xs font-medium active:scale-95 transition"
+                    >
                       {v.name}
                     </button>
                   ))}
@@ -243,39 +291,56 @@ function ScanPage() {
 
               {!addOpen ? (
                 <button
-                  onClick={() => { setAddOpen(true); setNewVenueName(venueQuery); }}
+                  onClick={() => {
+                    setAddOpen(true);
+                    setNewVenueName(venueQuery);
+                  }}
                   className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition"
                 >
-                  <Plus size={14}/> {venueQuery ? `adaugă „${venueQuery}"` : "nu găsești? adaugă o locație"}
+                  <Plus size={14} />{" "}
+                  {venueQuery ? `adaugă „${venueQuery}"` : "nu găsești? adaugă o locație"}
                 </button>
               ) : (
                 <div className="p-3 rounded-2xl border border-primary/40 bg-card space-y-2">
                   <div className="flex items-center justify-between">
-                    <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">Locație nouă</div>
-                    <button onClick={() => setAddOpen(false)} className="text-muted-foreground"><X size={14}/></button>
+                    <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+                      Locație nouă
+                    </div>
+                    <button onClick={() => setAddOpen(false)} className="text-muted-foreground">
+                      <X size={14} />
+                    </button>
                   </div>
                   <input
-                    value={newVenueName} onChange={(e) => setNewVenueName(e.target.value)}
+                    value={newVenueName}
+                    onChange={(e) => setNewVenueName(e.target.value)}
                     placeholder="nume locație"
                     className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
                   <div className="grid grid-cols-3 gap-1.5">
                     {(["club", "bar", "terasa"] as const).map((t) => (
-                      <button key={t} onClick={() => setNewVenueType(t)}
+                      <button
+                        key={t}
+                        onClick={() => setNewVenueType(t)}
                         className={`py-2 rounded-xl text-xs font-medium border transition ${
-                          newVenueType === t ? "bg-primary text-primary-foreground border-primary" : "bg-secondary border-border text-muted-foreground"
-                        }`}>
+                          newVenueType === t
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-secondary border-border text-muted-foreground"
+                        }`}
+                      >
                         {t === "terasa" ? "terasă" : t}
                       </button>
                     ))}
                   </div>
                   <select
-                    value={newVenueCityId} onChange={(e) => setNewVenueCityId(e.target.value)}
+                    value={newVenueCityId}
+                    onChange={(e) => setNewVenueCityId(e.target.value)}
                     className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
                     <option value="">alege orașul...</option>
                     {(cities as any[]).map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
                     ))}
                   </select>
                   <button
@@ -293,14 +358,17 @@ function ScanPage() {
 
           {/* Caption */}
           <input
-            value={caption} onChange={(e) => setCaption(e.target.value)}
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
             placeholder="caption (opțional)"
             className="w-full px-4 py-3 rounded-2xl bg-card border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
 
           {/* Post type selector */}
           <div className="space-y-1.5">
-            <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">tip postare</div>
+            <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+              tip postare
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -312,8 +380,12 @@ function ScanPage() {
                 }`}
                 style={postType === "spritz" ? { background: "var(--gradient-sunset)" } : undefined}
               >
-                <div className="text-sm font-display font-bold flex items-center gap-1.5">🥃 Șpriț</div>
-                <div className={`text-[10px] mt-0.5 ${postType === "spritz" ? "text-white/85" : "text-muted-foreground"}`}>
+                <div className="text-sm font-display font-bold flex items-center gap-1.5">
+                  🥃 Șpriț
+                </div>
+                <div
+                  className={`text-[10px] mt-0.5 ${postType === "spritz" ? "text-white/85" : "text-muted-foreground"}`}
+                >
                   Intri în Topul zilei · max 1/zi
                 </div>
               </button>
@@ -326,8 +398,12 @@ function ScanPage() {
                     : "bg-card border-border text-foreground"
                 }`}
               >
-                <div className="text-sm font-display font-bold flex items-center gap-1.5">📷 Postare</div>
-                <div className={`text-[10px] mt-0.5 ${postType === "normal" ? "text-background/70" : "text-muted-foreground"}`}>
+                <div className="text-sm font-display font-bold flex items-center gap-1.5">
+                  📷 Postare
+                </div>
+                <div
+                  className={`text-[10px] mt-0.5 ${postType === "normal" ? "text-background/70" : "text-muted-foreground"}`}
+                >
                   Doar pe profil, fără Top
                 </div>
               </button>
@@ -339,7 +415,6 @@ function ScanPage() {
               ? "șprițul apare în story-ul zilei din Top și pe profilul tău."
               : "postarea apare doar pe profilul tău, nu intră în Top."}
           </p>
-
 
           {/* Submit */}
           <button

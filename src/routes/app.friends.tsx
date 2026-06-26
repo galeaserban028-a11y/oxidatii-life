@@ -28,7 +28,10 @@ async function loadFriends(userId: string) {
     new Set(list.map((r) => (r.requester_id === userId ? r.addressee_id : r.requester_id))),
   );
   const { data: profiles } = otherIds.length
-    ? await supabase.from("profiles").select("id, handle, display_name, avatar_url, rank, current_streak, longest_streak").in("id", otherIds)
+    ? await supabase
+        .from("profiles")
+        .select("id, handle, display_name, avatar_url, rank, current_streak, longest_streak")
+        .in("id", otherIds)
     : { data: [] as any[] };
   const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
 
@@ -81,7 +84,10 @@ function FriendsPage() {
   }
 
   async function accept(id: string) {
-    const { error } = await supabase.from("friendships").update({ status: "accepted" }).eq("id", id);
+    const { error } = await supabase
+      .from("friendships")
+      .update({ status: "accepted" })
+      .eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Prieten nou.");
     qc.invalidateQueries({ queryKey: ["friends"] });
@@ -97,8 +103,13 @@ function FriendsPage() {
     return (
       <div className="px-4 pt-6 pb-4 text-center space-y-3">
         <p className="text-sm text-muted-foreground">Fă-ți cont ca să adaugi prieteni.</p>
-        <Link to="/signup" className="inline-block font-display uppercase text-sm tracking-widest px-5 py-3 rounded-md text-white"
-          style={{ background: "var(--gradient-chaos)" }}>Cont nou</Link>
+        <Link
+          to="/signup"
+          className="inline-block font-display uppercase text-sm tracking-widest px-5 py-3 rounded-md text-white"
+          style={{ background: "var(--gradient-chaos)" }}
+        >
+          Cont nou
+        </Link>
       </div>
     );
   }
@@ -108,23 +119,39 @@ function FriendsPage() {
       <header className="space-y-3">
         <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">prieteni</div>
         <h1 className="font-display uppercase text-3xl leading-[0.95]">Băieții tăi.</h1>
-        <p className="text-xs text-zinc-500">Adaugă-i după @handle ca să-i vezi pe hartă când ies în oraș.</p>
+        <p className="text-xs text-zinc-500">
+          Adaugă-i după @handle ca să-i vezi pe hartă când ies în oraș.
+        </p>
       </header>
 
       {/* Step-by-step visual */}
       <div className="rounded-2xl border border-white/5 bg-zinc-900/30 backdrop-blur p-5 space-y-4">
-        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">cum adaugi prieteni</div>
+        <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+          cum adaugi prieteni
+        </div>
         <div className="flex items-center gap-3">
-          <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">1</div>
+          <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">
+            1
+          </div>
           <p className="text-sm">Scrie @handle-ul sau numele mai jos</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">2</div>
-          <p className="text-sm">Apasă <span className="font-display text-neon-crimson">+ adaugă</span> pe cel pe care-l cunoști</p>
+          <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">
+            2
+          </div>
+          <p className="text-sm">
+            Apasă <span className="font-display text-neon-crimson">+ adaugă</span> pe cel pe care-l
+            cunoști
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">3</div>
-          <p className="text-sm">Când acceptă, îl vezi <span className="text-neon-purple font-display">live pe hartă</span></p>
+          <div className="h-7 w-7 rounded-full bg-neon-green/15 text-neon-green flex items-center justify-center font-display text-xs shrink-0">
+            3
+          </div>
+          <p className="text-sm">
+            Când acceptă, îl vezi{" "}
+            <span className="text-neon-purple font-display">live pe hartă</span>
+          </p>
         </div>
       </div>
 
@@ -137,30 +164,51 @@ function FriendsPage() {
             placeholder="@handle sau nume..."
             className="w-full p-3.5 pl-11 rounded-2xl bg-zinc-900/30 border border-white/5 text-sm focus:outline-none focus:border-neon-crimson/40 transition-colors backdrop-blur"
           />
-          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+          <svg
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
           </svg>
         </div>
 
         {searchResults && searchResults.length > 0 && (
           <div className="space-y-1 rounded-xl border border-foreground/10 overflow-hidden">
             {searchResults.map((p: any) => {
-              const alreadyKnown = data?.accepted.some((f) => f.requester_id === p.id || f.addressee_id === p.id)
-                || data?.outgoing.some((f) => f.addressee_id === p.id)
-                || data?.incoming.some((f) => f.requester_id === p.id);
+              const alreadyKnown =
+                data?.accepted.some((f) => f.requester_id === p.id || f.addressee_id === p.id) ||
+                data?.outgoing.some((f) => f.addressee_id === p.id) ||
+                data?.incoming.some((f) => f.requester_id === p.id);
               return (
-                <div key={p.id} className="flex items-center gap-3 p-3 bg-foreground/[0.03] hover:bg-foreground/[0.06] transition-colors">
+                <div
+                  key={p.id}
+                  className="flex items-center gap-3 p-3 bg-foreground/[0.03] hover:bg-foreground/[0.06] transition-colors"
+                >
                   <Avatar p={p} />
                   <div className="flex-1 min-w-0">
-                    <div className="font-display text-sm truncate">@{p.handle ?? p.display_name}</div>
-                    <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{p.rank}</div>
+                    <div className="font-display text-sm truncate">
+                      @{p.handle ?? p.display_name}
+                    </div>
+                    <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                      {p.rank}
+                    </div>
                   </div>
                   {alreadyKnown ? (
-                    <span className="font-mono text-[9px] uppercase text-muted-foreground">deja</span>
+                    <span className="font-mono text-[9px] uppercase text-muted-foreground">
+                      deja
+                    </span>
                   ) : (
-                    <button onClick={() => sendRequest(p.id)}
+                    <button
+                      onClick={() => sendRequest(p.id)}
                       className="font-display uppercase text-[10px] tracking-widest px-4 py-2 rounded-lg text-white active:scale-95 transition-transform"
-                      style={{ background: "var(--gradient-chaos)" }}>+ adaugă</button>
+                      style={{ background: "var(--gradient-chaos)" }}
+                    >
+                      + adaugă
+                    </button>
                   )}
                 </div>
               );
@@ -169,30 +217,55 @@ function FriendsPage() {
         )}
 
         {search.trim().length >= 2 && (!searchResults || searchResults.length === 0) && (
-          <div className="text-center text-sm text-muted-foreground py-4">Niciun rezultat pentru "{search.trim()}"</div>
+          <div className="text-center text-sm text-muted-foreground py-4">
+            Niciun rezultat pentru "{search.trim()}"
+          </div>
         )}
       </div>
 
       {isLoading || !data ? (
-        <div className="space-y-2">{[0,1,2].map(i => <div key={i} className="h-14 rounded-xl bg-foreground/[0.04] animate-pulse" />)}</div>
+        <div className="space-y-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-14 rounded-xl bg-foreground/[0.04] animate-pulse" />
+          ))}
+        </div>
       ) : (
         <>
           {/* Incoming */}
           {data.incoming.length > 0 && (
             <section className="space-y-2">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-neon-crimson">// cereri primite ({data.incoming.length})</div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-neon-crimson">
+                // cereri primite ({data.incoming.length})
+              </div>
               {data.incoming.map((r) => {
                 const p = data.profMap.get(r.requester_id);
                 return (
-                  <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04] border border-neon-crimson/30">
+                  <div
+                    key={r.id}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04] border border-neon-crimson/30"
+                  >
                     <Avatar p={p} />
                     <div className="flex-1 min-w-0">
-                      <div className="font-display text-sm truncate">@{p?.handle ?? p?.display_name ?? "?"}</div>
-                      <div className="font-mono text-[9px] uppercase text-muted-foreground">vrea să fie prieten</div>
+                      <div className="font-display text-sm truncate">
+                        @{p?.handle ?? p?.display_name ?? "?"}
+                      </div>
+                      <div className="font-mono text-[9px] uppercase text-muted-foreground">
+                        vrea să fie prieten
+                      </div>
                     </div>
-                    <button onClick={() => accept(r.id)} className="font-display uppercase text-[10px] tracking-widest px-3 py-2 rounded-lg text-white active:scale-95 transition-transform"
-                      style={{ background: "var(--gradient-chaos)" }}>accept</button>
-                    <button onClick={() => remove(r.id)} className="font-mono text-[10px] uppercase text-muted-foreground px-2">x</button>
+                    <button
+                      onClick={() => accept(r.id)}
+                      className="font-display uppercase text-[10px] tracking-widest px-3 py-2 rounded-lg text-white active:scale-95 transition-transform"
+                      style={{ background: "var(--gradient-chaos)" }}
+                    >
+                      accept
+                    </button>
+                    <button
+                      onClick={() => remove(r.id)}
+                      className="font-mono text-[10px] uppercase text-muted-foreground px-2"
+                    >
+                      x
+                    </button>
                   </div>
                 );
               })}
@@ -201,49 +274,85 @@ function FriendsPage() {
 
           {/* Accepted */}
           <section className="space-y-2">
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">// prietenii tăi ({data.accepted.length})</div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              // prietenii tăi ({data.accepted.length})
+            </div>
             {data.accepted.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-foreground/15 p-8 text-center space-y-3">
                 <div className="text-3xl opacity-30">🍷</div>
-                <p className="text-sm text-muted-foreground">Niciun prieten încă.<br/>Caută-i după handle mai sus ↑</p>
+                <p className="text-sm text-muted-foreground">
+                  Niciun prieten încă.
+                  <br />
+                  Caută-i după handle mai sus ↑
+                </p>
               </div>
-            ) : data.accepted.map((r) => {
-              const otherId = r.requester_id === user.id ? r.addressee_id : r.requester_id;
-              const p = data.profMap.get(otherId);
-              const streak = p?.current_streak ?? 0;
-              return (
-                <div key={r.id} className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04]">
-                  <Avatar p={p} />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-display text-sm truncate">@{p?.handle ?? p?.display_name ?? "?"}</div>
-                    <div className="font-mono text-[9px] uppercase text-muted-foreground">{p?.rank}</div>
-                  </div>
-                  {streak > 0 && (
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-neon-crimson/10 border border-neon-crimson/30">
-                      <span className="text-sm leading-none">🔥</span>
-                      <span className="font-display text-xs leading-none text-neon-crimson">{streak}</span>
+            ) : (
+              data.accepted.map((r) => {
+                const otherId = r.requester_id === user.id ? r.addressee_id : r.requester_id;
+                const p = data.profMap.get(otherId);
+                const streak = p?.current_streak ?? 0;
+                return (
+                  <div
+                    key={r.id}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.04]"
+                  >
+                    <Avatar p={p} />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-display text-sm truncate">
+                        @{p?.handle ?? p?.display_name ?? "?"}
+                      </div>
+                      <div className="font-mono text-[9px] uppercase text-muted-foreground">
+                        {p?.rank}
+                      </div>
                     </div>
-                  )}
-                  <button onClick={() => remove(r.id)} className="font-mono text-[10px] uppercase text-muted-foreground px-2">scoate</button>
-                </div>
-              );
-            })}
+                    {streak > 0 && (
+                      <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-neon-crimson/10 border border-neon-crimson/30">
+                        <span className="text-sm leading-none">🔥</span>
+                        <span className="font-display text-xs leading-none text-neon-crimson">
+                          {streak}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => remove(r.id)}
+                      className="font-mono text-[10px] uppercase text-muted-foreground px-2"
+                    >
+                      scoate
+                    </button>
+                  </div>
+                );
+              })
+            )}
           </section>
 
           {/* Outgoing */}
           {data.outgoing.length > 0 && (
             <section className="space-y-2">
-              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">// trimise ({data.outgoing.length})</div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                // trimise ({data.outgoing.length})
+              </div>
               {data.outgoing.map((r) => {
                 const p = data.profMap.get(r.addressee_id);
                 return (
-                  <div key={r.id} className="flex items-center gap-3 p-2 rounded-xl bg-foreground/[0.04] opacity-70">
+                  <div
+                    key={r.id}
+                    className="flex items-center gap-3 p-2 rounded-xl bg-foreground/[0.04] opacity-70"
+                  >
                     <Avatar p={p} />
                     <div className="flex-1 min-w-0">
-                      <div className="font-display text-sm truncate">@{p?.handle ?? p?.display_name ?? "?"}</div>
-                      <div className="font-mono text-[9px] uppercase text-muted-foreground">așteaptă răspuns</div>
+                      <div className="font-display text-sm truncate">
+                        @{p?.handle ?? p?.display_name ?? "?"}
+                      </div>
+                      <div className="font-mono text-[9px] uppercase text-muted-foreground">
+                        așteaptă răspuns
+                      </div>
                     </div>
-                    <button onClick={() => remove(r.id)} className="font-mono text-[10px] uppercase text-muted-foreground px-2">anulează</button>
+                    <button
+                      onClick={() => remove(r.id)}
+                      className="font-mono text-[10px] uppercase text-muted-foreground px-2"
+                    >
+                      anulează
+                    </button>
                   </div>
                 );
               })}
@@ -252,7 +361,10 @@ function FriendsPage() {
         </>
       )}
 
-      <Link to="/app/map" className="block text-center font-mono text-[10px] uppercase tracking-widest text-neon-purple py-4">
+      <Link
+        to="/app/map"
+        className="block text-center font-mono text-[10px] uppercase tracking-widest text-neon-purple py-4"
+      >
         → vezi-i pe hartă
       </Link>
     </div>
@@ -263,7 +375,11 @@ function Avatar({ p }: { p: any }) {
   const initial = (p?.handle ?? p?.display_name ?? "?")[0]?.toUpperCase();
   return (
     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-sm shrink-0 overflow-hidden">
-      {p?.avatar_url ? <img src={p.avatar_url} alt="" className="h-full w-full object-cover" /> : initial}
+      {p?.avatar_url ? (
+        <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
+      ) : (
+        initial
+      )}
     </div>
   );
 }

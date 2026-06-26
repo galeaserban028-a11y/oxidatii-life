@@ -66,7 +66,7 @@ export const triageBugReport = createServerFn({ method: "POST" })
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
@@ -94,7 +94,10 @@ export const triageBugReport = createServerFn({ method: "POST" })
 
     const category = String(aiJson.category ?? "other").slice(0, 32);
     const severity = String(aiJson.severity ?? "medium").slice(0, 16);
-    const reply = String(aiJson.reply_ro ?? "Mulțumim, raportul tău a ajuns la echipă.").slice(0, 600);
+    const reply = String(aiJson.reply_ro ?? "Mulțumim, raportul tău a ajuns la echipă.").slice(
+      0,
+      600,
+    );
     const autoResolve = Boolean(aiJson.auto_resolve);
 
     const resolutionNote = `[AI triage] category=${category} severity=${severity}\n${reply}`;
