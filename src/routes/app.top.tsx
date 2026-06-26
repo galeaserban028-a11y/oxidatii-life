@@ -498,15 +498,19 @@ function RulesModal({ onClose }: { onClose: () => void }) {
   ];
   if (typeof document === "undefined") return null;
 
+  const topClearance = "calc(env(safe-area-inset-top, 0px) + 96px)";
+  const bottomClearance = "calc(env(safe-area-inset-bottom, 0px) + 18px)";
+
   return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center overflow-y-auto bg-black/80 backdrop-blur-md"
+      className="fixed left-0 right-0 flex items-start justify-center overflow-y-auto bg-black/95 backdrop-blur-md isolate"
       style={{
-        paddingTop: "calc(max(env(safe-area-inset-top), 18px) + 8px)",
-        paddingBottom: "calc(max(env(safe-area-inset-bottom), 18px) + 8px)",
+        zIndex: 2147483647,
+        top: topClearance,
+        bottom: bottomClearance,
         paddingLeft: 12,
         paddingRight: 12,
       }}
@@ -519,9 +523,9 @@ function RulesModal({ onClose }: { onClose: () => void }) {
         exit={{ y: 20, opacity: 0, scale: 0.98 }}
         transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-lg flex flex-col rounded-2xl border border-white/15 bg-[#0b0b0c] shadow-[0_30px_80px_-20px_rgba(199,36,255,0.35)] overflow-hidden"
+        className="relative my-3 w-full max-w-lg flex flex-col rounded-2xl border border-white/15 bg-[#0b0b0c] shadow-[0_30px_80px_-20px_rgba(199,36,255,0.35)] overflow-hidden"
         style={{
-          maxHeight: "calc(100dvh - max(env(safe-area-inset-top), 18px) - max(env(safe-area-inset-bottom), 18px) - 20px)",
+          maxHeight: "calc(100% - 24px)",
         }}
       >
         {/* Document header */}
