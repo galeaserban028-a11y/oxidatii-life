@@ -4,15 +4,16 @@ import { type StripeEnv, createStripeClient, getCheckoutClientSecret, getStripeE
 
 type CheckoutResult = { clientSecret: string } | { error: string };
 type PortalResult = { url: string } | { error: string };
-type SyncResult = { success: true; tier?: string; coinsAdded?: number } | { success: false; error: string };
+type SyncResult = { success: true; tier?: string; coinsAdded?: number; crystalBallDays?: number } | { success: false; error: string };
 
-// Allowed price IDs (subscriptions + one-time coin packs)
+// Allowed price IDs (subscriptions + one-time coin packs + à la carte)
 const ALLOWED_PRICES = new Set([
   "vip_monthly", "vip_yearly",
   "vip_plus_monthly", "vip_plus_yearly",
   "pro_monthly", "pro_yearly",
   "elite_monthly", "elite_yearly",
   "coins_mic", "coins_mediu", "coins_mare", "coins_boss", "coins_legenda",
+  "crystal_ball_7d",
 ]);
 
 const COIN_PACKS: Record<string, number> = {
@@ -21,6 +22,19 @@ const COIN_PACKS: Record<string, number> = {
   coins_mare: 600,
   coins_boss: 1500,
   coins_legenda: 5000,
+};
+
+// À la carte one-time SKUs auto-provisioned in Stripe if the lookup_key is missing.
+// Amounts in RON minor units (bani).
+const ALACARTE_SKUS: Record<string, { name: string; description: string; amount: number; currency: string; kind: string; days?: number }> = {
+  crystal_ball_7d: {
+    name: "Crystal Ball · 7 zile",
+    description: "Vezi cine ți-a vizitat profilul și cine a fost fizic aproape de tine în ultimele 7 zile.",
+    amount: 300, // 3.00 RON
+    currency: "ron",
+    kind: "crystal_ball",
+    days: 7,
+  },
 };
 
 // price_id → premium tier + one-time coin grant. Must match webhook at src/routes/api/public/payments/webhook.tsx
@@ -77,12 +91,33 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
 
     try {
       const stripe = createStripeClient(data.environment);
+      let stripePrice: any;
       const prices = await stripe.prices.list({ lookup_keys: [data.priceId], limit: 1 });
       const matchedPrices = Array.isArray(prices.data) ? prices.data : [];
-      if (!matchedPrices.length) return { error: "Preț indisponibil" };
-      const stripePrice = matchedPrices[0];
+      if (matchedPrices.length) {
+        stripePrice = matchedPrices[0];
+      } else if (ALACARTE_SKUS[data.priceId]) {
+        // Auto-provision à la carte SKU on first use so admins don't have to create it manually.
+        const sku = ALACARTE_SKUS[data.priceId];
+        const product = await stripe.products.create({
+          name: sku.name,
+          description: sku.description,
+          metadata: { lovable_sku: data.priceId },
+        });
+        stripePrice = await stripe.prices.create({
+          product: product.id,
+          unit_amount: sku.amount,
+          currency: sku.currency,
+          lookup_key: data.priceId,
+          nickname: sku.name,
+          metadata: { lovable_external_id: data.priceId },
+        });
+      } else {
+        return { error: "Preț indisponibil" };
+      }
       const isRecurring = stripePrice.type === "recurring";
       const isCoinPack = data.priceId.startsWith("coins_");
+      const alacarte = ALACARTE_SKUS[data.priceId];
 
       const customerId = await resolveCustomer(stripe, userId, email);
 
@@ -95,10 +130,11 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
         productDescription = product.name;
       }
 
-      const meta = {
+      const meta: Record<string, string> = {
         user_id: userId,
         price_id: data.priceId,
         ...(isCoinPack && { kind: "coin_pack", coins: String(COIN_PACKS[data.priceId] ?? 0) }),
+        ...(alacarte && { kind: alacarte.kind, ...(alacarte.days && { days: String(alacarte.days) }) }),
       };
 
       const session = await stripe.checkout.sessions.create({
@@ -158,7 +194,32 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
       }
 
       const priceId = session.metadata?.price_id ?? null;
+      const sessionKind = session.metadata?.kind ?? null;
       const isCoinPack = typeof priceId === "string" && priceId.startsWith("coins_");
+      const isCrystalBall = sessionKind === "crystal_ball" || priceId === "crystal_ball_7d";
+
+      // À la carte: Crystal Ball 7 zile — grant unlock window
+      if (isCrystalBall) {
+        const days = parseInt(session.metadata?.days ?? "7", 10) || 7;
+        const { data: granted, error: grantErr } = await supabaseAdmin.rpc(
+          "grant_crystal_ball_unlock",
+          { _user_id: userId, _days: days },
+        );
+        if (grantErr) return { success: false, error: grantErr.message };
+        await supabaseAdmin.from("coin_purchases").upsert(
+          {
+            user_id: userId,
+            stripe_session_id: session.id,
+            pack_id: priceId ?? "crystal_ball_7d",
+            coins: 0,
+            amount_cents: session.amount_total ?? 0,
+            currency: session.currency ?? "ron",
+            environment: data.environment,
+          },
+          { onConflict: "stripe_session_id", ignoreDuplicates: true },
+        );
+        return { success: true, crystalBallDays: days };
+      }
 
       // Coin packs: add coins immediately
       if (isCoinPack) {

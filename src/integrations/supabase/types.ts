@@ -2665,6 +2665,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      grant_crystal_ball_unlock: {
+        Args: { _days?: number; _user_id: string }
+        Returns: Json
+      }
       has_active_premium: {
         Args: { _min_tier?: string; _user_id: string }
         Returns: boolean
