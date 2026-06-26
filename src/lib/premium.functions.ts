@@ -4,7 +4,7 @@ import { type StripeEnv, createStripeClient, getCheckoutClientSecret, getStripeE
 
 type CheckoutResult = { clientSecret: string } | { error: string };
 type PortalResult = { url: string } | { error: string };
-type SyncResult = { success: true; tier?: string; coinsAdded?: number } | { success: false; error: string };
+type SyncResult = { success: true; tier?: string; coinsAdded?: number; crystalBallDays?: number } | { success: false; error: string };
 
 // Allowed price IDs (subscriptions + one-time coin packs + à la carte)
 const ALLOWED_PRICES = new Set([
