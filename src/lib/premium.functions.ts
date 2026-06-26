@@ -194,7 +194,32 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
       }
 
       const priceId = session.metadata?.price_id ?? null;
+      const sessionKind = session.metadata?.kind ?? null;
       const isCoinPack = typeof priceId === "string" && priceId.startsWith("coins_");
+      const isCrystalBall = sessionKind === "crystal_ball" || priceId === "crystal_ball_7d";
+
+      // À la carte: Crystal Ball 7 zile — grant unlock window
+      if (isCrystalBall) {
+        const days = parseInt(session.metadata?.days ?? "7", 10) || 7;
+        const { data: granted, error: grantErr } = await supabaseAdmin.rpc(
+          "grant_crystal_ball_unlock",
+          { _user_id: userId, _days: days },
+        );
+        if (grantErr) return { success: false, error: grantErr.message };
+        await supabaseAdmin.from("coin_purchases").upsert(
+          {
+            user_id: userId,
+            stripe_session_id: session.id,
+            pack_id: priceId ?? "crystal_ball_7d",
+            coins: 0,
+            amount_cents: session.amount_total ?? 0,
+            currency: session.currency ?? "ron",
+            environment: data.environment,
+          },
+          { onConflict: "stripe_session_id", ignoreDuplicates: true },
+        );
+        return { success: true, crystalBallDays: days };
+      }
 
       // Coin packs: add coins immediately
       if (isCoinPack) {
