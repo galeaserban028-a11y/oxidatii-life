@@ -55,12 +55,22 @@ async function handleWalletTopup(session: any) {
     .update({ wallet_balance_cents: current + amountCents }).eq("id", businessId);
 }
 
+async function handleCrystalBallPurchase(session: any) {
+  const meta = session.metadata ?? {};
+  if (meta.kind !== "crystal_ball" && meta.price_id !== "crystal_ball_7d") return;
+  const userId = meta.user_id ?? meta.userId;
+  if (!userId) return;
+  const days = parseInt(meta.days || "7", 10) || 7;
+  await supabaseAdmin.rpc("grant_crystal_ball_unlock", { _user_id: userId, _days: days });
+}
+
 async function handleCheckoutSessionCompleted(session: any, env: StripeEnv) {
   if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
 
-  // Wallet top-ups / coin packs (metadata-driven)
+  // Wallet top-ups / coin packs / à la carte (metadata-driven)
   await handleWalletTopup(session);
   await handleCoinPackPurchase(session, env);
+  await handleCrystalBallPurchase(session);
 
   // Subscription created via checkout: if webhooks for customer.subscription.* are
   // delayed or misconfigured, make sure the profile still gets activated.
