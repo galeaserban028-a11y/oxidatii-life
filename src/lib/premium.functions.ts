@@ -279,6 +279,58 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
       const sessionKind = session.metadata?.kind ?? null;
       const isCoinPack = typeof priceId === "string" && priceId.startsWith("coins_");
       const isCrystalBall = sessionKind === "crystal_ball" || priceId === "crystal_ball_7d";
+      const isReplayNight = sessionKind === "replay_night" || priceId === "replay_night";
+      const isLastCallSend = sessionKind === "last_call_send" || priceId === "last_call_send";
+      const isLastCallReveal = sessionKind === "last_call_reveal" || priceId === "last_call_reveal";
+
+      // À la carte: Replay Night — unlock a specific day's wrap
+      if (isReplayNight) {
+        const replayDate =
+          session.metadata?.replay_date ??
+          new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        const { error: grantErr } = await supabaseAdmin.rpc("grant_replay_unlock", {
+          _user_id: userId,
+          _date: replayDate,
+          _session: session.id,
+        });
+        if (grantErr) return { success: false, error: grantErr.message };
+        return { success: true, replayDate };
+      }
+
+      // À la carte: Last Call — sender pays to send anonymous ping
+      if (isLastCallSend) {
+        const targetId = session.metadata?.target_id;
+        if (!targetId) return { success: false, error: "Țintă lipsă" };
+        // Use authenticated supabase client so RPC sees auth.uid() = sender
+        const { data: pingId, error: rpcErr } = await context.supabase.rpc(
+          "create_last_call_ping",
+          { _target_id: targetId, _session: session.id },
+        );
+        if (rpcErr) return { success: false, error: rpcErr.message };
+        return { success: true, lastCallPingId: pingId as string };
+      }
+
+      // À la carte: Last Call Reveal — target pays to unmask sender
+      if (isLastCallReveal) {
+        const pingId = session.metadata?.ping_id;
+        if (!pingId) return { success: false, error: "Ping lipsă" };
+        const { data: revealed, error: rpcErr } = await context.supabase.rpc("reveal_last_call", {
+          _ping_id: pingId,
+          _session: session.id,
+        });
+        if (rpcErr) return { success: false, error: rpcErr.message };
+        const r = revealed as any;
+        return {
+          success: true,
+          lastCallRevealed: {
+            sender_id: r?.sender_id ?? "",
+            handle: r?.handle ?? null,
+            display_name: r?.display_name ?? null,
+            avatar_url: r?.avatar_url ?? null,
+          },
+        };
+      }
+
 
       // À la carte: Crystal Ball 7 zile — grant unlock window
       if (isCrystalBall) {
