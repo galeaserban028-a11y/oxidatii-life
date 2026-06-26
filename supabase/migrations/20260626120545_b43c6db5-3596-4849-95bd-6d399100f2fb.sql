@@ -1,0 +1,2 @@
+GRANT EXECUTE ON FUNCTION public.get_spritz_score_leaderboard(text, text, uuid, timestamptz, integer) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_my_spritz_score(text, text, uuid, timestamptz) TO authenticated;
