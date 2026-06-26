@@ -32,9 +32,7 @@ export const notifyFollow = createServerFn({ method: "POST" })
     const pending = f?.status === "pending";
     return sendPushToUsers([data.targetId], {
       title: pending ? "👋 Cerere de follow" : "🎉 Follower nou",
-      body: pending
-        ? `@${name} vrea să te urmărească`
-        : `@${name} te urmărește`,
+      body: pending ? `@${name} vrea să te urmărească` : `@${name} te urmărește`,
       url: pending ? `/app/requests` : `/app/user/${userId}`,
       tag: `follow-${userId}`,
     });
@@ -44,10 +42,12 @@ export const notifyFollow = createServerFn({ method: "POST" })
 export const notifyChatMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
-    z.object({
-      conversationId: uuid,
-      preview: z.string().max(120).optional(),
-    }).parse(d)
+    z
+      .object({
+        conversationId: uuid,
+        preview: z.string().max(120).optional(),
+      })
+      .parse(d),
   )
   .handler(async ({ data, context }) => {
     const { userId } = context;
@@ -60,7 +60,6 @@ export const notifyChatMessage = createServerFn({ method: "POST" })
     if (!memberIds.includes(userId)) return { sent: 0 };
     const targets = memberIds.filter((id) => id && id !== userId);
     if (!targets.length) return { sent: 0 };
-
 
     const { data: me } = await supabaseAdmin
       .from("profiles")
@@ -98,7 +97,6 @@ export const notifyPartyJoinRequest = createServerFn({ method: "POST" })
       .eq("user_id", userId)
       .maybeSingle();
     if (!req) return { sent: 0 };
-
 
     const { data: me } = await supabaseAdmin
       .from("profiles")

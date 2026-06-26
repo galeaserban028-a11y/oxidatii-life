@@ -17,7 +17,9 @@ export function ProfileBoostCard() {
   const lastBoostAt = profile?.last_boost_at ? new Date(profile.last_boost_at) : null;
   const now = new Date();
   const isActive = boostUntil && boostUntil > now;
-  const nextAvailable = lastBoostAt ? new Date(lastBoostAt.getTime() + 7 * 24 * 60 * 60 * 1000) : null;
+  const nextAvailable = lastBoostAt
+    ? new Date(lastBoostAt.getTime() + 7 * 24 * 60 * 60 * 1000)
+    : null;
   const onCooldown = nextAvailable && nextAvailable > now;
 
   async function claim() {
@@ -28,7 +30,8 @@ export function ProfileBoostCard() {
       const res = data as any;
       if (!res?.ok) {
         if (res?.error === "requires_pro") toast.error("Boost-ul e doar pentru Pro și Elite.");
-        else if (res?.error === "cooldown") toast.error("Mai trebuie să aștepți până la următorul boost.");
+        else if (res?.error === "cooldown")
+          toast.error("Mai trebuie să aștepți până la următorul boost.");
         else toast.error("Nu pot da boost acum.");
         return;
       }

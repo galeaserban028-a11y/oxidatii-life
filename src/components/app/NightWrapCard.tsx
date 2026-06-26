@@ -55,9 +55,7 @@ export function NightWrapCard({ wrap }: { wrap: any }) {
           </h2>
 
           {wrap.tagline && (
-            <p className="text-[13px] text-white/70 leading-snug max-w-[80%]">
-              {wrap.tagline}
-            </p>
+            <p className="text-[13px] text-white/70 leading-snug max-w-[80%]">{wrap.tagline}</p>
           )}
 
           <div className="flex items-center gap-4 pt-2 text-[10px] font-mono uppercase tracking-widest text-white/60">

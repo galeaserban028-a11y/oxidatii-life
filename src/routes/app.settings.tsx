@@ -3,10 +3,28 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
-  ChevronLeft, ChevronRight, Globe2, Lock, MapPin, Bell,
-  ShieldOff, UserPlus, Pencil, LogOut, Trash2, MessageSquare,
-  Building2, Loader2, ExternalLink, Bug, FileText, ScrollText, Cookie, ShieldCheck,
-  Search, X,
+  ChevronLeft,
+  ChevronRight,
+  Globe2,
+  Lock,
+  MapPin,
+  Bell,
+  ShieldOff,
+  UserPlus,
+  Pencil,
+  LogOut,
+  Trash2,
+  MessageSquare,
+  Building2,
+  Loader2,
+  ExternalLink,
+  Bug,
+  FileText,
+  ScrollText,
+  Cookie,
+  ShieldCheck,
+  Search,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +33,11 @@ import { triageBugReport } from "@/lib/bug-triage.functions";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
 import { LanguageSwitcher } from "@/components/app/LanguageSwitcher";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/app/settings")({
@@ -80,20 +102,26 @@ function SettingsPage() {
     if (!bugReason.trim()) return toast.error("Spune pe scurt ce nu merge");
     setBugSending(true);
     try {
-      const { data: inserted, error } = await supabase.from("reports").insert({
-        reporter_id: user!.id,
-        target_type: "bug_report",
-        target_id: user!.id,
-        reason: bugReason.trim().slice(0, 200),
-        details: [
-          bugDetails.trim().slice(0, 2000),
-          `--- context ---`,
-          `url: ${window.location.href}`,
-          `ua: ${navigator.userAgent}`,
-          `screen: ${window.innerWidth}x${window.innerHeight}`,
-          `user: ${user!.email ?? user!.id}`,
-        ].filter(Boolean).join("\n"),
-      }).select("id").single();
+      const { data: inserted, error } = await supabase
+        .from("reports")
+        .insert({
+          reporter_id: user!.id,
+          target_type: "bug_report",
+          target_id: user!.id,
+          reason: bugReason.trim().slice(0, 200),
+          details: [
+            bugDetails.trim().slice(0, 2000),
+            `--- context ---`,
+            `url: ${window.location.href}`,
+            `ua: ${navigator.userAgent}`,
+            `screen: ${window.innerWidth}x${window.innerHeight}`,
+            `user: ${user!.email ?? user!.id}`,
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        })
+        .select("id")
+        .single();
       if (error) throw error;
 
       // Fire-and-await AI triage so the user gets the auto-reply right away
@@ -134,38 +162,56 @@ function SettingsPage() {
     setSavingPrivacy(true);
     try {
       const next = !profile!.is_public;
-      const { error } = await supabase.from("profiles").update({ is_public: next } as any).eq("id", user!.id);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ is_public: next } as any)
+        .eq("id", user!.id);
       if (error) throw error;
       await refreshProfile();
       toast.success(next ? "Cont public" : "Cont privat");
-    } catch (e: any) { toast.error(e.message ?? "Eroare"); }
-    finally { setSavingPrivacy(false); }
+    } catch (e: any) {
+      toast.error(e.message ?? "Eroare");
+    } finally {
+      setSavingPrivacy(false);
+    }
   }
 
   async function toggleConsent() {
     setSavingConsent(true);
     try {
       const next = !profile!.location_consent;
-      const { error } = await supabase.from("profiles").update({ location_consent: next } as any).eq("id", user!.id);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ location_consent: next } as any)
+        .eq("id", user!.id);
       if (error) throw error;
       // If turning off, also clear any broadcast row immediately
       if (!next) await supabase.from("live_locations").delete().eq("user_id", user!.id);
       await refreshProfile();
       toast.success(next ? "Locație live activată" : "Locație live oprită");
-    } catch (e: any) { toast.error(e.message ?? "Eroare"); }
-    finally { setSavingConsent(false); }
+    } catch (e: any) {
+      toast.error(e.message ?? "Eroare");
+    } finally {
+      setSavingConsent(false);
+    }
   }
 
   async function pickCity(cityId: string) {
     setSavingCity(true);
     try {
-      const { error } = await supabase.from("profiles").update({ city_id: cityId } as any).eq("id", user!.id);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ city_id: cityId } as any)
+        .eq("id", user!.id);
       if (error) throw error;
       await refreshProfile();
       toast.success("Oraș actualizat");
       setCityOpen(false);
-    } catch (e: any) { toast.error(e.message ?? "Eroare"); }
-    finally { setSavingCity(false); }
+    } catch (e: any) {
+      toast.error(e.message ?? "Eroare");
+    } finally {
+      setSavingCity(false);
+    }
   }
 
   async function doLogout() {
@@ -215,14 +261,20 @@ function SettingsPage() {
             to="/app/me"
           />
           <RowButton
-            icon={profile.is_public ? <Globe2 size={16} className="text-neon-green" /> : <Lock size={16} className="text-neon-crimson" />}
+            icon={
+              profile.is_public ? (
+                <Globe2 size={16} className="text-neon-green" />
+              ) : (
+                <Lock size={16} className="text-neon-crimson" />
+              )
+            }
             label="Vizibilitate cont"
-            hint={profile.is_public ? "Oricine îți vede profilul" : "Doar urmăritorii aprobați te văd"}
+            hint={
+              profile.is_public ? "Oricine îți vede profilul" : "Doar urmăritorii aprobați te văd"
+            }
             onClick={togglePrivacy}
             disabled={savingPrivacy}
-            trailing={
-              <Toggle on={profile.is_public} busy={savingPrivacy} />
-            }
+            trailing={<Toggle on={profile.is_public} busy={savingPrivacy} />}
           />
           <RowButton
             icon={<Building2 size={16} />}
@@ -236,22 +288,32 @@ function SettingsPage() {
         {/* Location live */}
         <Section title="Locație" subtitle="Cum apari pe hartă">
           <RowButton
-            icon={<MapPin size={16} className={profile.location_consent ? "text-neon-green" : "text-muted-foreground"} />}
+            icon={
+              <MapPin
+                size={16}
+                className={profile.location_consent ? "text-neon-green" : "text-muted-foreground"}
+              />
+            }
             label="Poziție live pe hartă"
-            hint={profile.location_consent
-              ? "Prietenii tăi te văd mișcându-te în timp real"
-              : "Nu trimiți poziția. Apari doar la check-in."}
+            hint={
+              profile.location_consent
+                ? "Prietenii tăi te văd mișcându-te în timp real"
+                : "Nu trimiți poziția. Apari doar la check-in."
+            }
             onClick={toggleConsent}
             disabled={savingConsent}
             trailing={<Toggle on={profile.location_consent} busy={savingConsent} />}
           />
           <p className="px-4 pb-3 pt-1 text-[10px] text-muted-foreground leading-relaxed">
-            Trimitem coordonatele tale doar cât stai în app și se șterg automat după 15 min. Doar prietenii cu cerere acceptată le pot vedea.
+            Trimitem coordonatele tale doar cât stai în app și se șterg automat după 15 min. Doar
+            prietenii cu cerere acceptată le pot vedea.
           </p>
         </Section>
 
         {/* Language switcher */}
-        <div className="px-4 pt-2"><LanguageSwitcher /></div>
+        <div className="px-4 pt-2">
+          <LanguageSwitcher />
+        </div>
 
         {/* Notifications — reuses the existing component */}
         <NotificationSettings />
@@ -304,13 +366,21 @@ function SettingsPage() {
             icon={<ExternalLink size={16} />}
             label="Suport & feedback"
             hint="Trimite-ne ce te ajută/ce nu merge — ajunge direct la echipă"
-            onClick={() => { setMsgKind("support"); setMsgSubject(""); setMsgBody(""); }}
+            onClick={() => {
+              setMsgKind("support");
+              setMsgSubject("");
+              setMsgBody("");
+            }}
           />
           <RowButton
             icon={<FileText size={16} />}
             label="Contact echipă"
             hint="Răspundem în maxim 2 zile lucrătoare"
-            onClick={() => { setMsgKind("contact"); setMsgSubject(""); setMsgBody(""); }}
+            onClick={() => {
+              setMsgKind("contact");
+              setMsgSubject("");
+              setMsgBody("");
+            }}
           />
 
           <div className="px-4 py-3 flex items-center justify-between text-[11px] font-mono text-muted-foreground">
@@ -318,7 +388,6 @@ function SettingsPage() {
             <span>oxidatii · v1.0</span>
           </div>
         </Section>
-
 
         {/* Danger zone */}
         <Section title="Sesiune" tone="danger">
@@ -339,13 +408,22 @@ function SettingsPage() {
       </div>
 
       {/* City picker */}
-      <Dialog open={cityOpen} onOpenChange={(v) => { setCityOpen(v); if (!v) setCitySearch(""); }}>
+      <Dialog
+        open={cityOpen}
+        onOpenChange={(v) => {
+          setCityOpen(v);
+          if (!v) setCitySearch("");
+        }}
+      >
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-display uppercase">Alege oraș</DialogTitle>
           </DialogHeader>
           <div className="relative mb-2">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            />
             <input
               autoFocus
               value={citySearch}
@@ -354,7 +432,10 @@ function SettingsPage() {
               className="w-full bg-foreground/5 rounded-xl pl-9 pr-8 py-2.5 text-sm border border-foreground/10 focus:border-foreground/30 outline-none"
             />
             {citySearch && (
-              <button onClick={() => setCitySearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <button
+                onClick={() => setCitySearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
                 <X size={14} />
               </button>
             )}
@@ -377,8 +458,12 @@ function SettingsPage() {
                   </button>
                 );
               })}
-            {cities.filter((c: any) => c.name.toLowerCase().includes(citySearch.toLowerCase().trim())).length === 0 && (
-              <div className="px-4 py-6 text-center text-sm text-muted-foreground">Niciun oraș găsit</div>
+            {cities.filter((c: any) =>
+              c.name.toLowerCase().includes(citySearch.toLowerCase().trim()),
+            ).length === 0 && (
+              <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+                Niciun oraș găsit
+              </div>
             )}
           </div>
         </DialogContent>
@@ -414,8 +499,18 @@ function SettingsPage() {
             </p>
           </div>
           <DialogFooter>
-            <button onClick={() => setBugOpen(false)} disabled={bugSending} className="px-4 py-2 rounded-lg border border-foreground/15 text-sm">Renunță</button>
-            <button onClick={sendBugReport} disabled={bugSending} className="px-4 py-2 rounded-lg bg-neon-crimson text-white text-sm font-semibold flex items-center gap-1.5">
+            <button
+              onClick={() => setBugOpen(false)}
+              disabled={bugSending}
+              className="px-4 py-2 rounded-lg border border-foreground/15 text-sm"
+            >
+              Renunță
+            </button>
+            <button
+              onClick={sendBugReport}
+              disabled={bugSending}
+              className="px-4 py-2 rounded-lg bg-neon-crimson text-white text-sm font-semibold flex items-center gap-1.5"
+            >
               {bugSending && <Loader2 size={14} className="animate-spin" />} Trimite
             </button>
           </DialogFooter>
@@ -423,11 +518,24 @@ function SettingsPage() {
       </Dialog>
 
       {/* Support / Contact message */}
-      <Dialog open={!!msgKind} onOpenChange={(v) => { if (!v) setMsgKind(null); }}>
+      <Dialog
+        open={!!msgKind}
+        onOpenChange={(v) => {
+          if (!v) setMsgKind(null);
+        }}
+      >
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-display uppercase flex items-center gap-2">
-              {msgKind === "support" ? <><ExternalLink size={16} /> Suport & feedback</> : <><FileText size={16} /> Contact echipă</>}
+              {msgKind === "support" ? (
+                <>
+                  <ExternalLink size={16} /> Suport & feedback
+                </>
+              ) : (
+                <>
+                  <FileText size={16} /> Contact echipă
+                </>
+              )}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
@@ -442,7 +550,11 @@ function SettingsPage() {
             <textarea
               value={msgBody}
               onChange={(e) => setMsgBody(e.target.value)}
-              placeholder={msgKind === "support" ? "Cu ce te ajutăm? Ce nu merge? Idei?" : "Scrie-ne mesajul tău…"}
+              placeholder={
+                msgKind === "support"
+                  ? "Cu ce te ajutăm? Ce nu merge? Idei?"
+                  : "Scrie-ne mesajul tău…"
+              }
               maxLength={4000}
               rows={6}
               className="w-full bg-foreground/5 rounded-md px-3 py-2.5 text-sm border border-foreground/10 focus:border-foreground/30 outline-none resize-none"
@@ -452,15 +564,23 @@ function SettingsPage() {
             </p>
           </div>
           <DialogFooter>
-            <button onClick={() => setMsgKind(null)} disabled={msgSending} className="px-4 py-2 rounded-lg border border-foreground/15 text-sm">Renunță</button>
-            <button onClick={sendMessage} disabled={msgSending} className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-semibold flex items-center gap-1.5">
+            <button
+              onClick={() => setMsgKind(null)}
+              disabled={msgSending}
+              className="px-4 py-2 rounded-lg border border-foreground/15 text-sm"
+            >
+              Renunță
+            </button>
+            <button
+              onClick={sendMessage}
+              disabled={msgSending}
+              className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-semibold flex items-center gap-1.5"
+            >
               {msgSending && <Loader2 size={14} className="animate-spin" />} Trimite
             </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-
 
       {/* Confirm logout */}
       <Dialog open={confirmLogout} onOpenChange={setConfirmLogout}>
@@ -468,10 +588,22 @@ function SettingsPage() {
           <DialogHeader>
             <DialogTitle className="font-display uppercase">Ieși din cont?</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">Va trebui să te conectezi din nou ca să vezi haita.</p>
+          <p className="text-sm text-muted-foreground">
+            Va trebui să te conectezi din nou ca să vezi haita.
+          </p>
           <DialogFooter>
-            <button onClick={() => setConfirmLogout(false)} className="px-4 py-2 rounded-lg border border-foreground/15 text-sm">Anulează</button>
-            <button onClick={doLogout} className="px-4 py-2 rounded-lg bg-neon-crimson text-white text-sm font-semibold">Ieși</button>
+            <button
+              onClick={() => setConfirmLogout(false)}
+              className="px-4 py-2 rounded-lg border border-foreground/15 text-sm"
+            >
+              Anulează
+            </button>
+            <button
+              onClick={doLogout}
+              className="px-4 py-2 rounded-lg bg-neon-crimson text-white text-sm font-semibold"
+            >
+              Ieși
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -480,13 +612,22 @@ function SettingsPage() {
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="font-display uppercase text-neon-crimson">Șterge cont definitiv?</DialogTitle>
+            <DialogTitle className="font-display uppercase text-neon-crimson">
+              Șterge cont definitiv?
+            </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Profilul, poziția live, abonările push și check-in-urile tale dispar. Această acțiune nu poate fi anulată.
+            Profilul, poziția live, abonările push și check-in-urile tale dispar. Această acțiune nu
+            poate fi anulată.
           </p>
           <DialogFooter>
-            <button onClick={() => setConfirmDelete(false)} className="px-4 py-2 rounded-lg border border-foreground/15 text-sm" disabled={deleting}>Renunță</button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              className="px-4 py-2 rounded-lg border border-foreground/15 text-sm"
+              disabled={deleting}
+            >
+              Renunță
+            </button>
             <button
               onClick={doDeleteAccount}
               disabled={deleting}
@@ -505,15 +646,29 @@ function SettingsPage() {
 /* ───────── building blocks ───────── */
 
 function Section({
-  title, subtitle, children, tone = "default",
-}: { title: string; subtitle?: string; children: React.ReactNode; tone?: "default" | "danger" }) {
+  title,
+  subtitle,
+  children,
+  tone = "default",
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+  tone?: "default" | "danger";
+}) {
   return (
     <section>
       <div className="px-1 pb-2">
-        <h2 className={`font-display uppercase text-[11px] tracking-[0.25em] ${tone === "danger" ? "text-neon-crimson" : "text-muted-foreground"}`}>{title}</h2>
+        <h2
+          className={`font-display uppercase text-[11px] tracking-[0.25em] ${tone === "danger" ? "text-neon-crimson" : "text-muted-foreground"}`}
+        >
+          {title}
+        </h2>
         {subtitle && <p className="text-[11px] text-muted-foreground/70 mt-0.5">{subtitle}</p>}
       </div>
-      <div className={`rounded-2xl border overflow-hidden divide-y divide-foreground/5 ${tone === "danger" ? "border-neon-crimson/30 bg-neon-crimson/[0.03]" : "border-foreground/10 bg-card"}`}>
+      <div
+        className={`rounded-2xl border overflow-hidden divide-y divide-foreground/5 ${tone === "danger" ? "border-neon-crimson/30 bg-neon-crimson/[0.03]" : "border-foreground/10 bg-card"}`}
+      >
         {children}
       </div>
     </section>
@@ -521,11 +676,24 @@ function Section({
 }
 
 function Row({
-  icon, label, hint, to,
-}: { icon: React.ReactNode; label: string; hint?: string; to: string }) {
+  icon,
+  label,
+  hint,
+  to,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  hint?: string;
+  to: string;
+}) {
   return (
-    <Link to={to} className="flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition active:bg-foreground/10">
-      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">{icon}</div>
+    <Link
+      to={to}
+      className="flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition active:bg-foreground/10"
+    >
+      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">
+        {icon}
+      </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm">{label}</div>
         {hint && <div className="text-[11px] text-muted-foreground truncate">{hint}</div>}
@@ -536,11 +704,21 @@ function Row({
 }
 
 function RowButton({
-  icon, label, hint, onClick, disabled, trailing, tone = "default",
+  icon,
+  label,
+  hint,
+  onClick,
+  disabled,
+  trailing,
+  tone = "default",
 }: {
-  icon: React.ReactNode; label: string; hint?: string;
-  onClick: () => void; disabled?: boolean;
-  trailing?: React.ReactNode; tone?: "default" | "danger";
+  icon: React.ReactNode;
+  label: string;
+  hint?: string;
+  onClick: () => void;
+  disabled?: boolean;
+  trailing?: React.ReactNode;
+  tone?: "default" | "danger";
 }) {
   return (
     <button
@@ -548,7 +726,9 @@ function RowButton({
       disabled={disabled}
       className={`w-full flex items-center gap-3 px-4 py-3 transition text-left ${tone === "danger" ? "hover:bg-neon-crimson/10" : "hover:bg-foreground/5"} active:bg-foreground/10 disabled:opacity-60`}
     >
-      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">{icon}</div>
+      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">
+        {icon}
+      </div>
       <div className="flex-1 min-w-0">
         <div className={`text-sm ${tone === "danger" ? "text-neon-crimson" : ""}`}>{label}</div>
         {hint && <div className="text-[11px] text-muted-foreground">{hint}</div>}
@@ -560,8 +740,15 @@ function RowButton({
 
 function RowExternal({ href, label }: { href: string; label: string }) {
   return (
-    <a href={href} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition">
-      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0"><ExternalLink size={15} /></div>
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition"
+    >
+      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">
+        <ExternalLink size={15} />
+      </div>
       <div className="flex-1 text-sm">{label}</div>
       <ChevronRight size={16} className="text-muted-foreground" />
     </a>
@@ -569,8 +756,16 @@ function RowExternal({ href, label }: { href: string; label: string }) {
 }
 
 function RowExternalLink({
-  icon, href, label, hint,
-}: { icon: React.ReactNode; href: string; label: string; hint?: string }) {
+  icon,
+  href,
+  label,
+  hint,
+}: {
+  icon: React.ReactNode;
+  href: string;
+  label: string;
+  hint?: string;
+}) {
   const isMail = href.startsWith("mailto:");
   return (
     <a
@@ -579,7 +774,9 @@ function RowExternalLink({
       rel={isMail ? undefined : "noreferrer"}
       className="flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition active:bg-foreground/10"
     >
-      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">{icon}</div>
+      <div className="h-8 w-8 rounded-lg bg-foreground/5 flex items-center justify-center shrink-0">
+        {icon}
+      </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm">{label}</div>
         {hint && <div className="text-[11px] text-muted-foreground truncate">{hint}</div>}
@@ -596,7 +793,9 @@ function Toggle({ on, busy }: { on: boolean; busy?: boolean }) {
       aria-checked={on}
       className={`relative inline-flex h-6 w-11 rounded-full transition shrink-0 ${on ? "bg-neon-green" : "bg-foreground/15"}`}
     >
-      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-background shadow transition-all ${on ? "left-[22px]" : "left-0.5"} ${busy ? "opacity-60" : ""}`} />
+      <span
+        className={`absolute top-0.5 h-5 w-5 rounded-full bg-background shadow transition-all ${on ? "left-[22px]" : "left-0.5"} ${busy ? "opacity-60" : ""}`}
+      />
     </span>
   );
 }

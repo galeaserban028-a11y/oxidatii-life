@@ -20,15 +20,22 @@ export const notifyNewPartyInCity = createServerFn({ method: "POST" })
     if (!party) return { sent: 0 };
     if (party.host_id !== userId) return { sent: 0 };
 
-
     // Determine city: prefer venue.city_id, else host.city_id
     let cityId: string | null = null;
     if (party.venue_id) {
-      const { data: v } = await supabaseAdmin.from("venues").select("city_id").eq("id", party.venue_id).maybeSingle();
+      const { data: v } = await supabaseAdmin
+        .from("venues")
+        .select("city_id")
+        .eq("id", party.venue_id)
+        .maybeSingle();
       cityId = v?.city_id ?? null;
     }
     if (!cityId) {
-      const { data: h } = await supabaseAdmin.from("profiles").select("city_id").eq("id", party.host_id).maybeSingle();
+      const { data: h } = await supabaseAdmin
+        .from("profiles")
+        .select("city_id")
+        .eq("id", party.host_id)
+        .maybeSingle();
       cityId = h?.city_id ?? null;
     }
     if (!cityId) return { sent: 0 };
@@ -71,7 +78,6 @@ export const notifyPartyJoin = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!join) return { sent: 0 };
 
-
     const { data: joiner } = await supabaseAdmin
       .from("profiles")
       .select("display_name, handle")
@@ -112,8 +118,8 @@ export const notifyFriendsLive = createServerFn({ method: "POST" })
       new Set(
         (friends ?? [])
           .map((f) => (f.requester_id === userId ? f.addressee_id : f.requester_id))
-          .filter(Boolean)
-      )
+          .filter(Boolean),
+      ),
     );
     if (!ids.length) return { sent: 0 };
 
@@ -126,7 +132,11 @@ export const notifyFriendsLive = createServerFn({ method: "POST" })
 
     let venueName = "";
     if (c.venue_id) {
-      const { data: v } = await supabaseAdmin.from("venues").select("name").eq("id", c.venue_id).maybeSingle();
+      const { data: v } = await supabaseAdmin
+        .from("venues")
+        .select("name")
+        .eq("id", c.venue_id)
+        .maybeSingle();
       venueName = v?.name ? ` la ${v.name}` : "";
     }
 
@@ -161,10 +171,16 @@ export const notifyChallenge = createServerFn({ method: "POST" })
       targetId = ch.challenged_id;
       title = "⚔️ Provocare nouă";
       body = ch.message ? `Ai fost provocat: „${ch.message}"` : "Cineva te-a provocat la șpriț";
-    } else if ((ch.status === "accepted" || ch.status === "declined") && userId === ch.challenged_id) {
+    } else if (
+      (ch.status === "accepted" || ch.status === "declined") &&
+      userId === ch.challenged_id
+    ) {
       targetId = ch.challenger_id;
       title = ch.status === "accepted" ? "✅ Provocare acceptată" : "❌ Provocare refuzată";
-      body = ch.status === "accepted" ? "Provocarea ta a fost acceptată" : "Provocarea ta a fost refuzată";
+      body =
+        ch.status === "accepted"
+          ? "Provocarea ta a fost acceptată"
+          : "Provocarea ta a fost refuzată";
     } else {
       return { sent: 0 };
     }

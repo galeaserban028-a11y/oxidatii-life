@@ -7,7 +7,9 @@ export function LanguageSwitcher() {
 
   function setLang(lng: "ro" | "en") {
     void i18n.changeLanguage(lng);
-    try { localStorage.setItem("oxi-lang", lng); } catch {}
+    try {
+      localStorage.setItem("oxi-lang", lng);
+    } catch {}
     if (typeof document !== "undefined") document.documentElement.lang = lng;
   }
 
@@ -24,16 +26,24 @@ export function LanguageSwitcher() {
           type="button"
           onClick={() => setLang("ro")}
           className={`px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider transition ${
-            current === "ro" ? "bg-neon-crimson text-white" : "text-muted-foreground hover:text-foreground"
+            current === "ro"
+              ? "bg-neon-crimson text-white"
+              : "text-muted-foreground hover:text-foreground"
           }`}
-        >RO</button>
+        >
+          RO
+        </button>
         <button
           type="button"
           onClick={() => setLang("en")}
           className={`px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider transition ${
-            current === "en" ? "bg-neon-crimson text-white" : "text-muted-foreground hover:text-foreground"
+            current === "en"
+              ? "bg-neon-crimson text-white"
+              : "text-muted-foreground hover:text-foreground"
           }`}
-        >EN</button>
+        >
+          EN
+        </button>
       </div>
     </div>
   );

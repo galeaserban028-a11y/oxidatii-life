@@ -13,11 +13,9 @@ import { TutorialOverlay } from "@/components/app/TutorialOverlay";
 import { useCompactMode } from "@/lib/compactMode";
 import logoSticker from "@/assets/logo-oxidatii.png";
 
-
 export const Route = createFileRoute("/app")({
   component: AppLayout,
 });
-
 
 function AppLayout() {
   const nav = useNavigate();
@@ -25,8 +23,6 @@ function AppLayout() {
   const isMe = pathname === "/app/me" || pathname.startsWith("/app/me/");
   const { user, profile, loading } = useAuth();
   const { compact } = useCompactMode();
-
-
 
   // Broadcast our live position to friends if we've granted location consent.
   useLiveLocation(user?.id ?? null, !!profile?.location_consent);
@@ -46,7 +42,6 @@ function AppLayout() {
       className={`min-h-screen bg-background text-foreground overflow-x-hidden ${compact ? "oxi-compact" : ""}`}
       style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)" }}
     >
-
       {/* iOS status-bar tint — solid background under the Dynamic Island / notch
           so the area never shows transparent content. Sits behind the sticky header. */}
       <div
@@ -70,8 +65,5 @@ function AppLayout() {
       <BottomTabBar />
       <TutorialOverlay />
     </main>
-
   );
 }
-
-

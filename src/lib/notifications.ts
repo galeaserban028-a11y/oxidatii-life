@@ -65,9 +65,7 @@ export function useNotifications(userId?: string | null) {
         .limit(100);
       if (error) throw error;
       const rows = (data ?? []) as NotificationRow[];
-      const actorIds = Array.from(
-        new Set(rows.map((r) => r.actor_id).filter(Boolean) as string[]),
-      );
+      const actorIds = Array.from(new Set(rows.map((r) => r.actor_id).filter(Boolean) as string[]));
       if (actorIds.length === 0) return rows;
       const { data: profiles } = await supabase
         .from("profiles")
@@ -76,7 +74,7 @@ export function useNotifications(userId?: string | null) {
       const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
       return rows.map((r) => ({
         ...r,
-        actor: r.actor_id ? byId.get(r.actor_id) ?? null : null,
+        actor: r.actor_id ? (byId.get(r.actor_id) ?? null) : null,
       }));
     },
   });

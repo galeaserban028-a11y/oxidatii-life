@@ -29,16 +29,30 @@ const DEFAULT_PREFS: Prefs = {
 };
 
 const PREF_LABELS: { key: keyof Prefs; label: string; hint: string }[] = [
-  { key: "new_party_in_city", label: "Petrecere nouă în orașul tău", hint: "Cineva deschide un șpriț aproape" },
-  { key: "party_join", label: "Cineva s-a alăturat petrecerii tale", hint: "Spot ocupat la party-ul tău" },
+  {
+    key: "new_party_in_city",
+    label: "Petrecere nouă în orașul tău",
+    hint: "Cineva deschide un șpriț aproape",
+  },
+  {
+    key: "party_join",
+    label: "Cineva s-a alăturat petrecerii tale",
+    hint: "Spot ocupat la party-ul tău",
+  },
   { key: "friend_live", label: "Prieten live pe hartă", hint: "Un prieten a făcut check-in" },
   { key: "challenge", label: "Provocare nouă", hint: "Cineva te-a provocat la șpriț" },
-  { key: "heat_now", label: "Hotspot fierbinte în oraș", hint: "Când o zonă depășește pragul de Heat Now" },
+  {
+    key: "heat_now",
+    label: "Hotspot fierbinte în oraș",
+    hint: "Când o zonă depășește pragul de Heat Now",
+  },
 ];
 
 export function NotificationSettings() {
   const { user } = useAuth();
-  const [permission, setPermission] = useState<"granted" | "denied" | "default" | "unsupported">("default");
+  const [permission, setPermission] = useState<"granted" | "denied" | "default" | "unsupported">(
+    "default",
+  );
   const [subscribed, setSubscribed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
@@ -84,7 +98,9 @@ export function NotificationSettings() {
     if (!user?.id) return;
     const next = { ...prefs, [key]: value };
     setPrefs(next);
-    await supabase.from("notification_prefs").upsert({ user_id: user.id, ...next }, { onConflict: "user_id" });
+    await supabase
+      .from("notification_prefs")
+      .upsert({ user_id: user.id, ...next }, { onConflict: "user_id" });
   }
 
   const runTest = useServerFn(sendTestPush);
@@ -109,7 +125,11 @@ export function NotificationSettings() {
     <section className="rounded-2xl border border-foreground/10 bg-card overflow-hidden">
       <div className="p-4 flex items-start gap-3 border-b border-foreground/10">
         <div className="h-10 w-10 rounded-xl bg-foreground/5 flex items-center justify-center shrink-0">
-          {subscribed ? <Bell size={18} className="text-sunset-orange" /> : <BellOff size={18} className="text-muted-foreground" />}
+          {subscribed ? (
+            <Bell size={18} className="text-sunset-orange" />
+          ) : (
+            <BellOff size={18} className="text-muted-foreground" />
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-display font-bold text-[15px]">Notificări push</div>
@@ -130,20 +150,29 @@ export function NotificationSettings() {
               : "bg-sunset-orange text-background disabled:opacity-40"
           }`}
         >
-          {busy ? <Loader2 size={14} className="animate-spin" /> : subscribed ? "Oprește" : "Activează"}
+          {busy ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : subscribed ? (
+            "Oprește"
+          ) : (
+            "Activează"
+          )}
         </button>
       </div>
 
       {err && (
-        <div className="px-4 py-2 text-[11px] text-sunset-magenta border-b border-foreground/10">{err}</div>
+        <div className="px-4 py-2 text-[11px] text-sunset-magenta border-b border-foreground/10">
+          {err}
+        </div>
       )}
 
       {block.blocked && /iPhone|iPad|iPod/.test(navigator.userAgent) && (
         <div className="px-4 py-3 flex items-start gap-2 border-b border-foreground/10 bg-foreground/[0.02]">
           <Smartphone size={14} className="text-sunset-amber mt-0.5 shrink-0" />
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Pe iPhone, deschide aplicația în Safari → <strong>Share</strong> → <strong>Add to Home Screen</strong>, apoi
-            deschide-o de pe ecran și activează notificările.
+            Pe iPhone, deschide aplicația în Safari → <strong>Share</strong> →{" "}
+            <strong>Add to Home Screen</strong>, apoi deschide-o de pe ecran și activează
+            notificările.
           </p>
         </div>
       )}

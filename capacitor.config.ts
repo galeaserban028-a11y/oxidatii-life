@@ -8,9 +8,7 @@ const config: CapacitorConfig = {
   appId: "com.oxidatii.app",
   appName: "OXIDAȚII",
   webDir: "dist/client",
-  ...(devServerUrl
-    ? { server: { url: devServerUrl, cleartext: true } }
-    : {}),
+  ...(devServerUrl ? { server: { url: devServerUrl, cleartext: true } } : {}),
   ios: {
     contentInset: "always",
     allowsLinkPreview: false,

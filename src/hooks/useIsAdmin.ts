@@ -8,10 +8,7 @@ export function useIsAdmin() {
     queryKey: ["user_role", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user!.id);
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", user!.id);
       const roles = (data ?? []).map((r) => r.role);
       return { isAdmin: roles.includes("admin"), isModerator: roles.includes("moderator"), roles };
     },

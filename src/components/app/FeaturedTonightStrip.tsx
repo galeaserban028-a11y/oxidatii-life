@@ -31,7 +31,8 @@ function Countdown({ at }: { at: string }) {
   const m = Math.floor((ms % 3600_000) / 60_000);
   return (
     <span className="inline-flex items-center gap-1 text-xs font-semibold text-foreground">
-      <Clock className="size-3" /> începe în {h > 0 ? `${h}h ` : ""}{m}m
+      <Clock className="size-3" /> începe în {h > 0 ? `${h}h ` : ""}
+      {m}m
     </span>
   );
 }
@@ -41,10 +42,12 @@ export function FeaturedTonightStrip({ cityId }: { cityId?: string | null }) {
     queryKey: ["featured-tonight", cityId ?? "global"],
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      const { data, error } = await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ data: FeaturedRow[] | null; error: unknown }>)(
-        "get_featured_tonight",
-        { _city_id: cityId ?? null, _limit: 8 },
-      );
+      const { data, error } = await (
+        supabase.rpc as unknown as (
+          fn: string,
+          args: Record<string, unknown>,
+        ) => Promise<{ data: FeaturedRow[] | null; error: unknown }>
+      )("get_featured_tonight", { _city_id: cityId ?? null, _limit: 8 });
       if (error) throw error;
       return (data ?? []) as FeaturedRow[];
     },
@@ -59,7 +62,9 @@ export function FeaturedTonightStrip({ cityId }: { cityId?: string | null }) {
           <Flame className="size-4 text-[var(--tier-elite)]" />
           Featured Tonight
         </h2>
-        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Sponsored</span>
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+          Sponsored
+        </span>
       </header>
       <div className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2">
         {data.map((row) => {

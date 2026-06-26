@@ -67,15 +67,15 @@ supabase/
 
 ### Convenții cheie
 
-| Strat | Regulă |
-|---|---|
-| **Routing** | File‑based: `app.foo.tsx` → `/app/foo`. Pentru sub‑rute folosește puncte, nu foldere. |
-| **Design tokens** | NU se scrie `bg-black` / `text-white` în componente. Totul prin tokenii semantici din `src/styles.css` (`--background`, `--primary`, `--neon-crimson`, …). |
-| **Server logic** | `createServerFn` în `src/lib/*.functions.ts`; secretele citite din `process.env` doar în `.handler()`. |
-| **Webhooks / API public** | În `src/routes/api/public/*` cu verificare semnătură. |
-| **DB & RLS** | Migrații SQL în `supabase/migrations/`. Fiecare `CREATE TABLE public.*` are `GRANT` + `ENABLE RLS` + `CREATE POLICY`. Rolurile de utilizator stau în `user_roles` separat (anti‑escalare). |
-| **i18n** | Toate șirurile RO sunt mapate în `src/lib/translations.ts`; `DomTranslator` aplică EN runtime peste DOM. |
-| **Erori** | `errorComponent` + `notFoundComponent` pe `__root`; wrapper `server.ts` capturează erorile SSR pe care h3 le înghite. |
+| Strat                     | Regulă                                                                                                                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Routing**               | File‑based: `app.foo.tsx` → `/app/foo`. Pentru sub‑rute folosește puncte, nu foldere.                                                                                                      |
+| **Design tokens**         | NU se scrie `bg-black` / `text-white` în componente. Totul prin tokenii semantici din `src/styles.css` (`--background`, `--primary`, `--neon-crimson`, …).                                 |
+| **Server logic**          | `createServerFn` în `src/lib/*.functions.ts`; secretele citite din `process.env` doar în `.handler()`.                                                                                     |
+| **Webhooks / API public** | În `src/routes/api/public/*` cu verificare semnătură.                                                                                                                                      |
+| **DB & RLS**              | Migrații SQL în `supabase/migrations/`. Fiecare `CREATE TABLE public.*` are `GRANT` + `ENABLE RLS` + `CREATE POLICY`. Rolurile de utilizator stau în `user_roles` separat (anti‑escalare). |
+| **i18n**                  | Toate șirurile RO sunt mapate în `src/lib/translations.ts`; `DomTranslator` aplică EN runtime peste DOM.                                                                                   |
+| **Erori**                 | `errorComponent` + `notFoundComponent` pe `__root`; wrapper `server.ts` capturează erorile SSR pe care h3 le înghite.                                                                      |
 
 ## 3. Documentație clară
 

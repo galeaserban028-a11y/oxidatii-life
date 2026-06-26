@@ -9,13 +9,7 @@ interface FadeInProps {
   className?: string;
 }
 
-export function FadeIn({
-  children,
-  delay = 0,
-  duration = 0.22,
-  y = 8,
-  className,
-}: FadeInProps) {
+export function FadeIn({ children, delay = 0, duration = 0.22, y = 8, className }: FadeInProps) {
   const reduced = useReducedMotion();
   if (reduced) {
     return <div className={className}>{children}</div>;

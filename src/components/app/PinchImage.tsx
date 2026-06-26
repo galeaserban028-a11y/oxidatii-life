@@ -101,7 +101,6 @@ export default function PinchImage({ src, alt, className, onTap }: Props) {
     }
   };
 
-
   return (
     <div
       ref={wrapRef}

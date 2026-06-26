@@ -18,11 +18,21 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
     queryFn: async () => {
       if (!user) return [];
       const [{ data: iFollow }, { data: followMe }] = await Promise.all([
-        supabase.from("follows").select("following_id").eq("follower_id", user.id).eq("status", "accepted"),
-        supabase.from("follows").select("follower_id").eq("following_id", user.id).eq("status", "accepted"),
+        supabase
+          .from("follows")
+          .select("following_id")
+          .eq("follower_id", user.id)
+          .eq("status", "accepted"),
+        supabase
+          .from("follows")
+          .select("follower_id")
+          .eq("following_id", user.id)
+          .eq("status", "accepted"),
       ]);
       const iFollowSet = new Set((iFollow ?? []).map((r: any) => r.following_id));
-      const mutualIds = (followMe ?? []).map((r: any) => r.follower_id).filter((id: string) => iFollowSet.has(id));
+      const mutualIds = (followMe ?? [])
+        .map((r: any) => r.follower_id)
+        .filter((id: string) => iFollowSet.has(id));
       if (!mutualIds.length) return [];
       const { data: profs } = await supabase
         .from("profiles")
@@ -37,7 +47,8 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
     setSending(friendId);
     try {
       const { guardRateLimit } = await import("@/lib/rateLimit");
-      if (!(await guardRateLimit("message"))) throw new Error("Trimiți prea repede. Așteaptă puțin.");
+      if (!(await guardRateLimit("message")))
+        throw new Error("Trimiți prea repede. Așteaptă puțin.");
       const convId = await openOrCreateDM(user.id, friendId);
       const body = `📸 Fază OXI: ${photo.photo_url}${photo.caption ? `\n${photo.caption}` : ""}`;
       const { error } = await supabase.from("messages").insert({
@@ -58,15 +69,26 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end" onClick={onClose} style={hind}>
+    <div
+      className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end"
+      onClick={onClose}
+      style={hind}
+    >
       <div
         className="w-full bg-background border-t border-foreground/10 rounded-t-3xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
         style={{ maxHeight: `calc(85dvh - ${SHEET_BOTTOM})`, paddingBottom: SHEET_BOTTOM }}
       >
         <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-foreground/10">
-          <div className="uppercase text-sm tracking-[0.16em]" style={archivo}>Trimite la prieteni</div>
-          <button onClick={onClose} className="text-muted-foreground text-2xl leading-none w-8 h-8 grid place-items-center">×</button>
+          <div className="uppercase text-sm tracking-[0.16em]" style={archivo}>
+            Trimite la prieteni
+          </div>
+          <button
+            onClick={onClose}
+            className="text-muted-foreground text-2xl leading-none w-8 h-8 grid place-items-center"
+          >
+            ×
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto px-2 py-2">
@@ -75,8 +97,12 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
           ) : !friends || friends.length === 0 ? (
             <div className="text-center py-10 px-6 space-y-2">
               <div className="text-4xl">🤝</div>
-              <div className="uppercase text-sm" style={archivo}>Niciun prieten reciproc</div>
-              <p className="text-xs text-muted-foreground">Urmărește pe cineva care te urmărește și pe tine ca să poți trimite faze.</p>
+              <div className="uppercase text-sm" style={archivo}>
+                Niciun prieten reciproc
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Urmărește pe cineva care te urmărește și pe tine ca să poți trimite faze.
+              </p>
             </div>
           ) : (
             <ul className="divide-y divide-foreground/5">
@@ -88,14 +114,27 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
                   <li key={f.id} className="flex items-center gap-3 px-3 py-2.5">
                     <div className="shrink-0">
                       {f.avatar_url ? (
-                        <img src={f.avatar_url} alt={name} className="size-11 rounded-full object-cover" />
+                        <img
+                          src={f.avatar_url}
+                          alt={name}
+                          className="size-11 rounded-full object-cover"
+                        />
                       ) : (
-                        <div className="size-11 rounded-full bg-foreground/10 grid place-items-center text-sm uppercase" style={archivo}>{initial}</div>
+                        <div
+                          className="size-11 rounded-full bg-foreground/10 grid place-items-center text-sm uppercase"
+                          style={archivo}
+                        >
+                          {initial}
+                        </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[14px] font-semibold truncate">{name}</div>
-                      {f.handle && <div className="text-[11px] text-muted-foreground truncate">@{f.handle}</div>}
+                      {f.handle && (
+                        <div className="text-[11px] text-muted-foreground truncate">
+                          @{f.handle}
+                        </div>
+                      )}
                     </div>
                     <button
                       onClick={() => send(f.id)}

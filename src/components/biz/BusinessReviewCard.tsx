@@ -114,9 +114,7 @@ export function BusinessReviewCard({
               {avg ? avg.toFixed(2) : "—"}
             </span>
             <div className="flex items-center gap-0.5">{stars(Math.round(avg))}</div>
-            <span className="text-[11px] text-zinc-500">
-              ({data?.all.length ?? 0})
-            </span>
+            <span className="text-[11px] text-zinc-500">({data?.all.length ?? 0})</span>
           </div>
         </div>
       </div>
@@ -143,7 +141,11 @@ export function BusinessReviewCard({
                 >
                   <Star
                     size={28}
-                    className={active ? "text-sunset-amber fill-current drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]" : "text-zinc-700"}
+                    className={
+                      active
+                        ? "text-sunset-amber fill-current drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]"
+                        : "text-zinc-700"
+                    }
                   />
                 </button>
               );
@@ -190,7 +192,11 @@ export function BusinessReviewCard({
               <div className="flex-1 min-w-0">
                 {r.comment && <div className="text-zinc-300 break-words">"{r.comment}"</div>}
                 <div className="text-[9px] text-zinc-600">
-                  {new Date(r.created_at).toLocaleDateString("ro-RO", { day: "2-digit", month: "short", year: "numeric" })}
+                  {new Date(r.created_at).toLocaleDateString("ro-RO", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </div>
               </div>
             </div>

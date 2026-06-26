@@ -5,14 +5,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { throttle } from "@/lib/throttle";
 import { RomaniaMap3D, type FriendPin, type HeatNowCell } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
-import { UserPlus, Users, MapPin, Clock, X, Beer, List, Navigation, Sparkles, Settings, Ghost } from "lucide-react";
+import {
+  UserPlus,
+  Users,
+  MapPin,
+  Clock,
+  X,
+  Beer,
+  List,
+  Navigation,
+  Sparkles,
+  Settings,
+  Ghost,
+} from "lucide-react";
 import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilters";
 import { AddVenueSheet } from "@/components/app/AddVenueSheet";
 import { MapSettingsSheet } from "@/components/app/MapSettingsSheet";
 import { HeatNowButton } from "@/components/app/HeatNowSheet";
 import { FadeIn } from "@/components/app/FadeIn";
 import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
-import { PromoBanner, BusinessVisibilityCTA, type PromoMeta } from "@/components/app/map/PromoBanner";
+import {
+  PromoBanner,
+  BusinessVisibilityCTA,
+  type PromoMeta,
+} from "@/components/app/map/PromoBanner";
 
 export const Route = createFileRoute("/app/map")({
   head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
@@ -23,14 +39,26 @@ export const Route = createFileRoute("/app/map")({
 });
 
 type Venue = {
-  id: string; name: string; type: string;
-  lat: number | null; lng: number | null;
-  city_id: string; address: string | null;
+  id: string;
+  name: string;
+  type: string;
+  lat: number | null;
+  lng: number | null;
+  city_id: string;
+  address: string | null;
   opening_hours: OpeningHours | null;
   cover_url: string | null;
 };
 
-type City = { id: string; slug: string; name: string; lat: number; lng: number; chaos_level: number; country: string };
+type City = {
+  id: string;
+  slug: string;
+  name: string;
+  lat: number;
+  lng: number;
+  chaos_level: number;
+  country: string;
+};
 const EMPTY_CITIES: City[] = [];
 
 type RawMapSettings = {
@@ -44,7 +72,10 @@ function normalizeMapSettings(settings: RawMapSettings | null | undefined) {
   return {
     map_ghost: Boolean(settings?.map_ghost),
     map_visibility: settings?.map_visibility ?? "friends",
-    map_precision: settings?.map_precision === "approx" || settings?.map_precision === "city" ? settings.map_precision : "exact",
+    map_precision:
+      settings?.map_precision === "approx" || settings?.map_precision === "city"
+        ? settings.map_precision
+        : "exact",
     map_auto_ghost_hours: Number(settings?.map_auto_ghost_hours ?? 8),
   };
 }
@@ -57,7 +88,11 @@ function applyLocationPrivacy(
 ) {
   if (settings.map_precision === "approx") {
     const j = 0.0018;
-    return { lat: lat + (Math.random() * 2 - 1) * j, lng: lng + (Math.random() * 2 - 1) * j, exact: false };
+    return {
+      lat: lat + (Math.random() * 2 - 1) * j,
+      lng: lng + (Math.random() * 2 - 1) * j,
+      exact: false,
+    };
   }
   if (settings.map_precision === "city" && cityCenter) {
     return { lat: cityCenter.lat, lng: cityCenter.lng, exact: false };
@@ -123,17 +158,41 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   // Never place "tu ești aici" on the city center — it feels imprecise.
   if (!userIds.has(userId)) {
     const [{ data: lastLive }, { data: lastCheckin }] = await Promise.all([
-      supabase.from("live_locations").select("lat, lng").eq("user_id", userId).order("updated_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("check_ins").select("venue_id, lat, lng").eq("user_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase
+        .from("live_locations")
+        .select("lat, lng")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("check_ins")
+        .select("venue_id, lat, lng")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
     ]);
-    let lat: number | null = null, lng: number | null = null;
-    if (lastLive) { lat = Number((lastLive as any).lat); lng = Number((lastLive as any).lng); }
-    else if (lastCheckin) {
+    let lat: number | null = null,
+      lng: number | null = null;
+    if (lastLive) {
+      lat = Number((lastLive as any).lat);
+      lng = Number((lastLive as any).lng);
+    } else if (lastCheckin) {
       const ck: any = lastCheckin;
-      if (ck.lat != null && ck.lng != null) { lat = Number(ck.lat); lng = Number(ck.lng); }
-      else if (ck.venue_id) {
-        const { data: v } = await supabase.from("venues").select("lat,lng").eq("id", ck.venue_id).maybeSingle();
-        if (v?.lat != null && v?.lng != null) { lat = Number(v.lat); lng = Number(v.lng); }
+      if (ck.lat != null && ck.lng != null) {
+        lat = Number(ck.lat);
+        lng = Number(ck.lng);
+      } else if (ck.venue_id) {
+        const { data: v } = await supabase
+          .from("venues")
+          .select("lat,lng")
+          .eq("id", ck.venue_id)
+          .maybeSingle();
+        if (v?.lat != null && v?.lng != null) {
+          lat = Number(v.lat);
+          lng = Number(v.lng);
+        }
       }
     }
     if (lat != null && lng != null && isFinite(lat) && isFinite(lng)) {
@@ -143,7 +202,8 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
         handle: me?.handle ?? null,
         display_name: me?.display_name ?? "tu",
         avatar_url: me?.avatar_url ?? null,
-        lat, lng,
+        lat,
+        lng,
         venue_name: "tu ești aici",
         is_me: true,
       });
@@ -232,10 +292,10 @@ function getPrecisePosition(): Promise<GeolocationPosition> {
 
 function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
   const R = 6371;
-  const dLat = (bLat - aLat) * Math.PI / 180;
-  const dLng = (bLng - aLng) * Math.PI / 180;
-  const lat1 = aLat * Math.PI / 180;
-  const lat2 = bLat * Math.PI / 180;
+  const dLat = ((bLat - aLat) * Math.PI) / 180;
+  const dLng = ((bLng - aLng) * Math.PI) / 180;
+  const lat1 = (aLat * Math.PI) / 180;
+  const lat2 = (bLat * Math.PI) / 180;
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 }
@@ -253,7 +313,9 @@ function MapPage() {
   const [heatNowCells, setHeatNowCells] = useState<HeatNowCell[]>([]);
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
   const [visible, setVisible] = useState(40);
-  const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
+  const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(
+    null,
+  );
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
   const [autoLocated, setAutoLocated] = useState(false);
   const focusedFromSearchRef = useRef<string | null>(null);
@@ -269,7 +331,13 @@ function MapPage() {
         .select("id,slug,name,lat,lng,chaos_level,country")
         .order("chaos_level", { ascending: false });
       if (error) throw error;
-      return data.map(c => ({ ...c, lat: Number(c.lat), lng: Number(c.lng), chaos_level: Number(c.chaos_level), country: (c as any).country ?? "RO" }));
+      return data.map((c) => ({
+        ...c,
+        lat: Number(c.lat),
+        lng: Number(c.lng),
+        chaos_level: Number(c.chaos_level),
+        country: (c as any).country ?? "RO",
+      }));
     },
   });
   const cities = citiesData ?? EMPTY_CITIES;
@@ -283,12 +351,14 @@ function MapPage() {
     queryFn: async () => {
       // fetch ALL venues, paginating past the 1000 row default
       const all: Venue[] = [];
-      let from = 0; const step = 1000;
+      let from = 0;
+      const step = 1000;
       while (true) {
         const { data, error } = await supabase
           .from("venues")
           .select("id, name, type, lat, lng, city_id, address, opening_hours, cover_url")
-          .not("lat", "is", null).not("lng", "is", null)
+          .not("lat", "is", null)
+          .not("lng", "is", null)
           .order("name")
           .range(from, from + step - 1);
         if (error) throw error;
@@ -297,7 +367,11 @@ function MapPage() {
         if (batch.length < step) break;
         from += step;
       }
-      return all.map(v => ({ ...v, lat: v.lat === null ? null : Number(v.lat), lng: v.lng === null ? null : Number(v.lng) }));
+      return all.map((v) => ({
+        ...v,
+        lat: v.lat === null ? null : Number(v.lat),
+        lng: v.lng === null ? null : Number(v.lng),
+      }));
     },
   });
 
@@ -313,7 +387,6 @@ function MapPage() {
     }
   }, [search.venue, venues]);
 
-
   // Active venue-linked promo campaigns → "shining" pins on the map.
   // Pulls only the data needed to recognize a promoted venue + tint its halo
   // and show the brand logo in place of the bottle silhouette.
@@ -326,23 +399,36 @@ function MapPage() {
       const nowIso = new Date().toISOString();
       const { data, error } = await supabase
         .from("campaigns")
-        .select("id, title, venue_id, theme_color, image_urls, business_id, business_accounts!inner(venue_id, logo_url, cover_url, brand_name, tier)")
+        .select(
+          "id, title, venue_id, theme_color, image_urls, business_id, business_accounts!inner(venue_id, logo_url, cover_url, brand_name, tier)",
+        )
         .eq("status", "active")
         .lte("starts_at", nowIso)
         .or(`ends_at.is.null,ends_at.gt.${nowIso}`);
       if (error) throw error;
       const tierRank: Record<string, number> = { starter: 1, popular: 2, elite: 3, exclusive: 4 };
-      const map: Record<string, { theme: string; cover: string | null; campaignId: string; title: string | null; venueName: string | null; tier: string }> = {};
+      const map: Record<
+        string,
+        {
+          theme: string;
+          cover: string | null;
+          campaignId: string;
+          title: string | null;
+          venueName: string | null;
+          tier: string;
+        }
+      > = {};
       for (const c of (data ?? []) as any[]) {
         const vid = c.venue_id ?? c.business_accounts?.venue_id;
         if (!vid) continue;
         const tier = (c.business_accounts?.tier as string) ?? "starter";
         const existing = map[vid];
         if (existing && (tierRank[existing.tier] ?? 0) >= (tierRank[tier] ?? 0)) continue;
-        const cover = (c.image_urls?.[0] as string | undefined)
-          ?? c.business_accounts?.logo_url
-          ?? c.business_accounts?.cover_url
-          ?? null;
+        const cover =
+          (c.image_urls?.[0] as string | undefined) ??
+          c.business_accounts?.logo_url ??
+          c.business_accounts?.cover_url ??
+          null;
         map[vid] = {
           theme: c.theme_color ?? "#ff3d8b",
           cover,
@@ -356,7 +442,6 @@ function MapPage() {
     },
     refetchInterval: 60_000,
   });
-
 
   const { data: friendPins = [] } = useQuery({
     queryKey: ["friend-pins", user?.id],
@@ -380,21 +465,41 @@ function MapPage() {
       .on("postgres_changes", { event: "*", schema: "public", table: "check_ins" }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "live_locations" }, refresh)
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [user?.id, qc]);
 
-  const cityMap = useMemo(() => new Map(cities.map(c => [c.id, c])), [cities]);
+  const cityMap = useMemo(() => new Map(cities.map((c) => [c.id, c])), [cities]);
 
   // Country chip list (sorted by venue count desc)
   const countries = useMemo(() => {
     const NAMES: Record<string, string> = {
-      RO: "🇷🇴 RO", GB: "🇬🇧 UK", FR: "🇫🇷 FR", DE: "🇩🇪 DE", ES: "🇪🇸 ES",
-      IT: "🇮🇹 IT", NL: "🇳🇱 NL", BE: "🇧🇪 BE", AT: "🇦🇹 AT", CZ: "🇨🇿 CZ",
-      PL: "🇵🇱 PL", HU: "🇭🇺 HU", GR: "🇬🇷 GR", PT: "🇵🇹 PT", IE: "🇮🇪 IE",
-      DK: "🇩🇰 DK", SE: "🇸🇪 SE", NO: "🇳🇴 NO", CH: "🇨🇭 CH", BG: "🇧🇬 BG",
-      HR: "🇭🇷 HR", RS: "🇷🇸 RS", TR: "🇹🇷 TR",
+      RO: "🇷🇴 RO",
+      GB: "🇬🇧 UK",
+      FR: "🇫🇷 FR",
+      DE: "🇩🇪 DE",
+      ES: "🇪🇸 ES",
+      IT: "🇮🇹 IT",
+      NL: "🇳🇱 NL",
+      BE: "🇧🇪 BE",
+      AT: "🇦🇹 AT",
+      CZ: "🇨🇿 CZ",
+      PL: "🇵🇱 PL",
+      HU: "🇭🇺 HU",
+      GR: "🇬🇷 GR",
+      PT: "🇵🇹 PT",
+      IE: "🇮🇪 IE",
+      DK: "🇩🇰 DK",
+      SE: "🇸🇪 SE",
+      NO: "🇳🇴 NO",
+      CH: "🇨🇭 CH",
+      BG: "🇧🇬 BG",
+      HR: "🇭🇷 HR",
+      RS: "🇷🇸 RS",
+      TR: "🇹🇷 TR",
     };
-    const cityCountryMap = new Map(cities.map(c => [c.id, c.country as string]));
+    const cityCountryMap = new Map(cities.map((c) => [c.id, c.country as string]));
     const counts = new Map<string, number>();
     for (const v of venues) {
       const cc = cityCountryMap.get(v.city_id);
@@ -408,13 +513,18 @@ function MapPage() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let list = venues.filter(v => {
+    let list = venues.filter((v) => {
       if (type !== "all" && v.type !== type) return false;
       if (country !== "all" && cityMap.get(v.city_id)?.country !== country) return false;
       if (cityId !== "all" && v.city_id !== cityId) return false;
       if (q) {
         const city = cityMap.get(v.city_id)?.name?.toLowerCase() ?? "";
-        if (!v.name.toLowerCase().includes(q) && !city.includes(q) && !(v.address ?? "").toLowerCase().includes(q)) return false;
+        if (
+          !v.name.toLowerCase().includes(q) &&
+          !city.includes(q) &&
+          !(v.address ?? "").toLowerCase().includes(q)
+        )
+          return false;
       }
       if (maxKm > 0 && geo && v.lat != null && v.lng != null) {
         if (distanceKm(geo.lat, geo.lng, v.lat, v.lng) > maxKm) return false;
@@ -423,8 +533,10 @@ function MapPage() {
     });
     if (geo) {
       list = [...list].sort((a, b) => {
-        const da = a.lat != null && a.lng != null ? distanceKm(geo.lat, geo.lng, a.lat, a.lng) : 1e9;
-        const db = b.lat != null && b.lng != null ? distanceKm(geo.lat, geo.lng, b.lat, b.lng) : 1e9;
+        const da =
+          a.lat != null && a.lng != null ? distanceKm(geo.lat, geo.lng, a.lat, a.lng) : 1e9;
+        const db =
+          b.lat != null && b.lng != null ? distanceKm(geo.lat, geo.lng, b.lat, b.lng) : 1e9;
         return da - db;
       });
     }
@@ -433,7 +545,7 @@ function MapPage() {
 
   // Cities scoped to selected country (for map markers + fit bounds)
   const citiesScoped = useMemo(
-    () => country === "all" ? cities : cities.filter(c => c.country === country),
+    () => (country === "all" ? cities : cities.filter((c) => c.country === country)),
     [cities, country],
   );
 
@@ -441,13 +553,19 @@ function MapPage() {
   useEffect(() => {
     if (country === "all") {
       // Whole Europe-ish bounds
-      setFitBounds([[-12, 35], [42, 60]]);
+      setFitBounds([
+        [-12, 35],
+        [42, 60],
+      ]);
       setFocusCity(null);
       return;
     }
-    const pts = cities.filter(c => c.country === country);
+    const pts = cities.filter((c) => c.country === country);
     if (pts.length === 0) return;
-    let minLng = 180, minLat = 90, maxLng = -180, maxLat = -90;
+    let minLng = 180,
+      minLat = 90,
+      maxLng = -180,
+      maxLat = -90;
     for (const p of pts) {
       if (p.lng < minLng) minLng = p.lng;
       if (p.lng > maxLng) maxLng = p.lng;
@@ -457,11 +575,16 @@ function MapPage() {
     // pad a bit if single city
     const padLng = Math.max(0.5, (maxLng - minLng) * 0.2);
     const padLat = Math.max(0.5, (maxLat - minLat) * 0.2);
-    setFitBounds([[minLng - padLng, minLat - padLat], [maxLng + padLng, maxLat + padLat]]);
+    setFitBounds([
+      [minLng - padLng, minLat - padLat],
+      [maxLng + padLng, maxLat + padLat],
+    ]);
     setFocusCity(null);
   }, [country, cities]);
 
-  useEffect(() => { setVisible(40); }, [query, type, country, cityId, maxKm]);
+  useEffect(() => {
+    setVisible(40);
+  }, [query, type, country, cityId, maxKm]);
 
   // Load user's privacy settings + private locations so we can apply them when publishing the pin.
   const privacyQ = useQuery({
@@ -469,9 +592,11 @@ function MapPage() {
     enabled: !!user,
     queryFn: async () => {
       const [pRes, stateRes, locRes] = await Promise.all([
-        supabase.from("profiles")
+        supabase
+          .from("profiles")
           .select("map_auto_ghost_hours, city_id")
-          .eq("id", user!.id).maybeSingle(),
+          .eq("id", user!.id)
+          .maybeSingle(),
         supabase.rpc("get_my_account_state"),
         supabase.from("private_locations").select("lat, lng, radius_m").eq("user_id", user!.id),
       ]);
@@ -479,7 +604,11 @@ function MapPage() {
       const merged = { ...(pRes.data ?? {}), ...(stateRow ?? {}) };
       let cityCenter: { lat: number; lng: number } | null = null;
       if (pRes.data?.city_id) {
-        const { data: c } = await supabase.from("cities").select("lat, lng").eq("id", pRes.data.city_id).maybeSingle();
+        const { data: c } = await supabase
+          .from("cities")
+          .select("lat, lng")
+          .eq("id", pRes.data.city_id)
+          .maybeSingle();
         if (c) cityCenter = { lat: Number(c.lat), lng: Number(c.lng) };
       }
       return {
@@ -504,7 +633,12 @@ function MapPage() {
     if (!pos) return friendPins;
     return [
       {
-        ...(me ?? { user_id: user.id, handle: profile?.handle ?? null, display_name: profile?.display_name ?? "tu", avatar_url: profile?.avatar_url ?? null }),
+        ...(me ?? {
+          user_id: user.id,
+          handle: profile?.handle ?? null,
+          display_name: profile?.display_name ?? "tu",
+          avatar_url: profile?.avatar_url ?? null,
+        }),
         lat: pos.lat,
         lng: pos.lng,
         venue_name: geo ? "tu ești aici" : "în oraș",
@@ -512,65 +646,89 @@ function MapPage() {
       },
       ...friendPins.filter((f) => f.user_id !== user.id),
     ];
-  }, [friendPins, geo, privacyQ.data?.cityCenter, profile?.avatar_url, profile?.display_name, profile?.handle, user]);
+  }, [
+    friendPins,
+    geo,
+    privacyQ.data?.cityCenter,
+    profile?.avatar_url,
+    profile?.display_name,
+    profile?.handle,
+    user,
+  ]);
 
-  const publishPosition = useCallback(async (pos: GeolocationPosition, ensureLive = false, recenter = false) => {
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-    setGeo({ lat, lng });
-    if (recenter || ensureLive) setFocusCity({ lat, lng, zoom: 16 });
-    if (!user) return;
+  const publishPosition = useCallback(
+    async (pos: GeolocationPosition, ensureLive = false, recenter = false) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      setGeo({ lat, lng });
+      if (recenter || ensureLive) setFocusCity({ lat, lng, zoom: 16 });
+      if (!user) return;
 
-    if (ensureLive) {
-      await supabase
-        .from("profiles")
-        .update({ location_consent: true, map_ghost: false, map_precision: "exact" } as any)
-        .eq("id", user.id);
-      await refreshProfile();
-      qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
-    }
+      if (ensureLive) {
+        await supabase
+          .from("profiles")
+          .update({ location_consent: true, map_ghost: false, map_precision: "exact" } as any)
+          .eq("id", user.id);
+        await refreshProfile();
+        qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
+      }
 
-    const s = ensureLive
-      ? normalizeMapSettings({ map_precision: "exact", map_auto_ghost_hours: 8 })
-      : normalizeMapSettings(privacyQ.data?.settings);
-    // Ghost mode or fully hidden → wipe and skip publishing.
-    if (s?.map_ghost || s?.map_visibility === "nobody") {
-      await supabase.from("live_locations").delete().eq("user_id", user.id);
+      const s = ensureLive
+        ? normalizeMapSettings({ map_precision: "exact", map_auto_ghost_hours: 8 })
+        : normalizeMapSettings(privacyQ.data?.settings);
+      // Ghost mode or fully hidden → wipe and skip publishing.
+      if (s?.map_ghost || s?.map_visibility === "nobody") {
+        await supabase.from("live_locations").delete().eq("user_id", user.id);
+        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+        return;
+      }
+      // Inside a private location → skip.
+      const inPrivate = (privacyQ.data?.privateLocs ?? []).some((pl) => {
+        const dKm = distanceKm(lat, lng, Number(pl.lat), Number(pl.lng));
+        return dKm * 1000 <= pl.radius_m;
+      });
+      if (inPrivate) {
+        await supabase.from("live_locations").delete().eq("user_id", user.id);
+        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
+        return;
+      }
+      // Apply precision.
+      const out = applyLocationPrivacy(lat, lng, s, privacyQ.data?.cityCenter);
+      const hours = Math.max(1, Math.min(24, s?.map_auto_ghost_hours ?? 8));
+      await supabase.from("live_locations").upsert(
+        {
+          user_id: user.id,
+          lat: out.lat,
+          lng: out.lng,
+          accuracy: out.exact ? (pos.coords.accuracy ?? null) : null,
+          heading: out.exact ? (pos.coords.heading ?? null) : null,
+          updated_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + hours * 60 * 60_000).toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
       qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
-      return;
-    }
-    // Inside a private location → skip.
-    const inPrivate = (privacyQ.data?.privateLocs ?? []).some((pl) => {
-      const dKm = distanceKm(lat, lng, Number(pl.lat), Number(pl.lng));
-      return dKm * 1000 <= pl.radius_m;
-    });
-    if (inPrivate) {
-      await supabase.from("live_locations").delete().eq("user_id", user.id);
-      qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
-      return;
-    }
-    // Apply precision.
-    const out = applyLocationPrivacy(lat, lng, s, privacyQ.data?.cityCenter);
-    const hours = Math.max(1, Math.min(24, s?.map_auto_ghost_hours ?? 8));
-    await supabase.from("live_locations").upsert(
-      {
-        user_id: user.id,
-        lat: out.lat,
-        lng: out.lng,
-        accuracy: out.exact ? (pos.coords.accuracy ?? null) : null,
-        heading: out.exact ? (pos.coords.heading ?? null) : null,
-        updated_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + hours * 60 * 60_000).toISOString(),
-      },
-      { onConflict: "user_id" },
-    );
-    qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
-  }, [privacyQ.data?.cityCenter, privacyQ.data?.privateLocs, privacyQ.data?.settings, qc, refreshProfile, user]);
+    },
+    [
+      privacyQ.data?.cityCenter,
+      privacyQ.data?.privateLocs,
+      privacyQ.data?.settings,
+      qc,
+      refreshProfile,
+      user,
+    ],
+  );
 
   const requestGeo = () => {
     getPrecisePosition()
       .then((pos) => publishPosition(pos, true, true))
-      .catch((error) => alert(error instanceof Error ? error.message : "Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
+      .catch((error) =>
+        alert(
+          error instanceof Error
+            ? error.message
+            : "Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul.",
+        ),
+      );
   };
 
   useEffect(() => {
@@ -589,7 +747,8 @@ function MapPage() {
           : null;
         const fallbackToCity = () => {
           const fallback = privacyQ.data?.cityCenter;
-          if (fallback) setFocusCity((prev) => prev ?? { lat: fallback.lat, lng: fallback.lng, zoom: 12.5 });
+          if (fallback)
+            setFocusCity((prev) => prev ?? { lat: fallback.lat, lng: fallback.lng, zoom: 12.5 });
         };
         if (status && status.state !== "granted") {
           fallbackToCity();
@@ -620,8 +779,15 @@ function MapPage() {
       }
     };
     start();
-  }, [autoLocated, privacyQ.data?.cityCenter, privacyQ.data?.settings?.map_ghost, privacyQ.data?.settings?.map_visibility, profile?.location_consent, publishPosition, user]);
-
+  }, [
+    autoLocated,
+    privacyQ.data?.cityCenter,
+    privacyQ.data?.settings?.map_ghost,
+    privacyQ.data?.settings?.map_visibility,
+    profile?.location_consent,
+    publishPosition,
+    user,
+  ]);
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
   const [tab, setTab] = useState<"locatii" | "live">("locatii");
@@ -665,14 +831,18 @@ function MapPage() {
             <div className="mt-1.5 flex items-center gap-3 flex-wrap">
               <span className="inline-flex items-center gap-1.5">
                 <MapPin size={10} className="text-white/40" />
-                <span className="text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase">{venues.length} locuri</span>
+                <span className="text-[10px] font-bold tracking-[0.18em] text-white/40 uppercase">
+                  {venues.length} locuri
+                </span>
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff3d8b] opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff3d8b]" />
                 </span>
-                <span className="text-[10px] font-bold tracking-[0.18em] text-[#ff3d8b] uppercase">{friendPins.length} live</span>
+                <span className="text-[10px] font-bold tracking-[0.18em] text-[#ff3d8b] uppercase">
+                  {friendPins.length} live
+                </span>
               </span>
             </div>
           </div>
@@ -688,14 +858,20 @@ function MapPage() {
 
       <div className="px-4 pt-4 space-y-4">
         <VenueFilters
-          query={query} setQuery={setQuery}
-          type={type} setType={setType}
-          cityId={cityId} setCityId={setCityId}
+          query={query}
+          setQuery={setQuery}
+          type={type}
+          setType={setType}
+          cityId={cityId}
+          setCityId={setCityId}
           cities={cities}
-          country={country} setCountry={setCountry}
+          country={country}
+          setCountry={setCountry}
           countries={countries}
-          maxKm={maxKm} setMaxKm={setMaxKm}
-          hasGeo={!!geo} requestGeo={requestGeo}
+          maxKm={maxKm}
+          setMaxKm={setMaxKm}
+          hasGeo={!!geo}
+          requestGeo={requestGeo}
           count={filtered.length}
         />
 
@@ -703,15 +879,26 @@ function MapPage() {
         <div className="-mx-4 px-4 overflow-x-auto oxi-scrollbar">
           <div className="flex items-center gap-2 pb-3">
             <button
-              onClick={() => { setCountry("all"); setCityId("all"); }}
+              onClick={() => {
+                setCountry("all");
+                setCityId("all");
+              }}
               className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === "all" ? "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white border-transparent shadow-lg shadow-[#ff3d8b]/25" : "bg-white/5 border-white/10 text-white/60"}`}
-            >🌍 toate</button>
-            {countries.map(c => (
+            >
+              🌍 toate
+            </button>
+            {countries.map((c) => (
               <button
                 key={c.code}
-                onClick={() => { setCountry(c.code); setCityId("all"); }}
+                onClick={() => {
+                  setCountry(c.code);
+                  setCityId("all");
+                }}
                 className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === c.code ? "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white border-transparent shadow-lg shadow-[#ff3d8b]/25" : "bg-white/5 border-white/10 text-white/60"}`}
-              >{c.label}<span className="opacity-60 ml-1">{c.count}</span></button>
+              >
+                {c.label}
+                <span className="opacity-60 ml-1">{c.count}</span>
+              </button>
             ))}
           </div>
         </div>
@@ -721,14 +908,20 @@ function MapPage() {
           <div className="-mx-4">
             <div className="px-4 pb-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-base italic text-[#ffea00]" style={instrument}>Hotspots</span>
+                <span className="text-base italic text-[#ffea00]" style={instrument}>
+                  Hotspots
+                </span>
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#c724ff] opacity-75" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#c724ff]" />
                 </span>
-                <span className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-bold">acum</span>
+                <span className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-bold">
+                  acum
+                </span>
               </div>
-              <span className="text-[10px] text-white/30 uppercase tracking-wider">{hotspots.length} locuri</span>
+              <span className="text-[10px] text-white/30 uppercase tracking-wider">
+                {hotspots.length} locuri
+              </span>
             </div>
             <div className="px-4 overflow-x-auto no-scrollbar">
               <div className="flex gap-2 pb-1">
@@ -740,18 +933,26 @@ function MapPage() {
                       onClick={() => {
                         if (venue.city_id) setCityId(venue.city_id);
                         if (venue.lat != null && venue.lng != null) {
-                          setFocusCity({ lat: Number(venue.lat), lng: Number(venue.lng), zoom: 15 });
+                          setFocusCity({
+                            lat: Number(venue.lat),
+                            lng: Number(venue.lng),
+                            zoom: 15,
+                          });
                         }
                       }}
                       className="shrink-0 relative rounded-2xl border border-white/10 bg-[#111] overflow-hidden p-3 w-[160px] text-left active:scale-95 transition"
                     >
                       <div
                         className="absolute inset-x-0 top-0 h-12 pointer-events-none"
-                        style={{ background: `linear-gradient(180deg, rgba(255,61,139,${0.15 + heat * 0.35}), transparent)` }}
+                        style={{
+                          background: `linear-gradient(180deg, rgba(255,61,139,${0.15 + heat * 0.35}), transparent)`,
+                        }}
                       />
                       <div className="relative flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                          <div className="text-[11px] font-bold text-white truncate">{venue.name}</div>
+                          <div className="text-[11px] font-bold text-white truncate">
+                            {venue.name}
+                          </div>
                           <div className="text-[9px] uppercase tracking-widest text-white/40 mt-0.5 truncate">
                             {cityMap.get(venue.city_id)?.name ?? "—"}
                           </div>
@@ -778,9 +979,15 @@ function MapPage() {
                 alert("Browser-ul tău n-are GPS.");
                 return;
               }
-                getPrecisePosition()
-                  .then((pos) => publishPosition(pos, true, true))
-                  .catch((error) => alert(error instanceof Error ? error.message : "Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul."));
+              getPrecisePosition()
+                .then((pos) => publishPosition(pos, true, true))
+                .catch((error) =>
+                  alert(
+                    error instanceof Error
+                      ? error.message
+                      : "Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul.",
+                  ),
+                );
             }}
             className="w-full flex items-center gap-3 rounded-2xl border border-[#ff3d8b]/40 bg-gradient-to-r from-[#ff3d8b]/15 to-[#c724ff]/10 px-4 py-3 text-left active:scale-[0.99] transition"
           >
@@ -801,7 +1008,6 @@ function MapPage() {
 
         {/* Map block — clean reference-style map, no dashboard chrome over it. */}
         <div className="relative overflow-hidden border-y border-white/10 bg-[#080a12] -mx-4">
-
           {isLoading ? (
             <FadeIn key="map-loading" y={0}>
               <div className="aspect-[5/4] animate-pulse bg-white/5" />
@@ -828,7 +1034,9 @@ function MapPage() {
             <div className="absolute top-3 left-3 right-3 z-10 flex items-center gap-2 rounded-2xl backdrop-blur-xl bg-black/50 border border-white/10 px-3 py-2">
               <MapPin size={12} className="text-[#ffea00] shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="text-[8px] uppercase tracking-[0.22em] text-[#ffea00] font-bold">filtru</div>
+                <div className="text-[8px] uppercase tracking-[0.22em] text-[#ffea00] font-bold">
+                  filtru
+                </div>
                 <div className="font-bold text-xs truncate text-white">{activeCity.name}</div>
               </div>
               <Link
@@ -839,7 +1047,10 @@ function MapPage() {
                 străzi →
               </Link>
               <button
-                onClick={() => { setCityId("all"); setFocusCity(null); }}
+                onClick={() => {
+                  setCityId("all");
+                  setFocusCity(null);
+                }}
                 aria-label="Șterge filtru"
                 className="h-6 w-6 grid place-items-center rounded-full border border-white/15 text-white/60"
               >
@@ -871,12 +1082,14 @@ function MapPage() {
             onFocus={(lat, lng) => setFocusCity({ lat, lng, zoom: 14.5 })}
             onCellsChange={setHeatNowCells}
           />
-
         </div>
 
         <MapSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
 
-        <AddVenueSheet cities={cities} onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })} />
+        <AddVenueSheet
+          cities={cities}
+          onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })}
+        />
 
         {/* Friends CTA */}
         <Link
@@ -888,7 +1101,9 @@ function MapPage() {
               <UserPlus className="text-white" size={18} strokeWidth={2.6} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="uppercase text-sm leading-tight text-white font-bold tracking-tight">cheamă oxidații</div>
+              <div className="uppercase text-sm leading-tight text-white font-bold tracking-tight">
+                cheamă oxidații
+              </div>
               <div className="text-[9px] uppercase tracking-[0.2em] text-white/50 mt-0.5 font-bold">
                 adaugă prieteni → vezi-i pe hartă
               </div>
@@ -896,7 +1111,6 @@ function MapPage() {
             <span className="text-[#ff3d8b] text-xl font-bold">→</span>
           </div>
         </Link>
-
 
         {/* Tabs */}
         <div className="flex items-center gap-1 p-1 rounded-full bg-white/5 border border-white/10">
@@ -920,28 +1134,36 @@ function MapPage() {
               <div className="py-10 text-center text-[11px] uppercase tracking-widest text-white/40 font-bold">
                 niciun oxidat live acum.
               </div>
-            ) : friendPins.map((f) => (
-              <Link
-                key={f.user_id}
-                to="/app/user/$id"
-                params={{ id: f.user_id }}
-                className="flex items-center gap-3 p-3 rounded-2xl bg-[#111] border border-white/10 active:scale-[0.99] transition"
-              >
-                <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center text-sm font-bold shrink-0 text-white">
-                  {f.avatar_url ? <img src={f.avatar_url} alt="" className="h-full w-full object-cover" /> : (f.handle ?? "?")[0]?.toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold truncate text-white">@{f.handle ?? f.display_name}</div>
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate font-bold mt-0.5">
-                    📍 {f.venue_name ?? "în oraș"}
+            ) : (
+              friendPins.map((f) => (
+                <Link
+                  key={f.user_id}
+                  to="/app/user/$id"
+                  params={{ id: f.user_id }}
+                  className="flex items-center gap-3 p-3 rounded-2xl bg-[#111] border border-white/10 active:scale-[0.99] transition"
+                >
+                  <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center text-sm font-bold shrink-0 text-white">
+                    {f.avatar_url ? (
+                      <img src={f.avatar_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      (f.handle ?? "?")[0]?.toUpperCase()
+                    )}
                   </div>
-                </div>
-                <span className="relative inline-flex h-2 w-2">
-                  <span className="absolute inset-0 rounded-full bg-[#ff3d8b] animate-ping opacity-75" />
-                  <span className="relative h-2 w-2 rounded-full bg-[#ff3d8b]" />
-                </span>
-              </Link>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold truncate text-white">
+                      @{f.handle ?? f.display_name}
+                    </div>
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate font-bold mt-0.5">
+                      📍 {f.venue_name ?? "în oraș"}
+                    </div>
+                  </div>
+                  <span className="relative inline-flex h-2 w-2">
+                    <span className="absolute inset-0 rounded-full bg-[#ff3d8b] animate-ping opacity-75" />
+                    <span className="relative h-2 w-2 rounded-full bg-[#ff3d8b]" />
+                  </span>
+                </Link>
+              ))
+            )}
           </section>
         )}
 
@@ -958,14 +1180,19 @@ function MapPage() {
               </div>
             ) : (
               <>
-                {filtered.slice(0, visible).map(v => {
+                {filtered.slice(0, visible).map((v) => {
                   const city = cityMap.get(v.city_id);
-                  const dist = geo && v.lat != null && v.lng != null
-                    ? distanceKm(geo.lat, geo.lng, v.lat, v.lng) : null;
+                  const dist =
+                    geo && v.lat != null && v.lng != null
+                      ? distanceKm(geo.lat, geo.lng, v.lat, v.lng)
+                      : null;
                   const openState = isOpenNow(v.opening_hours);
                   const nextOpen = openState === false ? nextOpenLabel(v.opening_hours) : null;
                   return (
-                    <div key={v.id} className="flex items-center gap-3 p-3 rounded-2xl bg-[#111] border border-white/10">
+                    <div
+                      key={v.id}
+                      className="flex items-center gap-3 p-3 rounded-2xl bg-[#111] border border-white/10"
+                    >
                       <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#ff3d8b]/20 to-[#c724ff]/10 border border-[#ff3d8b]/30 flex items-center justify-center shrink-0 text-[#ff3d8b]">
                         <Beer size={16} />
                       </div>
@@ -974,7 +1201,8 @@ function MapPage() {
                           <div className="font-semibold text-sm truncate text-white">{v.name}</div>
                           {openState === true && (
                             <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#ff3d8b]/15 border border-[#ff3d8b]/40 text-[8px] uppercase tracking-wider text-[#ff3d8b] font-bold">
-                              <span className="h-1.5 w-1.5 rounded-full bg-[#ff3d8b] animate-pulse" /> open
+                              <span className="h-1.5 w-1.5 rounded-full bg-[#ff3d8b] animate-pulse" />{" "}
+                              open
                             </span>
                           )}
                           {openState === false && (
@@ -984,7 +1212,8 @@ function MapPage() {
                           )}
                         </div>
                         <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate flex items-center gap-1 font-bold mt-0.5">
-                          <MapPin size={9} /> {city?.name ?? "?"}{v.address ? ` · ${v.address}` : ""}
+                          <MapPin size={9} /> {city?.name ?? "?"}
+                          {v.address ? ` · ${v.address}` : ""}
                         </div>
                       </div>
                       {dist != null && (
@@ -997,10 +1226,11 @@ function MapPage() {
                 })}
                 {visible < filtered.length && (
                   <button
-                    onClick={() => setVisible(v => v + 60)}
+                    onClick={() => setVisible((v) => v + 60)}
                     className="w-full mt-2 py-3 rounded-2xl border border-[#ff3d8b]/40 text-[#ff3d8b] text-[11px] uppercase tracking-widest active:scale-[0.98] font-bold"
                   >
-                    + arată încă {Math.min(60, filtered.length - visible)} (din {filtered.length - visible})
+                    + arată încă {Math.min(60, filtered.length - visible)} (din{" "}
+                    {filtered.length - visible})
                   </button>
                 )}
               </>
@@ -1013,4 +1243,3 @@ function MapPage() {
 }
 
 // PromoBanner & BusinessVisibilityCTA extracted to @/components/app/map/PromoBanner
-

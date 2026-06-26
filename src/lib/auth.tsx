@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,7 +33,13 @@ type Profile = {
   profile_theme_id?: string | null;
   music_clip_url?: string | null;
   profile_bg_url?: string | null;
-  theme_intensity?: { gradient?: number; aurora?: number; sheen?: number; grain?: number; vignette?: number } | null;
+  theme_intensity?: {
+    gradient?: number;
+    aurora?: number;
+    sheen?: number;
+    grain?: number;
+    vignette?: number;
+  } | null;
   bio?: string | null;
 };
 
@@ -63,17 +77,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profileRequest = supabase
         .from("profiles")
         .select(
-          "id, handle, display_name, city_id, avatar_url, rank, aura, lifetime_sprits, current_streak, longest_streak, onboarded, is_public, active_frame_id, profile_theme_id, music_clip_url, profile_bg_url, theme_intensity, bio, map_auto_ghost_hours, map_hide_from_live_list, map_require_reciprocity"
+          "id, handle, display_name, city_id, avatar_url, rank, aura, lifetime_sprits, current_streak, longest_streak, onboarded, is_public, active_frame_id, profile_theme_id, music_clip_url, profile_bg_url, theme_intensity, bio, map_auto_ghost_hours, map_hide_from_live_list, map_require_reciprocity",
         )
         .eq("id", uid)
         .maybeSingle();
 
       const stateRequest = supabase.rpc("get_my_account_state");
       const timeout = new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 5000));
-      const result = await Promise.race([
-        Promise.all([profileRequest, stateRequest]),
-        timeout,
-      ]);
+      const result = await Promise.race([Promise.all([profileRequest, stateRequest]), timeout]);
 
       if (!mountedRef.current) return;
       if (result === null) {
@@ -93,11 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const baseProfile = profileRes.data as Record<string, unknown> | null;
       const stateRows = (stateRes.data ?? []) as Array<Record<string, unknown>>;
       const stateRow = stateRows[0] ?? null;
-      setProfile(
-        baseProfile
-          ? ({ ...baseProfile, ...(stateRow ?? {}) } as Profile)
-          : null,
-      );
+      setProfile(baseProfile ? ({ ...baseProfile, ...(stateRow ?? {}) } as Profile) : null);
     } finally {
       if (mountedRef.current) setProfileLoading(false);
     }
@@ -120,7 +127,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (sess?.user) {
         if (identityChanged) {
           // defer to escape the auth callback
-          setTimeout(() => { void loadProfile(sess.user.id); }, 0);
+          setTimeout(() => {
+            void loadProfile(sess.user.id);
+          }, 0);
         }
       } else {
         setProfile(null);

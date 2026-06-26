@@ -15,26 +15,22 @@ const STEPS: Step[] = [
   {
     icon: <MapPin size={28} className="text-neon-crimson" />,
     title: "Orașul e live, pe hartă",
-    body:
-      "Vezi în timp real cluburi, terase și prieteni. Apasă pe un pin ca să afli cine bea, unde și ce se întâmplă.",
+    body: "Vezi în timp real cluburi, terase și prieteni. Apasă pe un pin ca să afli cine bea, unde și ce se întâmplă.",
   },
   {
     icon: <Beer size={28} className="text-sunset-amber" />,
     title: "Dă check-in la șpriț",
-    body:
-      "Când ești într-o locație, dă check-in. Îți crește streak-ul, primești coins și apari în topul ZEII zilei.",
+    body: "Când ești într-o locație, dă check-in. Îți crește streak-ul, primești coins și apari în topul ZEII zilei.",
   },
   {
     icon: <Users size={28} className="text-neon-purple" />,
     title: "Cheamă oamenii lângă tine",
-    body:
-      "Deschide un spritz în /Petreceri, urmărește prieteni, dă follow și fă squad. Primești notificare când cineva live e aproape.",
+    body: "Deschide un spritz în /Petreceri, urmărește prieteni, dă follow și fă squad. Primești notificare când cineva live e aproape.",
   },
   {
     icon: <Coins size={28} className="text-sunset-amber" />,
     title: "Coins, cadouri, VIP",
-    body:
-      "Coins-ii îi câștigi prin activitate sau îi cumperi din Shop. Trimite cadouri în chat, fă-ți profilul VIP sau dă-ți boost.",
+    body: "Coins-ii îi câștigi prin activitate sau îi cumperi din Shop. Trimite cadouri în chat, fă-ți profilul VIP sau dă-ți boost.",
   },
 ];
 

@@ -42,11 +42,15 @@ function url(value: unknown): string | null {
 
 function imageUrls(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.filter((v): v is string => typeof v === "string" && /^https?:\/\//.test(v)).slice(0, 4);
+  return value
+    .filter((v): v is string => typeof v === "string" && /^https?:\/\//.test(v))
+    .slice(0, 4);
 }
 
 function jsonObject(value: unknown): Record<string, unknown> {
-  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
 }
 
 async function refundCampaignBudget(businessId: string, budgetCents: number) {
@@ -57,7 +61,9 @@ async function refundCampaignBudget(businessId: string, budgetCents: number) {
     .maybeSingle();
   await supabaseAdmin
     .from("business_accounts")
-    .update({ wallet_balance_cents: ((biz?.wallet_balance_cents as number | undefined) ?? 0) + budgetCents })
+    .update({
+      wallet_balance_cents: ((biz?.wallet_balance_cents as number | undefined) ?? 0) + budgetCents,
+    })
     .eq("id", businessId);
 }
 
@@ -68,7 +74,8 @@ export async function launchCampaignForBusiness(options: {
 }) {
   const { userId, businessId, campaign } = options;
   const kind = text(campaign.kind, 40) ?? "boost_feed";
-  if (!ACTIVE_CAMPAIGN_KINDS.has(kind)) return { error: "Alege un tip de promovare disponibil acum." };
+  if (!ACTIVE_CAMPAIGN_KINDS.has(kind))
+    return { error: "Alege un tip de promovare disponibil acum." };
 
   const title = text(campaign.title, 50);
   if (!title) return { error: "Adaugă un titlu pentru reclamă." };
@@ -162,16 +169,22 @@ export async function recordCampaignEventForUser(options: {
   const now = new Date();
   const { data: campaign, error } = await supabaseAdmin
     .from("campaigns")
-    .select("id, status, starts_at, ends_at, bid_cents, budget_cents, spent_cents, impressions, clicks")
+    .select(
+      "id, status, starts_at, ends_at, bid_cents, budget_cents, spent_cents, impressions, clicks",
+    )
     .eq("id", campaignId)
     .maybeSingle();
   if (error || !campaign) return { error: "Campanie inexistentă." };
   if (campaign.status !== "active") return { error: "Campanie inactivă." };
-  if (new Date(campaign.starts_at) > now || (campaign.ends_at && new Date(campaign.ends_at) <= now)) {
+  if (
+    new Date(campaign.starts_at) > now ||
+    (campaign.ends_at && new Date(campaign.ends_at) <= now)
+  ) {
     return { error: "Campanie în afara programului." };
   }
 
-  const costCents = eventType === "impression" ? ((campaign.bid_cents as number | undefined) ?? 0) : 0;
+  const costCents =
+    eventType === "impression" ? ((campaign.bid_cents as number | undefined) ?? 0) : 0;
   const spentCents = (campaign.spent_cents as number | undefined) ?? 0;
   const budgetCents = (campaign.budget_cents as number | undefined) ?? 0;
   if (costCents > 0 && spentCents + costCents > budgetCents) {
@@ -189,17 +202,21 @@ export async function recordCampaignEventForUser(options: {
   const nextImpressions = ["impression", "view_detail"].includes(eventType)
     ? ((campaign.impressions as number | undefined) ?? 0) + 1
     : ((campaign.impressions as number | undefined) ?? 0);
-  const nextClicks = eventType === "click"
-    ? ((campaign.clicks as number | undefined) ?? 0) + 1
-    : ((campaign.clicks as number | undefined) ?? 0);
+  const nextClicks =
+    eventType === "click"
+      ? ((campaign.clicks as number | undefined) ?? 0) + 1
+      : ((campaign.clicks as number | undefined) ?? 0);
   const nextSpent = spentCents + costCents;
 
-  await supabaseAdmin.from("campaigns").update({
-    impressions: nextImpressions,
-    clicks: nextClicks,
-    spent_cents: nextSpent,
-    ...(budgetCents > 0 && nextSpent >= budgetCents ? { status: "exhausted" } : {}),
-  }).eq("id", campaignId);
+  await supabaseAdmin
+    .from("campaigns")
+    .update({
+      impressions: nextImpressions,
+      clicks: nextClicks,
+      spent_cents: nextSpent,
+      ...(budgetCents > 0 && nextSpent >= budgetCents ? { status: "exhausted" } : {}),
+    })
+    .eq("id", campaignId);
 
   return { ok: true as const };
 }

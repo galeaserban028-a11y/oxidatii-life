@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
 import logoSticker from "@/assets/logo-oxidatii.png";
 
-
 const AGE_KEY = "oxi-age-verified-v1";
 
 export function AgeGate() {
@@ -30,17 +29,18 @@ export function AgeGate() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
       <div className="w-full max-w-sm rounded-2xl border border-neon-crimson/30 bg-background p-6 text-center shadow-2xl">
         <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center">
-          <img src={logoSticker} alt="Logo OXIDAȚII — verificare vârstă" className="h-20 w-20 object-contain drop-shadow-[0_4px_18px_rgba(255,49,88,0.45)]" />
+          <img
+            src={logoSticker}
+            alt="Logo OXIDAȚII — verificare vârstă"
+            className="h-20 w-20 object-contain drop-shadow-[0_4px_18px_rgba(255,49,88,0.45)]"
+          />
         </div>
 
-
-        <h2 className="font-display text-2xl font-bold tracking-tight">
-          Ai peste 18 ani?
-        </h2>
+        <h2 className="font-display text-2xl font-bold tracking-tight">Ai peste 18 ani?</h2>
 
         <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-          Această aplicație este destinată exclusiv adulților și promovează
-          consumul responsabil de alcool.
+          Această aplicație este destinată exclusiv adulților și promovează consumul responsabil de
+          alcool.
         </p>
 
         <div className="mt-5 space-y-2">

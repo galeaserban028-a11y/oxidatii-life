@@ -108,12 +108,15 @@ export function InstallBanner() {
 
             {platform === "ios" && (
               <div className="mt-3">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">iPhone / iPad</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  iPhone / iPad
+                </p>
                 <ol className="mt-2 space-y-3 text-sm text-foreground">
                   <li className="flex items-start gap-2">
                     <span className="font-bold">1.</span>
                     <span className="flex items-center gap-1 flex-wrap">
-                      Deschide în <b>Safari</b> și apasă <Share className="inline h-4 w-4" /> (Share) jos
+                      Deschide în <b>Safari</b> și apasă <Share className="inline h-4 w-4" />{" "}
+                      (Share) jos
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -156,9 +159,8 @@ export function InstallBanner() {
               <div className="mt-3">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">Desktop</p>
                 <p className="mt-2 text-sm text-foreground">
-                  Deschide aplicația pe telefon (Android sau iPhone) și o vei putea instala
-                  ca app nativă. În Chrome desktop poți apăsa și iconița de instalare din bara
-                  de adresă.
+                  Deschide aplicația pe telefon (Android sau iPhone) și o vei putea instala ca app
+                  nativă. În Chrome desktop poți apăsa și iconița de instalare din bara de adresă.
                 </p>
               </div>
             )}

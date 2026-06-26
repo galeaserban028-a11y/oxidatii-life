@@ -15,8 +15,7 @@ type HotCell = {
 async function handle(request: Request) {
   const secret = process.env.CRON_SECRET;
   const provided =
-    request.headers.get("x-cron-secret") ??
-    new URL(request.url).searchParams.get("secret");
+    request.headers.get("x-cron-secret") ?? new URL(request.url).searchParams.get("secret");
   if (!secret || provided !== secret) {
     return new Response("Unauthorized", { status: 401 });
   }

@@ -27,15 +27,22 @@ function Onboarding() {
   }, [user, profile, loading, nav]);
 
   useEffect(() => {
-    supabase.from("cities").select("id,name,slug").order("name").then(({ data }) => {
-      if (data) setCities(data);
-    });
+    supabase
+      .from("cities")
+      .select("id,name,slug")
+      .order("name")
+      .then(({ data }) => {
+        if (data) setCities(data);
+      });
     // Persist birthdate captured at Google signup (sessionStorage)
     (async () => {
       try {
         const dob = sessionStorage.getItem("pending_birthdate");
         if (dob && user) {
-          await supabase.from("profiles").update({ birthdate: dob } as any).eq("id", user.id);
+          await supabase
+            .from("profiles")
+            .update({ birthdate: dob } as any)
+            .eq("id", user.id);
           sessionStorage.removeItem("pending_birthdate");
         }
       } catch {}
@@ -45,7 +52,10 @@ function Onboarding() {
   async function askLocation() {
     if (!("geolocation" in navigator)) return toast.error("Browser-ul tău n-are GPS");
     navigator.geolocation.getCurrentPosition(
-      () => { setLocOk(true); toast.success("Locație activată"); },
+      () => {
+        setLocOk(true);
+        toast.success("Locație activată");
+      },
       () => toast.error("Locație refuzată"),
     );
   }
@@ -55,9 +65,15 @@ function Onboarding() {
     if (!/^[a-z0-9_\.]{3,24}$/.test(handle)) return toast.error("Handle: 3-24 chars, a-z 0-9 _ .");
     if (!cityId) return toast.error("Alege orașul");
     setBusy(true);
-    const { error } = await supabase.from("profiles").update({
-      handle, city_id: cityId, location_consent: locOk, onboarded: true,
-    }).eq("id", user.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        handle,
+        city_id: cityId,
+        location_consent: locOk,
+        onboarded: true,
+      })
+      .eq("id", user.id);
     setBusy(false);
     if (error) return toast.error(error.message);
     await refreshProfile();
@@ -67,30 +83,54 @@ function Onboarding() {
   return (
     <main className="min-h-screen bg-background text-foreground px-6 py-10">
       <div className="flex items-center justify-between mb-4">
-        <Link to="/login" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition">
+        <Link
+          to="/login"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
+        >
           <ChevronLeft size={16} /> înapoi
         </Link>
-        <Link to="/" className="font-display font-black text-xl tracking-widest text-gradient-chaos">OXIDAȚII</Link>
+        <Link
+          to="/"
+          className="font-display font-black text-xl tracking-widest text-gradient-chaos"
+        >
+          OXIDAȚII
+        </Link>
       </div>
       <div className="max-w-sm mx-auto space-y-6">
         <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-green mb-2">// PASUL 1</div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-green mb-2">
+            // PASUL 1
+          </div>
           <h1 className="font-display font-black text-3xl">Cum te știe orașul?</h1>
         </div>
 
         <div>
-          <label className="text-xs uppercase tracking-widest text-muted-foreground font-mono">@handle</label>
-          <input value={handle} onChange={e=>setHandle(e.target.value.toLowerCase().trim())}
+          <label className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
+            @handle
+          </label>
+          <input
+            value={handle}
+            onChange={(e) => setHandle(e.target.value.toLowerCase().trim())}
             placeholder="vladtepes_3am"
-            className="mt-2 w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm" />
+            className="mt-2 w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm"
+          />
         </div>
 
         <div>
-          <label className="text-xs uppercase tracking-widest text-muted-foreground font-mono">Orașul tău</label>
-          <select value={cityId} onChange={e=>setCityId(e.target.value)}
-            className="mt-2 w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm">
+          <label className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
+            Orașul tău
+          </label>
+          <select
+            value={cityId}
+            onChange={(e) => setCityId(e.target.value)}
+            className="mt-2 w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm"
+          >
             <option value="">-- alege --</option>
-            {cities.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {cities.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -98,17 +138,24 @@ function Onboarding() {
           <div className="flex items-center justify-between">
             <div>
               <div className="font-medium text-sm">Locație live</div>
-              <div className="text-xs text-muted-foreground">Pentru check-in & "ești la 200m de…". Opțional.</div>
+              <div className="text-xs text-muted-foreground">
+                Pentru check-in & "ești la 200m de…". Opțional.
+              </div>
             </div>
-            <button onClick={askLocation}
-              className={`text-xs px-3 py-1.5 rounded-md border ${locOk ? "bg-neon-green/20 text-neon-green border-neon-green/40" : "border-foreground/20 text-foreground"}`}>
+            <button
+              onClick={askLocation}
+              className={`text-xs px-3 py-1.5 rounded-md border ${locOk ? "bg-neon-green/20 text-neon-green border-neon-green/40" : "border-foreground/20 text-foreground"}`}
+            >
               {locOk ? "✓ Permis" : "Permite"}
             </button>
           </div>
         </div>
 
-        <button disabled={busy} onClick={save}
-          className="w-full rounded-xl bg-neon-crimson/20 border border-neon-crimson/40 text-neon-crimson font-display font-bold tracking-widest uppercase py-3">
+        <button
+          disabled={busy}
+          onClick={save}
+          className="w-full rounded-xl bg-neon-crimson/20 border border-neon-crimson/40 text-neon-crimson font-display font-bold tracking-widest uppercase py-3"
+        >
           {busy ? "..." : "Intră în haos"}
         </button>
       </div>

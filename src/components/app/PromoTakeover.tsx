@@ -24,14 +24,17 @@ type Campaign = {
   video_url: string | null;
 };
 
-
 type Biz = { id: string; brand_name: string; logo_url: string | null };
 
 const DISMISSED_KEY = "oxd:promo:dismissed";
 const SEEN_FULL_KEY = "oxd:promo:seenFull";
 
 function getDismissed(): string[] {
-  try { return JSON.parse(sessionStorage.getItem(DISMISSED_KEY) || "[]"); } catch { return []; }
+  try {
+    return JSON.parse(sessionStorage.getItem(DISMISSED_KEY) || "[]");
+  } catch {
+    return [];
+  }
 }
 function addDismissed(id: string) {
   const list = getDismissed();
@@ -39,7 +42,11 @@ function addDismissed(id: string) {
   sessionStorage.setItem(DISMISSED_KEY, JSON.stringify(list));
 }
 function hasSeenFull(id: string): boolean {
-  try { return (JSON.parse(sessionStorage.getItem(SEEN_FULL_KEY) || "[]") as string[]).includes(id); } catch { return false; }
+  try {
+    return (JSON.parse(sessionStorage.getItem(SEEN_FULL_KEY) || "[]") as string[]).includes(id);
+  } catch {
+    return false;
+  }
 }
 function markSeenFull(id: string) {
   try {
@@ -49,18 +56,21 @@ function markSeenFull(id: string) {
   } catch {}
 }
 
-async function loadActive(excludeIds: string[] = []): Promise<{ campaign: Campaign; biz: Biz | null } | null> {
+async function loadActive(
+  excludeIds: string[] = [],
+): Promise<{ campaign: Campaign; biz: Biz | null } | null> {
   const nowIso = new Date().toISOString();
   const { data } = await supabase
     .from("campaigns")
-    .select("id, business_id, kind, title, subtitle, cta_text, cta_url, image_urls, theme_color, venue_id, party_id, event_starts_at, entry_kind, entry_price_text, street, special_guest, video_url")
+    .select(
+      "id, business_id, kind, title, subtitle, cta_text, cta_url, image_urls, theme_color, venue_id, party_id, event_starts_at, entry_kind, entry_price_text, street, special_guest, video_url",
+    )
     .eq("status", "active")
     .lte("starts_at", nowIso)
     .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
     .in("kind", ["boost_story", "boost_feed", "boost_discover"])
     .order("bid_cents", { ascending: false })
     .limit(20);
-
 
   const dismissed = new Set([...getDismissed(), ...excludeIds]);
   const list = ((data ?? []) as Campaign[]).filter((c) => !dismissed.has(c.id));
@@ -87,7 +97,6 @@ export function PromoTakeover() {
   const [phase, setPhase] = useState<"hidden" | "full" | "mini" | "gone">("hidden");
   const trackedRef = useRef(false);
 
-
   useEffect(() => {
     let alive = true;
     loadActive().then((res) => {
@@ -96,7 +105,9 @@ export function PromoTakeover() {
       // If user already saw the full takeover this session, go straight to mini
       setPhase(hasSeenFull(res.campaign.id) ? "mini" : "full");
     });
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
   // Track impression once
@@ -104,12 +115,15 @@ export function PromoTakeover() {
     if (phase !== "full" || !payload || trackedRef.current) return;
     trackedRef.current = true;
     if (user) {
-      supabase.from("campaign_events").insert({
-        campaign_id: payload.campaign.id,
-        user_id: user.id,
-        event_type: "impression",
-        cost_cents: 1,
-      }).then(() => {});
+      supabase
+        .from("campaign_events")
+        .insert({
+          campaign_id: payload.campaign.id,
+          user_id: user.id,
+          event_type: "impression",
+          cost_cents: 1,
+        })
+        .then(() => {});
       // optimistic counter bump
       supabase.rpc as any; // noop; rely on aggregations
     }
@@ -131,23 +145,29 @@ export function PromoTakeover() {
     const currentId = payload.campaign.id;
     addDismissed(currentId);
     loadActive([currentId]).then((res) => {
-      if (!res) { setPhase("gone"); setPayload(null); return; }
+      if (!res) {
+        setPhase("gone");
+        setPayload(null);
+        return;
+      }
       trackedRef.current = false;
       setPayload(res);
       setPhase(hasSeenFull(res.campaign.id) ? "mini" : "full");
     });
   };
 
-
   const handleClick = () => {
     if (!payload) return;
     if (user) {
-      supabase.from("campaign_events").insert({
-        campaign_id: payload.campaign.id,
-        user_id: user.id,
-        event_type: "click",
-        cost_cents: 5,
-      }).then(() => {});
+      supabase
+        .from("campaign_events")
+        .insert({
+          campaign_id: payload.campaign.id,
+          user_id: user.id,
+          event_type: "click",
+          cost_cents: 5,
+        })
+        .then(() => {});
     }
     const c = payload.campaign;
     if (c.cta_url) {
@@ -157,7 +177,6 @@ export function PromoTakeover() {
     }
     setPhase("gone");
   };
-
 
   if (isPremium) return null;
   if (!payload || phase === "hidden" || phase === "gone") return null;
@@ -171,24 +190,44 @@ export function PromoTakeover() {
       const d = new Date(campaign.event_starts_at);
       facts.push({
         Icon: Calendar,
-        text: d.toLocaleString("ro-RO", { weekday: "long", day: "2-digit", month: "long", hour: "2-digit", minute: "2-digit" }),
+        text: d.toLocaleString("ro-RO", {
+          weekday: "long",
+          day: "2-digit",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       });
     }
     if (campaign.entry_kind === "free") facts.push({ Icon: Ticket, text: "Intrare gratis" });
-    if (campaign.entry_kind === "paid") facts.push({ Icon: Ticket, text: campaign.entry_price_text || "Intrare cu bilet" });
+    if (campaign.entry_kind === "paid")
+      facts.push({ Icon: Ticket, text: campaign.entry_price_text || "Intrare cu bilet" });
     if (campaign.street) facts.push({ Icon: MapPin, text: campaign.street });
     if (campaign.special_guest) facts.push({ Icon: Star, text: campaign.special_guest });
 
     return (
       <div className="fixed inset-0 z-[140] animate-fade-in flex flex-col">
         {/* Blurred backdrop using the same image */}
-        <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${color}, #000)` }}>
-          {img && <img src={img} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-50" />}
+        <div
+          className="absolute inset-0"
+          style={{ background: `linear-gradient(135deg, ${color}, #000)` }}
+        >
+          {img && (
+            <img
+              src={img}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-50"
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black" />
         </div>
 
         <button
-          onClick={() => { markSeenFull(payload.campaign.id); setPhase("mini"); }}
+          onClick={() => {
+            markSeenFull(payload.campaign.id);
+            setPhase("mini");
+          }}
           className="absolute top-4 right-4 p-2 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 z-20"
           aria-label="Închide"
         >
@@ -196,7 +235,9 @@ export function PromoTakeover() {
         </button>
         <div className="absolute top-4 left-4 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-sm flex items-center gap-1.5 z-20">
           <Sparkles size={11} className="text-white" />
-          <span className="font-mono text-[10px] uppercase tracking-widest text-white">Promovat</span>
+          <span className="font-mono text-[10px] uppercase tracking-widest text-white">
+            Promovat
+          </span>
         </div>
 
         {/* Scrollable content */}
@@ -204,22 +245,39 @@ export function PromoTakeover() {
           <div className="max-w-md mx-auto px-4 space-y-4">
             {/* Brand strip */}
             <div className="flex items-center gap-2 text-white">
-              {biz?.logo_url && <img src={biz.logo_url} alt="" className="h-9 w-9 rounded-md object-cover border border-white/20" />}
-              <span className="font-mono text-[10px] uppercase tracking-widest opacity-80">{biz?.brand_name ?? "Brand"}</span>
+              {biz?.logo_url && (
+                <img
+                  src={biz.logo_url}
+                  alt=""
+                  className="h-9 w-9 rounded-md object-cover border border-white/20"
+                />
+              )}
+              <span className="font-mono text-[10px] uppercase tracking-widest opacity-80">
+                {biz?.brand_name ?? "Brand"}
+              </span>
             </div>
 
             {/* Poster — image at native ratio, no crop */}
             {(img || campaign.video_url) && (
               <div className="relative rounded-2xl overflow-hidden bg-black border border-white/10 shadow-2xl">
                 {campaign.video_url ? (
-                  <video src={campaign.video_url} controls playsInline autoPlay muted className="w-full max-h-[55vh] object-contain bg-black" />
+                  <video
+                    src={campaign.video_url}
+                    controls
+                    playsInline
+                    autoPlay
+                    muted
+                    className="w-full max-h-[55vh] object-contain bg-black"
+                  />
                 ) : (
                   <img src={img!} alt="" className="w-full max-h-[55vh] object-contain bg-black" />
                 )}
                 {campaign.video_url && (
                   <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-sm flex items-center gap-1">
                     <Video size={10} className="text-white" />
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-white">Clip</span>
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-white">
+                      Clip
+                    </span>
                   </div>
                 )}
               </div>
@@ -227,7 +285,9 @@ export function PromoTakeover() {
 
             {/* Title + subtitle */}
             <div className="text-white space-y-2">
-              <h2 className="font-display uppercase text-3xl leading-[0.95] tracking-tight">{campaign.title}</h2>
+              <h2 className="font-display uppercase text-3xl leading-[0.95] tracking-tight">
+                {campaign.title}
+              </h2>
               {campaign.subtitle && <p className="text-sm opacity-90">{campaign.subtitle}</p>}
             </div>
 
@@ -236,7 +296,10 @@ export function PromoTakeover() {
               <div className="rounded-2xl bg-white/[0.06] backdrop-blur-md border border-white/10 p-4 space-y-2.5">
                 {facts.map((f, i) => (
                   <div key={i} className="flex items-center gap-3 text-white">
-                    <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: `${color}33`, color }}>
+                    <div
+                      className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: `${color}33`, color }}
+                    >
                       <f.Icon size={14} />
                     </div>
                     <span className="text-sm leading-tight">{f.text}</span>
@@ -263,7 +326,6 @@ export function PromoTakeover() {
     );
   }
 
-
   // top sticky banner on home page
   return (
     <div
@@ -275,7 +337,9 @@ export function PromoTakeover() {
         onClick={handleClick}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleClick(); }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") handleClick();
+        }}
         className="w-full flex items-center gap-3 p-2 pr-2 rounded-full bg-background/95 backdrop-blur-md border active:scale-[0.98] transition text-left cursor-pointer"
         style={{
           borderColor: `${color}55`,
@@ -305,7 +369,10 @@ export function PromoTakeover() {
           {campaign.cta_text || "Vezi"} <ChevronRight size={11} />
         </span>
         <button
-          onClick={(e) => { e.stopPropagation(); rotateNext(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            rotateNext();
+          }}
           className="p-1.5 rounded-full hover:bg-foreground/10 flex-shrink-0"
           aria-label="Următoarea reclamă"
         >
@@ -315,4 +382,3 @@ export function PromoTakeover() {
     </div>
   );
 }
-

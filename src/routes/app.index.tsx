@@ -18,7 +18,6 @@ import PhotoZoom from "@/components/app/PhotoZoom";
 import PinchImage from "@/components/app/PinchImage";
 import TonightCard from "@/components/app/TonightCard";
 
-
 type FeedItem = {
   id: string;
   kind: "photo" | "proof";
@@ -89,7 +88,10 @@ async function loadFeed() {
 
   const [{ data: profilesData }, { data: venuesData }] = await Promise.all([
     userIds.length
-      ? supabase.from("profiles").select("id, handle, display_name, rank, avatar_url").in("id", userIds)
+      ? supabase
+          .from("profiles")
+          .select("id, handle, display_name, rank, avatar_url")
+          .in("id", userIds)
       : Promise.resolve({ data: [] as any[] }),
     venueIds.length
       ? supabase
@@ -154,8 +156,7 @@ function AppFeed() {
           <span
             className="italic bg-clip-text text-transparent"
             style={{
-              backgroundImage:
-                "linear-gradient(90deg, #ff3d8b, #c724ff, #00e5ff)",
+              backgroundImage: "linear-gradient(90deg, #ff3d8b, #c724ff, #00e5ff)",
             }}
           >
             diseară
@@ -168,8 +169,7 @@ function AppFeed() {
             to="/app/scan"
             className="col-span-3 relative overflow-hidden rounded-3xl p-5 min-h-[170px] flex flex-col justify-between active:scale-[0.98] transition-all"
             style={{
-              background:
-                "linear-gradient(135deg, #ff3d8b 0%, #c724ff 55%, #00e5ff 100%)",
+              background: "linear-gradient(135deg, #ff3d8b 0%, #c724ff 55%, #00e5ff 100%)",
               boxShadow:
                 "0 18px 40px -18px rgba(255,61,139,0.55), inset 0 1px 0 rgba(255,255,255,0.18)",
             }}
@@ -177,7 +177,9 @@ function AppFeed() {
             <div
               aria-hidden
               className="absolute -top-10 -right-10 h-32 w-32 rounded-full opacity-40 blur-2xl"
-              style={{ background: "radial-gradient(circle, rgba(255,255,255,0.4), transparent 70%)" }}
+              style={{
+                background: "radial-gradient(circle, rgba(255,255,255,0.4), transparent 70%)",
+              }}
             />
             <div className="relative w-11 h-11 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-white">
               <Plus size={24} strokeWidth={2.8} />
@@ -205,8 +207,13 @@ function AppFeed() {
               style={{ background: "radial-gradient(circle, #ffea00, transparent 70%)" }}
             />
             <div className="relative flex items-center gap-2">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#ffea00] animate-pulse" style={{ boxShadow: "0 0 8px #ffea00" }} />
-              <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#ffea00]">live</span>
+              <span
+                className="inline-block h-1.5 w-1.5 rounded-full bg-[#ffea00] animate-pulse"
+                style={{ boxShadow: "0 0 8px #ffea00" }}
+              />
+              <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[#ffea00]">
+                live
+              </span>
             </div>
             <div className="relative">
               <div className="text-3xl leading-none mb-2">🎬</div>
@@ -221,20 +228,14 @@ function AppFeed() {
         </div>
       </header>
 
-
       <TonightCard />
 
       <LiveSpritzStrip />
 
-
-
       {isLoading ? (
         <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="h-72 rounded-3xl bg-white/[0.04] animate-pulse"
-            />
+            <div key={i} className="h-72 rounded-3xl bg-white/[0.04] animate-pulse" />
           ))}
         </div>
       ) : !data || data.items.length === 0 ? (
@@ -275,8 +276,6 @@ function NightWrapSection() {
   return <NightWrapCard wrap={data} />;
 }
 
-
-
 function LiveSpritzStrip() {
   const { data: parties = [] } = useQuery({
     queryKey: ["home-live-spritz"],
@@ -297,7 +296,10 @@ function LiveSpritzStrip() {
     queryKey: ["home-live-spritz-joins", ids.sort().join(",")],
     queryFn: async () => {
       if (!ids.length) return [];
-      const { data } = await supabase.from("party_joins").select("party_id,user_id").in("party_id", ids);
+      const { data } = await supabase
+        .from("party_joins")
+        .select("party_id,user_id")
+        .in("party_id", ids);
       return data ?? [];
     },
     enabled: ids.length > 0,
@@ -319,10 +321,17 @@ function LiveSpritzStrip() {
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em]" style={{ color: "var(--warm-rose)" }}>
+        <div
+          className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.25em]"
+          style={{ color: "var(--warm-rose)" }}
+        >
           <Flame size={12} /> șprițuri deschise · {visibleParties.length}
         </div>
-        <Link to="/app/squad" className="font-mono text-[10px] uppercase tracking-widest" style={{ color: "var(--warm-orange)" }}>
+        <Link
+          to="/app/squad"
+          className="font-mono text-[10px] uppercase tracking-widest"
+          style={{ color: "var(--warm-orange)" }}
+        >
           toate →
         </Link>
       </div>
@@ -337,27 +346,42 @@ function LiveSpritzStrip() {
               to="/app/parties"
               className="shrink-0 w-[220px] p-3 rounded-2xl space-y-1.5 relative overflow-hidden transition-transform active:scale-[0.98]"
               style={{
-                background: "linear-gradient(135deg, var(--warm-orange) 0%, var(--warm-rose) 55%, var(--warm-amber) 100%)",
+                background:
+                  "linear-gradient(135deg, var(--warm-orange) 0%, var(--warm-rose) 55%, var(--warm-amber) 100%)",
                 border: "1px solid rgba(255,255,255,0.18)",
                 boxShadow: "var(--warm-glow)",
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
             >
-              <div className="pointer-events-none absolute -top-4 -right-4 h-14 w-14 rounded-full blur-[24px] opacity-45" style={{ background: "var(--warm-amber)" }} />
+              <div
+                className="pointer-events-none absolute -top-4 -right-4 h-14 w-14 rounded-full blur-[24px] opacity-45"
+                style={{ background: "var(--warm-amber)" }}
+              />
               <div className="relative flex items-center justify-between">
                 <span className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-white/85 flex items-center gap-1">
                   <Flame size={10} /> șpriț
                 </span>
-                <span className="text-[9px] font-extrabold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full bg-white/95" style={{ color: free === 0 ? "var(--warm-rose)" : "var(--warm-rose)" }}>
+                <span
+                  className="text-[9px] font-extrabold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full bg-white/95"
+                  style={{ color: free === 0 ? "var(--warm-rose)" : "var(--warm-rose)" }}
+                >
                   {free === 0 ? "plin" : `${free}/${p.spots_total} libere`}
                 </span>
               </div>
-              <div className="relative font-extrabold text-sm leading-tight line-clamp-2 text-white tracking-tight">{p.title}</div>
+              <div className="relative font-extrabold text-sm leading-tight line-clamp-2 text-white tracking-tight">
+                {p.title}
+              </div>
               <div className="relative flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white/80">
-                <span className="flex items-center gap-1 truncate"><MapPin size={9} /> {p.location_text}</span>
+                <span className="flex items-center gap-1 truncate">
+                  <MapPin size={9} /> {p.location_text}
+                </span>
               </div>
               <div className="relative flex items-center justify-between pt-1">
-                {p.vibe && <span className="text-[9px] font-extrabold uppercase tracking-widest text-white/90 truncate">{p.vibe}</span>}
+                {p.vibe && (
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-white/90 truncate">
+                    {p.vibe}
+                  </span>
+                )}
                 <span className="text-[9px] font-extrabold uppercase tracking-widest text-white flex items-center gap-1 ml-auto px-2 py-0.5 rounded-full bg-white/20">
                   <Users size={9} /> {taken} vin
                 </span>
@@ -370,13 +394,23 @@ function LiveSpritzStrip() {
   );
 }
 
-
-
 const FEED_BADGES = [
-  { key: "legendar", label: "LEGENDAR", className: "bg-neon-crimson/15 text-neon-crimson border-neon-crimson/40" },
-  { key: "murit", label: "AM MURIT", className: "bg-amber-400/15 text-amber-300 border-amber-400/40" },
+  {
+    key: "legendar",
+    label: "LEGENDAR",
+    className: "bg-neon-crimson/15 text-neon-crimson border-neon-crimson/40",
+  },
+  {
+    key: "murit",
+    label: "AM MURIT",
+    className: "bg-amber-400/15 text-amber-300 border-amber-400/40",
+  },
   { key: "wow", label: "WOW", className: "bg-cyan-400/15 text-cyan-300 border-cyan-400/40" },
-  { key: "verificat", label: "VERIFICAT", className: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40" },
+  {
+    key: "verificat",
+    label: "VERIFICAT",
+    className: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40",
+  },
 ] as const;
 
 function pickFeedBadge(id: string, isProof: boolean) {
@@ -426,7 +460,11 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
       if (item.kind === "proof") {
         await supabase.from("sprit_proofs").delete().eq("id", rawId).eq("user_id", user.id);
         // also remove the companion venue_photos row sharing same photo_url
-        await supabase.from("venue_photos").delete().eq("user_id", user.id).eq("photo_url", item.photo_url);
+        await supabase
+          .from("venue_photos")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("photo_url", item.photo_url);
       } else {
         await supabase.from("venue_photos").delete().eq("id", rawId).eq("user_id", user.id);
       }
@@ -447,7 +485,11 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
       <div className="flex items-center gap-2.5 px-3 pt-3 pb-3.5">
         <Link to="/app/user/$id" params={{ id: item.user_id }} className="shrink-0">
           {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt={handle} className="size-9 rounded-full object-cover border border-foreground/10" />
+            <img
+              src={profile.avatar_url}
+              alt={handle}
+              className="size-9 rounded-full object-cover border border-foreground/10"
+            />
           ) : (
             <div className="size-9 rounded-full bg-foreground/10 flex items-center justify-center font-display text-sm">
               {handle[0]?.toUpperCase() ?? "?"}
@@ -456,8 +498,16 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
         </Link>
         <div className="flex-1 min-w-0 overflow-hidden">
           <div className="flex items-center gap-1 min-w-0">
-            <Link to="/app/user/$id" params={{ id: item.user_id }} className="font-display text-[13px] truncate min-w-0">{handle}</Link>
-            {badge.key === "legendar" && <span className="text-neon-crimson text-[11px] shrink-0">⚡</span>}
+            <Link
+              to="/app/user/$id"
+              params={{ id: item.user_id }}
+              className="font-display text-[13px] truncate min-w-0"
+            >
+              {handle}
+            </Link>
+            {badge.key === "legendar" && (
+              <span className="text-neon-crimson text-[11px] shrink-0">⚡</span>
+            )}
           </div>
           {venue?.name && item.venue_id ? (
             <Link
@@ -466,7 +516,9 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
               className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground truncate flex items-center gap-1 active:scale-95 transition hover:text-white min-w-0"
               aria-label={`Vezi ${venue.name} pe hartă`}
             >
-              <MapPin size={9} className="shrink-0" /> <span className="truncate underline-offset-2 hover:underline">{venue.name}</span> · {timeAgo(item.created_at)}
+              <MapPin size={9} className="shrink-0" />{" "}
+              <span className="truncate underline-offset-2 hover:underline">{venue.name}</span> ·{" "}
+              {timeAgo(item.created_at)}
             </Link>
           ) : (
             <div className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground truncate">
@@ -474,7 +526,9 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
             </div>
           )}
         </div>
-        <span className={`shrink-0 inline-flex items-center px-1.5 py-[2px] rounded-md border text-[9px] font-mono uppercase tracking-[0.12em] ${badge.className}`}>
+        <span
+          className={`shrink-0 inline-flex items-center px-1.5 py-[2px] rounded-md border text-[9px] font-mono uppercase tracking-[0.12em] ${badge.className}`}
+        >
           {badge.label}
         </span>
         {isMine && (
@@ -512,36 +566,33 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
         {item.media_type === "video" ? (
           <VideoTile src={item.photo_url} bottomInset={8} />
         ) : (
-          <PinchImage
-            src={item.photo_url}
-            alt={item.caption ?? ""}
-            className="w-full h-full"
-          />
-
+          <PinchImage src={item.photo_url} alt={item.caption ?? ""} className="w-full h-full" />
         )}
       </div>
 
-
       {/* Caption */}
-      {item.caption && (
-        <div className="px-4 pb-3 pt-3 text-sm leading-snug">{item.caption}</div>
-      )}
-      {zoomOpen && item.media_type !== "video" && typeof document !== "undefined" && createPortal(
-        <PhotoZoom src={item.photo_url} alt={item.caption ?? ""} onClose={() => setZoomOpen(false)} />,
-        document.body
-      )}
+      {item.caption && <div className="px-4 pb-3 pt-3 text-sm leading-snug">{item.caption}</div>}
+      {zoomOpen &&
+        item.media_type !== "video" &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <PhotoZoom
+            src={item.photo_url}
+            alt={item.caption ?? ""}
+            onClose={() => setZoomOpen(false)}
+          />,
+          document.body,
+        )}
     </article>
   );
 }
-
 
 function EmptyFeed() {
   return (
     <div
       className="rounded-[36px] border border-dashed border-white/10 px-7 py-10 text-center flex flex-col items-center"
       style={{
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0))",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0))",
         fontFamily: "'Work Sans', system-ui, sans-serif",
       }}
     >
@@ -559,15 +610,14 @@ function EmptyFeed() {
         Șprițurile încă sunt active.
       </h2>
       <p className="text-[13px] text-white/45 leading-relaxed mb-8 max-w-[260px]">
-        Nimeni n-a postat încă. Nu inventăm conținut. Când oamenii reali încep
-        să posteze, apar aici — nimic altceva.
+        Nimeni n-a postat încă. Nu inventăm conținut. Când oamenii reali încep să posteze, apar aici
+        — nimic altceva.
       </p>
       <Link
         to="/app/scan"
         className="w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-white active:scale-95 transition-transform"
         style={{
-          background:
-            "linear-gradient(90deg, #ff3d8b, #c724ff, #00e5ff)",
+          background: "linear-gradient(90deg, #ff3d8b, #c724ff, #00e5ff)",
           boxShadow: "0 12px 32px -12px rgba(255,61,139,0.55)",
         }}
       >

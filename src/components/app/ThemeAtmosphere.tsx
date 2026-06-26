@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { precomputeTheme, type ProfileTheme } from "@/lib/premium-themes";
 
-type Intensity = { gradient?: number; aurora?: number; sheen?: number; grain?: number; vignette?: number };
+type Intensity = {
+  gradient?: number;
+  aurora?: number;
+  sheen?: number;
+  grain?: number;
+  vignette?: number;
+};
 
 const GRAIN_DATA_URI =
   "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")";
@@ -62,7 +68,10 @@ export function ThemeAtmosphere({
       scheduled = true;
       requestAnimationFrame(apply);
     };
-    const onScroll = () => { scrollY = window.scrollY; schedule(); };
+    const onScroll = () => {
+      scrollY = window.scrollY;
+      schedule();
+    };
     const onTilt = (e: DeviceOrientationEvent) => {
       tiltX = Math.max(-1, Math.min(1, (e.gamma ?? 0) / 45)) * 24;
       schedule();
@@ -91,7 +100,10 @@ export function ThemeAtmosphere({
         <div
           className="absolute"
           style={{
-            top: "-40%", left: "-30%", width: "160vmax", height: "160vmax",
+            top: "-40%",
+            left: "-30%",
+            width: "160vmax",
+            height: "160vmax",
             background: pre.beamsGradient,
             filter: "blur(60px)",
             opacity: 0.5 * iAurora,
@@ -103,44 +115,53 @@ export function ThemeAtmosphere({
         />
       )}
 
-      {iAurora > 0 && pre.aurora.map((a, i) => (
-        <div
-          key={i}
-          className="absolute rounded-full"
-          style={{
-            left: a.left, top: a.top,
-            height: a.size, width: a.size,
-            filter: `blur(${a.blur}px)`,
-            opacity: a.opacity * iAurora,
-            background: a.background,
-            ["--mx" as any]: `calc(var(--px) * ${(i + 1) * 0.35})`,
-            ["--my" as any]: `calc(var(--py) * ${i % 2 ? 0.6 : 0.3})`,
-            transform: "translate3d(var(--mx,0), var(--my,0), 0)",
-            animation: reduced ? "none" : `themeDrift${i % 3} ${a.duration * 2}s ease-in-out ${a.delay}s infinite`,
-            mixBlendMode: "screen",
-            willChange: reduced ? undefined : "transform",
-          }}
-        />
-      ))}
+      {iAurora > 0 &&
+        pre.aurora.map((a, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full"
+            style={{
+              left: a.left,
+              top: a.top,
+              height: a.size,
+              width: a.size,
+              filter: `blur(${a.blur}px)`,
+              opacity: a.opacity * iAurora,
+              background: a.background,
+              ["--mx" as any]: `calc(var(--px) * ${(i + 1) * 0.35})`,
+              ["--my" as any]: `calc(var(--py) * ${i % 2 ? 0.6 : 0.3})`,
+              transform: "translate3d(var(--mx,0), var(--my,0), 0)",
+              animation: reduced
+                ? "none"
+                : `themeDrift${i % 3} ${a.duration * 2}s ease-in-out ${a.delay}s infinite`,
+              mixBlendMode: "screen",
+              willChange: reduced ? undefined : "transform",
+            }}
+          />
+        ))}
 
-      {iAurora > 0 && !reduced && pre.orbs.map((o, i) => (
-        <div
-          key={`orb-${i}`}
-          className="absolute rounded-full"
-          style={{
-            left: o.left, top: o.top,
-            width: o.size, height: o.size,
-            background: o.background,
-            boxShadow: o.boxShadow,
-            opacity: o.opacity * iAurora,
-            ["--mx" as any]: `calc(var(--px) * 0.5)`,
-            ["--my" as any]: `calc(var(--py) * 0.25)`,
-            transform: "translate3d(var(--mx,0), var(--my,0), 0)",
-            animation: `themeFloat ${o.duration}s ease-in-out ${o.delay}s infinite`,
-            willChange: "transform",
-          }}
-        />
-      ))}
+      {iAurora > 0 &&
+        !reduced &&
+        pre.orbs.map((o, i) => (
+          <div
+            key={`orb-${i}`}
+            className="absolute rounded-full"
+            style={{
+              left: o.left,
+              top: o.top,
+              width: o.size,
+              height: o.size,
+              background: o.background,
+              boxShadow: o.boxShadow,
+              opacity: o.opacity * iAurora,
+              ["--mx" as any]: `calc(var(--px) * 0.5)`,
+              ["--my" as any]: `calc(var(--py) * 0.25)`,
+              transform: "translate3d(var(--mx,0), var(--my,0), 0)",
+              animation: `themeFloat ${o.duration}s ease-in-out ${o.delay}s infinite`,
+              willChange: "transform",
+            }}
+          />
+        ))}
 
       {pre.sheenGradient && iSheen > 0 && (
         <div
@@ -178,7 +199,10 @@ export function ThemeAtmosphere({
       )}
 
       {iVignette > 0 && (
-        <div className="absolute inset-0" style={{ background: pre.vignette, opacity: iVignette }} />
+        <div
+          className="absolute inset-0"
+          style={{ background: pre.vignette, opacity: iVignette }}
+        />
       )}
 
       <style>{`

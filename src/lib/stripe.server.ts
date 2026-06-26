@@ -11,9 +11,7 @@ export type StripeEnv = "sandbox" | "live";
 const GATEWAY_STRIPE_BASE = "https://connector-gateway.lovable.dev/stripe";
 
 export function getConnectionApiKey(env: StripeEnv): string {
-  return env === "sandbox"
-    ? getEnv("STRIPE_SANDBOX_API_KEY")
-    : getEnv("STRIPE_LIVE_API_KEY");
+  return env === "sandbox" ? getEnv("STRIPE_SANDBOX_API_KEY") : getEnv("STRIPE_LIVE_API_KEY");
 }
 
 export function createStripeClient(env: StripeEnv): Stripe {
@@ -22,7 +20,8 @@ export function createStripeClient(env: StripeEnv): Stripe {
   return new Stripe(connectionApiKey, {
     apiVersion: "2026-03-25.dahlia",
     httpClient: Stripe.createFetchHttpClient(((input: URL | RequestInfo, init?: RequestInit) => {
-      const urlStr = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+      const urlStr =
+        typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
       const gatewayUrl = urlStr.replace("https://api.stripe.com", GATEWAY_STRIPE_BASE);
       const cleanInit: RequestInit = {
         method: init?.method,
@@ -60,13 +59,15 @@ export function getStripeErrorMessage(error: unknown): string {
 
 export function getCheckoutClientSecret(session: unknown): string {
   if (!session || typeof session !== "object") return "";
-  const value = (session as { client_secret?: unknown; clientSecret?: unknown }).client_secret
-    ?? (session as { clientSecret?: unknown }).clientSecret;
+  const value =
+    (session as { client_secret?: unknown; clientSecret?: unknown }).client_secret ??
+    (session as { clientSecret?: unknown }).clientSecret;
   if (typeof value === "string") return value;
 
   const seen = new WeakSet<object>();
   const scan = (input: unknown, depth: number): string => {
-    if (typeof input === "string" && input.startsWith("cs_") && input.includes("_secret_")) return input;
+    if (typeof input === "string" && input.startsWith("cs_") && input.includes("_secret_"))
+      return input;
     if (!input || typeof input !== "object" || depth > 4 || seen.has(input)) return "";
     seen.add(input);
     for (const nested of Object.values(input as Record<string, unknown>)) {
@@ -78,7 +79,10 @@ export function getCheckoutClientSecret(session: unknown): string {
   return scan(session, 0);
 }
 
-export async function verifyWebhook(req: Request, env: StripeEnv): Promise<{ type: string; data: { object: any } }> {
+export async function verifyWebhook(
+  req: Request,
+  env: StripeEnv,
+): Promise<{ type: string; data: { object: any } }> {
   const signature = req.headers.get("stripe-signature");
   const body = await req.text();
   const secret = getWebhookSecret(env);
@@ -103,8 +107,14 @@ export async function verifyWebhook(req: Request, env: StripeEnv): Promise<{ typ
     false,
     ["sign"],
   );
-  const signed = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${timestamp}.${body}`));
-  const expected = Array.from(new Uint8Array(signed)).map(b => b.toString(16).padStart(2, "0")).join("");
+  const signed = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(`${timestamp}.${body}`),
+  );
+  const expected = Array.from(new Uint8Array(signed))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
   if (!v1Signatures.includes(expected)) throw new Error("Invalid webhook signature");
 
   return JSON.parse(body);

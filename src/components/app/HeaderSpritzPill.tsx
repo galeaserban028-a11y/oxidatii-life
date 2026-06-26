@@ -68,15 +68,18 @@ export function HeaderSpritzPill() {
       {/* glow */}
       <span
         className="absolute inset-0 rounded-full opacity-60 blur-md pointer-events-none"
-        style={{ background: `radial-gradient(circle at 20% 50%, hsl(${hue} 95% 55% / 0.35), transparent 70%)` }}
+        style={{
+          background: `radial-gradient(circle at 20% 50%, hsl(${hue} 95% 55% / 0.35), transparent 70%)`,
+        }}
       />
       {/* mini dial */}
       <span
         className="relative flex items-center justify-center w-7 h-7 rounded-full shrink-0"
         style={{
-          background: score !== null
-            ? `conic-gradient(from -90deg, hsl(${hue} 95% 55%) 0deg, hsl(${hue + 20} 95% 60%) ${score * 3.6}deg, rgba(255,255,255,0.08) ${score * 3.6}deg, rgba(255,255,255,0.08) 360deg)`
-            : "rgba(255,255,255,0.08)",
+          background:
+            score !== null
+              ? `conic-gradient(from -90deg, hsl(${hue} 95% 55%) 0deg, hsl(${hue + 20} 95% 60%) ${score * 3.6}deg, rgba(255,255,255,0.08) ${score * 3.6}deg, rgba(255,255,255,0.08) 360deg)`
+              : "rgba(255,255,255,0.08)",
         }}
       >
         <span className="absolute inset-[3px] rounded-full bg-background flex items-center justify-center">

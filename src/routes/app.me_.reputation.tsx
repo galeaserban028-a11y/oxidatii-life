@@ -45,7 +45,10 @@ function ReputationAnalyticsPage() {
         <Lock size={32} className="mx-auto text-muted-foreground" />
         <h1 className="font-display uppercase text-2xl">Reputation Analytics</h1>
         <p className="text-sm text-muted-foreground">Disponibil doar pentru Pro și Elite.</p>
-        <Link to="/app/premium" className="inline-block px-6 h-11 leading-[44px] rounded-full bg-neon-purple text-white font-display uppercase text-xs tracking-widest">
+        <Link
+          to="/app/premium"
+          className="inline-block px-6 h-11 leading-[44px] rounded-full bg-neon-purple text-white font-display uppercase text-xs tracking-widest"
+        >
           Vezi planurile
         </Link>
       </div>
@@ -61,11 +64,16 @@ function ReputationAnalyticsPage() {
     return { cat: c, count: list.length, avg: a };
   });
 
-  const last30 = ratings.filter((r: any) => new Date(r.created_at) > new Date(Date.now() - 30 * 86400000));
+  const last30 = ratings.filter(
+    (r: any) => new Date(r.created_at) > new Date(Date.now() - 30 * 86400000),
+  );
 
   return (
     <div className="px-5 pt-8 pb-12 max-w-xl mx-auto space-y-7">
-      <Link to="/app/me" className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+      <Link
+        to="/app/me"
+        className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.3em] text-zinc-500"
+      >
         <ArrowLeft size={12} /> înapoi
       </Link>
       <header className="space-y-3">

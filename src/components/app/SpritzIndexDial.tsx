@@ -87,8 +87,10 @@ export function SpritzIndexDial({ cityId = null, cityName, compact = false }: Pr
         to="/app/spritz-index"
         className="block relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-orange-500/[0.08] via-pink-500/[0.04] to-transparent backdrop-blur-sm p-5 active:scale-[0.98] transition"
       >
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl pointer-events-none"
-          style={{ background: `hsl(${hue} 95% 55% / 0.35)` }} />
+        <div
+          className="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl pointer-events-none"
+          style={{ background: `hsl(${hue} 95% 55% / 0.35)` }}
+        />
         <div className="relative flex items-center gap-5">
           <Dial score={score} ringGradient={ringGradient} hue={hue} size={92} loading={loading} />
           <div className="flex-1 min-w-0">
@@ -115,8 +117,10 @@ export function SpritzIndexDial({ cityId = null, cityName, compact = false }: Pr
   // Full variant
   return (
     <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-orange-500/[0.10] via-pink-500/[0.05] to-transparent p-7">
-      <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full blur-3xl pointer-events-none"
-        style={{ background: `hsl(${hue} 95% 55% / 0.35)` }} />
+      <div
+        className="absolute -top-16 -right-16 w-64 h-64 rounded-full blur-3xl pointer-events-none"
+        style={{ background: `hsl(${hue} 95% 55% / 0.35)` }}
+      />
       <div className="relative flex flex-col items-center text-center">
         <div className="flex items-center gap-2 mb-3">
           <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
@@ -126,7 +130,8 @@ export function SpritzIndexDial({ cityId = null, cityName, compact = false }: Pr
         </div>
         <Dial score={score} ringGradient={ringGradient} hue={hue} size={180} loading={loading} />
         <p className="mt-5 text-2xl">
-          {data?.emoji ?? "🍹"} <span className="font-display font-extrabold uppercase">{data?.vibe ?? "..."}</span>
+          {data?.emoji ?? "🍹"}{" "}
+          <span className="font-display font-extrabold uppercase">{data?.vibe ?? "..."}</span>
         </p>
         {data && (
           <div className="grid grid-cols-3 gap-3 mt-6 w-full font-mono text-[10px] text-white/60">

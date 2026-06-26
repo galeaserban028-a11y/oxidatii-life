@@ -29,7 +29,10 @@ function AdminBusinesses() {
   });
 
   const toggleVerify = async (id: string, v: boolean) => {
-    const { error } = await supabase.from("business_accounts").update({ verified: !v }).eq("id", id);
+    const { error } = await supabase
+      .from("business_accounts")
+      .update({ verified: !v })
+      .eq("id", id);
     if (error) return toast.error(error.message);
     toast.success(!v ? "Verificat" : "Verificare retrasă");
     qc.invalidateQueries({ queryKey: ["admin-businesses"] });
@@ -67,7 +70,10 @@ function AdminBusinesses() {
   return (
     <div className="space-y-3">
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Search
+          size={14}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+        />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -78,16 +84,24 @@ function AdminBusinesses() {
 
       <div className="space-y-1.5">
         {data?.map((b) => (
-          <div key={b.id} className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 flex items-center gap-3">
+          <div
+            key={b.id}
+            className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 flex items-center gap-3"
+          >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
                 <span className="font-display text-sm truncate">{b.brand_name}</span>
                 {b.verified && <CheckCircle2 size={12} className="text-neon-mint" />}
-                <span className="font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded bg-foreground/10">{b.type}</span>
-                <span className="font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded bg-foreground/10">{b.tier}</span>
+                <span className="font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded bg-foreground/10">
+                  {b.type}
+                </span>
+                <span className="font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded bg-foreground/10">
+                  {b.tier}
+                </span>
               </div>
               <div className="font-mono text-[10px] text-muted-foreground truncate">
-                {b.contact_email ?? "—"} · wallet {(b.wallet_balance_cents / 100).toFixed(2)} RON · credit lunar {(b.monthly_credits_cents / 100).toFixed(0)} RON
+                {b.contact_email ?? "—"} · wallet {(b.wallet_balance_cents / 100).toFixed(2)} RON ·
+                credit lunar {(b.monthly_credits_cents / 100).toFixed(0)} RON
               </div>
             </div>
             <button

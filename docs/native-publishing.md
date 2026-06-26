@@ -47,6 +47,7 @@ Adaugă în `ios/App/App/Info.plist` (cerut de App Store Review):
 ```
 
 Activează în `Signing & Capabilities`:
+
 - Push Notifications
 - Background Modes → Remote notifications
 
@@ -105,6 +106,7 @@ bunx cap open android
 ## 8. Checklist final pre-submit
 
 ### Pre-build
+
 - [ ] `bun run build` rulează curat (no warnings critice)
 - [ ] `bunx cap sync` → 10 pluginuri detectate pe iOS + Android
 - [ ] `capacitor.config.ts` NU are `server.url` setat (doar în dev cu `CAP_SERVER_URL`)
@@ -112,6 +114,7 @@ bunx cap open android
 - [ ] Icon-uri + splash generate (`resources/` → `bunx @capacitor/assets generate`)
 
 ### iOS
+
 - [ ] Xcode → Signing & Capabilities: **Push Notifications** + **Background Modes** (Remote notifications + Location updates)
 - [ ] Xcode → Associated Domains: `applinks:oxidatii.life`
 - [ ] Apple Team ID înlocuit în `public/.well-known/apple-app-site-association` (înlocuiește `TEAMID`)
@@ -120,6 +123,7 @@ bunx cap open android
 - [ ] Age rating: 17+
 
 ### Android
+
 - [ ] `android/app/google-services.json` adăugat (Firebase pentru FCM)
 - [ ] `versionCode` + `versionName` incrementate în `android/app/build.gradle`
 - [ ] SHA-256 al cheii de release înlocuit în `public/.well-known/assetlinks.json` (`keytool -list -v -keystore release.keystore | grep SHA256`)
@@ -127,6 +131,7 @@ bunx cap open android
 - [ ] Play Console: Data Safety form completat (locație, mesaje, poze, push token)
 
 ### Smoke test pe device fizic
+
 - [ ] Login + Google OAuth merge
 - [ ] Locația cere permisiune o singură dată și rămâne activă
 - [ ] Push token se înregistrează în `push_subscriptions` (verifică în DB)

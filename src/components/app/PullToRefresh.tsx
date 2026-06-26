@@ -9,7 +9,8 @@ import { Loader2 } from "lucide-react";
 // Android has no native overscroll bounce, so it needs a softer curve and
 // a smaller dead-zone so the gesture catches immediately.
 const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
-const IS_IOS = /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && "ontouchend" in (globalThis as any));
+const IS_IOS =
+  /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && "ontouchend" in (globalThis as any));
 const TUNING = IS_IOS
   ? { THRESHOLD: 78, MAX: 130, DAMP: 145, DEAD: 8, START_OFFSET: 6 }
   : { THRESHOLD: 64, MAX: 130, DAMP: 95, DEAD: 4, START_OFFSET: 2 };
@@ -55,9 +56,7 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
       spn.style.transform = `scale(${scale}) rotate(${rot}deg)`;
     }
     if (ctn) {
-      ctn.style.transition = animated
-        ? "transform 320ms cubic-bezier(0.22,1,0.36,1)"
-        : "none";
+      ctn.style.transition = animated ? "transform 320ms cubic-bezier(0.22,1,0.36,1)" : "none";
       ctn.style.transform = `translate3d(0, ${visible ? clamped * 0.5 : 0}px, 0)`;
     }
   };
@@ -151,9 +150,7 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
           className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-lg backdrop-blur"
           style={{ willChange: "transform" }}
         >
-          <Loader2
-            className={`h-5 w-5 text-foreground ${refreshing ? "animate-spin" : ""}`}
-          />
+          <Loader2 className={`h-5 w-5 text-foreground ${refreshing ? "animate-spin" : ""}`} />
         </div>
       </div>
       <div ref={contentRef} style={{ willChange: "transform" }}>

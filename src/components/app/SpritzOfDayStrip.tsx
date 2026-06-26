@@ -20,10 +20,13 @@ type SpritzTile = {
 };
 
 async function loadSpritzOfDay(): Promise<SpritzTile[]> {
-  const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+  const startOfDay = new Date();
+  startOfDay.setHours(0, 0, 0, 0);
   const { data } = await supabase
     .from("sprit_proofs")
-    .select("id,user_id,photo_url,media_type,created_at,profile:profiles!sprit_proofs_user_id_fkey(handle,avatar_url,display_name,is_public),venue:venues(name)")
+    .select(
+      "id,user_id,photo_url,media_type,created_at,profile:profiles!sprit_proofs_user_id_fkey(handle,avatar_url,display_name,is_public),venue:venues(name)",
+    )
     .gte("created_at", startOfDay.toISOString())
     .order("created_at", { ascending: false })
     .limit(200);
@@ -63,9 +66,13 @@ export function SpritzOfDayStrip() {
     <div className="space-y-2">
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-[0.3em] text-white/40">șprițul zilei</span>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-white/40">
+            șprițul zilei
+          </span>
           <span className="h-1 w-1 rounded-full bg-[#ffea00]" />
-          <span className="text-[10px] uppercase tracking-[0.2em] text-white/60">{tiles.length} azi</span>
+          <span className="text-[10px] uppercase tracking-[0.2em] text-white/60">
+            {tiles.length} azi
+          </span>
         </div>
       </div>
       <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-5 px-5 snap-x snap-mandatory">
@@ -76,7 +83,13 @@ export function SpritzOfDayStrip() {
             className="shrink-0 snap-start w-[88px] aspect-[3/4] rounded-2xl overflow-hidden relative border border-white/10 active:scale-95 transition"
           >
             {t.media_type === "video" ? (
-              <video src={t.photo_url} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+              <video
+                src={t.photo_url}
+                className="h-full w-full object-cover"
+                muted
+                playsInline
+                preload="metadata"
+              />
             ) : (
               <img src={t.photo_url} alt="" className="h-full w-full object-cover" loading="lazy" />
             )}
@@ -103,15 +116,28 @@ export function SpritzOfDayStrip() {
       </div>
 
       {viewIdx !== null && (
-        <SpritzViewer tiles={tiles} index={viewIdx} onClose={() => setViewIdx(null)} onIndex={setViewIdx} />
+        <SpritzViewer
+          tiles={tiles}
+          index={viewIdx}
+          onClose={() => setViewIdx(null)}
+          onIndex={setViewIdx}
+        />
       )}
     </div>
   );
 }
 
 function SpritzViewer({
-  tiles, index, onClose, onIndex,
-}: { tiles: SpritzTile[]; index: number; onClose: () => void; onIndex: (i: number) => void }) {
+  tiles,
+  index,
+  onClose,
+  onIndex,
+}: {
+  tiles: SpritzTile[];
+  index: number;
+  onClose: () => void;
+  onIndex: (i: number) => void;
+}) {
   const t = tiles[index];
   const progressRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
@@ -125,7 +151,11 @@ function SpritzViewer({
     setDeleting(true);
     try {
       await supabase.from("sprit_proofs").delete().eq("id", t.id).eq("user_id", user.id);
-      await supabase.from("venue_photos").delete().eq("user_id", user.id).eq("photo_url", t.photo_url);
+      await supabase
+        .from("venue_photos")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("photo_url", t.photo_url);
       toast.success("Șters");
       queryClient.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
       queryClient.invalidateQueries({ queryKey: ["app-feed"] });
@@ -159,18 +189,29 @@ function SpritzViewer({
         {tiles.map((_, i) => (
           <div key={i} className="flex-1 h-0.5 rounded-full bg-white/20 overflow-hidden">
             {i < index && <div className="h-full w-full bg-white" />}
-            {i === index && <div ref={progressRef} className="h-full bg-white" style={{ width: "0%" }} />}
+            {i === index && (
+              <div ref={progressRef} className="h-full bg-white" style={{ width: "0%" }} />
+            )}
           </div>
         ))}
       </div>
       <div className="flex items-center justify-between px-3 pb-2">
-        <Link to="/app/user/$id" params={{ id: t.user_id }} onClick={onClose} className="flex items-center gap-2.5 min-w-0">
+        <Link
+          to="/app/user/$id"
+          params={{ id: t.user_id }}
+          onClick={onClose}
+          className="flex items-center gap-2.5 min-w-0"
+        >
           <div className="h-9 w-9 rounded-full overflow-hidden bg-white/10 shrink-0">
-            {t.avatar_url ? <img src={t.avatar_url} alt="" className="h-full w-full object-cover" /> : null}
+            {t.avatar_url ? (
+              <img src={t.avatar_url} alt="" className="h-full w-full object-cover" />
+            ) : null}
           </div>
           <div className="min-w-0">
             <div className="text-sm font-semibold text-white truncate">@{t.handle}</div>
-            {t.venue_name && <div className="text-[10px] text-white/60 truncate">{t.venue_name}</div>}
+            {t.venue_name && (
+              <div className="text-[10px] text-white/60 truncate">{t.venue_name}</div>
+            )}
           </div>
         </Link>
         <div className="flex items-center gap-2">
@@ -184,20 +225,33 @@ function SpritzViewer({
               {deleting ? "..." : "Șterge"}
             </button>
           )}
-          <button onClick={onClose} className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center text-white">
+          <button
+            onClick={onClose}
+            className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center text-white"
+          >
             <X size={18} />
           </button>
         </div>
       </div>
-      <div className="flex-1 relative" onClick={(e) => {
-        const r = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-        const left = (e.clientX - r.left) < r.width / 2;
-        if (left && index > 0) onIndex(index - 1);
-        else if (!left && index + 1 < tiles.length) onIndex(index + 1);
-        else onClose();
-      }}>
+      <div
+        className="flex-1 relative"
+        onClick={(e) => {
+          const r = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+          const left = e.clientX - r.left < r.width / 2;
+          if (left && index > 0) onIndex(index - 1);
+          else if (!left && index + 1 < tiles.length) onIndex(index + 1);
+          else onClose();
+        }}
+      >
         {t.media_type === "video" ? (
-          <video src={t.photo_url} className="h-full w-full object-contain" autoPlay muted playsInline loop />
+          <video
+            src={t.photo_url}
+            className="h-full w-full object-contain"
+            autoPlay
+            muted
+            playsInline
+            loop
+          />
         ) : (
           <img src={t.photo_url} alt="" className="h-full w-full object-contain" />
         )}

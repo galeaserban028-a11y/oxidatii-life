@@ -18,7 +18,9 @@ export async function registerNativePush(): Promise<{ ok: boolean; reason?: stri
   if (!isNative()) return { ok: false, reason: "Not native" };
   if (registered) return { ok: true };
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { ok: false, reason: "Not authenticated" };
 
   try {
@@ -59,7 +61,9 @@ export async function registerNativePush(): Promise<{ ok: boolean; reason?: stri
     PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
       const url = (action.notification.data as any)?.url;
       if (url && typeof window !== "undefined") {
-        try { window.location.assign(url); } catch {}
+        try {
+          window.location.assign(url);
+        } catch {}
       }
     });
 

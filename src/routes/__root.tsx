@@ -31,7 +31,6 @@ import { DomTranslator } from "@/components/app/DomTranslator";
 import "@/lib/i18n";
 import { useTranslation } from "react-i18next";
 
-
 function NotFoundComponent() {
   const { t } = useTranslation();
   return (
@@ -39,9 +38,7 @@ function NotFoundComponent() {
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">{t("pageNotFound")}</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t("lostInChaos")}
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{t("lostInChaos")}</p>
         <div className="mt-6">
           <Link
             to="/"
@@ -102,20 +99,43 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover",
+      },
       { name: "theme-color", content: "#050505" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "format-detection", content: "telephone=no" },
       { title: "OXIDAȚII" },
-      { name: "description", content: "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România." },
+      {
+        name: "description",
+        content:
+          "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România.",
+      },
       { property: "og:title", content: "OXIDAȚII" },
       { name: "twitter:title", content: "OXIDAȚII" },
-      { property: "og:description", content: "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România." },
-      { name: "twitter:description", content: "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/84jcXRlpV5UmDY7k2qZ9BQoT7s43/social-images/social-1782423756310-ChatGPT_Image_26_iun._2026,_00_42_14.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/84jcXRlpV5UmDY7k2qZ9BQoT7s43/social-images/social-1782423756310-ChatGPT_Image_26_iun._2026,_00_42_14.webp" },
+      {
+        property: "og:description",
+        content:
+          "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/84jcXRlpV5UmDY7k2qZ9BQoT7s43/social-images/social-1782423756310-ChatGPT_Image_26_iun._2026,_00_42_14.webp",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/84jcXRlpV5UmDY7k2qZ9BQoT7s43/social-images/social-1782423756310-ChatGPT_Image_26_iun._2026,_00_42_14.webp",
+      },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
@@ -125,7 +145,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "icon", href: "/icon-192.png", type: "image/png" },
       { rel: "dns-prefetch", href: "https://qzxvnjpumtujfylfofmg.supabase.co" },
-      { rel: "preconnect", href: "https://qzxvnjpumtujfylfofmg.supabase.co", crossOrigin: "anonymous" },
+      {
+        rel: "preconnect",
+        href: "https://qzxvnjpumtujfylfofmg.supabase.co",
+        crossOrigin: "anonymous",
+      },
     ],
     scripts: [
       {
@@ -136,7 +160,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           name: "OXIDAȚII",
           url: "https://oxidatii.lovable.app",
           logo: "https://oxidatii.lovable.app/icon-512.png",
-          description: "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România.",
+          description:
+            "Aplicație balcanică de nightlife. Cluburi, șprițuri, MDS-uri, ZEII zilei. Real, multiplayer, peste tot în România.",
         }),
       },
     ],
@@ -177,7 +202,5 @@ function RootComponent() {
         <DomTranslator />
       </AuthProvider>
     </QueryClientProvider>
-
   );
 }
-

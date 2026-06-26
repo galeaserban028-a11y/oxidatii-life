@@ -19,14 +19,15 @@ export function AvatarAura({
   rotateMs?: number;
 }) {
   if (!theme) {
-    return <div className={className} style={{ width: size, height: size }}>{children}</div>;
+    return (
+      <div className={className} style={{ width: size, height: size }}>
+        {children}
+      </div>
+    );
   }
   const ring = `conic-gradient(from 0deg, ${theme.accent}, ${theme.cardBorder}, ${theme.accent}cc, ${theme.cardBorder}, ${theme.accent})`;
   return (
-    <div
-      className={`relative shrink-0 ${className}`}
-      style={{ width: size, height: size }}
-    >
+    <div className={`relative shrink-0 ${className}`} style={{ width: size, height: size }}>
       <div
         className="absolute inset-0 rounded-full"
         style={{
@@ -43,9 +44,7 @@ export function AvatarAura({
           opacity: 0.85,
         }}
       />
-      <div
-        className="absolute inset-[3px] rounded-full overflow-hidden bg-[#050505]"
-      >
+      <div className="absolute inset-[3px] rounded-full overflow-hidden bg-[#050505]">
         {children}
       </div>
       <style>{`@keyframes auraSpin { to { transform: rotate(360deg); } }`}</style>

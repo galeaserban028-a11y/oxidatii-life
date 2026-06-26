@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, useCallback, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 
 type Props = {
   src: string;
@@ -23,7 +29,14 @@ export default function PhotoZoom({ src, alt = "", onClose }: Props) {
 
   // pointer tracking for pinch + drag
   const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
-  const pinchStartRef = useRef<{ dist: number; scale: number; cx: number; cy: number; tx: number; ty: number } | null>(null);
+  const pinchStartRef = useRef<{
+    dist: number;
+    scale: number;
+    cx: number;
+    cy: number;
+    tx: number;
+    ty: number;
+  } | null>(null);
   const dragStartRef = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
   const lastTapRef = useRef<number>(0);
 
@@ -48,7 +61,9 @@ export default function PhotoZoom({ src, alt = "", onClose }: Props) {
 
   // Esc to close, lock body scroll
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -71,7 +86,8 @@ export default function PhotoZoom({ src, alt = "", onClose }: Props) {
         scale,
         cx: (pts[0].x + pts[1].x) / 2,
         cy: (pts[0].y + pts[1].y) / 2,
-        tx, ty,
+        tx,
+        ty,
       };
       dragStartRef.current = null;
     } else if (pointersRef.current.size === 1 && scale > 1) {
@@ -112,10 +128,14 @@ export default function PhotoZoom({ src, alt = "", onClose }: Props) {
     e.preventDefault();
     const delta = -e.deltaY * 0.005;
     const next = Math.max(1, Math.min(5, scale + delta));
-    if (next === 1) { reset(); return; }
+    if (next === 1) {
+      reset();
+      return;
+    }
     setScale(next);
     const { x, y } = clampPan(tx, ty, next);
-    setTx(x); setTy(y);
+    setTx(x);
+    setTy(y);
   };
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -130,7 +150,9 @@ export default function PhotoZoom({ src, alt = "", onClose }: Props) {
     }
     // single tap on backdrop closes
     if (e.target === e.currentTarget && scale === 1) {
-      setTimeout(() => { if (lastTapRef.current && Date.now() - lastTapRef.current >= 270) onClose(); }, 280);
+      setTimeout(() => {
+        if (lastTapRef.current && Date.now() - lastTapRef.current >= 270) onClose();
+      }, 280);
     }
   };
 
@@ -147,11 +169,24 @@ export default function PhotoZoom({ src, alt = "", onClose }: Props) {
     >
       <button
         type="button"
-        onClick={(e) => { e.stopPropagation(); onClose(); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
         aria-label="Închide"
         className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 grid place-items-center text-white active:scale-90 transition"
       >
-        <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        <svg
+          viewBox="0 0 24 24"
+          className="size-5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
       </button>
       <div className="absolute inset-0 grid place-items-center p-4">
         <img

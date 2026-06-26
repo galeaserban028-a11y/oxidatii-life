@@ -20,7 +20,9 @@ function AdminDebug() {
     queryFn: async () => {
       const { data } = await supabase
         .from("reports")
-        .select("id, reason, details, status, created_at, resolution_note, reporter:reporter_id(handle, display_name)")
+        .select(
+          "id, reason, details, status, created_at, resolution_note, reporter:reporter_id(handle, display_name)",
+        )
         .eq("target_type", "bug_report")
         .order("created_at", { ascending: false })
         .limit(200);
@@ -30,9 +32,15 @@ function AdminDebug() {
 
   const resolve = async (id: string, status: "resolved" | "dismissed") => {
     const note = prompt("Notă (opțional):") ?? "";
-    const { error } = await supabase.from("reports").update({
-      status, resolution_note: note, resolved_by: user?.id, resolved_at: new Date().toISOString(),
-    }).eq("id", id);
+    const { error } = await supabase
+      .from("reports")
+      .update({
+        status,
+        resolution_note: note,
+        resolved_by: user?.id,
+        resolved_at: new Date().toISOString(),
+      })
+      .eq("id", id);
     if (error) return toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["admin-bug-reports"] });
   };
@@ -82,7 +90,9 @@ function AdminDebug() {
 
       {/* Env */}
       <div className="rounded-2xl border border-foreground/10 p-4 space-y-2">
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Sesiune curentă</div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          Sesiune curentă
+        </div>
         {Object.entries(env).map(([k, v]) => (
           <div key={k} className="flex items-start gap-2 text-[11px] font-mono">
             <span className="text-muted-foreground w-20 shrink-0 uppercase">{k}</span>
@@ -105,28 +115,49 @@ function AdminDebug() {
           </div>
         )}
         {reports?.map((r: any) => (
-          <div key={r.id} className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 space-y-2">
+          <div
+            key={r.id}
+            className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 space-y-2"
+          >
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded ${
-                r.status === "pending" ? "bg-neon-crimson/20 text-neon-crimson" :
-                r.status === "resolved" ? "bg-neon-mint/20 text-neon-mint" :
-                "bg-foreground/10"
-              }`}>{r.status}</span>
+              <span
+                className={`font-mono text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded ${
+                  r.status === "pending"
+                    ? "bg-neon-crimson/20 text-neon-crimson"
+                    : r.status === "resolved"
+                      ? "bg-neon-mint/20 text-neon-mint"
+                      : "bg-foreground/10"
+                }`}
+              >
+                {r.status}
+              </span>
               <span className="font-mono text-[10px] text-muted-foreground">
                 @{r.reporter?.handle ?? "?"} · {new Date(r.created_at).toLocaleString("ro-RO")}
               </span>
               <div className="ml-auto flex gap-1">
                 {r.status === "pending" && (
                   <>
-                    <button onClick={() => resolve(r.id, "resolved")} title="Rezolvat" className="p-1.5 rounded-md border border-neon-mint/30 text-neon-mint hover:bg-neon-mint/10">
+                    <button
+                      onClick={() => resolve(r.id, "resolved")}
+                      title="Rezolvat"
+                      className="p-1.5 rounded-md border border-neon-mint/30 text-neon-mint hover:bg-neon-mint/10"
+                    >
                       <Check size={11} />
                     </button>
-                    <button onClick={() => resolve(r.id, "dismissed")} title="Respinge" className="p-1.5 rounded-md border border-foreground/15 hover:bg-foreground/10">
+                    <button
+                      onClick={() => resolve(r.id, "dismissed")}
+                      title="Respinge"
+                      className="p-1.5 rounded-md border border-foreground/15 hover:bg-foreground/10"
+                    >
                       ✕
                     </button>
                   </>
                 )}
-                <button onClick={() => del(r.id)} title="Șterge" className="p-1.5 rounded-md border border-neon-crimson/30 text-neon-crimson hover:bg-neon-crimson/10">
+                <button
+                  onClick={() => del(r.id)}
+                  title="Șterge"
+                  className="p-1.5 rounded-md border border-neon-crimson/30 text-neon-crimson hover:bg-neon-crimson/10"
+                >
                   <Trash2 size={11} />
                 </button>
               </div>
@@ -138,7 +169,9 @@ function AdminDebug() {
               </pre>
             )}
             {r.resolution_note && (
-              <div className="font-mono text-[10px] text-muted-foreground">Notă: {r.resolution_note}</div>
+              <div className="font-mono text-[10px] text-muted-foreground">
+                Notă: {r.resolution_note}
+              </div>
             )}
           </div>
         ))}

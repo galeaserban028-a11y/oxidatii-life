@@ -35,7 +35,7 @@ async function loadFeed(userId: string) {
     .eq("follower_id", userId)
     .eq("status", "accepted");
 
-  const allowed = Array.from(new Set([userId, ...((following ?? []).map((f) => f.following_id))]));
+  const allowed = Array.from(new Set([userId, ...(following ?? []).map((f) => f.following_id)]));
 
   const [photosRes, proofsRes, partiesRes] = await Promise.all([
     supabase
@@ -60,38 +60,42 @@ async function loadFeed(userId: string) {
   ]);
 
   const items: Item[] = [
-    ...((photosRes.data ?? []).map((p): Item => ({
-      kind: "photo",
-      id: p.id,
-      created_at: p.taken_at,
-      user_id: p.user_id,
-      photo_url: p.photo_url,
-      caption: p.caption,
-      venue_id: p.venue_id,
-    }))),
-    ...((proofsRes.data ?? []).map((p): Item => ({
-      kind: "proof",
-      id: p.id,
-      created_at: p.created_at,
-      user_id: p.user_id,
-      photo_url: p.photo_url,
-      venue_id: p.venue_id,
-    }))),
-    ...((partiesRes.data ?? []).map((p): Item => ({
-      kind: "party",
-      id: p.id,
-      created_at: p.created_at,
-      user_id: p.host_id,
-      title: p.title,
-      location_text: p.location_text,
-      vibe: p.vibe,
-    }))),
+    ...(photosRes.data ?? []).map(
+      (p): Item => ({
+        kind: "photo",
+        id: p.id,
+        created_at: p.taken_at,
+        user_id: p.user_id,
+        photo_url: p.photo_url,
+        caption: p.caption,
+        venue_id: p.venue_id,
+      }),
+    ),
+    ...(proofsRes.data ?? []).map(
+      (p): Item => ({
+        kind: "proof",
+        id: p.id,
+        created_at: p.created_at,
+        user_id: p.user_id,
+        photo_url: p.photo_url,
+        venue_id: p.venue_id,
+      }),
+    ),
+    ...(partiesRes.data ?? []).map(
+      (p): Item => ({
+        kind: "party",
+        id: p.id,
+        created_at: p.created_at,
+        user_id: p.host_id,
+        title: p.title,
+        location_text: p.location_text,
+        vibe: p.vibe,
+      }),
+    ),
   ].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
 
   const userIds = Array.from(new Set(items.map((i) => i.user_id)));
-  const venueIds = Array.from(
-    new Set(items.map((i) => i.venue_id).filter(Boolean) as string[]),
-  );
+  const venueIds = Array.from(new Set(items.map((i) => i.venue_id).filter(Boolean) as string[]));
   const [{ data: profs }, { data: venues }] = await Promise.all([
     userIds.length
       ? supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", userIds)
@@ -154,8 +158,6 @@ function FeedPage() {
   });
   const { data: promoCards = [] } = usePromoCards();
 
-
-
   if (!user) {
     return (
       <div className="px-4 pt-6 text-center text-sm text-muted-foreground">
@@ -169,15 +171,14 @@ function FeedPage() {
       <header className="space-y-3">
         <div className="flex items-center gap-2">
           <Lock size={10} className="text-zinc-500" />
-          <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
-            feed privat
-          </span>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">feed privat</span>
         </div>
         <h1 className="font-display uppercase text-3xl leading-[0.95] tracking-tight">
           Doar tu <span className="text-gradient-chaos">& trupa ta.</span>
         </h1>
         <p className="text-xs text-zinc-500 max-w-sm">
-          Momente și recomandări de la oamenii pe care îi urmărești cu accept. Doar voi vedeți astea.
+          Momente și recomandări de la oamenii pe care îi urmărești cu accept. Doar voi vedeți
+          astea.
         </p>
       </header>
 
@@ -258,8 +259,8 @@ function FeedPage() {
                   )}
                 </header>
 
-                {it.photo_url && (
-                  v ? (
+                {it.photo_url &&
+                  (v ? (
                     <Link to="/app/venue/$id" params={{ id: v.id }}>
                       <img
                         src={it.photo_url}
@@ -275,8 +276,7 @@ function FeedPage() {
                       className="w-full aspect-[4/5] object-cover bg-foreground/5"
                       loading="lazy"
                     />
-                  )
-                )}
+                  ))}
 
                 {it.kind === "party" && (
                   <div className="px-4 py-4 space-y-1 bg-gradient-to-br from-neon-crimson/5 to-neon-purple/5">

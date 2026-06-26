@@ -126,10 +126,7 @@ export function CreateDecisionPollSheet({
 
         <div className="p-4 border-b border-white/10 space-y-3">
           <div className="relative">
-            <Search
-              size={13}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
-            />
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -225,7 +222,9 @@ export function DecisionPollCard({ pollId }: { pollId: string }) {
   const { data: poll } = useQuery({
     queryKey: ["decision-poll", pollId],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_decision_poll", { _poll_id: pollId } as never);
+      const { data, error } = await supabase.rpc("get_decision_poll", {
+        _poll_id: pollId,
+      } as never);
       if (error) throw error;
       return data as unknown as Poll;
     },
@@ -263,13 +262,12 @@ export function DecisionPollCard({ pollId }: { pollId: string }) {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const totalVotes = useMemo(
-    () => poll?.options.reduce((a, o) => a + o.votes, 0) ?? 0,
-    [poll],
-  );
+  const totalVotes = useMemo(() => poll?.options.reduce((a, o) => a + o.votes, 0) ?? 0, [poll]);
   const expired = poll ? new Date(poll.expires_at).getTime() < now : false;
   const winner = expired && poll ? [...poll.options].sort((a, b) => b.votes - a.votes)[0] : null;
-  const minsLeft = poll ? Math.max(0, Math.round((new Date(poll.expires_at).getTime() - now) / 60_000)) : 0;
+  const minsLeft = poll
+    ? Math.max(0, Math.round((new Date(poll.expires_at).getTime() - now) / 60_000))
+    : 0;
 
   if (!poll) {
     return (

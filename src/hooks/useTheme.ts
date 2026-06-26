@@ -14,7 +14,9 @@ function apply() {
 
 export function useTheme() {
   const [theme] = useState<Theme>("dark");
-  useEffect(() => { apply(); }, []);
+  useEffect(() => {
+    apply();
+  }, []);
   return { theme, setTheme: () => {}, toggle: () => {} };
 }
 

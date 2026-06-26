@@ -19,7 +19,9 @@ async function loadPromoTiles(): Promise<PromoTile[]> {
   const nowIso = new Date().toISOString();
   const { data } = await supabase
     .from("campaigns")
-    .select("id, title, theme_color, image_urls, business_accounts!inner(logo_url, cover_url, brand_name), venues(name)")
+    .select(
+      "id, title, theme_color, image_urls, business_accounts!inner(logo_url, cover_url, brand_name), venues(name)",
+    )
     .eq("status", "active")
     .lte("starts_at", nowIso)
     .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
@@ -28,10 +30,11 @@ async function loadPromoTiles(): Promise<PromoTile[]> {
     campaignId: c.id,
     title: c.title ?? null,
     brand: c.venues?.name ?? c.business_accounts?.brand_name ?? null,
-    cover: (c.image_urls?.[0] as string | undefined)
-      ?? c.business_accounts?.cover_url
-      ?? c.business_accounts?.logo_url
-      ?? null,
+    cover:
+      (c.image_urls?.[0] as string | undefined) ??
+      c.business_accounts?.cover_url ??
+      c.business_accounts?.logo_url ??
+      null,
     theme: c.theme_color ?? "#ff3d8b",
   }));
 }
@@ -72,7 +75,7 @@ async function loadStories(viewerId: string) {
     .select("following_id")
     .eq("follower_id", viewerId)
     .eq("status", "accepted");
-  const allowed = new Set<string>([viewerId, ...((follows ?? []).map((f: any) => f.following_id))]);
+  const allowed = new Set<string>([viewerId, ...(follows ?? []).map((f: any) => f.following_id)]);
 
   const filtered = stories.filter((s) => allowed.has(s.user_id));
   if (filtered.length === 0) return { groups: [] as Group[] };
@@ -119,9 +122,15 @@ async function loadStories(viewerId: string) {
 const GRADIENTS: { bg: string; glow: string }[] = [
   { bg: "linear-gradient(to top right, #ff3d8b, #ff3d8b)", glow: "rgba(255,49,88,0.3)" },
   { bg: "linear-gradient(to top right, #c724ff, #ff3d8b)", glow: "rgba(138,43,226,0.3)" },
-  { bg: "linear-gradient(to bottom right, #ff3d8b, #ff3d8b, #ff3d8b)", glow: "rgba(237,30,121,0.3)" },
+  {
+    bg: "linear-gradient(to bottom right, #ff3d8b, #ff3d8b, #ff3d8b)",
+    glow: "rgba(237,30,121,0.3)",
+  },
   { bg: "linear-gradient(to top right, #ff3d8b, #ff3d8b, #c724ff)", glow: "rgba(249,115,22,0.3)" },
-  { bg: "linear-gradient(to bottom right, #c724ff, #4f46e5, #ff3d8b)", glow: "rgba(79,70,229,0.3)" },
+  {
+    bg: "linear-gradient(to bottom right, #c724ff, #4f46e5, #ff3d8b)",
+    glow: "rgba(79,70,229,0.3)",
+  },
 ];
 
 function pickGradient(seed: string) {
@@ -130,7 +139,15 @@ function pickGradient(seed: string) {
   return GRADIENTS[Math.abs(h) % GRADIENTS.length];
 }
 
-function Cover({ cover, avatar, fallback }: { cover: string | null; avatar: string | null; fallback: string }) {
+function Cover({
+  cover,
+  avatar,
+  fallback,
+}: {
+  cover: string | null;
+  avatar: string | null;
+  fallback: string;
+}) {
   if (cover) return <img src={cover} alt="" className="h-full w-full object-cover" />;
   if (avatar) return <img src={avatar} alt="" className="h-full w-full object-cover" />;
   return (
@@ -190,8 +207,6 @@ function SponsoredTile({ promo }: { promo: PromoTile }) {
   );
 }
 
-
-
 export function StoriesStrip() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -224,7 +239,6 @@ export function StoriesStrip() {
     return () => window.clearInterval(id);
   }, [promoTiles.length]);
 
-
   // Hydrate seen-set from localStorage (client only)
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -238,7 +252,9 @@ export function StoriesStrip() {
     setSeenIds((prev) => {
       const next = new Set(prev);
       for (const id of ids) next.add(id);
-      try { window.localStorage.setItem("oxi-stories-seen", JSON.stringify(Array.from(next))); } catch {}
+      try {
+        window.localStorage.setItem("oxi-stories-seen", JSON.stringify(Array.from(next)));
+      } catch {}
       return next;
     });
   };
@@ -267,8 +283,6 @@ export function StoriesStrip() {
           {promoTiles.length > 0 && (
             <SponsoredTile promo={promoTiles[promoIdx % promoTiles.length]} />
           )}
-
-
 
           {groups.map((g, i) => {
             const last = g.stories[g.stories.length - 1];
@@ -319,20 +333,20 @@ export function StoriesStrip() {
         </div>
       </div>
 
-
-
-      {viewerIdx !== null && groups[viewerIdx] && typeof document !== "undefined" && createPortal(
-        <StoryViewer
-          groups={groups}
-          startIndex={viewerIdx}
-          onClose={() => setViewerIdx(null)}
-          onDeleted={() => qc.invalidateQueries({ queryKey: ["stories-strip"] })}
-          onSeen={markSeen}
-          viewerId={user.id}
-        />,
-        document.body
-      )}
-
+      {viewerIdx !== null &&
+        groups[viewerIdx] &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <StoryViewer
+            groups={groups}
+            startIndex={viewerIdx}
+            onClose={() => setViewerIdx(null)}
+            onDeleted={() => qc.invalidateQueries({ queryKey: ["stories-strip"] })}
+            onSeen={markSeen}
+            viewerId={user.id}
+          />,
+          document.body,
+        )}
 
       {uploadOpen && (
         <StoryUploadSheet
@@ -392,21 +406,28 @@ function StoryViewer({
 
   if (!group || !story) return null;
 
-
   const next = () => {
     if (si + 1 < group.stories.length) setSi(si + 1);
-    else if (gi + 1 < groups.length) { setGi(gi + 1); setSi(0); }
-    else onClose();
+    else if (gi + 1 < groups.length) {
+      setGi(gi + 1);
+      setSi(0);
+    } else onClose();
   };
   const prev = () => {
     if (si > 0) setSi(si - 1);
-    else if (gi > 0) { setGi(gi - 1); setSi(groups[gi - 1].stories.length - 1); }
+    else if (gi > 0) {
+      setGi(gi - 1);
+      setSi(groups[gi - 1].stories.length - 1);
+    }
   };
 
   const remove = async () => {
     if (!confirm("Ștergi acest story?")) return;
     const { error } = await supabase.from("stories").delete().eq("id", story.id);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Șters.");
     onDeleted();
     onClose();
@@ -418,11 +439,11 @@ function StoryViewer({
   const safeRatio = Math.min(1.45, Math.max(0.82, mediaRatio ?? 1));
 
   return (
-      <div
-        className="fixed inset-0 z-[80] bg-black flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
-        style={{ animationTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
-        onClick={onClose}
-      >
+    <div
+      className="fixed inset-0 z-[80] bg-black flex items-center justify-center animate-in fade-in zoom-in-95 duration-200"
+      style={{ animationTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)" }}
+      onClick={onClose}
+    >
       {/* top scrim for legibility */}
       <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-black/80 to-transparent z-10 pointer-events-none" />
 
@@ -433,7 +454,9 @@ function StoryViewer({
       >
         {group.stories.map((_, idx) => (
           <div key={idx} className="flex-1 h-0.5 rounded-full bg-white/20 overflow-hidden">
-            <div className={`h-full bg-white transition-all ${idx < si ? "w-full" : idx === si ? "w-1/3" : "w-0"}`} />
+            <div
+              className={`h-full bg-white transition-all ${idx < si ? "w-full" : idx === si ? "w-1/3" : "w-0"}`}
+            />
           </div>
         ))}
       </div>
@@ -454,24 +477,41 @@ function StoryViewer({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-display text-sm text-white truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">@{group.handle}</div>
-          <div className="font-mono text-[9px] uppercase tracking-widest text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">{ageLabel}</div>
+          <div className="font-display text-sm text-white truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+            @{group.handle}
+          </div>
+          <div className="font-mono text-[9px] uppercase tracking-widest text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+            {ageLabel}
+          </div>
         </div>
         {isMine && (
-          <button onClick={remove} className="font-mono text-[10px] uppercase tracking-widest text-white/90 px-2 py-1 rounded hover:bg-white/10">
+          <button
+            onClick={remove}
+            className="font-mono text-[10px] uppercase tracking-widest text-white/90 px-2 py-1 rounded hover:bg-white/10"
+          >
             șterge
           </button>
         )}
-        <button onClick={onClose} className="h-8 w-8 rounded-full grid place-items-center text-white">
+        <button
+          onClick={onClose}
+          className="h-8 w-8 rounded-full grid place-items-center text-white"
+        >
           <X size={20} />
         </button>
       </div>
 
-
       {/* media */}
-      <div className="absolute inset-0 flex items-start justify-center px-5 pt-28 pb-8" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="absolute inset-0 flex items-start justify-center px-5 pt-28 pb-8"
+        onClick={(e) => e.stopPropagation()}
+      >
         {story.media_type === "image" && (
-          <img src={story.media_url} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-35 blur-2xl scale-110" />
+          <img
+            src={story.media_url}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 h-full w-full object-cover opacity-35 blur-2xl scale-110"
+          />
         )}
         <div
           className="relative w-[min(88vw,360px)] max-h-[52dvh] overflow-hidden rounded-[26px] bg-zinc-950 shadow-[0_24px_80px_rgba(0,0,0,0.65)]"
@@ -486,7 +526,8 @@ function StoryViewer({
               controls={false}
               onLoadedMetadata={(e) => {
                 const video = e.currentTarget;
-                if (video.videoWidth && video.videoHeight) setMediaRatio(video.videoWidth / video.videoHeight);
+                if (video.videoWidth && video.videoHeight)
+                  setMediaRatio(video.videoWidth / video.videoHeight);
               }}
               onEnded={next}
             />
@@ -497,7 +538,8 @@ function StoryViewer({
               className="h-full w-full object-contain bg-black"
               onLoad={(e) => {
                 const image = e.currentTarget;
-                if (image.naturalWidth && image.naturalHeight) setMediaRatio(image.naturalWidth / image.naturalHeight);
+                if (image.naturalWidth && image.naturalHeight)
+                  setMediaRatio(image.naturalWidth / image.naturalHeight);
               }}
             />
           )}
@@ -505,12 +547,29 @@ function StoryViewer({
       </div>
 
       {/* tap zones */}
-      <button className="absolute left-0 top-0 bottom-0 w-1/3" onClick={(e) => { e.stopPropagation(); prev(); }} aria-label="anterior" />
-      <button className="absolute right-0 top-0 bottom-0 w-1/3" onClick={(e) => { e.stopPropagation(); next(); }} aria-label="următor" />
+      <button
+        className="absolute left-0 top-0 bottom-0 w-1/3"
+        onClick={(e) => {
+          e.stopPropagation();
+          prev();
+        }}
+        aria-label="anterior"
+      />
+      <button
+        className="absolute right-0 top-0 bottom-0 w-1/3"
+        onClick={(e) => {
+          e.stopPropagation();
+          next();
+        }}
+        aria-label="următor"
+      />
 
       {/* caption */}
       {story.caption && (
-        <div className="absolute bottom-8 inset-x-0 px-6 z-10 text-center" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="absolute bottom-8 inset-x-0 px-6 z-10 text-center"
+          onClick={(e) => e.stopPropagation()}
+        >
           <p className="text-white text-sm drop-shadow-lg max-w-md mx-auto">{story.caption}</p>
         </div>
       )}
@@ -535,7 +594,10 @@ function StoryUploadSheet({
   const mediaType: "image" | "video" = file?.type.startsWith("video") ? "video" : "image";
 
   async function submit() {
-    if (!file) { toast.error("Alege o poză sau un clip."); return; }
+    if (!file) {
+      toast.error("Alege o poză sau un clip.");
+      return;
+    }
     setUploading(true);
     try {
       const ext = file.name.split(".").pop() ?? (mediaType === "video" ? "mp4" : "jpg");
@@ -603,7 +665,14 @@ function StoryUploadSheet({
         {previewUrl ? (
           <div className="relative aspect-[4/5] w-full bg-zinc-950 rounded-3xl overflow-hidden border border-white/5">
             {mediaType === "video" ? (
-              <video src={previewUrl} className="w-full h-full object-cover" playsInline autoPlay muted loop />
+              <video
+                src={previewUrl}
+                className="w-full h-full object-cover"
+                playsInline
+                autoPlay
+                muted
+                loop
+              />
             ) : (
               <img src={previewUrl} alt="" className="w-full h-full object-cover" />
             )}
@@ -654,8 +723,6 @@ function StoryUploadSheet({
         </button>
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }
-
-

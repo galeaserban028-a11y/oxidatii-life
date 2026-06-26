@@ -154,16 +154,17 @@ All permissions can be revoked from settings. We do not sell your data. Read the
 
 Fiecare screenshot are un caption mare sus și UI dedesubt. Folosește același set, doar traduci caption-ul.
 
-| # | Pagină în app    | Caption RO                            | Caption EN                              |
-|---|------------------|---------------------------------------|-----------------------------------------|
-| 1 | /app/map         | Vezi gașca pe hartă, în timp real     | See your crew on the map, live          |
-| 2 | /app (TonightCard + Spritz Index) | Spritz Index pentru fiecare local | Spritz Index for every venue        |
-| 3 | /app/squad (Decision Mode)        | Decideți barul în 30 secunde      | Pick the bar in 30 seconds          |
-| 4 | /app/parties     | Organizezi un spritz, gestionezi gașca| Host a spritz, manage your crew         |
-| 5 | /app/faze        | Fazele de aseară, într-un singur feed | Last night, in one feed                 |
-| 6 | /app/premium     | Premium: stats, badge-uri, prioritate | Premium: stats, badges, priority        |
+| #   | Pagină în app                     | Caption RO                             | Caption EN                       |
+| --- | --------------------------------- | -------------------------------------- | -------------------------------- |
+| 1   | /app/map                          | Vezi gașca pe hartă, în timp real      | See your crew on the map, live   |
+| 2   | /app (TonightCard + Spritz Index) | Spritz Index pentru fiecare local      | Spritz Index for every venue     |
+| 3   | /app/squad (Decision Mode)        | Decideți barul în 30 secunde           | Pick the bar in 30 seconds       |
+| 4   | /app/parties                      | Organizezi un spritz, gestionezi gașca | Host a spritz, manage your crew  |
+| 5   | /app/faze                         | Fazele de aseară, într-un singur feed  | Last night, in one feed          |
+| 6   | /app/premium                      | Premium: stats, badge-uri, prioritate  | Premium: stats, badges, priority |
 
 **Specs obligatorii:**
+
 - iOS 6.7" (iPhone 15 Pro Max): 1290×2796 px, PNG sau JPG, sRGB, fără transparență
 - iOS 6.5" (opțional dacă livrezi 6.7"): 1242×2688 px
 - iPad 13" (DOAR dacă bifezi iPad în target): 2064×2752 px

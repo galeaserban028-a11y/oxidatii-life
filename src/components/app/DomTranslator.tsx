@@ -109,7 +109,9 @@ function schedule(node: Node) {
   pending.add(node);
   if (!scheduled) {
     scheduled = true;
-    (typeof window !== "undefined" ? window.requestAnimationFrame : (cb: () => void) => setTimeout(cb, 16))(flush);
+    (typeof window !== "undefined"
+      ? window.requestAnimationFrame
+      : (cb: () => void) => setTimeout(cb, 16))(flush);
   }
 }
 

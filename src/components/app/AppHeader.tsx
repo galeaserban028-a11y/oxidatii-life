@@ -7,12 +7,10 @@ import { GlobalSearch } from "./GlobalSearch";
 import { HeaderSpritzPill } from "./HeaderSpritzPill";
 import { useCompactMode } from "@/lib/compactMode";
 
-
 export function AppHeader() {
   const location = useLocation();
   const { t } = useTranslation();
   const { compact, toggle } = useCompactMode();
-
 
   const isHome = location.pathname === "/app" || location.pathname === "/app/";
   const showBack = !isHome;
@@ -55,7 +53,6 @@ export function AppHeader() {
         <HeaderSpritzPill />
         <GlobalSearch />
       </div>
-
     </header>
   );
 }

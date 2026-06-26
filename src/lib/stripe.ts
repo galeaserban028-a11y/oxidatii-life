@@ -8,7 +8,7 @@ function paymentsEnvironment(): StripeEnv {
   if (clientToken?.startsWith("pk_test_")) return "sandbox";
   if (clientToken?.startsWith("pk_live_")) return "live";
   throw new Error(
-    "Plățile nu sunt configurate pentru acest build. Finalizează go-live Stripe pentru a accepta plăți reale."
+    "Plățile nu sunt configurate pentru acest build. Finalizează go-live Stripe pentru a accepta plăți reale.",
   );
 }
 
