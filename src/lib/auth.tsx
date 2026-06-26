@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profileRequest = supabase
         .from("profiles")
         .select(
-          "id, handle, display_name, city_id, avatar_url, rank, aura, lifetime_sprits, current_streak, longest_streak, onboarded, is_public, active_frame_id, profile_theme_id, music_clip_url, profile_bg_url, theme_intensity, bio, map_auto_ghost_hours, map_hide_from_live_list, map_require_reciprocity",
+          "id, handle, display_name, city_id, avatar_url, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, active_frame_id, profile_theme_id, music_clip_url, profile_bg_url, theme_intensity, bio",
         )
         .eq("id", uid)
         .maybeSingle();

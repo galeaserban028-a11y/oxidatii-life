@@ -594,7 +594,7 @@ function MapPage() {
       const [pRes, stateRes, locRes] = await Promise.all([
         supabase
           .from("profiles")
-          .select("map_auto_ghost_hours, city_id")
+          .select("city_id")
           .eq("id", user!.id)
           .maybeSingle(),
         supabase.rpc("get_my_account_state"),

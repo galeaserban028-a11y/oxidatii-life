@@ -58,16 +58,9 @@ export function MapSettingsSheet({
     queryKey: ["map-settings", user?.id],
     enabled: !!user && open,
     queryFn: async () => {
-      const [stateRes, extrasRes] = await Promise.all([
-        supabase.rpc("get_my_account_state"),
-        supabase
-          .from("profiles")
-          .select("map_auto_ghost_hours, map_hide_from_live_list, map_require_reciprocity")
-          .eq("id", user!.id)
-          .maybeSingle(),
-      ]);
+      const stateRes = await supabase.rpc("get_my_account_state");
       const stateRow = Array.isArray(stateRes.data) ? (stateRes.data[0] as any) : null;
-      const merged = { ...DEFAULTS, ...(extrasRes.data ?? {}), ...(stateRow ?? {}) };
+      const merged = { ...DEFAULTS, ...(stateRow ?? {}) };
       return merged as MapSettings;
     },
   });
