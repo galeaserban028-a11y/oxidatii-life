@@ -324,7 +324,7 @@ function PremiumPage() {
             return (
               <div
                 key={tier.id}
-                className={`relative rounded-3xl p-5 transition-all bg-slate-900/40 border ${
+                className={`relative rounded-3xl p-4 sm:p-5 transition-all bg-slate-900/40 border ${
                   featured ? "border-2 " + a.border + " " + a.glow : a.border
                 } ${tier.accent === "amber" ? a.glow + " overflow-hidden" : ""}`}
               >
