@@ -219,15 +219,20 @@ function PremiumPage() {
 
   return (
     <div
-      className="min-h-screen pb-28 bg-[#050507] text-white antialiased"
-      style={{ fontFamily: "'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif" }}
+      className="min-h-screen pb-32 bg-[#050507] text-white antialiased"
+      style={{
+        fontFamily: "'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif",
+        paddingTop: "env(safe-area-inset-top)",
+        paddingLeft: "env(safe-area-inset-left)",
+        paddingRight: "env(safe-area-inset-right)",
+      }}
     >
       {/* Top bar */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-[#050507]/80 border-b border-white/5 px-4 h-14 flex items-center gap-2">
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-[#050507]/85 border-b border-white/5 px-4 h-14 flex items-center gap-2">
         <Link to="/app/me" className="p-2 -ml-2 active:scale-95 transition" aria-label="Înapoi">
           <ArrowLeft size={20} strokeWidth={2} />
         </Link>
-        <div className="text-[11px] font-medium tracking-[0.3em] text-slate-400 uppercase">
+        <div className="text-[11px] font-medium tracking-[0.3em] text-slate-300 uppercase">
           Membership
         </div>
         {currentTier && (
@@ -237,10 +242,20 @@ function PremiumPage() {
         )}
       </header>
 
-      <div className="w-full max-w-md mx-auto px-5 space-y-12 pt-10">
+      {/* Syncing banner */}
+      {syncingCheckout && (
+        <div className="px-4 pt-3">
+          <div className="max-w-md mx-auto flex items-center gap-3 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-2.5 text-[12px] text-violet-100">
+            <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-violet-300 border-t-transparent animate-spin" />
+            Confirmăm plata și activăm beneficiile…
+          </div>
+        </div>
+      )}
+
+      <div className="w-full max-w-md mx-auto px-5 sm:px-6 space-y-9 sm:space-y-12 pt-8 sm:pt-10">
         {/* HERO */}
         <div className="text-center space-y-3">
-          <h1 className="text-white text-4xl font-light tracking-tight leading-[1.1]">
+          <h1 className="text-white text-[2rem] sm:text-4xl font-light tracking-tight leading-[1.1]">
             Alege nivelul{" "}
             <span
               className="text-amber-200"
@@ -249,10 +264,11 @@ function PremiumPage() {
               Premium
             </span>
           </h1>
-          <p className="text-slate-400 text-sm max-w-[300px] mx-auto leading-relaxed">
+          <p className="text-slate-300 text-[13px] sm:text-sm max-w-[300px] mx-auto leading-relaxed">
             Deblochează experiența completă și conectează-te cu oameni extraordinari.
           </p>
         </div>
+
 
         {/* ACTIVE PLAN */}
         {currentTier &&
@@ -308,7 +324,7 @@ function PremiumPage() {
             return (
               <div
                 key={tier.id}
-                className={`relative rounded-3xl p-5 transition-all bg-slate-900/40 border ${
+                className={`relative rounded-3xl p-4 sm:p-5 transition-all bg-slate-900/40 border ${
                   featured ? "border-2 " + a.border + " " + a.glow : a.border
                 } ${tier.accent === "amber" ? a.glow + " overflow-hidden" : ""}`}
               >
@@ -328,18 +344,19 @@ function PremiumPage() {
                 )}
 
                 <div className="flex justify-between items-start mb-5">
-                  <div>
+                    <div className="min-w-0">
                     <h3 className={`text-[11px] font-semibold uppercase tracking-widest mb-1 ${a.label}`}>
                       {tier.name}
                     </h3>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-bold text-white tabular-nums">{price}</span>
-                      <span className="text-slate-500 text-xs">
+                      <span className="text-[28px] sm:text-3xl font-bold text-white tabular-nums">{price}</span>
+                      <span className="text-slate-400 text-xs">
+
                         RON/{annual ? "an" : "lună"}
                       </span>
                     </div>
                     {annualSaved && (
-                      <p className="text-[10px] uppercase tracking-wider text-emerald-400/80 mt-1">
+                      <p className="text-[10px] uppercase tracking-wider text-emerald-300 mt-1">
                         economisești {annualSaved} RON
                       </p>
                     )}
@@ -347,7 +364,8 @@ function PremiumPage() {
                   <button
                     onClick={() => handleBuy(tier)}
                     disabled={isCurrent}
-                    className={`shrink-0 px-5 py-2.5 rounded-full font-bold text-xs transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
+                    className={`shrink-0 min-h-[40px] px-4 sm:px-5 py-2.5 rounded-full font-bold text-xs transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-95 ${
+
                       isCurrent
                         ? "bg-transparent border border-slate-700 text-slate-400"
                         : a.btn
@@ -363,12 +381,12 @@ function PremiumPage() {
                   </button>
                 </div>
 
-                <p className="text-[12.5px] text-slate-400 leading-relaxed mb-4 pr-2">
+                <p className="text-[12.5px] sm:text-[13px] text-slate-300 leading-relaxed mb-4 pr-2">
                   {tier.blurb}
                 </p>
 
                 <div className="border-t border-slate-800/80 pt-4">
-                  <p className="text-[10px] uppercase font-semibold tracking-widest text-slate-500 mb-3">
+                  <p className="text-[10px] uppercase font-semibold tracking-widest text-slate-400 mb-3">
                     Ce primești
                   </p>
                   <ul className="space-y-2.5 text-[13px] text-slate-200">
@@ -544,11 +562,16 @@ function PremiumPage() {
           <button
             onClick={handleManage}
             disabled={openingPortal}
-            className="w-full flex items-center justify-center gap-2 h-11 rounded-full border border-slate-700 uppercase text-[10px] tracking-[0.3em] font-semibold disabled:opacity-50 active:scale-[0.99] transition text-slate-300 hover:bg-slate-900"
+            className="w-full flex items-center justify-center gap-2 min-h-[44px] h-11 rounded-full border border-slate-600 uppercase text-[10px] tracking-[0.3em] font-semibold disabled:opacity-50 active:scale-[0.99] transition text-slate-200 hover:bg-slate-900"
           >
-            <Settings size={13} />
+            {openingPortal ? (
+              <span className="inline-block w-3.5 h-3.5 rounded-full border-2 border-slate-300 border-t-transparent animate-spin" />
+            ) : (
+              <Settings size={13} />
+            )}
             {openingPortal ? "se deschide…" : "Gestionează abonament"}
           </button>
+
         )}
 
         {/* FAQ */}
