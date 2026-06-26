@@ -64,6 +64,28 @@ const ALACARTE_SKUS: Record<
     kind: "crystal_ball",
     days: 7,
   },
+  replay_night: {
+    name: "Replay Night · 1 seară",
+    description:
+      "Reaserează noaptea de ieri: traseu, venue-uri, poze, spritz-uri — generat automat și share-uibil pe Stories.",
+    amount: 999, // 9.99 RON
+    currency: "ron",
+    kind: "replay_night",
+  },
+  last_call_send: {
+    name: "Last Call · trimite ping",
+    description: "Trimite un ping anonim cuiva: \"Cineva vrea să te vadă diseară 👀\".",
+    amount: 299, // 2.99 RON
+    currency: "ron",
+    kind: "last_call_send",
+  },
+  last_call_reveal: {
+    name: "Last Call · reveal",
+    description: "Află cine ți-a trimis pingul Last Call.",
+    amount: 499, // 4.99 RON
+    currency: "ron",
+    kind: "last_call_reveal",
+  },
 };
 
 // price_id → premium tier + one-time coin grant. Must match webhook at src/routes/api/public/payments/webhook.tsx
