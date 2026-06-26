@@ -2527,6 +2527,7 @@ export type Database = {
         Args: { _business_id: string }
         Returns: number
       }
+      count_intents_for_date: { Args: { _date: string }; Returns: number }
       create_decision_poll: {
         Args: {
           _conversation_id: string
@@ -2616,6 +2617,14 @@ export type Database = {
           trend: string
         }[]
       }
+      get_hot_venues_for_date: {
+        Args: { _date: string; _limit?: number }
+        Returns: {
+          count: number
+          name: string
+          venue_id: string
+        }[]
+      }
       get_my_account_state: {
         Args: never
         Returns: {
@@ -2624,11 +2633,16 @@ export type Database = {
           coin_balance: number
           last_boost_at: string
           location_consent: boolean
+          map_auto_ghost_hours: number
           map_ghost: boolean
+          map_hide_from_live_list: boolean
           map_precision: string
+          map_require_reciprocity: boolean
           map_visibility: string
+          onboarded: boolean
           premium_tier: string
           premium_until: string
+          tutorial_seen: boolean
         }[]
       }
       get_my_birthdate: { Args: never; Returns: string }
