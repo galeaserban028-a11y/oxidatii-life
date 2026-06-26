@@ -393,6 +393,12 @@ function UserPage() {
                             )}
                           </button>
                         )}
+                        {!isBlocking && !isBlockedBy && (
+                          <LastCallButton
+                            targetId={profile.id}
+                            targetName={profile.display_name ?? profile.handle}
+                          />
+                        )}
                         {!isBlocking && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
