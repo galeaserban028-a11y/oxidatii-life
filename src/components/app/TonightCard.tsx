@@ -79,14 +79,11 @@ export default function TonightCard() {
           .eq("user_id", user.id)
           .eq("intent_date", today)
           .maybeSingle(),
-        supabase
-          .from("daily_intents")
-          .select("user_id", { count: "exact", head: true })
-          .eq("intent_date", today),
+        supabase.rpc("count_intents_for_date", { _date: today }),
       ]);
       if (cancel) return;
       setMyIntent((mineRes.data as any) ?? null);
-      setCount(countRes.count ?? 0);
+      setCount(((countRes.data as number | null) ?? 0) as number);
       if (mineRes.data) {
         setNote((mineRes.data as any).note ?? "");
         if ((mineRes.data as any).venue?.name) {
@@ -104,20 +101,12 @@ export default function TonightCard() {
 
   // Hot venues tonight — group intents by venue
   async function refreshHotVenues() {
-    const { data } = await supabase
-      .from("daily_intents")
-      .select("venue_id, venue:venues(id, name)")
-      .eq("intent_date", today)
-      .not("venue_id", "is", null)
-      .limit(200);
-    const map = new Map<string, { id: string; name: string; count: number }>();
-    (data ?? []).forEach((r: any) => {
-      if (!r.venue?.id) return;
-      const ex = map.get(r.venue.id);
-      if (ex) ex.count++;
-      else map.set(r.venue.id, { id: r.venue.id, name: r.venue.name, count: 1 });
+    const { data } = await supabase.rpc("get_hot_venues_for_date", {
+      _date: today,
+      _limit: 5,
     });
-    setHotVenues([...map.values()].sort((a, b) => b.count - a.count).slice(0, 5));
+    const rows = (data ?? []) as Array<{ venue_id: string; name: string; count: number }>;
+    setHotVenues(rows.map((r) => ({ id: r.venue_id, name: r.name, count: r.count })));
   }
   useEffect(() => {
     if (user) refreshHotVenues();
