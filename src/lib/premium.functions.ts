@@ -10,7 +10,20 @@ import {
 type CheckoutResult = { clientSecret: string } | { error: string };
 type PortalResult = { url: string } | { error: string };
 type SyncResult =
-  | { success: true; tier?: string; coinsAdded?: number; crystalBallDays?: number }
+  | {
+      success: true;
+      tier?: string;
+      coinsAdded?: number;
+      crystalBallDays?: number;
+      replayDate?: string;
+      lastCallPingId?: string;
+      lastCallRevealed?: {
+        sender_id: string;
+        handle: string | null;
+        display_name: string | null;
+        avatar_url: string | null;
+      };
+    }
   | { success: false; error: string };
 
 // Allowed price IDs (subscriptions + one-time coin packs + à la carte)
