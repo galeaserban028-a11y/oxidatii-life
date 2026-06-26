@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useMemo, useState } from "react";
-import { Flame, Camera, MapPin, Trophy, Globe2, ChevronDown } from "lucide-react";
+import { Globe2, ChevronDown, Compass, Users, Moon, TrendingUp, Sparkles, Info } from "lucide-react";
 import { SpritzOfDayStrip } from "@/components/app/SpritzOfDayStrip";
 import { FadeIn } from "@/components/app/FadeIn";
 
@@ -13,7 +13,6 @@ export const Route = createFileRoute("/app/top")({
   component: TopPage,
 });
 
-type Metric = "sprits" | "checkins" | "streak" | "score";
 type Scope = "world" | "country" | "city";
 
 const COUNTRY_LABEL: Record<string, string> = {
@@ -43,19 +42,30 @@ const COUNTRY_LABEL: Record<string, string> = {
   RS: "🇷🇸 Serbia",
 };
 
-const METRIC_META: Record<Metric, { label: string; unit: string; icon: any }> = {
-  sprits: { label: "Șprițuri", unit: "șprițuri", icon: Camera },
-  checkins: { label: "Check-in-uri", unit: "check-in", icon: MapPin },
-  streak: { label: "Streak", unit: "săptămâni", icon: Flame },
-  score: { label: "Scor Oxidare", unit: "puncte", icon: Trophy },
+type Row = {
+  user_id: string;
+  handle: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  city_name: string | null;
+  country: string | null;
+  base_sprits: number;
+  explorer_score: number;
+  unique_venues: number;
+  unique_cities: number;
+  squad_maker: number;
+  sunrise_index: number;
+  trendsetter: number;
+  spritz_score: number;
+  rank: number;
 };
 
 function TopPage() {
   const { user, profile } = useAuth();
-  const metric = "sprits" as Metric;
   const [scope, setScope] = useState<Scope>("country");
   const [country, setCountry] = useState<string>("RO");
   const [countryOpen, setCountryOpen] = useState(false);
+  const [showFormula, setShowFormula] = useState(false);
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -66,7 +76,7 @@ function TopPage() {
 
   const cityId = profile?.city_id;
 
-  // Country list (from DB, distinct)
+  // Country list
   const { data: countries = [] } = useQuery({
     queryKey: ["countries-with-cities"],
     queryFn: async () => {
@@ -77,98 +87,36 @@ function TopPage() {
     },
   });
 
+  // Leaderboard via new RPC
   const { data: list = [], isLoading } = useQuery({
-    queryKey: ["leaderboard", metric, scope, country, cityId, monthKey],
+    queryKey: ["spritz-score-leaderboard", scope, country, cityId, monthKey],
     enabled: scope !== "city" || !!cityId,
     queryFn: async () => {
-      // 1. Build candidate profile pool by geographic scope
-      let profQuery = supabase
-        .from("profiles")
-        .select(
-          "id,handle,display_name,avatar_url,current_streak,longest_streak,lifetime_sprits,aura,city:cities!inner(name,country)",
-        )
-        .eq("is_public", true)
-        .limit(5000);
+      const { data, error } = await supabase.rpc("get_spritz_score_leaderboard", {
+        _scope: scope,
+        _country: scope === "country" ? country : null,
+        _city_id: scope === "city" ? cityId : null,
+        _month_start: monthStart,
+        _limit: 100,
+      });
+      if (error) throw error;
+      return (data ?? []) as Row[];
+    },
+  });
 
-      if (scope === "country") profQuery = profQuery.eq("cities.country", country);
-      if (scope === "city" && cityId) profQuery = profQuery.eq("city_id", cityId);
-
-      const { data: profs } = await profQuery;
-      const candidates = profs ?? [];
-      if (candidates.length === 0) return [];
-      const ids = candidates.map((p: any) => p.id);
-
-      // 2. Pull metric data
-      let scoreMap = new Map<string, number>();
-      const lastPostMap = new Map<string, number>(); // user_id -> ms timestamp of latest sprit_proof this month
-
-      if (metric === "streak") {
-        for (const p of candidates) scoreMap.set(p.id, (p as any).current_streak ?? 0);
-      } else {
-        // Fetch sprit_proofs + venue_photos + checkins for this month
-        const needPhotos = metric === "sprits" || metric === "score";
-        const needCheckins = metric === "checkins" || metric === "score";
-
-        const [proofRes, photoRes, checkinRes] = await Promise.all([
-          needPhotos
-            ? supabase
-                .from("sprit_proofs")
-                .select("user_id, created_at")
-                .in("user_id", ids)
-                .gte("created_at", monthStart)
-            : Promise.resolve({ data: [] as any[] }),
-          needPhotos
-            ? supabase
-                .from("venue_photos")
-                .select("user_id, created_at")
-                .in("user_id", ids)
-                .gte("created_at", monthStart)
-            : Promise.resolve({ data: [] as any[] }),
-          needCheckins
-            ? supabase
-                .from("check_ins")
-                .select("user_id")
-                .in("user_id", ids)
-                .gte("created_at", monthStart)
-            : Promise.resolve({ data: [] as any[] }),
-        ]);
-
-        const photoCounts = new Map<string, number>();
-        const bump = (uid: string, t: number) => {
-          photoCounts.set(uid, (photoCounts.get(uid) ?? 0) + 1);
-          if (t > (lastPostMap.get(uid) ?? 0)) lastPostMap.set(uid, t);
-        };
-        for (const r of proofRes.data ?? [])
-          bump((r as any).user_id, +new Date((r as any).created_at));
-        for (const r of photoRes.data ?? [])
-          bump((r as any).user_id, +new Date((r as any).created_at));
-
-        const checkinCounts = new Map<string, number>();
-        for (const r of checkinRes.data ?? [])
-          checkinCounts.set((r as any).user_id, (checkinCounts.get((r as any).user_id) ?? 0) + 1);
-
-        for (const p of candidates) {
-          const s = photoCounts.get(p.id) ?? 0;
-          const c = checkinCounts.get(p.id) ?? 0;
-          const streak = (p as any).current_streak ?? 0;
-          const aura = (p as any).aura ?? 0;
-          let v = 0;
-          if (metric === "sprits") v = s;
-          else if (metric === "checkins") v = c;
-          else v = s * 3 + c * 2 + streak * 5 + Math.min(aura, 200); // Scor Oxidare
-          scoreMap.set(p.id, v);
-        }
-      }
-
-      return candidates
-        .map((p: any) => ({
-          ...p,
-          value: scoreMap.get(p.id) ?? 0,
-          last_post_at: lastPostMap.get(p.id) ?? 0,
-        }))
-        .filter((p) => p.value > 0)
-        .sort((a, b) => b.value - a.value || b.last_post_at - a.last_post_at)
-        .slice(0, 100);
+  // My rank
+  const { data: myRank } = useQuery({
+    queryKey: ["my-spritz-score", scope, country, cityId, monthKey],
+    enabled: !!user && (scope !== "city" || !!cityId),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_my_spritz_score", {
+        _scope: scope,
+        _country: scope === "country" ? country : null,
+        _city_id: scope === "city" ? cityId : null,
+        _month_start: monthStart,
+      });
+      if (error) throw error;
+      return data as any;
     },
   });
 
@@ -178,8 +126,6 @@ function TopPage() {
     return `din ${COUNTRY_LABEL[country] ?? country}`;
   }, [scope, country]);
 
-  const Icon = METRIC_META[metric].icon;
-
   const instrument = { fontFamily: '"Instrument Serif", "Work Sans", serif' };
   const top3 = list.slice(0, 3);
   const rest = list.slice(3);
@@ -187,13 +133,13 @@ function TopPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
-      {/* Sticky header with sunset glow */}
+      {/* Sticky header */}
       <header className="sticky top-0 z-30 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5">
         <div className="px-5 pt-5 pb-4 max-w-xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-[10px] uppercase tracking-[0.3em] text-white/40">
-                leaderboard
+                spritz score
               </span>
               <span className="h-1 w-1 rounded-full bg-[#ffea00]" />
               <span className="text-[10px] uppercase tracking-[0.2em] text-amber-500/90">
@@ -202,18 +148,42 @@ function TopPage() {
             </div>
             <div className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10">
               <span className="text-[10px] font-mono uppercase tracking-wider text-white/60">
-                {daysLeft}
-                {daysLeft === 1 ? "z" : "z"} rămase
+                {daysLeft}z rămase
               </span>
             </div>
           </div>
           <h1 style={instrument} className="text-5xl leading-[0.9] tracking-tight">
-            Top<span className="text-[#ffea00]">.</span>{" "}
+            Spritz<span className="text-[#ffea00]">.</span>{" "}
             <em className="bg-gradient-to-r from-[#ff3d8b] via-[#ffea00] to-[#c724ff] bg-clip-text text-transparent not-italic font-normal">
-              {METRIC_META[metric].label}
+              Score
             </em>
           </h1>
-          <p className="text-[12px] text-white/50 mt-2">Cei mai tari {scopeLabel}.</p>
+          <button
+            onClick={() => setShowFormula((s) => !s)}
+            className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/80 transition"
+          >
+            <Info size={11} />
+            Cei mai tari {scopeLabel} · cum se calculează?
+          </button>
+
+          <AnimatePresence>
+            {showFormula && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-[11px] text-white/70 space-y-1.5">
+                  <FormulaRow icon={<Sparkles size={12} className="text-[#ffea00]" />} label="Șprițuri (check-in-uri)" weight="×10" />
+                  <FormulaRow icon={<Compass size={12} className="text-[#3ec5ff]" />} label="Explorer (venue ×5 + oraș ×15)" weight="" />
+                  <FormulaRow icon={<Users size={12} className="text-[#ff3d8b]" />} label="Squad Maker (oameni noi)" weight="×8" />
+                  <FormulaRow icon={<Moon size={12} className="text-[#c724ff]" />} label="Sunrise Index (după miezul nopții)" weight="×4" />
+                  <FormulaRow icon={<TrendingUp size={12} className="text-[#00ff9d]" />} label="Trendsetter (lume după tine)" weight="×6" />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Scope tabs */}
@@ -245,7 +215,6 @@ function TopPage() {
             })}
           </div>
 
-          {/* Country picker */}
           {scope === "country" && (
             <div className="relative mt-2">
               <button
@@ -253,10 +222,7 @@ function TopPage() {
                 className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur text-sm font-semibold active:scale-[0.99] transition-all"
               >
                 <span>{COUNTRY_LABEL[country] ?? country}</span>
-                <ChevronDown
-                  size={16}
-                  className={`transition-transform duration-200 ${countryOpen ? "rotate-180" : ""}`}
-                />
+                <ChevronDown size={16} className={`transition-transform duration-200 ${countryOpen ? "rotate-180" : ""}`} />
               </button>
               <AnimatePresence>
                 {countryOpen && (
@@ -291,6 +257,34 @@ function TopPage() {
 
       <div className="px-5 pt-6 pb-10 max-w-xl mx-auto space-y-6">
         <SpritzOfDayStrip />
+
+        {/* My rank (sticky info card) */}
+        {myRank && user && (
+          <FadeIn y={6}>
+            <div className="rounded-2xl border border-[#c724ff]/30 bg-gradient-to-r from-[#c724ff]/10 to-[#ff3d8b]/10 p-4 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] uppercase tracking-wider text-white/50">Tu</div>
+                <div style={instrument} className="text-2xl leading-none mt-1">
+                  {myRank.in_top ? (
+                    <>#{myRank.rank} · <span className="text-[#ffea00]">{myRank.spritz_score}</span> pct</>
+                  ) : (
+                    <>Nu ești în top încă</>
+                  )}
+                </div>
+              </div>
+              {myRank.in_top && (
+                <MiniBreakdown
+                  base={myRank.base_sprits}
+                  explorer={myRank.explorer_score}
+                  squad={myRank.squad_maker}
+                  sunrise={myRank.sunrise_index}
+                  trend={myRank.trendsetter}
+                />
+              )}
+            </div>
+          </FadeIn>
+        )}
+
         {isLoading ? (
           <div className="rounded-3xl border border-white/5 bg-white/[0.02] p-10 text-center text-sm text-white/40">
             Se încarcă…
@@ -298,34 +292,27 @@ function TopPage() {
         ) : list.length === 0 ? (
           <EmptyHint
             title="Topul e gol."
-            sub={
-              metric === "streak"
-                ? "Postează în fiecare săptămână ca să-ți crești streak-ul."
-                : metric === "checkins"
-                  ? "Fă check-in la cel mai apropiat bar ca să apari aici."
-                  : "Postează un șpriț acum și intri direct în top."
-            }
+            sub="Fă primul check-in al lunii și intri direct pe primul loc."
           />
         ) : (
           <>
-            {/* Cinema podium bento */}
             {top3.length > 0 && (
               <FadeIn y={12}>
                 <div className="relative rounded-3xl overflow-hidden border border-white/5 bg-gradient-to-br from-[#0a0a14] via-[#0a0a0a] to-[#0a0a14] p-5">
                   <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#c724ff]/20 blur-3xl pointer-events-none" />
                   <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-[#ff3d8b]/20 blur-3xl pointer-events-none" />
                   <div className="relative grid grid-cols-3 gap-3 items-end">
-                    {podiumOrder.map((p: any, idx) => {
+                    {podiumOrder.map((p: Row) => {
                       const realRank = p === top3[0] ? 1 : p === top3[1] ? 2 : 3;
                       const isKing = realRank === 1;
                       const handle = p?.handle ?? p?.display_name ?? "anonim";
-                      const isMe = p.id === user?.id;
+                      const isMe = p.user_id === user?.id;
                       const podiumH = isKing ? "h-32" : realRank === 2 ? "h-24" : "h-20";
                       return (
                         <Link
-                          key={p.id}
+                          key={p.user_id}
                           to="/app/user/$id"
-                          params={{ id: p.id }}
+                          params={{ id: p.user_id }}
                           className="flex flex-col items-center gap-2"
                         >
                           <div
@@ -335,11 +322,7 @@ function TopPage() {
                           >
                             <div className="h-full w-full rounded-full overflow-hidden bg-[#0a0a0a]">
                               {p?.avatar_url ? (
-                                <img
-                                  src={p.avatar_url}
-                                  alt=""
-                                  className="h-full w-full object-cover"
-                                />
+                                <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
                               ) : (
                                 <div className="h-full w-full flex items-center justify-center text-xl font-semibold">
                                   {handle[0]?.toUpperCase()}
@@ -347,15 +330,11 @@ function TopPage() {
                               )}
                             </div>
                             {isKing && (
-                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl">
-                                👑
-                              </div>
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl">👑</div>
                             )}
                           </div>
                           <div className="text-center min-w-0 w-full">
-                            <div
-                              className={`text-[12px] font-semibold truncate ${isKing ? "text-white" : "text-white/80"}`}
-                            >
+                            <div className={`text-[12px] font-semibold truncate ${isKing ? "text-white" : "text-white/80"}`}>
                               @{handle}
                               {isMe && <span className="text-[#ffea00]"> ·tu</span>}
                             </div>
@@ -363,19 +342,15 @@ function TopPage() {
                               style={instrument}
                               className={`leading-none mt-1 ${isKing ? "text-3xl text-[#ffea00]" : "text-2xl text-white/70"}`}
                             >
-                              {p.value}
+                              {p.spritz_score}
                             </div>
                           </div>
                           <div
                             className={`${podiumH} w-full rounded-t-2xl backdrop-blur-xl border-t border-white/10 ${
-                              isKing
-                                ? "bg-gradient-to-t from-[#c724ff]/30 to-transparent"
-                                : "bg-white/[0.03]"
+                              isKing ? "bg-gradient-to-t from-[#c724ff]/30 to-transparent" : "bg-white/[0.03]"
                             } flex items-start justify-center pt-2`}
                           >
-                            <span
-                              className={`text-[11px] font-mono font-bold ${isKing ? "text-[#ffea00]" : "text-white/40"}`}
-                            >
+                            <span className={`text-[11px] font-mono font-bold ${isKing ? "text-[#ffea00]" : "text-white/40"}`}>
                               #{realRank}
                             </span>
                           </div>
@@ -387,12 +362,11 @@ function TopPage() {
               </FadeIn>
             )}
 
-            {/* Rest of list */}
             {rest.length > 0 && (
               <div className="space-y-2">
-                {rest.map((p: any, i: number) => {
+                {rest.map((p: Row, i: number) => {
                   const rank = i + 4;
-                  const uid = p.id;
+                  const uid = p.user_id;
                   const isMe = uid === user?.id;
                   const handle = p?.handle ?? p?.display_name ?? "anonim";
                   return (
@@ -406,9 +380,7 @@ function TopPage() {
                             : "bg-[#0d0d0d] border-white/5 hover:bg-[#111]"
                         }`}
                       >
-                        <div className="font-mono font-bold text-sm text-center text-white/40">
-                          {rank}
-                        </div>
+                        <div className="font-mono font-bold text-sm text-center text-white/40">{rank}</div>
                         <div className="h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center text-white font-semibold">
                           {p?.avatar_url ? (
                             <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -418,12 +390,18 @@ function TopPage() {
                         </div>
                         <div className="min-w-0">
                           <div className="font-semibold text-sm truncate text-white">
-                            @{handle}{" "}
-                            {isMe && <span className="text-[10px] text-[#ffea00]">· tu</span>}
+                            @{handle} {isMe && <span className="text-[10px] text-[#ffea00]">· tu</span>}
                           </div>
-                          <div className="text-[11px] text-white/40 truncate">
-                            {p?.city?.name ?? "—"}
-                            {p?.city?.country ? ` · ${p.city.country}` : ""}
+                          <div className="text-[11px] text-white/40 truncate flex items-center gap-2">
+                            <span>{p?.city_name ?? "—"}</span>
+                            <MiniBreakdown
+                              base={p.base_sprits}
+                              explorer={p.explorer_score}
+                              squad={p.squad_maker}
+                              sunrise={p.sunrise_index}
+                              trend={p.trendsetter}
+                              compact
+                            />
                           </div>
                         </div>
                         <div className="text-right">
@@ -431,11 +409,10 @@ function TopPage() {
                             style={instrument}
                             className="text-2xl leading-none text-white flex items-center justify-end gap-1.5"
                           >
-                            {p.value}
-                            <Icon size={13} className="text-white/40" />
+                            {p.spritz_score}
                           </div>
                           <div className="text-[9px] text-white/30 uppercase tracking-wider mt-1">
-                            {METRIC_META[metric].unit}
+                            pct
                           </div>
                         </div>
                       </Link>
@@ -447,6 +424,58 @@ function TopPage() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function FormulaRow({ icon, label, weight }: { icon: React.ReactNode; label: string; weight: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2">
+        {icon}
+        <span>{label}</span>
+      </div>
+      {weight && <span className="font-mono text-white/40">{weight}</span>}
+    </div>
+  );
+}
+
+function MiniBreakdown({
+  base,
+  explorer,
+  squad,
+  sunrise,
+  trend,
+  compact = false,
+}: {
+  base: number;
+  explorer: number;
+  squad: number;
+  sunrise: number;
+  trend: number;
+  compact?: boolean;
+}) {
+  const items: Array<[React.ReactNode, number, string]> = [
+    [<Sparkles size={compact ? 9 : 11} key="s" />, base, "#ffea00"],
+    [<Compass size={compact ? 9 : 11} key="e" />, explorer, "#3ec5ff"],
+    [<Users size={compact ? 9 : 11} key="sq" />, squad, "#ff3d8b"],
+    [<Moon size={compact ? 9 : 11} key="m" />, sunrise, "#c724ff"],
+    [<TrendingUp size={compact ? 9 : 11} key="t" />, trend, "#00ff9d"],
+  ];
+  return (
+    <div className={`flex items-center ${compact ? "gap-1.5" : "gap-2"}`}>
+      {items.map(([icon, val, color], i) =>
+        val > 0 ? (
+          <span
+            key={i}
+            className={`inline-flex items-center gap-0.5 ${compact ? "text-[9px]" : "text-[10px]"} font-mono`}
+            style={{ color }}
+          >
+            {icon}
+            {val}
+          </span>
+        ) : null,
+      )}
     </div>
   );
 }
