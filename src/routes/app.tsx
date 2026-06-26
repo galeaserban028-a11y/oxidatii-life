@@ -59,9 +59,10 @@ function AppLayout() {
   }, []);
 
   useLayoutEffect(() => {
+    updateHeaderColor();
     const id = requestAnimationFrame(() => updateHeaderColor());
     return () => cancelAnimationFrame(id);
-  }, [pathname, updateHeaderColor]);
+  }, [pathname, loading, updateHeaderColor]);
 
   useEffect(() => {
     const outlet = outletRef.current;
@@ -76,7 +77,7 @@ function AppLayout() {
     obs.observe(outlet, { childList: true });
     observeRoot(outlet.firstElementChild);
     return () => obs.disconnect();
-  }, [pathname, updateHeaderColor]);
+  }, [pathname, loading, updateHeaderColor]);
 
   useEffect(() => {
     if (loading) return;
