@@ -49,6 +49,7 @@ import { Route as AppAdminIndexRouteImport } from './routes/app.admin.index'
 import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
 import { Route as AppStreetIdRouteImport } from './routes/app.street.$id'
+import { Route as AppReplayDateRouteImport } from './routes/app.replay.$date'
 import { Route as AppPromoIdRouteImport } from './routes/app.promo.$id'
 import { Route as AppPhotoIdRouteImport } from './routes/app.photo.$id'
 import { Route as AppMeReputationRouteImport } from './routes/app.me_.reputation'
@@ -269,6 +270,11 @@ const AppStreetIdRoute = AppStreetIdRouteImport.update({
   path: '/street/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReplayDateRoute = AppReplayDateRouteImport.update({
+  id: '/$date',
+  path: '/$date',
+  getParentRoute: () => AppReplayRoute,
+} as any)
 const AppPromoIdRoute = AppPromoIdRouteImport.update({
   id: '/promo/$id',
   path: '/promo/$id',
@@ -384,7 +390,7 @@ export interface FileRoutesByFullPath {
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
-  '/app/replay': typeof AppReplayRoute
+  '/app/replay': typeof AppReplayRouteWithChildren
   '/app/requests': typeof AppRequestsRoute
   '/app/scan': typeof AppScanRoute
   '/app/settings': typeof AppSettingsRoute
@@ -408,6 +414,7 @@ export interface FileRoutesByFullPath {
   '/app/me/reputation': typeof AppMeReputationRoute
   '/app/photo/$id': typeof AppPhotoIdRoute
   '/app/promo/$id': typeof AppPromoIdRoute
+  '/app/replay/$date': typeof AppReplayDateRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
@@ -441,7 +448,7 @@ export interface FileRoutesByTo {
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
-  '/app/replay': typeof AppReplayRoute
+  '/app/replay': typeof AppReplayRouteWithChildren
   '/app/requests': typeof AppRequestsRoute
   '/app/scan': typeof AppScanRoute
   '/app/settings': typeof AppSettingsRoute
@@ -465,6 +472,7 @@ export interface FileRoutesByTo {
   '/app/me/reputation': typeof AppMeReputationRoute
   '/app/photo/$id': typeof AppPhotoIdRoute
   '/app/promo/$id': typeof AppPromoIdRoute
+  '/app/replay/$date': typeof AppReplayDateRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
@@ -501,7 +509,7 @@ export interface FileRoutesById {
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
-  '/app/replay': typeof AppReplayRoute
+  '/app/replay': typeof AppReplayRouteWithChildren
   '/app/requests': typeof AppRequestsRoute
   '/app/scan': typeof AppScanRoute
   '/app/settings': typeof AppSettingsRoute
@@ -525,6 +533,7 @@ export interface FileRoutesById {
   '/app/me_/reputation': typeof AppMeReputationRoute
   '/app/photo/$id': typeof AppPhotoIdRoute
   '/app/promo/$id': typeof AppPromoIdRoute
+  '/app/replay/$date': typeof AppReplayDateRoute
   '/app/street/$id': typeof AppStreetIdRoute
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
@@ -586,6 +595,7 @@ export interface FileRouteTypes {
     | '/app/me/reputation'
     | '/app/photo/$id'
     | '/app/promo/$id'
+    | '/app/replay/$date'
     | '/app/street/$id'
     | '/app/user/$id'
     | '/app/venue/$id'
@@ -643,6 +653,7 @@ export interface FileRouteTypes {
     | '/app/me/reputation'
     | '/app/photo/$id'
     | '/app/promo/$id'
+    | '/app/replay/$date'
     | '/app/street/$id'
     | '/app/user/$id'
     | '/app/venue/$id'
@@ -702,6 +713,7 @@ export interface FileRouteTypes {
     | '/app/me_/reputation'
     | '/app/photo/$id'
     | '/app/promo/$id'
+    | '/app/replay/$date'
     | '/app/street/$id'
     | '/app/user/$id'
     | '/app/venue/$id'
@@ -1010,6 +1022,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppStreetIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/replay/$date': {
+      id: '/app/replay/$date'
+      path: '/$date'
+      fullPath: '/app/replay/$date'
+      preLoaderRoute: typeof AppReplayDateRouteImport
+      parentRoute: typeof AppReplayRoute
+    }
     '/app/promo/$id': {
       id: '/app/promo/$id'
       path: '/promo/$id'
@@ -1169,6 +1188,18 @@ const AppBizRouteChildren: AppBizRouteChildren = {
 const AppBizRouteWithChildren =
   AppBizRoute._addFileChildren(AppBizRouteChildren)
 
+interface AppReplayRouteChildren {
+  AppReplayDateRoute: typeof AppReplayDateRoute
+}
+
+const AppReplayRouteChildren: AppReplayRouteChildren = {
+  AppReplayDateRoute: AppReplayDateRoute,
+}
+
+const AppReplayRouteWithChildren = AppReplayRoute._addFileChildren(
+  AppReplayRouteChildren,
+)
+
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppBizRoute: typeof AppBizRouteWithChildren
@@ -1184,7 +1215,7 @@ interface AppRouteChildren {
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppPartiesRoute: typeof AppPartiesRoute
   AppPremiumRoute: typeof AppPremiumRoute
-  AppReplayRoute: typeof AppReplayRoute
+  AppReplayRoute: typeof AppReplayRouteWithChildren
   AppRequestsRoute: typeof AppRequestsRoute
   AppScanRoute: typeof AppScanRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -1220,7 +1251,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppNotificationsRoute: AppNotificationsRoute,
   AppPartiesRoute: AppPartiesRoute,
   AppPremiumRoute: AppPremiumRoute,
-  AppReplayRoute: AppReplayRoute,
+  AppReplayRoute: AppReplayRouteWithChildren,
   AppRequestsRoute: AppRequestsRoute,
   AppScanRoute: AppScanRoute,
   AppSettingsRoute: AppSettingsRoute,
