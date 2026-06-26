@@ -49,13 +49,13 @@ function AppLayout() {
   const { compact } = useCompactMode();
   const mainRef = useRef<HTMLElement>(null);
   const outletRef = useRef<HTMLDivElement>(null);
+  const [headerColor, setHeaderColor] = useState("var(--background)");
 
   // Broadcast our live position to friends if we've granted location consent.
   useLiveLocation(user?.id ?? null, !!profile?.location_consent);
 
   const updateHeaderColor = useCallback(() => {
-    const color = resolvePageBackgroundColor();
-    mainRef.current?.style.setProperty("--header-bg", color);
+    setHeaderColor(resolvePageBackgroundColor());
   }, []);
 
   useLayoutEffect(() => {
@@ -94,7 +94,7 @@ function AppLayout() {
       ref={mainRef}
       className={`min-h-screen bg-background text-foreground overflow-x-hidden ${compact ? "oxi-compact" : ""}`}
       style={{
-        ["--header-bg" as any]: "var(--background)",
+        ["--header-bg" as any]: headerColor,
         paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)",
       }}
     >
