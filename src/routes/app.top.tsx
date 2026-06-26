@@ -159,31 +159,19 @@ function TopPage() {
             </em>
           </h1>
           <button
-            onClick={() => setShowFormula((s) => !s)}
-            className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-white/50 hover:text-white/80 transition"
+            onClick={() => setShowFormula(true)}
+            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/10 bg-white/[0.04] text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition"
           >
             <Info size={11} />
-            Cei mai tari {scopeLabel} · cum se calculează?
+            Reguli & cum se calculează
           </button>
 
           <AnimatePresence>
             {showFormula && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-[11px] text-white/70 space-y-1.5">
-                  <FormulaRow icon={<Sparkles size={12} className="text-[#ffea00]" />} label="Șprițuri (check-in-uri)" weight="×10" />
-                  <FormulaRow icon={<Compass size={12} className="text-[#3ec5ff]" />} label="Explorer (venue ×5 + oraș ×15)" weight="" />
-                  <FormulaRow icon={<Users size={12} className="text-[#ff3d8b]" />} label="Squad Maker (oameni noi)" weight="×8" />
-                  <FormulaRow icon={<Moon size={12} className="text-[#c724ff]" />} label="Sunrise Index (după miezul nopții)" weight="×4" />
-                  <FormulaRow icon={<TrendingUp size={12} className="text-[#00ff9d]" />} label="Trendsetter (lume după tine)" weight="×6" />
-                </div>
-              </motion.div>
+              <RulesModal onClose={() => setShowFormula(false)} />
             )}
           </AnimatePresence>
+
         </div>
 
         {/* Scope tabs */}
