@@ -1,23 +1,22 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { Sparkles, Eye, MapPin, Loader2, Lock } from "lucide-react";
+import { Sparkles, Eye, MapPin, Lock, CreditCard } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
 
 type Visitor = { user_id: string; handle: string | null; display_name: string | null; avatar_url: string | null; last_visit: string; visit_count?: number; last_seen?: string };
 
-const PRICE = 15; // șprițuri
+const PRICE_RON = 3;
 
 export function CrystalBallCard() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const qc = useQueryClient();
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [tab, setTab] = useState<"visitors" | "nearby">("visitors");
 
-  const { data, isLoading } = useQuery({
+  const { data } = useQuery({
     queryKey: ["crystal-ball", user?.id],
     enabled: !!user,
     queryFn: async () => {
@@ -27,28 +26,11 @@ export function CrystalBallCard() {
     },
   });
 
-  const unlock = useMutation({
-    mutationFn: async () => {
-      const { data, error } = await supabase.rpc("unlock_crystal_ball");
-      if (error) throw error;
-      const r = data as any;
-      if (!r.ok) throw new Error(r.error ?? "Eroare");
-      return r;
-    },
-    onSuccess: () => {
-      toast.success("🔮 Crystal Ball activat 7 zile");
-      qc.invalidateQueries({ queryKey: ["crystal-ball", user?.id] });
-      qc.invalidateQueries({ queryKey: ["profile", user?.id] });
-    },
-    onError: (e: any) => toast.error(e.message ?? "Nu ai destule șprițuri"),
-  });
-
   if (!user) return null;
 
   const unlocked = data?.unlocked === true;
   const visitors = data?.visitors ?? [];
   const nearby = data?.nearby ?? [];
-  const coins = (profile as any)?.coin_balance ?? 0;
   const expiresAt = data?.expires_at ? new Date(data.expires_at) : null;
 
   return (
@@ -72,15 +54,14 @@ export function CrystalBallCard() {
             <span className="text-foreground"> cine a fost fizic aproape de tine</span> în ultimele 7 zile.
           </p>
           <button
-            onClick={() => setConfirmOpen(true)}
-            disabled={isLoading || unlock.isPending}
-            className="w-full h-11 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white text-xs font-mono uppercase tracking-widest flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
+            onClick={() => setCheckoutOpen(true)}
+            className="w-full h-11 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white text-xs font-mono uppercase tracking-widest flex items-center justify-center gap-2 active:scale-[0.98]"
           >
-            {unlock.isPending ? <Loader2 size={14} className="animate-spin" /> : <Lock size={14} />}
-            Deblochează · {PRICE} șprițuri / 7 zile
+            <Lock size={14} />
+            Deblochează · {PRICE_RON} lei / 7 zile
           </button>
-          <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground text-center">
-            ai {coins} șprițuri · plata cu card vine curând
+          <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground text-center flex items-center justify-center gap-1">
+            <CreditCard size={10} /> plată cu cardul · securizat
           </div>
         </>
       ) : (
@@ -104,27 +85,15 @@ export function CrystalBallCard() {
         </>
       )}
 
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Activează Crystal Ball</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Vei plăti <span className="text-foreground font-semibold">{PRICE} șprițuri</span> pentru 7 zile de acces la vizitatori și utilizatori aproape de tine.
-          </p>
-          <p className="text-xs text-muted-foreground">Ai {coins} șprițuri.</p>
-          <DialogFooter>
-            <button onClick={() => setConfirmOpen(false)} className="h-10 px-4 rounded-full border border-foreground/15 text-xs font-mono uppercase tracking-widest">Anulează</button>
-            <button
-              onClick={() => { setConfirmOpen(false); unlock.mutate(); }}
-              disabled={coins < PRICE}
-              className="h-10 px-4 rounded-full bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white text-xs font-mono uppercase tracking-widest disabled:opacity-50"
-            >
-              Activează
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PremiumCheckoutDialog
+        open={checkoutOpen}
+        priceId={checkoutOpen ? "crystal_ball_7d" : null}
+        title={`Crystal Ball · ${PRICE_RON} lei / 7 zile`}
+        onClose={() => {
+          setCheckoutOpen(false);
+          qc.invalidateQueries({ queryKey: ["crystal-ball", user?.id] });
+        }}
+      />
     </div>
   );
 }
