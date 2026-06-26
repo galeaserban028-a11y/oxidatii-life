@@ -109,12 +109,9 @@ const TIERS: Tier[] = [
     perks: [
       "Tot din Pro",
       "Diamond badge holografic",
-      "Featured pe Discover",
-      "Founder recognition pe vecie",
-      "Cadou aniversar fizic",
       "120 șprițuri pe lună",
-      "Acces beta features",
     ],
+
   },
 ];
 
