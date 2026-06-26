@@ -299,6 +299,44 @@ function PremiumPage() {
             Funcții à la carte
           </div>
           <CrystalBallCard />
+          <Link
+            to="/app/replay"
+            className="block p-4 rounded-2xl bg-gradient-to-br from-neon-violet/20 via-card to-neon-cyan/10 border border-neon-violet/40 hover:border-neon-violet transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-neon-violet/20 flex items-center justify-center text-2xl">
+                ✨
+              </div>
+              <div className="flex-1">
+                <div className="font-display font-black uppercase tracking-wide text-sm">
+                  Replay Night
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Retrăiește noaptea de aseară · 9.99 RON
+                </div>
+              </div>
+              <div className="text-xs font-mono text-neon-violet">→</div>
+            </div>
+          </Link>
+          <Link
+            to="/app/lastcalls"
+            className="block p-4 rounded-2xl bg-gradient-to-br from-neon-violet/20 via-card to-neon-pink/10 border border-neon-violet/40 hover:border-neon-violet transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-neon-violet/20 flex items-center justify-center text-2xl">
+                ⚡
+              </div>
+              <div className="flex-1">
+                <div className="font-display font-black uppercase tracking-wide text-sm">
+                  Last Call
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Ping anonim · 2.99 RON · reveal 4.99
+                </div>
+              </div>
+              <div className="text-xs font-mono text-neon-violet">→</div>
+            </div>
+          </Link>
         </section>
 
         {/* HERO */}

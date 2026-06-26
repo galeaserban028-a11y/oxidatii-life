@@ -9,11 +9,15 @@ export function PremiumCheckoutDialog({
   title,
   open,
   onClose,
+  extra,
+  returnUrl,
 }: {
   priceId: string | null;
   title: string;
   open: boolean;
   onClose: () => void;
+  extra?: { target_id?: string; ping_id?: string; date?: string };
+  returnUrl?: string;
 }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -30,8 +34,11 @@ export function PremiumCheckoutDialog({
         const result = await createPremiumCheckout({
           data: {
             priceId,
-            returnUrl: `${window.location.origin}/app/premium?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+            returnUrl:
+              returnUrl ??
+              `${window.location.origin}/app/premium?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
             environment: getStripeEnvironment(),
+            ...(extra && { extra }),
           },
         });
         if (cancelled) return;
@@ -45,7 +52,7 @@ export function PremiumCheckoutDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, priceId]);
+  }, [open, priceId, returnUrl, extra?.target_id, extra?.ping_id, extra?.date]);
 
   if (!open) return null;
 

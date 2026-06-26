@@ -10,7 +10,20 @@ import {
 type CheckoutResult = { clientSecret: string } | { error: string };
 type PortalResult = { url: string } | { error: string };
 type SyncResult =
-  | { success: true; tier?: string; coinsAdded?: number; crystalBallDays?: number }
+  | {
+      success: true;
+      tier?: string;
+      coinsAdded?: number;
+      crystalBallDays?: number;
+      replayDate?: string;
+      lastCallPingId?: string;
+      lastCallRevealed?: {
+        sender_id: string;
+        handle: string | null;
+        display_name: string | null;
+        avatar_url: string | null;
+      };
+    }
   | { success: false; error: string };
 
 // Allowed price IDs (subscriptions + one-time coin packs + à la carte)
@@ -29,6 +42,9 @@ const ALLOWED_PRICES = new Set([
   "coins_boss",
   "coins_legenda",
   "crystal_ball_7d",
+  "replay_night",
+  "last_call_send",
+  "last_call_reveal",
 ]);
 
 const COIN_PACKS: Record<string, number> = {
@@ -60,6 +76,28 @@ const ALACARTE_SKUS: Record<
     currency: "ron",
     kind: "crystal_ball",
     days: 7,
+  },
+  replay_night: {
+    name: "Replay Night · 1 seară",
+    description:
+      "Reaserează noaptea de ieri: traseu, venue-uri, poze, spritz-uri — generat automat și share-uibil pe Stories.",
+    amount: 999, // 9.99 RON
+    currency: "ron",
+    kind: "replay_night",
+  },
+  last_call_send: {
+    name: "Last Call · trimite ping",
+    description: "Trimite un ping anonim cuiva: \"Cineva vrea să te vadă diseară 👀\".",
+    amount: 299, // 2.99 RON
+    currency: "ron",
+    kind: "last_call_send",
+  },
+  last_call_reveal: {
+    name: "Last Call · reveal",
+    description: "Află cine ți-a trimis pingul Last Call.",
+    amount: 499, // 4.99 RON
+    currency: "ron",
+    kind: "last_call_reveal",
   },
 };
 
@@ -107,10 +145,24 @@ async function resolveCustomer(
 
 export const createPremiumCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { priceId: string; returnUrl: string; environment: StripeEnv }) => {
-    if (!ALLOWED_PRICES.has(data.priceId)) throw new Error("Invalid priceId");
-    return data;
-  })
+  .inputValidator(
+    (data: {
+      priceId: string;
+      returnUrl: string;
+      environment: StripeEnv;
+      extra?: { target_id?: string; ping_id?: string; date?: string };
+    }) => {
+      if (!ALLOWED_PRICES.has(data.priceId)) throw new Error("Invalid priceId");
+      const uuidRe = /^[0-9a-fA-F-]{36}$/;
+      const dateRe = /^\d{4}-\d{2}-\d{2}$/;
+      if (data.extra?.target_id && !uuidRe.test(data.extra.target_id))
+        throw new Error("Invalid target_id");
+      if (data.extra?.ping_id && !uuidRe.test(data.extra.ping_id))
+        throw new Error("Invalid ping_id");
+      if (data.extra?.date && !dateRe.test(data.extra.date)) throw new Error("Invalid date");
+      return data;
+    },
+  )
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
     const { userId, claims } = context;
     const email = (claims as any)?.email as string | undefined;
@@ -123,7 +175,6 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
       if (matchedPrices.length) {
         stripePrice = matchedPrices[0];
       } else if (ALACARTE_SKUS[data.priceId]) {
-        // Auto-provision à la carte SKU on first use so admins don't have to create it manually.
         const sku = ALACARTE_SKUS[data.priceId];
         const product = await stripe.products.create({
           name: sku.name,
@@ -163,6 +214,9 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
           kind: alacarte.kind,
           ...(alacarte.days && { days: String(alacarte.days) }),
         }),
+        ...(data.extra?.target_id && { target_id: data.extra.target_id }),
+        ...(data.extra?.ping_id && { ping_id: data.extra.ping_id }),
+        ...(data.extra?.date && { replay_date: data.extra.date }),
       };
 
       const session = await stripe.checkout.sessions.create({
@@ -225,6 +279,58 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
       const sessionKind = session.metadata?.kind ?? null;
       const isCoinPack = typeof priceId === "string" && priceId.startsWith("coins_");
       const isCrystalBall = sessionKind === "crystal_ball" || priceId === "crystal_ball_7d";
+      const isReplayNight = sessionKind === "replay_night" || priceId === "replay_night";
+      const isLastCallSend = sessionKind === "last_call_send" || priceId === "last_call_send";
+      const isLastCallReveal = sessionKind === "last_call_reveal" || priceId === "last_call_reveal";
+
+      // À la carte: Replay Night — unlock a specific day's wrap
+      if (isReplayNight) {
+        const replayDate =
+          session.metadata?.replay_date ??
+          new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        const { error: grantErr } = await supabaseAdmin.rpc("grant_replay_unlock", {
+          _user_id: userId,
+          _date: replayDate,
+          _session: session.id,
+        });
+        if (grantErr) return { success: false, error: grantErr.message };
+        return { success: true, replayDate };
+      }
+
+      // À la carte: Last Call — sender pays to send anonymous ping
+      if (isLastCallSend) {
+        const targetId = session.metadata?.target_id;
+        if (!targetId) return { success: false, error: "Țintă lipsă" };
+        // Use authenticated supabase client so RPC sees auth.uid() = sender
+        const { data: pingId, error: rpcErr } = await context.supabase.rpc(
+          "create_last_call_ping",
+          { _target_id: targetId, _session: session.id },
+        );
+        if (rpcErr) return { success: false, error: rpcErr.message };
+        return { success: true, lastCallPingId: pingId as string };
+      }
+
+      // À la carte: Last Call Reveal — target pays to unmask sender
+      if (isLastCallReveal) {
+        const pingId = session.metadata?.ping_id;
+        if (!pingId) return { success: false, error: "Ping lipsă" };
+        const { data: revealed, error: rpcErr } = await context.supabase.rpc("reveal_last_call", {
+          _ping_id: pingId,
+          _session: session.id,
+        });
+        if (rpcErr) return { success: false, error: rpcErr.message };
+        const r = revealed as any;
+        return {
+          success: true,
+          lastCallRevealed: {
+            sender_id: r?.sender_id ?? "",
+            handle: r?.handle ?? null,
+            display_name: r?.display_name ?? null,
+            avatar_url: r?.avatar_url ?? null,
+          },
+        };
+      }
+
 
       // À la carte: Crystal Ball 7 zile — grant unlock window
       if (isCrystalBall) {

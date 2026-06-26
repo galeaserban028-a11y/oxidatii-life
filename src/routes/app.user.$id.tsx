@@ -28,6 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { LastCallButton } from "@/components/app/LastCallButton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -391,6 +392,12 @@ function UserPage() {
                               <MessageCircle size={18} strokeWidth={2.6} />
                             )}
                           </button>
+                        )}
+                        {!isBlocking && !isBlockedBy && (
+                          <LastCallButton
+                            targetId={profile.id}
+                            targetName={profile.display_name ?? profile.handle}
+                          />
                         )}
                         {!isBlocking && (
                           <DropdownMenu>
