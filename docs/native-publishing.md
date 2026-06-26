@@ -122,18 +122,21 @@ bunx cap open android
 
 - [ ] Xcode → Signing & Capabilities: **Push Notifications** + **Background Modes** (Remote notifications + Location updates)
 - [ ] Xcode → Associated Domains: `applinks:oxidatii.life`
+- [ ] `ios/App/App/GoogleService-Info.plist` adăugat (șablon: `GoogleService-Info.plist.template`)
 - [ ] Apple Team ID înlocuit în `public/.well-known/apple-app-site-association` (înlocuiește `TEAMID`)
 - [ ] Bundle version + build number incrementate
 - [ ] App Store Connect: descriere RO + EN, 3+ screenshots 6.7", privacy policy URL
+- [ ] App Store Connect: App Privacy completat conform `docs/app-privacy-nutrition.md`
 - [ ] Age rating: 17+
 
 ### Android
 
-- [ ] `android/app/google-services.json` adăugat (Firebase pentru FCM)
+- [ ] `android/app/google-services.json` adăugat (șablon: `google-services.json.template`)
 - [ ] `versionCode` + `versionName` incrementate în `android/app/build.gradle`
 - [ ] SHA-256 al cheii de release înlocuit în `public/.well-known/assetlinks.json` (`keytool -list -v -keystore release.keystore | grep SHA256`)
 - [ ] Signed AAB generat: `bunx cap open android` → Build → Generate Signed Bundle
-- [ ] Play Console: Data Safety form completat (locație, mesaje, poze, push token)
+- [ ] Play Console: Data Safety form completat conform `docs/data-safety.md`
+
 
 ### Smoke test pe device fizic
 
