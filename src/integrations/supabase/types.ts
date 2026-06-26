@@ -1279,6 +1279,39 @@ export type Database = {
         }
         Relationships: []
       }
+      last_call_pings: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          reveal_stripe_session_id: string | null
+          revealed_at: string | null
+          sender_id: string
+          sender_stripe_session_id: string | null
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          reveal_stripe_session_id?: string | null
+          revealed_at?: string | null
+          sender_id: string
+          sender_stripe_session_id?: string | null
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          reveal_stripe_session_id?: string | null
+          revealed_at?: string | null
+          sender_id?: string
+          sender_stripe_session_id?: string | null
+          target_id?: string
+        }
+        Relationships: []
+      }
       live_locations: {
         Row: {
           accuracy: number | null
@@ -1900,6 +1933,30 @@ export type Database = {
           count?: number
           user_id?: string
           window_start?: string
+        }
+        Relationships: []
+      }
+      replay_unlocks: {
+        Row: {
+          id: string
+          purchased_at: string
+          stripe_session_id: string | null
+          unlock_date: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          purchased_at?: string
+          stripe_session_id?: string | null
+          unlock_date: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          purchased_at?: string
+          stripe_session_id?: string | null
+          unlock_date?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2537,6 +2594,10 @@ export type Database = {
         }
         Returns: string
       }
+      create_last_call_ping: {
+        Args: { _session: string; _target_id: string }
+        Returns: string
+      }
       current_weekend_window: {
         Args: never
         Returns: {
@@ -2646,6 +2707,19 @@ export type Database = {
         }[]
       }
       get_my_birthdate: { Args: never; Returns: string }
+      get_my_last_calls: {
+        Args: never
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          revealed_at: string
+          sender_avatar_url: string
+          sender_display_name: string
+          sender_handle: string
+          sender_id: string
+        }[]
+      }
       get_profile_card: {
         Args: { _id: string }
         Returns: {
@@ -2657,6 +2731,7 @@ export type Database = {
           is_public: boolean
         }[]
       }
+      get_replay_data: { Args: { _date: string }; Returns: Json }
       get_spritz_index: { Args: { _city_id?: string }; Returns: Json }
       get_spritz_index_ranking: {
         Args: never
@@ -2681,6 +2756,10 @@ export type Database = {
       }
       grant_crystal_ball_unlock: {
         Args: { _days?: number; _user_id: string }
+        Returns: Json
+      }
+      grant_replay_unlock: {
+        Args: { _date: string; _session: string; _user_id: string }
         Returns: Json
       }
       has_active_premium: {
@@ -2711,6 +2790,10 @@ export type Database = {
       record_profile_visit: {
         Args: { _profile_id: string }
         Returns: undefined
+      }
+      reveal_last_call: {
+        Args: { _ping_id: string; _session: string }
+        Returns: Json
       }
       send_chat_gift: {
         Args: { _conversation_id: string; _gift_id: string }
