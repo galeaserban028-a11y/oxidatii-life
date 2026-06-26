@@ -6,13 +6,14 @@ type CheckoutResult = { clientSecret: string } | { error: string };
 type PortalResult = { url: string } | { error: string };
 type SyncResult = { success: true; tier?: string; coinsAdded?: number } | { success: false; error: string };
 
-// Allowed price IDs (subscriptions + one-time coin packs)
+// Allowed price IDs (subscriptions + one-time coin packs + à la carte)
 const ALLOWED_PRICES = new Set([
   "vip_monthly", "vip_yearly",
   "vip_plus_monthly", "vip_plus_yearly",
   "pro_monthly", "pro_yearly",
   "elite_monthly", "elite_yearly",
   "coins_mic", "coins_mediu", "coins_mare", "coins_boss", "coins_legenda",
+  "crystal_ball_7d",
 ]);
 
 const COIN_PACKS: Record<string, number> = {
@@ -21,6 +22,19 @@ const COIN_PACKS: Record<string, number> = {
   coins_mare: 600,
   coins_boss: 1500,
   coins_legenda: 5000,
+};
+
+// À la carte one-time SKUs auto-provisioned in Stripe if the lookup_key is missing.
+// Amounts in RON minor units (bani).
+const ALACARTE_SKUS: Record<string, { name: string; description: string; amount: number; currency: string; kind: string; days?: number }> = {
+  crystal_ball_7d: {
+    name: "Crystal Ball · 7 zile",
+    description: "Vezi cine ți-a vizitat profilul și cine a fost fizic aproape de tine în ultimele 7 zile.",
+    amount: 300, // 3.00 RON
+    currency: "ron",
+    kind: "crystal_ball",
+    days: 7,
+  },
 };
 
 // price_id → premium tier + one-time coin grant. Must match webhook at src/routes/api/public/payments/webhook.tsx
