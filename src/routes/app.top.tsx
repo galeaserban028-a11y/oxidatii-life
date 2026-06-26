@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Globe2, ChevronDown, Compass, Users, Moon, TrendingUp, Sparkles, Info } from "lucide-react";
 import { SpritzOfDayStrip } from "@/components/app/SpritzOfDayStrip";
 import { FadeIn } from "@/components/app/FadeIn";
@@ -495,7 +496,9 @@ function RulesModal({ onClose }: { onClose: () => void }) {
     { n: "07", title: "Trendsetter", body: "Persoane distincte care se check-in la același venue la cel mult 2h DUPĂ tine. Tu ai setat trendul.", tag: "Influență", weight: "×6" },
     { n: "08", title: "Fair play", body: "Check-in-urile false, conturile duplicate sau orice formă de fraudă duc la descalificare și pierderea punctajului lunii." },
   ];
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -597,7 +600,8 @@ function RulesModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
 
