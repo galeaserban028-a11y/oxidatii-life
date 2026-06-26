@@ -34,6 +34,7 @@ import { Route as AppPartiesRouteImport } from './routes/app.parties'
 import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
 import { Route as AppMeRouteImport } from './routes/app.me'
 import { Route as AppMapRouteImport } from './routes/app.map'
+import { Route as AppLastcallsRouteImport } from './routes/app.lastcalls'
 import { Route as AppInboxRouteImport } from './routes/app.inbox'
 import { Route as AppFriendsRouteImport } from './routes/app.friends'
 import { Route as AppFollowersRouteImport } from './routes/app.followers'
@@ -191,6 +192,11 @@ const AppMeRoute = AppMeRouteImport.update({
 const AppMapRoute = AppMapRouteImport.update({
   id: '/map',
   path: '/map',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLastcallsRoute = AppLastcallsRouteImport.update({
+  id: '/lastcalls',
+  path: '/lastcalls',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInboxRoute = AppInboxRouteImport.update({
@@ -385,6 +391,7 @@ export interface FileRoutesByFullPath {
   '/app/followers': typeof AppFollowersRoute
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
+  '/app/lastcalls': typeof AppLastcallsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
   '/app/notifications': typeof AppNotificationsRoute
@@ -443,6 +450,7 @@ export interface FileRoutesByTo {
   '/app/followers': typeof AppFollowersRoute
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
+  '/app/lastcalls': typeof AppLastcallsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
   '/app/notifications': typeof AppNotificationsRoute
@@ -504,6 +512,7 @@ export interface FileRoutesById {
   '/app/followers': typeof AppFollowersRoute
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
+  '/app/lastcalls': typeof AppLastcallsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
   '/app/notifications': typeof AppNotificationsRoute
@@ -566,6 +575,7 @@ export interface FileRouteTypes {
     | '/app/followers'
     | '/app/friends'
     | '/app/inbox'
+    | '/app/lastcalls'
     | '/app/map'
     | '/app/me'
     | '/app/notifications'
@@ -624,6 +634,7 @@ export interface FileRouteTypes {
     | '/app/followers'
     | '/app/friends'
     | '/app/inbox'
+    | '/app/lastcalls'
     | '/app/map'
     | '/app/me'
     | '/app/notifications'
@@ -684,6 +695,7 @@ export interface FileRouteTypes {
     | '/app/followers'
     | '/app/friends'
     | '/app/inbox'
+    | '/app/lastcalls'
     | '/app/map'
     | '/app/me'
     | '/app/notifications'
@@ -915,6 +927,13 @@ declare module '@tanstack/react-router' {
       path: '/map'
       fullPath: '/app/map'
       preLoaderRoute: typeof AppMapRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/lastcalls': {
+      id: '/app/lastcalls'
+      path: '/lastcalls'
+      fullPath: '/app/lastcalls'
+      preLoaderRoute: typeof AppLastcallsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/inbox': {
@@ -1210,6 +1229,7 @@ interface AppRouteChildren {
   AppFollowersRoute: typeof AppFollowersRoute
   AppFriendsRoute: typeof AppFriendsRoute
   AppInboxRoute: typeof AppInboxRoute
+  AppLastcallsRoute: typeof AppLastcallsRoute
   AppMapRoute: typeof AppMapRoute
   AppMeRoute: typeof AppMeRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
@@ -1246,6 +1266,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFollowersRoute: AppFollowersRoute,
   AppFriendsRoute: AppFriendsRoute,
   AppInboxRoute: AppInboxRoute,
+  AppLastcallsRoute: AppLastcallsRoute,
   AppMapRoute: AppMapRoute,
   AppMeRoute: AppMeRoute,
   AppNotificationsRoute: AppNotificationsRoute,
