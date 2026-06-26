@@ -94,8 +94,8 @@ function TopPage() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_spritz_score_leaderboard", {
         _scope: scope,
-        _country: scope === "country" ? country : null,
-        _city_id: scope === "city" ? cityId : null,
+        _country: scope === "country" ? country : undefined,
+        _city_id: scope === "city" ? (cityId ?? undefined) : undefined,
         _month_start: monthStart,
         _limit: 100,
       });
