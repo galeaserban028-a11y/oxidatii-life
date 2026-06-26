@@ -132,10 +132,13 @@ function TopPage() {
   const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-[100dvh] bg-[#050505] text-white">
       {/* Sticky header */}
-      <header className="sticky top-0 z-30 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5">
-        <div className="px-5 pt-5 pb-4 max-w-xl mx-auto">
+      <header
+        className="sticky z-30 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5"
+        style={{ top: "env(safe-area-inset-top)" }}
+      >
+        <div className="px-5 pt-4 pb-3 max-w-xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-[10px] uppercase tracking-[0.3em] text-white/40">
@@ -152,7 +155,7 @@ function TopPage() {
               </span>
             </div>
           </div>
-          <h1 style={instrument} className="text-5xl leading-[0.9] tracking-tight">
+          <h1 style={instrument} className="text-4xl sm:text-5xl leading-[0.9] tracking-tight">
             Spritz<span className="text-[#ffea00]">.</span>{" "}
             <em className="bg-gradient-to-r from-[#ff3d8b] via-[#ffea00] to-[#c724ff] bg-clip-text text-transparent not-italic font-normal">
               Score
@@ -243,7 +246,7 @@ function TopPage() {
         </div>
       </header>
 
-      <div className="px-5 pt-6 pb-10 max-w-xl mx-auto space-y-6">
+      <div className="px-5 pt-4 pb-[calc(10rem+env(safe-area-inset-bottom))] max-w-xl mx-auto space-y-4">
         <SpritzOfDayStrip />
 
         {/* My rank (sticky info card) */}
@@ -286,25 +289,25 @@ function TopPage() {
           <>
             {top3.length > 0 && (
               <FadeIn y={12}>
-                <div className="relative rounded-3xl overflow-hidden border border-white/5 bg-gradient-to-br from-[#0a0a14] via-[#0a0a0a] to-[#0a0a14] p-5">
+                <div className="relative rounded-3xl overflow-hidden border border-white/5 bg-gradient-to-br from-[#0a0a14] via-[#0a0a0a] to-[#0a0a14] p-4 sm:p-5">
                   <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#c724ff]/20 blur-3xl pointer-events-none" />
                   <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-[#ff3d8b]/20 blur-3xl pointer-events-none" />
-                  <div className="relative grid grid-cols-3 gap-3 items-end">
+                  <div className="relative grid grid-cols-3 gap-2 sm:gap-3 items-end">
                     {podiumOrder.map((p: Row) => {
                       const realRank = p === top3[0] ? 1 : p === top3[1] ? 2 : 3;
                       const isKing = realRank === 1;
                       const handle = p?.handle ?? p?.display_name ?? "anonim";
                       const isMe = p.user_id === user?.id;
-                      const podiumH = isKing ? "h-32" : realRank === 2 ? "h-24" : "h-20";
+                      const podiumH = isKing ? "h-24 sm:h-32" : realRank === 2 ? "h-20 sm:h-24" : "h-16 sm:h-20";
                       return (
                         <Link
                           key={p.user_id}
                           to="/app/user/$id"
                           params={{ id: p.user_id }}
-                          className="flex flex-col items-center gap-2"
+                          className="flex flex-col items-center gap-1.5 sm:gap-2"
                         >
                           <div
-                            className={`relative ${isKing ? "h-20 w-20" : "h-16 w-16"} rounded-full p-[2px] bg-gradient-to-br ${
+                            className={`relative ${isKing ? "h-16 w-16 sm:h-20 sm:w-20" : "h-14 w-14 sm:h-16 sm:w-16"} rounded-full p-[2px] bg-gradient-to-br ${
                               isKing ? "from-[#ff3d8b] to-[#c724ff]" : "from-white/20 to-white/5"
                             } ${isKing ? "shadow-[0_0_30px_rgba(199,36,255,0.5)]" : ""}`}
                           >
@@ -328,7 +331,7 @@ function TopPage() {
                             </div>
                             <div
                               style={instrument}
-                              className={`leading-none mt-1 ${isKing ? "text-3xl text-[#ffea00]" : "text-2xl text-white/70"}`}
+                              className={`leading-none mt-1 ${isKing ? "text-2xl sm:text-3xl text-[#ffea00]" : "text-xl sm:text-2xl text-white/70"}`}
                             >
                               {p.spritz_score}
                             </div>
