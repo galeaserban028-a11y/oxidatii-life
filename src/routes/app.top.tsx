@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Globe2, ChevronDown, Compass, Users, Moon, TrendingUp, Sparkles, Info } from "lucide-react";
 import { SpritzOfDayStrip } from "@/components/app/SpritzOfDayStrip";
 import { FadeIn } from "@/components/app/FadeIn";
@@ -132,10 +133,13 @@ function TopPage() {
   const podiumOrder = [top3[1], top3[0], top3[2]].filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-[100dvh] bg-[#050505] text-white">
       {/* Sticky header */}
-      <header className="sticky top-0 z-30 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5">
-        <div className="px-5 pt-5 pb-4 max-w-xl mx-auto">
+      <header
+        className="sticky z-30 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5"
+        style={{ top: "env(safe-area-inset-top)" }}
+      >
+        <div className="px-5 pt-4 pb-3 max-w-xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-[10px] uppercase tracking-[0.3em] text-white/40">
@@ -152,7 +156,7 @@ function TopPage() {
               </span>
             </div>
           </div>
-          <h1 style={instrument} className="text-5xl leading-[0.9] tracking-tight">
+          <h1 style={instrument} className="text-4xl sm:text-5xl leading-[0.9] tracking-tight">
             Spritz<span className="text-[#ffea00]">.</span>{" "}
             <em className="bg-gradient-to-r from-[#ff3d8b] via-[#ffea00] to-[#c724ff] bg-clip-text text-transparent not-italic font-normal">
               Score
@@ -243,7 +247,7 @@ function TopPage() {
         </div>
       </header>
 
-      <div className="px-5 pt-6 pb-10 max-w-xl mx-auto space-y-6">
+      <div className="px-5 pt-4 pb-[calc(10rem+env(safe-area-inset-bottom))] max-w-xl mx-auto space-y-4">
         <SpritzOfDayStrip />
 
         {/* My rank (sticky info card) */}
@@ -286,25 +290,25 @@ function TopPage() {
           <>
             {top3.length > 0 && (
               <FadeIn y={12}>
-                <div className="relative rounded-3xl overflow-hidden border border-white/5 bg-gradient-to-br from-[#0a0a14] via-[#0a0a0a] to-[#0a0a14] p-5">
+                <div className="relative rounded-3xl overflow-hidden border border-white/5 bg-gradient-to-br from-[#0a0a14] via-[#0a0a0a] to-[#0a0a14] p-4 sm:p-5">
                   <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-[#c724ff]/20 blur-3xl pointer-events-none" />
                   <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-[#ff3d8b]/20 blur-3xl pointer-events-none" />
-                  <div className="relative grid grid-cols-3 gap-3 items-end">
+                  <div className="relative grid grid-cols-3 gap-2 sm:gap-3 items-end">
                     {podiumOrder.map((p: Row) => {
                       const realRank = p === top3[0] ? 1 : p === top3[1] ? 2 : 3;
                       const isKing = realRank === 1;
                       const handle = p?.handle ?? p?.display_name ?? "anonim";
                       const isMe = p.user_id === user?.id;
-                      const podiumH = isKing ? "h-32" : realRank === 2 ? "h-24" : "h-20";
+                      const podiumH = isKing ? "h-24 sm:h-32" : realRank === 2 ? "h-20 sm:h-24" : "h-16 sm:h-20";
                       return (
                         <Link
                           key={p.user_id}
                           to="/app/user/$id"
                           params={{ id: p.user_id }}
-                          className="flex flex-col items-center gap-2"
+                          className="flex flex-col items-center gap-1.5 sm:gap-2"
                         >
                           <div
-                            className={`relative ${isKing ? "h-20 w-20" : "h-16 w-16"} rounded-full p-[2px] bg-gradient-to-br ${
+                            className={`relative ${isKing ? "h-16 w-16 sm:h-20 sm:w-20" : "h-14 w-14 sm:h-16 sm:w-16"} rounded-full p-[2px] bg-gradient-to-br ${
                               isKing ? "from-[#ff3d8b] to-[#c724ff]" : "from-white/20 to-white/5"
                             } ${isKing ? "shadow-[0_0_30px_rgba(199,36,255,0.5)]" : ""}`}
                           >
@@ -328,7 +332,7 @@ function TopPage() {
                             </div>
                             <div
                               style={instrument}
-                              className={`leading-none mt-1 ${isKing ? "text-3xl text-[#ffea00]" : "text-2xl text-white/70"}`}
+                              className={`leading-none mt-1 ${isKing ? "text-2xl sm:text-3xl text-[#ffea00]" : "text-xl sm:text-2xl text-white/70"}`}
                             >
                               {p.spritz_score}
                             </div>
@@ -492,15 +496,17 @@ function RulesModal({ onClose }: { onClose: () => void }) {
     { n: "07", title: "Trendsetter", body: "Persoane distincte care se check-in la același venue la cel mult 2h DUPĂ tine. Tu ai setat trendul.", tag: "Influență", weight: "×6" },
     { n: "08", title: "Fair play", body: "Check-in-urile false, conturile duplicate sau orice formă de fraudă duc la descalificare și pierderea punctajului lunii." },
   ];
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md"
+      className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center overflow-y-auto bg-black/80 backdrop-blur-md"
       style={{
-        paddingTop: "max(env(safe-area-inset-top), 16px)",
-        paddingBottom: "max(env(safe-area-inset-bottom), 16px)",
+        paddingTop: "calc(max(env(safe-area-inset-top), 18px) + 8px)",
+        paddingBottom: "calc(max(env(safe-area-inset-bottom), 18px) + 8px)",
         paddingLeft: 12,
         paddingRight: 12,
       }}
@@ -513,7 +519,10 @@ function RulesModal({ onClose }: { onClose: () => void }) {
         exit={{ y: 20, opacity: 0, scale: 0.98 }}
         transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl border border-white/15 bg-[#0b0b0c] shadow-[0_30px_80px_-20px_rgba(199,36,255,0.35)] overflow-hidden"
+        className="relative w-full max-w-lg flex flex-col rounded-2xl border border-white/15 bg-[#0b0b0c] shadow-[0_30px_80px_-20px_rgba(199,36,255,0.35)] overflow-hidden"
+        style={{
+          maxHeight: "calc(100dvh - max(env(safe-area-inset-top), 18px) - max(env(safe-area-inset-bottom), 18px) - 20px)",
+        }}
       >
         {/* Document header */}
         <div className="relative border-b border-white/10 px-6 pt-6 pb-5 bg-gradient-to-b from-white/[0.04] to-transparent">
@@ -591,7 +600,8 @@ function RulesModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
 
