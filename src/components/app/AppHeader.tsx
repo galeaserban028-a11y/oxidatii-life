@@ -19,6 +19,7 @@ export function AppHeader() {
     <header
       className="sticky top-0 z-40 flex items-center justify-between gap-2 pb-1.5 bg-background"
       style={{
+        backgroundColor: "var(--header-bg)",
         paddingTop: "calc(env(safe-area-inset-top) + 0.375rem)",
         paddingLeft: "calc(env(safe-area-inset-left) + 0.75rem)",
         paddingRight: "calc(env(safe-area-inset-right) + 0.75rem)",

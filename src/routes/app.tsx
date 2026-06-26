@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth";
 import { BottomTabBar } from "@/components/app/BottomTabBar";
 import { AppHeader } from "@/components/app/AppHeader";
@@ -17,15 +17,66 @@ export const Route = createFileRoute("/app")({
   component: AppLayout,
 });
 
+function isTransparent(color: string) {
+  const m = color.match(/rgba?\((\s*\d+\s*),(\s*\d+\s*),(\s*\d+\s*)(?:,\s*([\d.]+)\s*)?\)/);
+  if (!m) return color === "transparent";
+  return (m[4] ? parseFloat(m[4]) : 1) === 0;
+}
+
+function resolvePageBackgroundColor(): string {
+  if (typeof document === "undefined") return "var(--background)";
+  const outlet = document.querySelector("[data-page-root]");
+  const pageRoot = outlet?.firstElementChild as HTMLElement | null;
+  const explicit = pageRoot?.getAttribute("data-header-bg");
+  if (explicit) return explicit;
+  if (pageRoot) {
+    const bg = getComputedStyle(pageRoot).backgroundColor;
+    if (bg && !isTransparent(bg)) return bg;
+  }
+  const main = document.querySelector("main");
+  if (main) {
+    const bg = getComputedStyle(main).backgroundColor;
+    if (bg && !isTransparent(bg)) return bg;
+  }
+  return "var(--background)";
+}
+
 function AppLayout() {
   const nav = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isMe = pathname === "/app/me" || pathname.startsWith("/app/me/");
   const { user, profile, loading } = useAuth();
   const { compact } = useCompactMode();
+  const mainRef = useRef<HTMLElement>(null);
+  const outletRef = useRef<HTMLDivElement>(null);
 
   // Broadcast our live position to friends if we've granted location consent.
   useLiveLocation(user?.id ?? null, !!profile?.location_consent);
+
+  const updateHeaderColor = useCallback(() => {
+    const color = resolvePageBackgroundColor();
+    mainRef.current?.style.setProperty("--header-bg", color);
+  }, []);
+
+  useLayoutEffect(() => {
+    const id = requestAnimationFrame(() => updateHeaderColor());
+    return () => cancelAnimationFrame(id);
+  }, [pathname, updateHeaderColor]);
+
+  useEffect(() => {
+    const outlet = outletRef.current;
+    if (!outlet) return;
+    const obs = new MutationObserver(() => {
+      updateHeaderColor();
+    });
+    const observeRoot = (root: Element | null) => {
+      if (!root) return;
+      obs.observe(root, { attributes: true, attributeFilter: ["class", "style", "data-header-bg"] });
+    };
+    obs.observe(outlet, { childList: true });
+    observeRoot(outlet.firstElementChild);
+    return () => obs.disconnect();
+  }, [pathname, updateHeaderColor]);
 
   useEffect(() => {
     if (loading) return;
@@ -39,15 +90,19 @@ function AppLayout() {
 
   return (
     <main
+      ref={mainRef}
       className={`min-h-screen bg-background text-foreground overflow-x-hidden ${compact ? "oxi-compact" : ""}`}
-      style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)" }}
+      style={{
+        ["--header-bg" as any]: "var(--background)",
+        paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)",
+      }}
     >
       {/* iOS status-bar tint — solid background under the Dynamic Island / notch
           so the area never shows transparent content. Sits behind the sticky header. */}
       <div
         aria-hidden
         className="fixed top-0 inset-x-0 z-30 bg-background pointer-events-none"
-        style={{ height: "env(safe-area-inset-top)" }}
+        style={{ height: "env(safe-area-inset-top)", backgroundColor: "var(--header-bg)" }}
       />
       {/* Centered phone-width column: on desktop the app looks like a phone column,
           on actual phones it fills the whole screen. */}
@@ -57,7 +112,9 @@ function AppLayout() {
         <PullToRefresh>
           <SwipeNavigator>
             <PageTransition>
-              <Outlet />
+              <div ref={outletRef} className="contents" data-page-root>
+                <Outlet />
+              </div>
             </PageTransition>
           </SwipeNavigator>
         </PullToRefresh>
@@ -67,3 +124,4 @@ function AppLayout() {
     </main>
   );
 }
+
