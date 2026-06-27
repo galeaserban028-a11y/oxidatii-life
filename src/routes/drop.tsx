@@ -127,18 +127,17 @@ function DropPage() {
                 <div className="px-5 pt-4 pb-3 flex items-center gap-2 text-xs text-fuchsia-300 uppercase tracking-widest font-mono">
                   ⚡ Faza săptămânii
                 </div>
-                <img src={stats.top_proof.image_url} alt="" className="w-full aspect-square object-cover" />
+                <img src={stats.top_proof.photo_url} alt="" className="w-full aspect-square object-cover" />
                 <div className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-2">
                     {stats.top_proof.avatar_url && (
                       <img src={stats.top_proof.avatar_url} alt="" className="w-8 h-8 rounded-full" />
                     )}
                     <span className="font-bold text-sm">
                       {stats.top_proof.display_name || "@" + stats.top_proof.handle}
                     </span>
-                    <span className="ml-auto text-xs text-white/50">❤ {stats.top_proof.likes_count ?? 0}</span>
+                    <span className="ml-auto text-xs text-white/50">❤ {stats.top_proof.likes ?? 0}</span>
                   </div>
-                  {stats.top_proof.caption && <p className="text-sm text-white/70">{stats.top_proof.caption}</p>}
                 </div>
               </div>
             )}
