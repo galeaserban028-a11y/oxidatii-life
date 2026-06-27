@@ -195,6 +195,26 @@
   animation: tier-exclusive-shimmer 3s ease-in-out infinite;
 }
 
+@keyframes oxi-avatar-frame-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: saturate(1);
+  }
+  50% {
+    transform: scale(1.025);
+    filter: saturate(1.18);
+  }
+}
+
+.oxi-avatar-frame {
+  isolation: isolate;
+}
+
+.oxi-avatar-frame--animated {
+  animation: oxi-avatar-frame-pulse 2.2s ease-in-out infinite;
+}
+
 /* ── Bottom Nav Animations ── */
 @keyframes pulse-waves {
   0% {
