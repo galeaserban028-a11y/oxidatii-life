@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { sendPushToUsers, filterByPref } from "@/lib/push-send.server";
+import { filterByPref } from "@/lib/push-send.server";
+import { smartPushToUsers } from "@/lib/smart-push.server";
 
 type HotCell = {
   cell_id: string;
@@ -56,13 +57,13 @@ async function handle(request: Request) {
     if (!opted.length) continue;
 
     const venue = cell.top_venue_name?.trim() || "zonă activă";
-    const res = await sendPushToUsers(opted, {
+    const res = await smartPushToUsers(opted, {
       title: `🔥 Hotspot: ${venue}`,
       body: `Heat ${cell.heat_score} • ${cell.recent_count} mișcări în ultimele 90min`,
       url: "/app/map",
       tag: `heat-${cell.cell_id}`,
       data: { kind: "heat_now", cellId: cell.cell_id, lat: cell.lat, lng: cell.lng },
-    });
+    }, { kind: "heat_now", maxPerWindow: 1, windowMinutes: 120 });
     totalSent += res.sent;
     totalFailed += res.failed;
   }

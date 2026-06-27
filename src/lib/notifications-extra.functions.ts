@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { sendPushToUsers } from "./push-send.server";
+import { smartPushToUsers } from "./smart-push.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const uuid = z.string().uuid();
@@ -30,12 +30,12 @@ export const notifyFollow = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const pending = f?.status === "pending";
-    return sendPushToUsers([data.targetId], {
+    return smartPushToUsers([data.targetId], {
       title: pending ? "👋 Cerere de follow" : "🎉 Follower nou",
       body: pending ? `@${name} vrea să te urmărească` : `@${name} te urmărește`,
       url: pending ? `/app/requests` : `/app/user/${userId}`,
       tag: `follow-${userId}`,
-    });
+    }, { kind: "follow", important: true, maxPerWindow: 5, windowMinutes: 60 });
   });
 
 /** Push when sending a chat message — notifies the other members. */
@@ -69,12 +69,12 @@ export const notifyChatMessage = createServerFn({ method: "POST" })
     const name = me?.handle ?? me?.display_name ?? "Mesaj nou";
 
     const body = (data.preview ?? "").trim();
-    return sendPushToUsers(targets, {
+    return smartPushToUsers(targets, {
       title: `💬 @${name}`,
       body: body.length ? body.slice(0, 120) : "Ai un mesaj nou",
       url: `/app/chat/${data.conversationId}`,
       tag: `chat-${data.conversationId}`,
-    });
+    }, { kind: `chat:${data.conversationId}`, important: true, maxPerWindow: 8, windowMinutes: 15 });
   });
 
 /** Push when someone requests to join your spritz/party (party_joins insert). */
@@ -105,10 +105,10 @@ export const notifyPartyJoinRequest = createServerFn({ method: "POST" })
       .maybeSingle();
     const name = me?.handle ?? me?.display_name ?? "Cineva";
 
-    return sendPushToUsers([party.host_id], {
+    return smartPushToUsers([party.host_id], {
       title: "🙋 Cerere la spritz",
       body: `@${name} vrea să intre la „${party.title}"`,
       url: `/app/parties`,
       tag: `party-req-${data.partyId}`,
-    });
+    }, { kind: "party_req", important: true, maxPerWindow: 6, windowMinutes: 60 });
   });
