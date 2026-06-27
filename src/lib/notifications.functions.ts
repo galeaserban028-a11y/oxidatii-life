@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { sendPushToUsers, filterByPref } from "./push-send.server";
+import { filterByPref } from "./push-send.server";
+import { smartPushToUsers } from "./smart-push.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const uuid = z.string().uuid();
