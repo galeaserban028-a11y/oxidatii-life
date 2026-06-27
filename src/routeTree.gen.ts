@@ -23,6 +23,7 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppWrappedRouteImport } from './routes/app.wrapped'
 import { Route as AppTopRouteImport } from './routes/app.top'
 import { Route as AppSquadRouteImport } from './routes/app.squad'
 import { Route as AppSpritzIndexRouteImport } from './routes/app.spritz-index'
@@ -140,6 +141,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppWrappedRoute = AppWrappedRouteImport.update({
+  id: '/wrapped',
+  path: '/wrapped',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTopRoute = AppTopRouteImport.update({
@@ -426,6 +432,7 @@ export interface FileRoutesByFullPath {
   '/app/spritz-index': typeof AppSpritzIndexRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
+  '/app/wrapped': typeof AppWrappedRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
@@ -488,6 +495,7 @@ export interface FileRoutesByTo {
   '/app/spritz-index': typeof AppSpritzIndexRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
+  '/app/wrapped': typeof AppWrappedRoute
   '/app': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
@@ -553,6 +561,7 @@ export interface FileRoutesById {
   '/app/spritz-index': typeof AppSpritzIndexRoute
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
+  '/app/wrapped': typeof AppWrappedRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
@@ -619,6 +628,7 @@ export interface FileRouteTypes {
     | '/app/spritz-index'
     | '/app/squad'
     | '/app/top'
+    | '/app/wrapped'
     | '/app/'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
@@ -681,6 +691,7 @@ export interface FileRouteTypes {
     | '/app/spritz-index'
     | '/app/squad'
     | '/app/top'
+    | '/app/wrapped'
     | '/app'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
@@ -745,6 +756,7 @@ export interface FileRouteTypes {
     | '/app/spritz-index'
     | '/app/squad'
     | '/app/top'
+    | '/app/wrapped'
     | '/app/'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
@@ -888,6 +900,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/wrapped': {
+      id: '/app/wrapped'
+      path: '/wrapped'
+      fullPath: '/app/wrapped'
+      preLoaderRoute: typeof AppWrappedRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/top': {
@@ -1303,6 +1322,7 @@ interface AppRouteChildren {
   AppSpritzIndexRoute: typeof AppSpritzIndexRoute
   AppSquadRoute: typeof AppSquadRoute
   AppTopRoute: typeof AppTopRoute
+  AppWrappedRoute: typeof AppWrappedRoute
   AppIndexRoute: typeof AppIndexRoute
   AppChatIdRoute: typeof AppChatIdRoute
   AppCitySlugRoute: typeof AppCitySlugRoute
@@ -1341,6 +1361,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppSpritzIndexRoute: AppSpritzIndexRoute,
   AppSquadRoute: AppSquadRoute,
   AppTopRoute: AppTopRoute,
+  AppWrappedRoute: AppWrappedRoute,
   AppIndexRoute: AppIndexRoute,
   AppChatIdRoute: AppChatIdRoute,
   AppCitySlugRoute: AppCitySlugRoute,
