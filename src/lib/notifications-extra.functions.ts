@@ -30,12 +30,12 @@ export const notifyFollow = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const pending = f?.status === "pending";
-    return sendPushToUsers([data.targetId], {
+    return smartPushToUsers([data.targetId], {
       title: pending ? "👋 Cerere de follow" : "🎉 Follower nou",
       body: pending ? `@${name} vrea să te urmărească` : `@${name} te urmărește`,
       url: pending ? `/app/requests` : `/app/user/${userId}`,
       tag: `follow-${userId}`,
-    });
+    }, { kind: "follow", important: true, maxPerWindow: 5, windowMinutes: 60 });
   });
 
 /** Push when sending a chat message — notifies the other members. */
