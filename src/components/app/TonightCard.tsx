@@ -384,8 +384,9 @@ export default function TonightCard() {
               <div
                 className="absolute z-20 inset-x-0 mt-1 rounded-xl border overflow-hidden"
                 style={{
-                  background: "rgba(35, 14, 9, 0.98)",
+                  background: "oklch(0.14 0.035 285 / 0.98)",
                   borderColor: "rgba(255,255,255,0.15)",
+                  boxShadow: "0 18px 40px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,61,139,0.12)",
                 }}
               >
                 {venues.map((v) => (
