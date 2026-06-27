@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Rocket, Crown, Gift, PartyPopper, ArrowLeft, Check, Loader2, Beer } from "lucide-react";
+import { AvatarFrame } from "@/components/app/AvatarFrame";
 
 export const Route = createFileRoute("/app/shop")({
   head: () => ({ meta: [{ title: "Bar · OXIDAȚII" }] }),
@@ -119,8 +120,9 @@ function ShopPage() {
         .update({ active_frame_id: frame.id })
         .eq("id", user.id);
       if (error) return toast.error(error.message);
-      toast.success(`Rama "${frame.name}" activată`);
+      toast.success(`Rama "${frame.name}" activată pe profil`);
       await refreshProfile();
+      qc.invalidateQueries({ queryKey: ["active-frame"] });
       return;
     }
     if (balance < (frame.price_coins ?? 0)) return notEnough(frame.price_coins ?? 0);
@@ -129,9 +131,10 @@ function ShopPage() {
       const { data, error } = await supabase.rpc("buy_frame", { _frame_id: frame.id });
       if (error) throw error;
       const newBal = (data as any)?.balance ?? 0;
-      toast.success(`Ai luat „${frame.name}"! Mai ai ${drink(newBal)}`);
+      toast.success(`Ai luat „${frame.name}" și e activă pe profil! Mai ai ${drink(newBal)}`);
       await refreshProfile();
-      qc.invalidateQueries({ queryKey: ["owned-frames"] });
+      qc.invalidateQueries({ queryKey: ["owned-frames", user.id] });
+      qc.invalidateQueries({ queryKey: ["active-frame"] });
     } catch (e: any) {
       toast.error(e.message || "Eroare");
     } finally {
@@ -261,11 +264,14 @@ function ShopPage() {
             return (
               <Card key={f.id}>
                 <div className="flex flex-col items-center gap-3 py-2">
-                  <div
-                    className={`h-20 w-20 rounded-full bg-gradient-to-br from-purple-500/40 to-pink-500/40 ${f.css_class} grid place-items-center text-3xl`}
+                  <AvatarFrame
+                    frameId={f.id}
+                    size={80}
+                    preview
+                    innerClassName="bg-gradient-to-br from-purple-500/40 to-pink-500/40 grid place-items-center text-3xl"
                   >
                     {f.emoji ?? "👤"}
-                  </div>
+                  </AvatarFrame>
                   <div className="font-display text-base">{f.name}</div>
                   {active ? (
                     <button

@@ -49,6 +49,7 @@ import { getTheme } from "@/lib/premium-themes";
 import { ThemeAtmosphere } from "@/components/app/ThemeAtmosphere";
 import { AvatarAura } from "@/components/app/AvatarAura";
 import { SignatureReveal } from "@/components/app/SignatureReveal";
+import { AvatarFrame } from "@/components/app/AvatarFrame";
 
 export const Route = createFileRoute("/app/me")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -76,19 +77,6 @@ function MePage() {
   const { data: followStats } = useFollowStats(user?.id);
   const { data: incomingReqs } = useIncomingFollowRequests(user?.id);
   const pendingCount = incomingReqs?.length ?? 0;
-  const { data: activeFrame } = useQuery({
-    queryKey: ["active-frame", profile?.active_frame_id],
-    enabled: !!profile?.active_frame_id,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("avatar_frames")
-        .select("css_class")
-        .eq("id", profile!.active_frame_id!)
-        .maybeSingle();
-      return data;
-    },
-  });
-
   // tab state for the grid
   const [tab, setTab] = useState<"posts" | "reposts" | "spritz">("posts");
   const queryClient = useQueryClient();
@@ -379,6 +367,7 @@ function MePage() {
 
   const instrument = { fontFamily: '"Instrument Serif", "Work Sans", serif' };
   const theme = getTheme((profile as any)?.profile_theme_id);
+  const activeFrameId = profile.active_frame_id ?? null;
   const bgUrl = (profile as any)?.profile_bg_url as string | undefined;
   const isVideoBg = bgUrl ? /\.(mp4|webm|mov)$/i.test(bgUrl) : false;
   const ti = (profile as any)?.theme_intensity ?? {};
@@ -611,8 +600,10 @@ function MePage() {
             >
               {theme ? (
                 <AvatarAura theme={theme} size={92}>
-                  <div
-                    className={`h-full w-full overflow-hidden bg-[#0a0a0a] flex items-center justify-center text-3xl ${activeFrame?.css_class ?? ""}`}
+                  <AvatarFrame
+                    frameId={activeFrameId}
+                    className="h-full w-full"
+                    innerClassName="bg-[#0a0a0a] flex items-center justify-center text-3xl"
                     style={instrument}
                   >
                     {profile.avatar_url ? (
@@ -620,11 +611,13 @@ function MePage() {
                     ) : (
                       (profile.handle ?? "?")[0].toUpperCase()
                     )}
-                  </div>
+                  </AvatarFrame>
                 </AvatarAura>
               ) : (
-                <div
-                  className={`h-full w-full rounded-full overflow-hidden bg-[#0a0a0a] flex items-center justify-center text-3xl ${activeFrame?.css_class ?? ""}`}
+                <AvatarFrame
+                  frameId={activeFrameId}
+                  className="h-full w-full"
+                  innerClassName="bg-[#0a0a0a] flex items-center justify-center text-3xl"
                   style={instrument}
                 >
                   {profile.avatar_url ? (
@@ -632,7 +625,7 @@ function MePage() {
                   ) : (
                     (profile.handle ?? "?")[0].toUpperCase()
                   )}
-                </div>
+                </AvatarFrame>
               )}
               <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#0a0a0a] border border-white/15 text-white/80 flex items-center justify-center shadow-lg z-10">
                 <Camera size={13} strokeWidth={2.4} />
