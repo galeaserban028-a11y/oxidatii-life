@@ -18,8 +18,16 @@ function Onboarding() {
   const [handle, setHandle] = useState("");
   const [cityId, setCityId] = useState("");
   const [locOk, setLocOk] = useState(false);
+  const [refCode, setRefCode] = useState("");
   const [cities, setCities] = useState<City[]>([]);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    try {
+      const pending = localStorage.getItem("pending_referral_code");
+      if (pending) setRefCode(pending);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/login", replace: true });
