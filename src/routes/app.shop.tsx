@@ -67,8 +67,15 @@ function ShopPage() {
     },
   });
 
+  function notEnough(price: number) {
+    toast.error(`Nu ai destule șprițuri. Îți trebuie ${drink(price)}, ai ${drink(balance)}.`, {
+      action: { label: "Mai iau un rând", onClick: () => nav({ to: "/app/premium" }) },
+    });
+  }
+
   async function buyProfileBoost() {
     if (!user) return;
+    if (balance < 5) return notEnough(5);
     setBusy("profile-boost");
     try {
       const { data, error } = await supabase.rpc("buy_boost", { _kind: "profile" });
@@ -86,6 +93,7 @@ function ShopPage() {
 
   async function buyPartyBoost(partyId: string) {
     if (!user) return;
+    if (balance < 15) return notEnough(15);
     setBusy(`party-${partyId}`);
     try {
       const { data, error } = await supabase.rpc("buy_boost", {
@@ -115,6 +123,7 @@ function ShopPage() {
       await refreshProfile();
       return;
     }
+    if (balance < (frame.price_coins ?? 0)) return notEnough(frame.price_coins ?? 0);
     setBusy(`frame-${frame.id}`);
     try {
       const { data, error } = await supabase.rpc("buy_frame", { _frame_id: frame.id });
@@ -129,6 +138,7 @@ function ShopPage() {
       setBusy(null);
     }
   }
+
 
   async function deactivateFrame() {
     if (!user) return;
@@ -230,7 +240,7 @@ function ShopPage() {
           </div>
           <button
             onClick={buyProfileBoost}
-            disabled={!!busy || balance < 5}
+            disabled={busy === "profile-boost"}
             className="mt-4 w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-purple-600 font-display text-sm uppercase tracking-wide text-white disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {busy === "profile-boost" ? (
@@ -267,7 +277,7 @@ function ShopPage() {
                   ) : (
                     <button
                       onClick={() => buyFrame(f)}
-                      disabled={!!busy || (!owned && balance < f.price_coins)}
+                      disabled={busy === `frame-${f.id}`}
                       className="w-full py-2 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
                       {busy === `frame-${f.id}` ? (
@@ -345,7 +355,7 @@ function ShopPage() {
                   </div>
                   <button
                     onClick={() => buyPartyBoost(p.id)}
-                    disabled={!!busy || balance < 15}
+                    disabled={busy === `party-${p.id}`}
                     className="px-3 py-2 rounded-lg bg-pink-500/20 border border-pink-500/40 text-pink-200 text-xs disabled:opacity-50 flex items-center gap-1.5 shrink-0"
                   >
                     {busy === `party-${p.id}` ? (
