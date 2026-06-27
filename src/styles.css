@@ -816,13 +816,13 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
     overflow: hidden;
     border-radius: 18px;
     padding: 10px 12px;
-    /* Transparent — inherits page background */
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: color-mix(in oklab, var(--card) 85%, transparent);
+    border: 1px solid color-mix(in oklab, var(--primary) 22%, transparent);
     box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.04) inset,
-      0 8px 24px -18px rgba(0, 0, 0, 0.6);
+      0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent) inset,
+      0 8px 24px -18px rgba(0, 0, 0, 0.55);
   }
+
 
   /* hairline gradient border (premium jewelry edge) */
   .tonight-card::before {
