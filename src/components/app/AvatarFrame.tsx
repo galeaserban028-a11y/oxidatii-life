@@ -263,8 +263,8 @@ export function AvatarFrame({
       {!preview && (frame.tier === "legendary" || frame.tier === "mythic" || frame.tier === "epic") && (
         <div className="oxi-frame-shimmer" aria-hidden />
       )}
-      {/* UNIQUE ornament ring per frame (gems/spikes/flames/etc) */}
-      {!preview && <Ornaments frame={frame} thickness={thickness} />}
+      {/* UNIQUE SVG artwork per frame */}
+      {!preview && <FrameArtwork frameId={frameId!} spin={frame.spinSpeed ?? 24} />}
 
       {/* Avatar */}
       <div
