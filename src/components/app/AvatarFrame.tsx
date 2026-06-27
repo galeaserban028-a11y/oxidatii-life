@@ -4,6 +4,7 @@ type AvatarFrameProps = {
   frameId?: string | null;
   size?: number;
   preview?: boolean;
+  showBadge?: boolean;
   children: ReactNode;
   className?: string;
   innerClassName?: string;
