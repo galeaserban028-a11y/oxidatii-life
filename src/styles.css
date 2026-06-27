@@ -954,8 +954,8 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
     color: rgba(255, 255, 255, 0.4);
   }
   .tonight-input:focus {
-    border-color: rgba(255, 255, 255, 0.45);
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    border-color: oklch(0.85 0.16 215 / 0.55);
+    box-shadow: 0 0 0 3px oklch(0.85 0.16 215 / 0.15);
   }
 
   .tonight-venue-row {
