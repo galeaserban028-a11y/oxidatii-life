@@ -240,7 +240,7 @@ function ShopPage() {
           </div>
           <button
             onClick={buyProfileBoost}
-            disabled={!!busy || balance < 5}
+            disabled={busy === "profile-boost"}
             className="mt-4 w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-purple-600 font-display text-sm uppercase tracking-wide text-white disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {busy === "profile-boost" ? (
