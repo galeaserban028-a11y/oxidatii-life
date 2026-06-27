@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { Sparkles, MapPin, X, Users, Plus, Heart, MessageCircle } from "lucide-react";
+import { MapPin, X, Users, Plus, Heart, MessageCircle } from "lucide-react";
 import VenueNightChat from "./VenueNightChat";
 
 function localDateBuc(): string {
@@ -306,9 +306,10 @@ export default function TonightCard() {
     <div className="tonight-card animate-fade-in">
       <div className="relative flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="tonight-label flex items-center gap-1.5">
-            <Sparkles size={10} /> diseară
+          <div className="tonight-label">
+            diseară
           </div>
+
           <h3 className="tonight-title mt-1">
             {myIntent ? (
               <>
