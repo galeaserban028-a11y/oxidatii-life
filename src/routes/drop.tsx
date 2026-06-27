@@ -30,7 +30,7 @@ type DropStats = {
   total_spritz: number;
   active_users: number;
   top_cities: Array<{ city: string; count: number }>;
-  top_proof: { id: string; image_url: string; caption: string | null; likes_count: number; display_name: string | null; handle: string | null; avatar_url: string | null } | null;
+  top_proof: { id: string; photo_url: string; likes: number; display_name: string | null; handle: string | null; avatar_url: string | null } | null;
   week_start: string;
 };
 

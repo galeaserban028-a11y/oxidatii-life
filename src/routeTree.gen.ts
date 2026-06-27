@@ -16,7 +16,9 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HallOfFameRouteImport } from './routes/hall-of-fame'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as DropRouteImport } from './routes/drop'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
@@ -35,6 +37,7 @@ import { Route as AppNotificationsRouteImport } from './routes/app.notifications
 import { Route as AppMeRouteImport } from './routes/app.me'
 import { Route as AppMapRouteImport } from './routes/app.map'
 import { Route as AppLastcallsRouteImport } from './routes/app.lastcalls'
+import { Route as AppInviteRouteImport } from './routes/app.invite'
 import { Route as AppInboxRouteImport } from './routes/app.inbox'
 import { Route as AppFriendsRouteImport } from './routes/app.friends'
 import { Route as AppFollowersRouteImport } from './routes/app.followers'
@@ -104,9 +107,19 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HallOfFameRoute = HallOfFameRouteImport.update({
+  id: '/hall-of-fame',
+  path: '/hall-of-fame',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DropRoute = DropRouteImport.update({
+  id: '/drop',
+  path: '/drop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CookiesRoute = CookiesRouteImport.update({
@@ -197,6 +210,11 @@ const AppMapRoute = AppMapRouteImport.update({
 const AppLastcallsRoute = AppLastcallsRouteImport.update({
   id: '/lastcalls',
   path: '/lastcalls',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInviteRoute = AppInviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInboxRoute = AppInboxRouteImport.update({
@@ -372,7 +390,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/cookies': typeof CookiesRoute
+  '/drop': typeof DropRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/hall-of-fame': typeof HallOfFameRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
@@ -391,6 +411,7 @@ export interface FileRoutesByFullPath {
   '/app/followers': typeof AppFollowersRoute
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
+  '/app/invite': typeof AppInviteRoute
   '/app/lastcalls': typeof AppLastcallsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
@@ -432,7 +453,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cookies': typeof CookiesRoute
+  '/drop': typeof DropRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/hall-of-fame': typeof HallOfFameRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
@@ -450,6 +473,7 @@ export interface FileRoutesByTo {
   '/app/followers': typeof AppFollowersRoute
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
+  '/app/invite': typeof AppInviteRoute
   '/app/lastcalls': typeof AppLastcallsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
@@ -493,7 +517,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/cookies': typeof CookiesRoute
+  '/drop': typeof DropRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/hall-of-fame': typeof HallOfFameRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
@@ -512,6 +538,7 @@ export interface FileRoutesById {
   '/app/followers': typeof AppFollowersRoute
   '/app/friends': typeof AppFriendsRoute
   '/app/inbox': typeof AppInboxRoute
+  '/app/invite': typeof AppInviteRoute
   '/app/lastcalls': typeof AppLastcallsRoute
   '/app/map': typeof AppMapRoute
   '/app/me': typeof AppMeRoute
@@ -556,7 +583,9 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/cookies'
+    | '/drop'
     | '/forgot-password'
+    | '/hall-of-fame'
     | '/login'
     | '/onboarding'
     | '/privacy'
@@ -575,6 +604,7 @@ export interface FileRouteTypes {
     | '/app/followers'
     | '/app/friends'
     | '/app/inbox'
+    | '/app/invite'
     | '/app/lastcalls'
     | '/app/map'
     | '/app/me'
@@ -616,7 +646,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/cookies'
+    | '/drop'
     | '/forgot-password'
+    | '/hall-of-fame'
     | '/login'
     | '/onboarding'
     | '/privacy'
@@ -634,6 +666,7 @@ export interface FileRouteTypes {
     | '/app/followers'
     | '/app/friends'
     | '/app/inbox'
+    | '/app/invite'
     | '/app/lastcalls'
     | '/app/map'
     | '/app/me'
@@ -676,7 +709,9 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/cookies'
+    | '/drop'
     | '/forgot-password'
+    | '/hall-of-fame'
     | '/login'
     | '/onboarding'
     | '/privacy'
@@ -695,6 +730,7 @@ export interface FileRouteTypes {
     | '/app/followers'
     | '/app/friends'
     | '/app/inbox'
+    | '/app/invite'
     | '/app/lastcalls'
     | '/app/map'
     | '/app/me'
@@ -738,7 +774,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   CookiesRoute: typeof CookiesRoute
+  DropRoute: typeof DropRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  HallOfFameRoute: typeof HallOfFameRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -803,11 +841,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hall-of-fame': {
+      id: '/hall-of-fame'
+      path: '/hall-of-fame'
+      fullPath: '/hall-of-fame'
+      preLoaderRoute: typeof HallOfFameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forgot-password': {
       id: '/forgot-password'
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/drop': {
+      id: '/drop'
+      path: '/drop'
+      fullPath: '/drop'
+      preLoaderRoute: typeof DropRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cookies': {
@@ -934,6 +986,13 @@ declare module '@tanstack/react-router' {
       path: '/lastcalls'
       fullPath: '/app/lastcalls'
       preLoaderRoute: typeof AppLastcallsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/invite': {
+      id: '/app/invite'
+      path: '/invite'
+      fullPath: '/app/invite'
+      preLoaderRoute: typeof AppInviteRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/inbox': {
@@ -1229,6 +1288,7 @@ interface AppRouteChildren {
   AppFollowersRoute: typeof AppFollowersRoute
   AppFriendsRoute: typeof AppFriendsRoute
   AppInboxRoute: typeof AppInboxRoute
+  AppInviteRoute: typeof AppInviteRoute
   AppLastcallsRoute: typeof AppLastcallsRoute
   AppMapRoute: typeof AppMapRoute
   AppMeRoute: typeof AppMeRoute
@@ -1266,6 +1326,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFollowersRoute: AppFollowersRoute,
   AppFriendsRoute: AppFriendsRoute,
   AppInboxRoute: AppInboxRoute,
+  AppInviteRoute: AppInviteRoute,
   AppLastcallsRoute: AppLastcallsRoute,
   AppMapRoute: AppMapRoute,
   AppMeRoute: AppMeRoute,
@@ -1299,7 +1360,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   CookiesRoute: CookiesRoute,
+  DropRoute: DropRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  HallOfFameRoute: HallOfFameRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   PrivacyRoute: PrivacyRoute,
