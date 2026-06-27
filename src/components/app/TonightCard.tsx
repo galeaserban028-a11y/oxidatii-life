@@ -316,7 +316,7 @@ export default function TonightCard() {
                 Te-ai băgat.{" "}
                 <span
                   className="text-white"
-                  style={{ textShadow: "0 0 16px rgba(251,191,36,0.45)" }}
+                  style={{ textShadow: "0 0 16px oklch(0.85 0.16 215 / 0.75)" }}
                 >
                   {count}
                 </span>{" "}
@@ -332,7 +332,7 @@ export default function TonightCard() {
             <div className="mt-1.5 text-[11px] text-white/75 flex items-center gap-1.5">
               {myIntent.venue?.name && (
                 <>
-                  <MapPin size={11} className="text-amber-300/90" /> {myIntent.venue.name}
+                  <MapPin size={11} className="text-neon-cyan/90" /> {myIntent.venue.name}
                 </>
               )}
               {myIntent.note && <span className="text-white/55">· {myIntent.note}</span>}
