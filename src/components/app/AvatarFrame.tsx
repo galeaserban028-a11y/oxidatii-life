@@ -153,7 +153,7 @@ export function AvatarFrame({
         ...dimension,
         padding: thickness,
         background: frame.ring,
-        boxShadow: `${frame.glow}, inset 0 0 0 1px rgba(255,255,255,0.45), inset 0 1px 2px rgba(255,255,255,0.6), inset 0 -1px 3px rgba(0,0,0,0.35)`,
+        boxShadow: `${frame.glow}, inset 0 0 0 1px rgba(255,255,255,0.55), inset 0 1px 1px rgba(255,255,255,0.85), inset 0 -1px 2px rgba(0,0,0,0.45)`,
         ...style,
       }}
     >
@@ -168,6 +168,22 @@ export function AvatarFrame({
           zIndex: 0,
         }}
       />
+      {/* Metallic conic reflections overlay (brushed-metal feel on the ring band) */}
+      {!preview && (
+        <div
+          className="pointer-events-none absolute rounded-full oxi-frame-metallic"
+          style={{
+            inset: 0,
+            background:
+              "conic-gradient(from 220deg, rgba(255,255,255,0) 0deg, rgba(255,255,255,0.85) 35deg, rgba(255,255,255,0.05) 70deg, rgba(0,0,0,0.45) 110deg, rgba(255,255,255,0.7) 165deg, rgba(255,255,255,0) 210deg, rgba(0,0,0,0.4) 260deg, rgba(255,255,255,0.65) 310deg, rgba(255,255,255,0) 360deg)",
+            mixBlendMode: "overlay",
+            zIndex: 3,
+            WebkitMask: `radial-gradient(circle, transparent calc(50% - ${thickness}px), #000 calc(50% - ${thickness}px + 1px), #000 calc(50% - 1px), transparent 50%)`,
+            mask: `radial-gradient(circle, transparent calc(50% - ${thickness}px), #000 calc(50% - ${thickness}px + 1px), #000 calc(50% - 1px), transparent 50%)`,
+          }}
+          aria-hidden
+        />
+      )}
       {/* Outer slow halo (premium depth) */}
       {!preview && frame.halo && (
         <div
@@ -184,43 +200,41 @@ export function AvatarFrame({
           aria-hidden
         />
       )}
-      {/* Glossy top highlight on the ring (jewelry feel) */}
+      {/* Top glossy highlight (jewelry sheen) */}
       {!preview && (
         <div
           className="pointer-events-none absolute rounded-full"
           style={{
             inset: 0,
-            background: "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.1) 22%, transparent 45%)",
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.18) 18%, transparent 38%, transparent 70%, rgba(255,255,255,0.25) 96%, rgba(255,255,255,0) 100%)",
             mixBlendMode: "screen",
-            zIndex: 3,
-            opacity: 0.85,
+            zIndex: 4,
+            opacity: 0.95,
+            WebkitMask: `radial-gradient(circle, transparent calc(50% - ${thickness}px), #000 calc(50% - ${thickness}px + 1px), #000 calc(50% - 1px), transparent 50%)`,
+            mask: `radial-gradient(circle, transparent calc(50% - ${thickness}px), #000 calc(50% - ${thickness}px + 1px), #000 calc(50% - 1px), transparent 50%)`,
           }}
           aria-hidden
         />
       )}
-      {/* Bright moving sparkle layer */}
+      {/* Sparkle layer */}
       {frame.sparkle && <div className="oxi-frame-sparkle" aria-hidden />}
       {/* Shimmer sweep across ring */}
       {!preview && (frame.tier === "legendary" || frame.tier === "mythic" || frame.tier === "epic") && (
         <div className="oxi-frame-shimmer" aria-hidden />
       )}
 
-      {/* Inner dark gap, then avatar — gives a "set into bezel" gemstone look */}
+      {/* Avatar — directly inside the ring, no inner bezel */}
       <div
-        className="relative h-full w-full rounded-full"
+        className={`relative h-full w-full overflow-hidden rounded-full ${innerClassName}`}
         style={{
-          background: !preview ? "radial-gradient(circle at 50% 35%, #1a1530, #07050f)" : undefined,
-          padding: gap,
           zIndex: 2,
-          boxShadow: !preview ? "inset 0 0 0 1px rgba(0,0,0,0.7), inset 0 2px 6px rgba(0,0,0,0.55)" : undefined,
+          boxShadow: !preview ? "inset 0 0 0 1px rgba(0,0,0,0.55), inset 0 2px 4px rgba(0,0,0,0.35)" : undefined,
         }}
       >
-        <div
-          className={`relative h-full w-full overflow-hidden rounded-full ${innerClassName}`}
-        >
-          {children}
-        </div>
+        {children}
       </div>
+
 
 
       {showBadge && (
