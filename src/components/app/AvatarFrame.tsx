@@ -11,21 +11,29 @@ type AvatarFrameProps = {
   style?: CSSProperties;
 };
 
+type Ornament =
+  | "gems"        // jewels around the ring
+  | "spikes"      // crown / sun rays
+  | "flames"      // flickering flames
+  | "crystals"    // shard-like crystals
+  | "bolts"       // lightning bolts
+  | "petals"      // soft petals
+  | "facets"      // diamond facets
+  | "stars"       // tiny stars
+  | "runes";      // mythic runes
+
 type FrameStyle = {
-  /** Main gradient ring (always visible) */
   ring: string;
-  /** Outer glow box-shadow */
   glow: string;
-  /** Soft blurred accent color behind the avatar */
   accent: string;
-  /** Spinning halo gradient (conic, masked into a thin ring). Premium feel. */
   halo?: string;
-  /** Pulse the ring */
   animated?: boolean;
-  /** Add bright sparkle layer */
   sparkle?: boolean;
-  /** Tier label shown in shop */
   tier: "starter" | "rare" | "epic" | "legendary" | "mythic";
+  ornament: Ornament;
+  ornamentColors: string[]; // up to 12 stops around the ring
+  spinSpeed?: number;       // seconds for ornament rotation; 0 = static
+  signatureBg?: string;     // inner subtle pattern overlay
 };
 
 export const FRAME_STYLES: Record<string, FrameStyle> = {
@@ -36,6 +44,9 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
     halo: "conic-gradient(from 0deg, transparent, #fde68a, transparent 40%, #fbbf24, transparent 80%)",
     sparkle: true,
     tier: "epic",
+    ornament: "gems",
+    ornamentColors: ["#fde047", "#fbbf24", "#fde047", "#fbbf24", "#fde047", "#fbbf24", "#fde047", "#fbbf24"],
+    spinSpeed: 28,
   },
   elite_diamond: {
     ring: "linear-gradient(135deg, #e0f2fe, #67e8f9, #ffffff, #bae6fd)",
@@ -45,6 +56,9 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
     animated: true,
     sparkle: true,
     tier: "legendary",
+    ornament: "facets",
+    ornamentColors: ["#ffffff", "#bae6fd", "#67e8f9", "#ffffff", "#bae6fd", "#67e8f9", "#ffffff", "#bae6fd", "#67e8f9", "#ffffff", "#bae6fd", "#67e8f9"],
+    spinSpeed: 18,
   },
   pro_holo: {
     ring: "conic-gradient(from 0deg, #a78bfa, #22d3ee, #f0abfc, #fde047, #a78bfa)",
@@ -54,6 +68,9 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
     animated: true,
     sparkle: true,
     tier: "legendary",
+    ornament: "stars",
+    ornamentColors: ["#a78bfa", "#22d3ee", "#f0abfc", "#fde047", "#a78bfa", "#22d3ee", "#f0abfc", "#fde047", "#a78bfa", "#22d3ee"],
+    spinSpeed: 14,
   },
   vipplus_crystal: {
     ring: "linear-gradient(135deg, #fecdd3, #fb7185, #ffffff, #fda4af)",
@@ -63,6 +80,9 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
     animated: true,
     sparkle: true,
     tier: "epic",
+    ornament: "petals",
+    ornamentColors: ["#fecdd3", "#fb7185", "#fecdd3", "#fb7185", "#fecdd3", "#fb7185"],
+    spinSpeed: 32,
   },
   neon: {
     ring: "linear-gradient(135deg, #d946ef, #f0abfc, #a855f7, #ec4899)",
@@ -71,6 +91,9 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
     halo: "conic-gradient(from 0deg, transparent, #f0abfc, transparent 50%, #a855f7, transparent 95%)",
     animated: true,
     tier: "rare",
+    ornament: "bolts",
+    ornamentColors: ["#d946ef", "#a855f7", "#d946ef", "#a855f7", "#d946ef", "#a855f7"],
+    spinSpeed: 22,
   },
   ice: {
     ring: "linear-gradient(135deg, #22d3ee, #cffafe, #06b6d4, #67e8f9)",
@@ -79,6 +102,9 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
     halo: "conic-gradient(from 0deg, transparent, #cffafe, transparent 45%, #22d3ee, transparent 90%)",
     sparkle: true,
     tier: "rare",
+    ornament: "crystals",
+    ornamentColors: ["#cffafe", "#67e8f9", "#cffafe", "#67e8f9", "#cffafe", "#67e8f9", "#cffafe", "#67e8f9"],
+    spinSpeed: 40,
   },
   fire: {
     ring: "linear-gradient(135deg, #f97316, #facc15, #ef4444, #fb923c)",
@@ -88,6 +114,9 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
     animated: true,
     sparkle: true,
     tier: "epic",
+    ornament: "flames",
+    ornamentColors: ["#facc15", "#f97316", "#ef4444", "#facc15", "#f97316", "#ef4444", "#facc15", "#f97316"],
+    spinSpeed: 16,
   },
   gold: {
     ring: "linear-gradient(135deg, #facc15, #fff7ad, #f59e0b, #fef08a)",
@@ -97,6 +126,9 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
     animated: true,
     sparkle: true,
     tier: "epic",
+    ornament: "spikes",
+    ornamentColors: ["#fff7ad", "#facc15", "#fff7ad", "#facc15", "#fff7ad", "#facc15", "#fff7ad", "#facc15", "#fff7ad", "#facc15", "#fff7ad", "#facc15"],
+    spinSpeed: 24,
   },
   legend: {
     ring: "conic-gradient(from 0deg, #f43f5e, #f97316, #fde047, #ec4899, #f43f5e)",
@@ -106,6 +138,9 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
     animated: true,
     sparkle: true,
     tier: "mythic",
+    ornament: "runes",
+    ornamentColors: ["#f43f5e", "#f97316", "#fde047", "#ec4899", "#a855f7", "#f43f5e", "#f97316", "#fde047"],
+    spinSpeed: 12,
   },
 };
 
@@ -116,6 +151,134 @@ export const TIER_LABEL: Record<FrameStyle["tier"], string> = {
   legendary: "Legendary",
   mythic: "Mythic",
 };
+
+/** Build the ornament ring as positioned absolute children around the frame. */
+function Ornaments({ frame, thickness }: { frame: FrameStyle; thickness: number }) {
+  const { ornament, ornamentColors } = frame;
+  const count = ornamentColors.length;
+  const radiusPct = 50; // sit on the ring band
+  // Per-ornament geometry
+  const geom: Record<Ornament, { size: number; shape: string; rotateWithRing: boolean; extraStyle?: CSSProperties }> = {
+    gems:     { size: 7, shape: "diamond", rotateWithRing: true },
+    spikes:   { size: 9, shape: "triangle", rotateWithRing: true },
+    flames:   { size: 10, shape: "flame", rotateWithRing: true },
+    crystals: { size: 8, shape: "shard", rotateWithRing: true },
+    bolts:    { size: 9, shape: "bolt", rotateWithRing: true },
+    petals:   { size: 11, shape: "petal", rotateWithRing: true },
+    facets:   { size: 6, shape: "diamond", rotateWithRing: true },
+    stars:    { size: 7, shape: "star", rotateWithRing: true },
+    runes:    { size: 8, shape: "rune", rotateWithRing: true },
+  };
+  const g = geom[ornament];
+
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 rounded-full"
+      style={{
+        zIndex: 5,
+        animation: `oxi-frame-spin ${frame.spinSpeed ?? 24}s linear infinite`,
+      }}
+      aria-hidden
+    >
+      {ornamentColors.map((color, i) => {
+        const angle = (360 / count) * i;
+        const baseStyle: CSSProperties = {
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          width: g.size,
+          height: g.size,
+          marginLeft: -g.size / 2,
+          marginTop: -g.size / 2,
+          transform: `rotate(${angle}deg) translateY(-${radiusPct}%) translateY(${-thickness / 2}px)`,
+          transformOrigin: "center",
+        };
+
+        const inner: CSSProperties = (() => {
+          switch (g.shape) {
+            case "diamond":
+              return {
+                width: "100%",
+                height: "100%",
+                background: color,
+                transform: "rotate(45deg)",
+                boxShadow: `0 0 6px ${color}, 0 0 12px ${color}`,
+                borderRadius: 1,
+              };
+            case "triangle":
+              return {
+                width: 0,
+                height: 0,
+                borderLeft: `${g.size / 2}px solid transparent`,
+                borderRight: `${g.size / 2}px solid transparent`,
+                borderBottom: `${g.size}px solid ${color}`,
+                filter: `drop-shadow(0 0 4px ${color})`,
+              };
+            case "flame":
+              return {
+                width: "100%",
+                height: "100%",
+                background: `radial-gradient(ellipse at 50% 80%, ${color}, transparent 70%)`,
+                borderRadius: "50% 50% 50% 50% / 70% 70% 30% 30%",
+                filter: `drop-shadow(0 0 6px ${color})`,
+                animation: `oxi-flame-flicker 1.${i % 9}s ease-in-out infinite`,
+              };
+            case "shard":
+              return {
+                width: "100%",
+                height: "100%",
+                background: `linear-gradient(180deg, #ffffff, ${color})`,
+                clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+                filter: `drop-shadow(0 0 5px ${color})`,
+              };
+            case "bolt":
+              return {
+                width: "100%",
+                height: "100%",
+                background: color,
+                clipPath: "polygon(40% 0%, 70% 0%, 50% 45%, 80% 45%, 30% 100%, 50% 55%, 25% 55%)",
+                filter: `drop-shadow(0 0 6px ${color})`,
+              };
+            case "petal":
+              return {
+                width: "100%",
+                height: "100%",
+                background: `radial-gradient(circle at 50% 30%, #ffffff, ${color} 80%)`,
+                borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%",
+                boxShadow: `0 0 8px ${color}`,
+              };
+            case "star":
+              return {
+                width: "100%",
+                height: "100%",
+                background: color,
+                clipPath:
+                  "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
+                filter: `drop-shadow(0 0 5px ${color})`,
+              };
+            case "rune":
+              return {
+                width: "100%",
+                height: "100%",
+                background: color,
+                clipPath:
+                  "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                boxShadow: `0 0 6px ${color}, inset 0 0 4px rgba(0,0,0,0.55)`,
+              };
+            default:
+              return { width: "100%", height: "100%", background: color, borderRadius: 9999 };
+          }
+        })();
+
+        return (
+          <div key={i} style={baseStyle}>
+            <div style={inner} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function AvatarFrame({
   frameId,
@@ -129,7 +292,6 @@ export function AvatarFrame({
 }: AvatarFrameProps) {
   const frame = frameId ? FRAME_STYLES[frameId] : null;
   const thickness = preview ? 4 : 9;
-
 
   const dimension = size ? { width: size, height: size } : undefined;
 
@@ -170,7 +332,7 @@ export function AvatarFrame({
           zIndex: 0,
         }}
       />
-      {/* Metallic conic reflections overlay (brushed-metal feel on the ring band) */}
+      {/* Metallic conic reflections overlay */}
       {!preview && (
         <div
           className="pointer-events-none absolute rounded-full oxi-frame-metallic"
@@ -186,7 +348,7 @@ export function AvatarFrame({
           aria-hidden
         />
       )}
-      {/* Outer slow halo (premium depth) */}
+      {/* Outer slow halo */}
       {!preview && frame.halo && (
         <div
           className="oxi-frame-halo oxi-frame-halo--outer"
@@ -194,7 +356,7 @@ export function AvatarFrame({
           aria-hidden
         />
       )}
-      {/* Spinning conic halo masked to a thin ring */}
+      {/* Spinning conic halo */}
       {frame.halo && (
         <div
           className="oxi-frame-halo"
@@ -202,7 +364,7 @@ export function AvatarFrame({
           aria-hidden
         />
       )}
-      {/* Top glossy highlight (jewelry sheen) */}
+      {/* Top glossy highlight */}
       {!preview && (
         <div
           className="pointer-events-none absolute rounded-full"
@@ -221,12 +383,14 @@ export function AvatarFrame({
       )}
       {/* Sparkle layer */}
       {frame.sparkle && <div className="oxi-frame-sparkle" aria-hidden />}
-      {/* Shimmer sweep across ring */}
+      {/* Shimmer sweep */}
       {!preview && (frame.tier === "legendary" || frame.tier === "mythic" || frame.tier === "epic") && (
         <div className="oxi-frame-shimmer" aria-hidden />
       )}
+      {/* UNIQUE ornament ring per frame (gems/spikes/flames/etc) */}
+      {!preview && <Ornaments frame={frame} thickness={thickness} />}
 
-      {/* Avatar — directly inside the ring, no inner bezel */}
+      {/* Avatar */}
       <div
         className={`relative h-full w-full overflow-hidden rounded-full ${innerClassName}`}
         style={{
@@ -237,8 +401,6 @@ export function AvatarFrame({
         {children}
       </div>
 
-
-
       {showBadge && (
         <span className={`oxi-frame-badge oxi-frame-badge--${frame.tier}`} aria-hidden>
           <span style={{ fontSize: 11, lineHeight: 1 }}>{badgeIcon}</span>
@@ -248,4 +410,3 @@ export function AvatarFrame({
     </div>
   );
 }
-

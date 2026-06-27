@@ -232,6 +232,12 @@
   50% { transform: translateY(-2px) scale(1.06); }
 }
 
+@keyframes oxi-flame-flicker {
+  0%, 100% { opacity: 0.85; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.18); }
+}
+
+
 .oxi-avatar-frame {
   isolation: isolate;
 }
