@@ -88,8 +88,8 @@ const Defs = () => (
 );
 
 /** Place a node at angle (deg) on a circle of radius r around center (100,100). */
-function around(count: number, r: number, render: (i: number, angle: number) => JSX.Element) {
-  const arr: JSX.Element[] = [];
+function around(count: number, r: number, render: (i: number, angle: number) => ReactElement) {
+  const arr: ReactElement[] = [];
   for (let i = 0; i < count; i++) {
     const angle = (360 / count) * i;
     arr.push(
@@ -103,7 +103,7 @@ function around(count: number, r: number, render: (i: number, angle: number) => 
 
 /* -------------------- ART per frame -------------------- */
 
-const ART: Record<string, JSX.Element> = {
+const ART: Record<string, ReactElement> = {
   // GOLD — laurel + sun crown spikes
   gold: (
     <svg viewBox={VB} style={{ width: "100%", height: "100%", overflow: "visible" }}>
