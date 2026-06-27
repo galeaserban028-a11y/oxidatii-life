@@ -4,6 +4,7 @@ type AvatarFrameProps = {
   frameId?: string | null;
   size?: number;
   preview?: boolean;
+  showBadge?: boolean;
   children: ReactNode;
   className?: string;
   innerClassName?: string;
@@ -120,6 +121,7 @@ export function AvatarFrame({
   frameId,
   size,
   preview = false,
+  showBadge: showBadgeProp = false,
   children,
   className = "",
   innerClassName = "",
@@ -139,7 +141,7 @@ export function AvatarFrame({
     );
   }
 
-  const showBadge = !preview && frame.tier !== "starter";
+  const showBadge = showBadgeProp && !preview && frame.tier !== "starter";
   const badgeIcon =
     frame.tier === "mythic" ? "👑" :
     frame.tier === "legendary" ? "💎" :
