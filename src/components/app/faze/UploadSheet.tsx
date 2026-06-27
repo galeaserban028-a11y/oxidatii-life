@@ -10,6 +10,8 @@ import { archivo, hind, SHEET_BOTTOM } from "./shared";
 export function UploadSheet({ onClose }: { onClose: () => void }) {
   const { user } = useAuth();
   const qc = useQueryClient();
+  const modMedia = useServerFn(moderateMedia);
+  const modText = useServerFn(moderateText);
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [venueQuery, setVenueQuery] = useState("");
