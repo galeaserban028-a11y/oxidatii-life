@@ -25,7 +25,7 @@ async function loadSpritzOfDay(): Promise<SpritzTile[]> {
   const { data } = await supabase
     .from("sprit_proofs")
     .select(
-      "id,user_id,photo_url,media_type,created_at,profile:profiles!sprit_proofs_user_id_fkey(handle,avatar_url,display_name,is_public),venue:venues(name)",
+      "id,user_id,photo_url,media_type,created_at,profile:profiles!sprit_proofs_user_profile_fkey(handle,avatar_url,display_name,is_public),venue:venues(name)",
     )
     .gte("created_at", startOfDay.toISOString())
     .order("created_at", { ascending: false })
