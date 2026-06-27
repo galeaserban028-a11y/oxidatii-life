@@ -277,7 +277,7 @@ function ShopPage() {
                   ) : (
                     <button
                       onClick={() => buyFrame(f)}
-                      disabled={!!busy || (!owned && balance < f.price_coins)}
+                      disabled={busy === `frame-${f.id}`}
                       className="w-full py-2 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
                       {busy === `frame-${f.id}` ? (
