@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
-import { Sparkles, MapPin, X, Users, Plus, Heart, MessageCircle } from "lucide-react";
+import { MapPin, X, Users, Plus, Heart, MessageCircle } from "lucide-react";
 import VenueNightChat from "./VenueNightChat";
 
 function localDateBuc(): string {
