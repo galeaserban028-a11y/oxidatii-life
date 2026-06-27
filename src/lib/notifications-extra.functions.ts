@@ -105,10 +105,10 @@ export const notifyPartyJoinRequest = createServerFn({ method: "POST" })
       .maybeSingle();
     const name = me?.handle ?? me?.display_name ?? "Cineva";
 
-    return sendPushToUsers([party.host_id], {
+    return smartPushToUsers([party.host_id], {
       title: "🙋 Cerere la spritz",
       body: `@${name} vrea să intre la „${party.title}"`,
       url: `/app/parties`,
       tag: `party-req-${data.partyId}`,
-    });
+    }, { kind: "party_req", important: true, maxPerWindow: 6, windowMinutes: 60 });
   });
