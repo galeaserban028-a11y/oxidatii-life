@@ -365,20 +365,21 @@ export default function TonightCard() {
           </button>
         )}
 
-        {myIntent && !myIntent.venue_id && !showVenues && (
-          <button
-            onClick={() => setShowVenues(true)}
-            className="tonight-btn shrink-0"
-            style={{ padding: "0 14px" }}
-          >
-            alege loc
-          </button>
-        )}
-
-        {myIntent && myIntent.venue_id && !showVenues && (
-          <button onClick={cancel} className="tonight-icon-btn shrink-0" aria-label="Anulează">
-            <X size={12} />
-          </button>
+        {myIntent && !showVenues && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            {!myIntent.venue_id && (
+              <button
+                onClick={() => setShowVenues(true)}
+                className="tonight-btn"
+                style={{ padding: "0 14px" }}
+              >
+                alege loc
+              </button>
+            )}
+            <button onClick={cancel} className="tonight-icon-btn" aria-label="Renunță">
+              <X size={12} />
+            </button>
+          </div>
         )}
       </div>
 
