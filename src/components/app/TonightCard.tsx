@@ -303,33 +303,23 @@ export default function TonightCard() {
   if (!user || !showCard) return null;
 
   return (
-    <div className="tonight-card warm-glow-anim animate-fade-in">
-      {/* Warm sunset glow orbs */}
-      <div
-        className="pointer-events-none absolute -top-2 -right-2 h-8 w-8 rounded-full blur-[18px] opacity-50"
-        style={{ background: "var(--warm-orange)" }}
-      />
-      <div
-        className="pointer-events-none absolute -bottom-2 -left-2 h-5 w-5 rounded-full blur-[14px] opacity-35"
-        style={{ background: "var(--warm-rose)" }}
-      />
-
-      <div className="relative flex items-center justify-between gap-2">
+    <div className="tonight-card animate-fade-in">
+      <div className="relative flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="tonight-label flex items-center gap-0.5">
-            <Sparkles size={7} /> diseară
+          <div className="tonight-label flex items-center gap-1.5">
+            <Sparkles size={10} /> diseară
           </div>
-          <h3 className="tonight-title mt-0.5">
+          <h3 className="tonight-title mt-1">
             {myIntent ? (
               <>
                 Te-ai băgat.{" "}
                 <span
-                  className="text-white/95"
-                  style={{ textShadow: "0 0 12px rgba(255,255,255,0.35)" }}
+                  className="text-white"
+                  style={{ textShadow: "0 0 16px rgba(251,191,36,0.45)" }}
                 >
                   {count}
                 </span>{" "}
-                pers.
+                <span className="text-white/70 font-medium">pers.</span>
               </>
             ) : (
               <>
@@ -338,10 +328,10 @@ export default function TonightCard() {
             )}
           </h3>
           {myIntent && (myIntent.venue?.name || myIntent.note) && (
-            <div className="mt-0.5 text-[8px] text-white/80 flex items-center gap-1">
+            <div className="mt-1.5 text-[11px] text-white/75 flex items-center gap-1.5">
               {myIntent.venue?.name && (
                 <>
-                  <MapPin size={7} className="text-white/90" /> {myIntent.venue.name}
+                  <MapPin size={11} className="text-amber-300/90" /> {myIntent.venue.name}
                 </>
               )}
               {myIntent.note && <span className="text-white/55">· {myIntent.note}</span>}
@@ -352,8 +342,8 @@ export default function TonightCard() {
         {!myIntent && !showVenues && (
           <button
             onClick={() => setShowVenues(true)}
-            className="tonight-btn"
-            style={{ width: "auto", padding: "0 10px" }}
+            className="tonight-btn shrink-0"
+            style={{ padding: "0 16px" }}
           >
             mă bag ({count})
           </button>
@@ -362,19 +352,20 @@ export default function TonightCard() {
         {myIntent && !myIntent.venue_id && !showVenues && (
           <button
             onClick={() => setShowVenues(true)}
-            className="tonight-btn"
-            style={{ width: "auto", padding: "0 9px" }}
+            className="tonight-btn shrink-0"
+            style={{ padding: "0 14px" }}
           >
-            loc
+            alege loc
           </button>
         )}
 
         {myIntent && myIntent.venue_id && !showVenues && (
-          <button onClick={cancel} className="tonight-icon-btn" aria-label="Anulează">
-            <X size={8} />
+          <button onClick={cancel} className="tonight-icon-btn shrink-0" aria-label="Anulează">
+            <X size={12} />
           </button>
         )}
       </div>
+
 
       {showVenues && (
         <div className="relative mt-3 space-y-2">
