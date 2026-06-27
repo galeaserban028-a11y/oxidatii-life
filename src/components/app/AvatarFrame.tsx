@@ -126,7 +126,9 @@ export function AvatarFrame({
   style,
 }: AvatarFrameProps) {
   const frame = frameId ? FRAME_STYLES[frameId] : null;
-  const thickness = preview ? 4 : 5;
+  const thickness = preview ? 4 : 9;
+  const gap = preview ? 0 : 2;
+
   const dimension = size ? { width: size, height: size } : undefined;
 
   if (!frame) {
@@ -151,7 +153,7 @@ export function AvatarFrame({
         ...dimension,
         padding: thickness,
         background: frame.ring,
-        boxShadow: frame.glow,
+        boxShadow: `${frame.glow}, inset 0 0 0 1px rgba(255,255,255,0.45), inset 0 1px 2px rgba(255,255,255,0.6), inset 0 -1px 3px rgba(0,0,0,0.35)`,
         ...style,
       }}
     >
@@ -161,8 +163,8 @@ export function AvatarFrame({
         style={{
           inset: -thickness,
           background: frame.accent,
-          filter: "blur(18px)",
-          opacity: 0.95,
+          filter: "blur(20px)",
+          opacity: 1,
           zIndex: 0,
         }}
       />
@@ -182,19 +184,44 @@ export function AvatarFrame({
           aria-hidden
         />
       )}
+      {/* Glossy top highlight on the ring (jewelry feel) */}
+      {!preview && (
+        <div
+          className="pointer-events-none absolute rounded-full"
+          style={{
+            inset: 0,
+            background: "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.1) 22%, transparent 45%)",
+            mixBlendMode: "screen",
+            zIndex: 3,
+            opacity: 0.85,
+          }}
+          aria-hidden
+        />
+      )}
       {/* Bright moving sparkle layer */}
       {frame.sparkle && <div className="oxi-frame-sparkle" aria-hidden />}
-      {/* Shimmer sweep across ring (only legendary/mythic/epic on profile) */}
+      {/* Shimmer sweep across ring */}
       {!preview && (frame.tier === "legendary" || frame.tier === "mythic" || frame.tier === "epic") && (
         <div className="oxi-frame-shimmer" aria-hidden />
       )}
 
+      {/* Inner dark gap, then avatar — gives a "set into bezel" gemstone look */}
       <div
-        className={`relative h-full w-full overflow-hidden rounded-full ${innerClassName}`}
-        style={{ zIndex: 2 }}
+        className="relative h-full w-full rounded-full"
+        style={{
+          background: !preview ? "radial-gradient(circle at 50% 35%, #1a1530, #07050f)" : undefined,
+          padding: gap,
+          zIndex: 2,
+          boxShadow: !preview ? "inset 0 0 0 1px rgba(0,0,0,0.7), inset 0 2px 6px rgba(0,0,0,0.55)" : undefined,
+        }}
       >
-        {children}
+        <div
+          className={`relative h-full w-full overflow-hidden rounded-full ${innerClassName}`}
+        >
+          {children}
+        </div>
       </div>
+
 
       {showBadge && (
         <span className={`oxi-frame-badge oxi-frame-badge--${frame.tier}`} aria-hidden>
