@@ -10,6 +10,8 @@ const STATIC_PATHS = [
   { path: "/privacy", changefreq: "yearly", priority: "0.3" },
   { path: "/terms", changefreq: "yearly", priority: "0.3" },
   { path: "/cookies", changefreq: "yearly", priority: "0.3" },
+  { path: "/drop", changefreq: "hourly", priority: "0.9" },
+  { path: "/hall-of-fame", changefreq: "daily", priority: "0.7" },
   { path: "/app/feed", changefreq: "hourly", priority: "0.9" },
   { path: "/app/map", changefreq: "hourly", priority: "0.9" },
   { path: "/app/parties", changefreq: "hourly", priority: "0.8" },

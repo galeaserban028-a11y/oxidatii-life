@@ -18,8 +18,16 @@ function Onboarding() {
   const [handle, setHandle] = useState("");
   const [cityId, setCityId] = useState("");
   const [locOk, setLocOk] = useState(false);
+  const [refCode, setRefCode] = useState("");
   const [cities, setCities] = useState<City[]>([]);
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    try {
+      const pending = localStorage.getItem("pending_referral_code");
+      if (pending) setRefCode(pending);
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) nav({ to: "/login", replace: true });
@@ -76,6 +84,19 @@ function Onboarding() {
       .eq("id", user.id);
     setBusy(false);
     if (error) return toast.error(error.message);
+
+    // Apply referral code if present
+    if (refCode && refCode.length >= 4) {
+      try {
+        const { data: r } = await supabase.rpc("apply_referral_code", { _code: refCode.toUpperCase() });
+        const res = r as { ok: boolean; error?: string } | null;
+        if (res?.ok) {
+          toast.success("+50 șprițuri din invitație 🎉");
+          try { localStorage.removeItem("pending_referral_code"); } catch {}
+        }
+      } catch {}
+    }
+
     await refreshProfile();
     nav({ to: "/app/map", replace: true });
   }
@@ -149,6 +170,19 @@ function Onboarding() {
               {locOk ? "✓ Permis" : "Permite"}
             </button>
           </div>
+        </div>
+
+        <div>
+          <label className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
+            Cod invitație <span className="text-foreground/40 normal-case tracking-normal">(opțional · +50 șprițuri)</span>
+          </label>
+          <input
+            value={refCode}
+            onChange={(e) => setRefCode(e.target.value.toUpperCase().trim())}
+            placeholder="ABC1234"
+            maxLength={12}
+            className="mt-2 w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm font-mono tracking-widest"
+          />
         </div>
 
         <button

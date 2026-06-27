@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { AlcoholWarning } from "@/components/AlcoholWarning";
 import { SpritzIndexDial } from "@/components/app/SpritzIndexDial";
 import logoLight from "@/assets/logo-oxidatii-light.png";
@@ -40,6 +41,14 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  useEffect(() => {
+    try {
+      const ref = new URLSearchParams(window.location.search).get("ref");
+      if (ref && /^[A-Z0-9]{4,12}$/i.test(ref)) {
+        localStorage.setItem("pending_referral_code", ref.toUpperCase());
+      }
+    } catch {}
+  }, []);
   return (
     <main className="relative min-h-[100svh] mx-auto max-w-md flex flex-col overflow-hidden bg-[#050510] text-white">
       {/* ambient glows */}
