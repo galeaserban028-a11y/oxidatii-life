@@ -192,6 +192,6 @@ export const notifyChallenge = createServerFn({ method: "POST" })
       body,
       url: `/app/notifications`,
       tag: `challenge-${ch.id}`,
-    });
+    }, { kind: "challenge", important: true, maxPerWindow: 5, windowMinutes: 60 });
     return res;
   });
