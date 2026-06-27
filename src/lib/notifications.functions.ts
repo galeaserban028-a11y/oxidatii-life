@@ -49,7 +49,7 @@ export const notifyNewPartyInCity = createServerFn({ method: "POST" })
 
     const ids = (targets ?? []).map((t) => t.id);
     const opted = await filterByPref(ids, "new_party_in_city");
-    const res = await sendPushToUsers(opted, {
+    const res = await smartPushToUsers(opted, {
       title: "🎉 Petrecere nouă în oraș",
       body: party.title + (party.location_text ? ` · ${party.location_text}` : ""),
       url: `/app/party/${party.id}`,
@@ -87,7 +87,7 @@ export const notifyPartyJoin = createServerFn({ method: "POST" })
     const name = joiner?.handle ?? joiner?.display_name ?? "Cineva";
 
     const opted = await filterByPref([party.host_id], "party_join");
-    const res = await sendPushToUsers(opted, {
+    const res = await smartPushToUsers(opted, {
       title: "🤝 Spot ocupat",
       body: `@${name} s-a alăturat la „${party.title}"`,
       url: `/app/party/${party.id}`,
@@ -142,7 +142,7 @@ export const notifyFriendsLive = createServerFn({ method: "POST" })
     }
 
     const opted = await filterByPref(ids, "friend_live");
-    const res = await sendPushToUsers(opted, {
+    const res = await smartPushToUsers(opted, {
       title: "📍 Prieten live",
       body: `@${name} e live${venueName}`,
       url: `/app/map`,
@@ -187,7 +187,7 @@ export const notifyChallenge = createServerFn({ method: "POST" })
     }
 
     const opted = await filterByPref([targetId], "challenge");
-    const res = await sendPushToUsers(opted, {
+    const res = await smartPushToUsers(opted, {
       title,
       body,
       url: `/app/notifications`,
