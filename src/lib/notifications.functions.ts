@@ -54,7 +54,7 @@ export const notifyNewPartyInCity = createServerFn({ method: "POST" })
       body: party.title + (party.location_text ? ` · ${party.location_text}` : ""),
       url: `/app/party/${party.id}`,
       tag: `party-${party.id}`,
-    });
+    }, { kind: "new_party_in_city", maxPerWindow: 1, windowMinutes: 180 });
     return res;
   });
 
