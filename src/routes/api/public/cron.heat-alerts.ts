@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { sendPushToUsers, filterByPref } from "@/lib/push-send.server";
+import { filterByPref } from "@/lib/push-send.server";
+import { smartPushToUsers } from "@/lib/smart-push.server";
 
 type HotCell = {
   cell_id: string;
