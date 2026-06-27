@@ -270,9 +270,15 @@ export function AvatarFrame({
           zIndex: 4,
         }}
       >
-        <div className="relative h-full w-full overflow-hidden rounded-full" style={{
-          boxShadow: !preview ? "inset 0 0 0 2px rgba(255,255,255,0.12), inset 0 0 12px rgba(0,0,0,0.4)" : undefined,
-        }}>
+        <div
+          className="relative h-full w-full overflow-hidden rounded-full isolate"
+          style={{
+            clipPath: "circle(50% at 50% 50%)",
+            boxShadow: !preview
+              ? "inset 0 0 0 2px rgba(255,255,255,0.12), inset 0 0 12px rgba(0,0,0,0.4)"
+              : undefined,
+          }}
+        >
           {children}
           {/* Internal light sweep */}
           {!preview && (
