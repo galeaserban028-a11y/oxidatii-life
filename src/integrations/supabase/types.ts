@@ -1790,6 +1790,8 @@ export type Database = {
           profile_bg_url: string | null
           profile_theme_id: string | null
           rank: Database["public"]["Enums"]["balkan_rank"]
+          referral_code: string | null
+          referred_by: string | null
           theme_intensity: Json | null
           tutorial_seen: boolean
           updated_at: string
@@ -1827,6 +1829,8 @@ export type Database = {
           profile_bg_url?: string | null
           profile_theme_id?: string | null
           rank?: Database["public"]["Enums"]["balkan_rank"]
+          referral_code?: string | null
+          referred_by?: string | null
           theme_intensity?: Json | null
           tutorial_seen?: boolean
           updated_at?: string
@@ -1864,6 +1868,8 @@ export type Database = {
           profile_bg_url?: string | null
           profile_theme_id?: string | null
           rank?: Database["public"]["Enums"]["balkan_rank"]
+          referral_code?: string | null
+          referred_by?: string | null
           theme_intensity?: Json | null
           tutorial_seen?: boolean
           updated_at?: string
@@ -2554,6 +2560,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      apply_referral_code: { Args: { _code: string }; Returns: Json }
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       buy_boost: { Args: { _kind: string; _target_id?: string }; Returns: Json }
       buy_frame: { Args: { _frame_id: string }; Returns: Json }
@@ -2627,6 +2634,7 @@ export type Database = {
           top_venue_name: string
         }[]
       }
+      generate_referral_code: { Args: never; Returns: string }
       get_business_contact: {
         Args: { _business_id: string }
         Returns: {
@@ -2651,6 +2659,7 @@ export type Database = {
       }
       get_crystal_ball: { Args: never; Returns: Json }
       get_decision_poll: { Args: { _poll_id: string }; Returns: Json }
+      get_drop_stats: { Args: never; Returns: Json }
       get_featured_tonight: {
         Args: { _city_id: string; _limit?: number }
         Returns: {
@@ -2663,6 +2672,16 @@ export type Database = {
           score: number
           tier: Database["public"]["Enums"]["business_tier"]
           venue_id: string
+        }[]
+      }
+      get_hall_of_fame: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          display_name: string
+          handle: string
+          invites: number
+          rank: number
         }[]
       }
       get_heat_now: {
@@ -2693,6 +2712,7 @@ export type Database = {
           venue_id: string
         }[]
       }
+      get_monthly_wrap: { Args: { _month_start?: string }; Returns: Json }
       get_my_account_state: {
         Args: never
         Returns: {
@@ -2775,6 +2795,7 @@ export type Database = {
           sender_id: string
         }[]
       }
+      get_my_referral_stats: { Args: never; Returns: Json }
       get_my_spritz_score: {
         Args: {
           _city_id?: string
