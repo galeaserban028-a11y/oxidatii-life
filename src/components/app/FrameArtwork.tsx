@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactElement } from "react";
 
 /**
  * Dedicated SVG artwork per frame.
