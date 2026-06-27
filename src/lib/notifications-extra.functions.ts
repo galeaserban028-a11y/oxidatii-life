@@ -69,12 +69,12 @@ export const notifyChatMessage = createServerFn({ method: "POST" })
     const name = me?.handle ?? me?.display_name ?? "Mesaj nou";
 
     const body = (data.preview ?? "").trim();
-    return sendPushToUsers(targets, {
+    return smartPushToUsers(targets, {
       title: `💬 @${name}`,
       body: body.length ? body.slice(0, 120) : "Ai un mesaj nou",
       url: `/app/chat/${data.conversationId}`,
       tag: `chat-${data.conversationId}`,
-    });
+    }, { kind: `chat:${data.conversationId}`, important: true, maxPerWindow: 8, windowMinutes: 15 });
   });
 
 /** Push when someone requests to join your spritz/party (party_joins insert). */
