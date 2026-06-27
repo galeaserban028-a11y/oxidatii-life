@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { moderateMedia, moderateText } from "@/lib/moderation.functions";
 import { archivo, hind, SHEET_BOTTOM } from "./shared";
 
 export function UploadSheet({ onClose }: { onClose: () => void }) {
