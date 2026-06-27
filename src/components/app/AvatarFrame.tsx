@@ -1,15 +1,21 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { usePerfLevel } from "@/hooks/usePerfLevel";
 
 type AvatarFrameProps = {
   frameId?: string | null;
   size?: number;
   preview?: boolean;
   showBadge?: boolean;
+  /** Adds hover lift + activation pulse. Defaults to true. */
+  interactive?: boolean;
+  /** Increment / toggle to trigger the "just activated" burst. */
+  activationKey?: string | number | null;
   children: ReactNode;
   className?: string;
   innerClassName?: string;
   style?: CSSProperties;
 };
+
 
 type Tier = "starter" | "rare" | "epic" | "legendary" | "mythic";
 

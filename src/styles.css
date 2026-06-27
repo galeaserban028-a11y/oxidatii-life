@@ -267,11 +267,50 @@
 }
 
 
-
+/* === Hover & activation accents (per-frame premium feel) === */
+@keyframes oxi-pf-hover-glow {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; }
+  50%      { box-shadow: 0 0 18px 4px currentColor; }
+}
+@keyframes oxi-pf-activate-burst {
+  0%   { transform: scale(0.6); opacity: 0; }
+  35%  { transform: scale(1.18); opacity: 1; }
+  70%  { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.05); opacity: 0; }
+}
+@keyframes oxi-pf-activate-ring {
+  0%   { transform: scale(0.85); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
 
 .oxi-avatar-frame {
   isolation: isolate;
+  transition: transform .35s cubic-bezier(.2,.7,.2,1);
+  will-change: transform;
 }
+.oxi-avatar-frame:hover { transform: translateY(-1px) scale(1.03); }
+.oxi-avatar-frame .oxi-pf-orn { transition: filter .35s ease, opacity .35s ease; }
+.oxi-avatar-frame:hover .oxi-pf-orn { filter: brightness(1.18) saturate(1.15); }
+.oxi-avatar-frame:hover .oxi-pf-bezel { filter: brightness(1.15); }
+
+/* While activating, push speed/intensity briefly */
+.oxi-avatar-frame[data-activating="1"] .oxi-pf-orn {
+  animation: oxi-pf-activate-burst 900ms ease-out;
+}
+
+/* PERF DEGRADATION — when FPS drops, strip the expensive layers */
+html[data-perf="low"] .oxi-pf-orn,
+html[data-perf="low"] .oxi-pf-shimmer,
+html[data-perf="low"] .oxi-pf-aura {
+  animation: none !important;
+}
+html[data-perf="low"] .oxi-pf-aura { opacity: .55; filter: none !important; }
+html[data-perf="low"] .oxi-pf-orn  { filter: none !important; }
+html[data-perf="low"] .oxi-pf-shimmer { display: none; }
+html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
+
+
 
 /* ===== Hyper-shard frame ===== */
 .oxi-hypershard { isolation: isolate; }
