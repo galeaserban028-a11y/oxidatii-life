@@ -816,15 +816,19 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
     overflow: hidden;
     border-radius: 18px;
     padding: 10px 12px;
-    background: color-mix(in oklab, var(--card) 85%, transparent);
+    background:
+      radial-gradient(ellipse at top right, oklch(0.68 0.26 0 / 0.18), transparent 50%),
+      radial-gradient(ellipse at bottom left, oklch(0.6 0.3 310 / 0.14), transparent 50%),
+      color-mix(in oklab, var(--card) 85%, transparent);
     border: 1px solid color-mix(in oklab, var(--primary) 22%, transparent);
     box-shadow:
       0 1px 0 color-mix(in oklab, var(--foreground) 6%, transparent) inset,
-      0 8px 24px -18px rgba(0, 0, 0, 0.55);
+      0 8px 24px -18px rgba(0, 0, 0, 0.55),
+      0 0 40px -14px oklch(0.68 0.26 0 / 0.25);
   }
 
 
-  /* hairline gradient border (premium jewelry edge) */
+  /* neon hairline gradient border */
   .tonight-card::before {
     content: "";
     position: absolute;
@@ -834,10 +838,10 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
     padding: 1px;
     background: linear-gradient(
       135deg,
-      rgba(251, 191, 36, 0.55) 0%,
-      rgba(244, 114, 182, 0.35) 40%,
-      rgba(255, 255, 255, 0.04) 70%,
-      rgba(251, 191, 36, 0.35) 100%
+      rgba(255, 61, 139, 0.75) 0%,
+      rgba(199, 36, 255, 0.55) 40%,
+      rgba(0, 229, 255, 0.55) 70%,
+      rgba(255, 61, 139, 0.55) 100%
     );
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
