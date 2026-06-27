@@ -137,6 +137,13 @@ export function AvatarFrame({
     );
   }
 
+  const showBadge = !preview && frame.tier !== "starter";
+  const badgeIcon =
+    frame.tier === "mythic" ? "👑" :
+    frame.tier === "legendary" ? "💎" :
+    frame.tier === "epic" ? "✦" :
+    frame.tier === "rare" ? "✧" : "";
+
   return (
     <div
       className={`oxi-avatar-frame relative shrink-0 rounded-full ${frame.animated ? "oxi-avatar-frame--animated" : ""} ${className}`}
@@ -154,11 +161,19 @@ export function AvatarFrame({
         style={{
           inset: -thickness,
           background: frame.accent,
-          filter: "blur(16px)",
+          filter: "blur(18px)",
           opacity: 0.95,
           zIndex: 0,
         }}
       />
+      {/* Outer slow halo (premium depth) */}
+      {!preview && frame.halo && (
+        <div
+          className="oxi-frame-halo oxi-frame-halo--outer"
+          style={{ background: frame.halo }}
+          aria-hidden
+        />
+      )}
       {/* Spinning conic halo masked to a thin ring */}
       {frame.halo && (
         <div
@@ -169,6 +184,10 @@ export function AvatarFrame({
       )}
       {/* Bright moving sparkle layer */}
       {frame.sparkle && <div className="oxi-frame-sparkle" aria-hidden />}
+      {/* Shimmer sweep across ring (only legendary/mythic/epic on profile) */}
+      {!preview && (frame.tier === "legendary" || frame.tier === "mythic" || frame.tier === "epic") && (
+        <div className="oxi-frame-shimmer" aria-hidden />
+      )}
 
       <div
         className={`relative h-full w-full overflow-hidden rounded-full ${innerClassName}`}
@@ -176,6 +195,14 @@ export function AvatarFrame({
       >
         {children}
       </div>
+
+      {showBadge && (
+        <span className={`oxi-frame-badge oxi-frame-badge--${frame.tier}`} aria-hidden>
+          <span style={{ fontSize: 11, lineHeight: 1 }}>{badgeIcon}</span>
+          <span>{TIER_LABEL[frame.tier]}</span>
+        </span>
+      )}
     </div>
   );
 }
+
