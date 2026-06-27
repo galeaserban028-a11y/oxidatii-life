@@ -355,7 +355,7 @@ function ShopPage() {
                   </div>
                   <button
                     onClick={() => buyPartyBoost(p.id)}
-                    disabled={!!busy || balance < 15}
+                    disabled={busy === `party-${p.id}`}
                     className="px-3 py-2 rounded-lg bg-pink-500/20 border border-pink-500/40 text-pink-200 text-xs disabled:opacity-50 flex items-center gap-1.5 shrink-0"
                   >
                     {busy === `party-${p.id}` ? (
