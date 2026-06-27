@@ -4,8 +4,18 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Rocket, Crown, Gift, PartyPopper, ArrowLeft, Check, Loader2, Beer } from "lucide-react";
-import { AvatarFrame } from "@/components/app/AvatarFrame";
+import { Rocket, Crown, Gift, PartyPopper, ArrowLeft, Check, Loader2, Beer, Sparkles } from "lucide-react";
+import { AvatarFrame, FRAME_STYLES, TIER_LABEL } from "@/components/app/AvatarFrame";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/app/shop")({
   head: () => ({ meta: [{ title: "Bar · OXIDAȚII" }] }),
@@ -14,8 +24,15 @@ export const Route = createFileRoute("/app/shop")({
 
 type Tab = "boost" | "frames" | "gifts" | "party";
 
-// thematic helper — "5 șprițuri" / "1 șpriț"
 const drink = (n: number) => `${n} ${n === 1 ? "șpriț" : "șprițuri"}`;
+
+type Confirm = {
+  title: string;
+  description: string;
+  price: number;
+  cta: string;
+  onConfirm: () => Promise<void> | void;
+} | null;
 
 function ShopPage() {
   const { user, profile, refreshProfile } = useAuth();
@@ -23,6 +40,7 @@ function ShopPage() {
   const nav = useNavigate();
   const [tab, setTab] = useState<Tab>("boost");
   const [busy, setBusy] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<Confirm>(null);
 
   const balance = profile?.coin_balance ?? 0;
 
@@ -74,9 +92,12 @@ function ShopPage() {
     });
   }
 
-  async function buyProfileBoost() {
+  function ask(c: NonNullable<Confirm>) {
+    setConfirm(c);
+  }
+
+  async function doBuyProfileBoost() {
     if (!user) return;
-    if (balance < 5) return notEnough(5);
     setBusy("profile-boost");
     try {
       const { data, error } = await supabase.rpc("buy_boost", { _kind: "profile" });
@@ -92,9 +113,8 @@ function ShopPage() {
     }
   }
 
-  async function buyPartyBoost(partyId: string) {
+  async function doBuyPartyBoost(partyId: string) {
     if (!user) return;
-    if (balance < 15) return notEnough(15);
     setBusy(`party-${partyId}`);
     try {
       const { data, error } = await supabase.rpc("buy_boost", {
@@ -112,20 +132,8 @@ function ShopPage() {
     }
   }
 
-  async function buyFrame(frame: any) {
+  async function doBuyFrame(frame: any) {
     if (!user) return;
-    if (ownedFrames?.has(frame.id)) {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ active_frame_id: frame.id })
-        .eq("id", user.id);
-      if (error) return toast.error(error.message);
-      toast.success(`Rama "${frame.name}" activată pe profil`);
-      await refreshProfile();
-      qc.invalidateQueries({ queryKey: ["active-frame"] });
-      return;
-    }
-    if (balance < (frame.price_coins ?? 0)) return notEnough(frame.price_coins ?? 0);
     setBusy(`frame-${frame.id}`);
     try {
       const { data, error } = await supabase.rpc("buy_frame", { _frame_id: frame.id });
@@ -142,12 +150,63 @@ function ShopPage() {
     }
   }
 
+  async function activateFrame(frame: any) {
+    if (!user) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ active_frame_id: frame.id })
+      .eq("id", user.id);
+    if (error) return toast.error(error.message);
+    toast.success(`Rama „${frame.name}" activată pe profil`);
+    await refreshProfile();
+    qc.invalidateQueries({ queryKey: ["active-frame"] });
+  }
 
   async function deactivateFrame() {
     if (!user) return;
     await supabase.from("profiles").update({ active_frame_id: null }).eq("id", user.id);
     toast.success("Rama dezactivată");
     await refreshProfile();
+  }
+
+  // Confirmation triggers
+  function askProfileBoost() {
+    if (balance < 5) return notEnough(5);
+    ask({
+      title: "Boost profil · 24h",
+      description: "Apari primul în Caută oameni și pe Discover timp de 24 de ore.",
+      price: 5,
+      cta: "Confirmă rândul",
+      onConfirm: doBuyProfileBoost,
+    });
+  }
+  function askPartyBoost(p: any) {
+    if (balance < 15) return notEnough(15);
+    ask({
+      title: `Boost petrecere · ${p.title}`,
+      description: "Petrecerea va apărea promovată în feed și pe hartă timp de 12 ore.",
+      price: 15,
+      cta: "Confirmă boost",
+      onConfirm: () => doBuyPartyBoost(p.id),
+    });
+  }
+  function askFrame(frame: any) {
+    if (ownedFrames?.has(frame.id)) {
+      activateFrame(frame);
+      return;
+    }
+    const price = frame.price_coins ?? 0;
+    if (balance < price) return notEnough(price);
+    ask({
+      title: `Cumperi „${frame.name}"`,
+      description:
+        price === 0
+          ? "Rama este gratuită și se activează automat pe profil."
+          : `Rama va fi adăugată în colecția ta și activată automat pe profil. Te va costa ${drink(price)}.`,
+      price,
+      cta: price === 0 ? "Activează" : "Confirmă cumpărarea",
+      onConfirm: () => doBuyFrame(frame),
+    });
   }
 
   return (
@@ -168,7 +227,6 @@ function ShopPage() {
         </Link>
       </header>
 
-      {/* Weekly free drink — the new headline idea */}
       <div
         className="relative overflow-hidden rounded-2xl border border-amber-400/30 p-5"
         style={{
@@ -186,15 +244,10 @@ function ShopPage() {
         <p className="text-[12px] text-foreground/70 mt-1 max-w-[34ch]">
           Îți pică automat în cont luni dimineața. Mai vrei? Iei un rând de mai jos.
         </p>
-        <div className="mt-3 inline-flex items-center gap-2 text-[10px] font-mono uppercase tracking-wider text-amber-300/70">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-300 animate-pulse" />
-          în curând — runda săptămânală
-        </div>
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Șprițurile sunt moneda din bar. Le dai pe boost-uri, rame, cadouri în chat, sau pe boost de
-        petrecere. Rămân la tine — nu expiră. Mai vrei?{" "}
+        Șprițurile sunt moneda din bar. Le dai pe boost-uri, rame, cadouri sau boost de petrecere.{" "}
         <Link to="/app/premium" className="underline text-amber-300">
           Mai iei un rând
         </Link>
@@ -202,28 +255,16 @@ function ShopPage() {
       </p>
 
       <nav className="flex gap-2 overflow-x-auto -mx-4 px-4">
-        <TabBtn
-          active={tab === "boost"}
-          onClick={() => setTab("boost")}
-          icon={<Rocket size={14} />}
-        >
+        <TabBtn active={tab === "boost"} onClick={() => setTab("boost")} icon={<Rocket size={14} />}>
           Boost profil
         </TabBtn>
-        <TabBtn
-          active={tab === "frames"}
-          onClick={() => setTab("frames")}
-          icon={<Crown size={14} />}
-        >
+        <TabBtn active={tab === "frames"} onClick={() => setTab("frames")} icon={<Crown size={14} />}>
           Rame avatar
         </TabBtn>
         <TabBtn active={tab === "gifts"} onClick={() => setTab("gifts")} icon={<Gift size={14} />}>
           Cadouri chat
         </TabBtn>
-        <TabBtn
-          active={tab === "party"}
-          onClick={() => setTab("party")}
-          icon={<PartyPopper size={14} />}
-        >
+        <TabBtn active={tab === "party"} onClick={() => setTab("party")} icon={<PartyPopper size={14} />}>
           Boost petrecere
         </TabBtn>
       </nav>
@@ -239,10 +280,11 @@ function ShopPage() {
               <div className="text-sm text-muted-foreground">
                 Apari primul în <em>Caută oameni</em> și pe Discover timp de 24 de ore.
               </div>
+              <PriceTag price={5} />
             </div>
           </div>
           <button
-            onClick={buyProfileBoost}
+            onClick={askProfileBoost}
             disabled={busy === "profile-boost"}
             className="mt-4 w-full py-3 rounded-xl bg-gradient-to-r from-fuchsia-500 to-purple-600 font-display text-sm uppercase tracking-wide text-white disabled:opacity-50 flex items-center justify-center gap-2"
           >
@@ -261,18 +303,53 @@ function ShopPage() {
           {(frames ?? []).map((f: any) => {
             const owned = ownedFrames?.has(f.id);
             const active = profile?.active_frame_id === f.id;
+            const meta = FRAME_STYLES[f.id];
+            const tier = meta?.tier ?? "starter";
+            const price = f.price_coins ?? 0;
             return (
-              <Card key={f.id}>
-                <div className="flex flex-col items-center gap-3 py-2">
-                  <AvatarFrame
-                    frameId={f.id}
-                    size={80}
-                    preview
-                    innerClassName="bg-gradient-to-br from-purple-500/40 to-pink-500/40 grid place-items-center text-3xl"
+              <div
+                key={f.id}
+                className="relative overflow-hidden rounded-2xl border border-white/10 p-4"
+                style={{
+                  background:
+                    "radial-gradient(circle at 50% 0%, rgba(255,255,255,0.06), rgba(0,0,0,0.25) 70%)",
+                }}
+              >
+                {/* Tier badge */}
+                <div className="absolute top-2 right-2 z-10">
+                  <span
+                    className={`text-[9px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border ${tierBadgeClass(
+                      tier,
+                    )}`}
                   >
-                    {f.emoji ?? "👤"}
-                  </AvatarFrame>
-                  <div className="font-display text-base">{f.name}</div>
+                    {TIER_LABEL[tier]}
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-center gap-3 py-2">
+                  <div className="p-2">
+                    <AvatarFrame
+                      frameId={f.id}
+                      size={88}
+                      innerClassName="bg-gradient-to-br from-purple-500/40 to-pink-500/40 grid place-items-center text-3xl"
+                    >
+                      {f.emoji ?? "👤"}
+                    </AvatarFrame>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="font-display text-base leading-tight">{f.name}</div>
+                    <div className="mt-1 inline-flex items-center gap-1 text-amber-300 text-[13px] font-semibold">
+                      {price === 0 ? (
+                        <span className="text-emerald-300">Gratis</span>
+                      ) : (
+                        <>
+                          <Beer size={12} /> {drink(price)}
+                        </>
+                      )}
+                    </div>
+                  </div>
+
                   {active ? (
                     <button
                       onClick={deactivateFrame}
@@ -280,9 +357,17 @@ function ShopPage() {
                     >
                       <Check size={14} /> Activă · scoate
                     </button>
+                  ) : owned ? (
+                    <button
+                      onClick={() => askFrame(f)}
+                      disabled={busy === `frame-${f.id}`}
+                      className="w-full py-2 rounded-lg bg-white/10 border border-white/20 text-white text-xs disabled:opacity-50 flex items-center justify-center gap-1.5"
+                    >
+                      <Sparkles size={12} /> Activează
+                    </button>
                   ) : (
                     <button
-                      onClick={() => buyFrame(f)}
+                      onClick={() => askFrame(f)}
                       disabled={busy === `frame-${f.id}`}
                       className="w-full py-2 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
@@ -291,11 +376,11 @@ function ShopPage() {
                       ) : (
                         <Beer size={12} />
                       )}
-                      {owned ? "Activează" : drink(f.price_coins)}
+                      {price === 0 ? "Activează gratis" : `Cumpără · ${drink(price)}`}
                     </button>
                   )}
                 </div>
-              </Card>
+              </div>
             );
           })}
         </div>
@@ -305,7 +390,7 @@ function ShopPage() {
         <Card>
           <div className="font-display text-base mb-2 uppercase">Cadouri pentru chat</div>
           <p className="text-xs text-muted-foreground mb-3">
-            Trimite un cadou într-o conversație din butonul 🎁. Catalogul:
+            Trimite un cadou într-o conversație din butonul 🎁. Catalog & prețuri:
           </p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {(gifts ?? []).map((g: any) => (
@@ -315,8 +400,8 @@ function ShopPage() {
               >
                 <div className="text-3xl">{g.emoji}</div>
                 <div className="text-xs mt-1">{g.name}</div>
-                <div className="text-[11px] text-amber-300 flex items-center justify-center gap-1 mt-1">
-                  <Beer size={10} /> {g.price_coins}
+                <div className="text-[11px] text-amber-300 flex items-center justify-center gap-1 mt-1 font-semibold">
+                  <Beer size={10} /> {drink(g.price_coins)}
                 </div>
               </div>
             ))}
@@ -335,7 +420,7 @@ function ShopPage() {
               <div className="text-sm text-muted-foreground">
                 Petrecerea ta apare promovată în feed și pe hartă timp de 12 ore.
               </div>
-              <div className="text-xs text-amber-300 mt-1">{drink(15)} / petrecere</div>
+              <PriceTag price={15} suffix="/ petrecere" />
             </div>
           </div>
           {!myParties?.length ? (
@@ -360,7 +445,7 @@ function ShopPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => buyPartyBoost(p.id)}
+                    onClick={() => askPartyBoost(p)}
                     disabled={busy === `party-${p.id}`}
                     className="px-3 py-2 rounded-lg bg-pink-500/20 border border-pink-500/40 text-pink-200 text-xs disabled:opacity-50 flex items-center gap-1.5 shrink-0"
                   >
@@ -377,8 +462,64 @@ function ShopPage() {
           )}
         </Card>
       )}
+
+      {/* Confirmation dialog */}
+      <AlertDialog open={!!confirm} onOpenChange={(o) => !o && setConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirm?.title}</AlertDialogTitle>
+            <AlertDialogDescription>{confirm?.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 flex items-center justify-between">
+            <span className="text-xs uppercase tracking-wider text-amber-300/80 font-mono">Cost</span>
+            <span className="flex items-center gap-1.5 text-amber-200 font-display">
+              <Beer size={14} />
+              {confirm ? (confirm.price === 0 ? "Gratis" : drink(confirm.price)) : ""}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground -mt-1">
+            <span>Sold actual</span>
+            <span>{drink(balance)}</span>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Anulează</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                const c = confirm;
+                setConfirm(null);
+                if (c) await c.onConfirm();
+              }}
+            >
+              {confirm?.cta ?? "Confirmă"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
+}
+
+function PriceTag({ price, suffix }: { price: number; suffix?: string }) {
+  return (
+    <div className="mt-1 inline-flex items-center gap-1.5 text-amber-300 text-sm font-semibold">
+      <Beer size={13} /> {drink(price)} {suffix && <span className="text-muted-foreground font-normal text-xs">{suffix}</span>}
+    </div>
+  );
+}
+
+function tierBadgeClass(tier: string) {
+  switch (tier) {
+    case "mythic":
+      return "bg-rose-500/15 border-rose-400/50 text-rose-200";
+    case "legendary":
+      return "bg-cyan-500/15 border-cyan-400/50 text-cyan-200";
+    case "epic":
+      return "bg-amber-500/15 border-amber-400/50 text-amber-200";
+    case "rare":
+      return "bg-violet-500/15 border-violet-400/50 text-violet-200";
+    default:
+      return "bg-white/10 border-white/20 text-white/70";
+  }
 }
 
 function TabBtn({
