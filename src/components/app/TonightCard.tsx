@@ -306,9 +306,10 @@ export default function TonightCard() {
     <div className="tonight-card animate-fade-in">
       <div className="relative flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="tonight-label flex items-center gap-1.5">
-            <Sparkles size={10} /> diseară
+          <div className="tonight-label">
+            diseară
           </div>
+
           <h3 className="tonight-title mt-1">
             {myIntent ? (
               <>
