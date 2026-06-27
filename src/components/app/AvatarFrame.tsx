@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { FrameArtwork } from "./FrameArtwork";
 
 type AvatarFrameProps = {
   frameId?: string | null;
@@ -152,133 +153,8 @@ export const TIER_LABEL: Record<FrameStyle["tier"], string> = {
   mythic: "Mythic",
 };
 
-/** Build the ornament ring as positioned absolute children around the frame. */
-function Ornaments({ frame, thickness }: { frame: FrameStyle; thickness: number }) {
-  const { ornament, ornamentColors } = frame;
-  const count = ornamentColors.length;
-  const radiusPct = 50; // sit on the ring band
-  // Per-ornament geometry
-  const geom: Record<Ornament, { size: number; shape: string; rotateWithRing: boolean; extraStyle?: CSSProperties }> = {
-    gems:     { size: 7, shape: "diamond", rotateWithRing: true },
-    spikes:   { size: 9, shape: "triangle", rotateWithRing: true },
-    flames:   { size: 10, shape: "flame", rotateWithRing: true },
-    crystals: { size: 8, shape: "shard", rotateWithRing: true },
-    bolts:    { size: 9, shape: "bolt", rotateWithRing: true },
-    petals:   { size: 11, shape: "petal", rotateWithRing: true },
-    facets:   { size: 6, shape: "diamond", rotateWithRing: true },
-    stars:    { size: 7, shape: "star", rotateWithRing: true },
-    runes:    { size: 8, shape: "rune", rotateWithRing: true },
-  };
-  const g = geom[ornament];
 
-  return (
-    <div
-      className="pointer-events-none absolute inset-0 rounded-full"
-      style={{
-        zIndex: 5,
-        animation: `oxi-frame-spin ${frame.spinSpeed ?? 24}s linear infinite`,
-      }}
-      aria-hidden
-    >
-      {ornamentColors.map((color, i) => {
-        const angle = (360 / count) * i;
-        const baseStyle: CSSProperties = {
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          width: g.size,
-          height: g.size,
-          marginLeft: -g.size / 2,
-          marginTop: -g.size / 2,
-          transform: `rotate(${angle}deg) translateY(-${radiusPct}%) translateY(${-thickness / 2}px)`,
-          transformOrigin: "center",
-        };
 
-        const inner: CSSProperties = (() => {
-          switch (g.shape) {
-            case "diamond":
-              return {
-                width: "100%",
-                height: "100%",
-                background: color,
-                transform: "rotate(45deg)",
-                boxShadow: `0 0 6px ${color}, 0 0 12px ${color}`,
-                borderRadius: 1,
-              };
-            case "triangle":
-              return {
-                width: 0,
-                height: 0,
-                borderLeft: `${g.size / 2}px solid transparent`,
-                borderRight: `${g.size / 2}px solid transparent`,
-                borderBottom: `${g.size}px solid ${color}`,
-                filter: `drop-shadow(0 0 4px ${color})`,
-              };
-            case "flame":
-              return {
-                width: "100%",
-                height: "100%",
-                background: `radial-gradient(ellipse at 50% 80%, ${color}, transparent 70%)`,
-                borderRadius: "50% 50% 50% 50% / 70% 70% 30% 30%",
-                filter: `drop-shadow(0 0 6px ${color})`,
-                animation: `oxi-flame-flicker 1.${i % 9}s ease-in-out infinite`,
-              };
-            case "shard":
-              return {
-                width: "100%",
-                height: "100%",
-                background: `linear-gradient(180deg, #ffffff, ${color})`,
-                clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
-                filter: `drop-shadow(0 0 5px ${color})`,
-              };
-            case "bolt":
-              return {
-                width: "100%",
-                height: "100%",
-                background: color,
-                clipPath: "polygon(40% 0%, 70% 0%, 50% 45%, 80% 45%, 30% 100%, 50% 55%, 25% 55%)",
-                filter: `drop-shadow(0 0 6px ${color})`,
-              };
-            case "petal":
-              return {
-                width: "100%",
-                height: "100%",
-                background: `radial-gradient(circle at 50% 30%, #ffffff, ${color} 80%)`,
-                borderRadius: "50% 50% 50% 50% / 80% 80% 20% 20%",
-                boxShadow: `0 0 8px ${color}`,
-              };
-            case "star":
-              return {
-                width: "100%",
-                height: "100%",
-                background: color,
-                clipPath:
-                  "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
-                filter: `drop-shadow(0 0 5px ${color})`,
-              };
-            case "rune":
-              return {
-                width: "100%",
-                height: "100%",
-                background: color,
-                clipPath:
-                  "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-                boxShadow: `0 0 6px ${color}, inset 0 0 4px rgba(0,0,0,0.55)`,
-              };
-            default:
-              return { width: "100%", height: "100%", background: color, borderRadius: 9999 };
-          }
-        })();
-
-        return (
-          <div key={i} style={baseStyle}>
-            <div style={inner} />
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 export function AvatarFrame({
   frameId,
