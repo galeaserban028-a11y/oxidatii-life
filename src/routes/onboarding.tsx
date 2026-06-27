@@ -172,6 +172,19 @@ function Onboarding() {
           </div>
         </div>
 
+        <div>
+          <label className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
+            Cod invitație <span className="text-foreground/40 normal-case tracking-normal">(opțional · +50 șprițuri)</span>
+          </label>
+          <input
+            value={refCode}
+            onChange={(e) => setRefCode(e.target.value.toUpperCase().trim())}
+            placeholder="ABC1234"
+            maxLength={12}
+            className="mt-2 w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm font-mono tracking-widest"
+          />
+        </div>
+
         <button
           disabled={busy}
           onClick={save}
