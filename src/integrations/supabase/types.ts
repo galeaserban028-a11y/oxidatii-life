@@ -2707,6 +2707,54 @@ export type Database = {
         }[]
       }
       get_my_birthdate: { Args: never; Returns: string }
+      get_my_business_accounts: {
+        Args: never
+        Returns: {
+          address: string | null
+          brand_name: string
+          city_id: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          exclusive_city_id: string | null
+          featured_score: number
+          id: string
+          instagram_handle: string | null
+          is_exclusive_slot: boolean
+          lat: number | null
+          live_energy: number
+          lng: number | null
+          logo_url: string | null
+          monthly_credits_cents: number
+          monthly_price_cents: number
+          owner_user_id: string
+          pro_tier: string | null
+          pro_until: string | null
+          reputation_score: number
+          slug: string | null
+          suspended_until: string | null
+          tier: Database["public"]["Enums"]["business_tier"]
+          tier_renews_at: string | null
+          tier_started_at: string | null
+          tiktok_handle: string | null
+          total_reviews: number
+          total_visits: number
+          type: Database["public"]["Enums"]["business_type"]
+          updated_at: string
+          venue_id: string | null
+          verified: boolean
+          wallet_balance_cents: number
+          website: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "business_accounts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_my_last_calls: {
         Args: never
         Returns: {
