@@ -202,8 +202,26 @@
     filter: saturate(1);
   }
   50% {
-    transform: scale(1.025);
-    filter: saturate(1.18);
+    transform: scale(1.03);
+    filter: saturate(1.25);
+  }
+}
+
+@keyframes oxi-frame-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes oxi-frame-sparkle {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
   }
 }
 
@@ -212,7 +230,32 @@
 }
 
 .oxi-avatar-frame--animated {
-  animation: oxi-avatar-frame-pulse 2.2s ease-in-out infinite;
+  animation: oxi-avatar-frame-pulse 2.4s ease-in-out infinite;
+}
+
+.oxi-frame-halo {
+  position: absolute;
+  inset: -8%;
+  border-radius: 9999px;
+  pointer-events: none;
+  -webkit-mask: radial-gradient(circle, transparent 56%, #000 60%, #000 74%, transparent 76%);
+          mask: radial-gradient(circle, transparent 56%, #000 60%, #000 74%, transparent 76%);
+  animation: oxi-frame-spin 6s linear infinite;
+  z-index: 0;
+  opacity: 0.85;
+}
+
+.oxi-frame-sparkle {
+  position: absolute;
+  inset: -14%;
+  border-radius: 9999px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 28% 28%, rgba(255, 255, 255, 0.6), transparent 32%),
+    radial-gradient(circle at 78% 72%, rgba(255, 255, 255, 0.45), transparent 28%);
+  mix-blend-mode: screen;
+  animation: oxi-frame-sparkle 2.6s ease-in-out infinite;
+  z-index: 1;
 }
 
 /* ── Bottom Nav Animations ── */
