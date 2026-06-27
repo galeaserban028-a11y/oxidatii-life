@@ -2044,6 +2044,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "sprit_proofs_user_profile_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "sprit_proofs_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
