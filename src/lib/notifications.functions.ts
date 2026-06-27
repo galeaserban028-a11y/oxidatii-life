@@ -147,7 +147,7 @@ export const notifyFriendsLive = createServerFn({ method: "POST" })
       body: `@${name} e live${venueName}`,
       url: `/app/map`,
       tag: `live-${userId}`,
-    });
+    }, { kind: `friend_live:${userId}`, maxPerWindow: 1, windowMinutes: 120 });
     return res;
   });
 
