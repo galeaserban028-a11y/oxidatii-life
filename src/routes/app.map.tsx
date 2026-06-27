@@ -779,15 +779,11 @@ function MapPage() {
       }
     };
     start();
-  }, [
-    autoLocated,
-    privacyQ.data?.cityCenter,
-    privacyQ.data?.settings?.map_ghost,
-    privacyQ.data?.settings?.map_visibility,
-    profile?.location_consent,
-    publishPosition,
-    user,
-  ]);
+    // Auto-locate runs once per mount; guarded by `autoLocated` above.
+    // Keep deps minimal to avoid re-triggering when query data refs change
+    // (caused a render loop on /app/map).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoLocated]);
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
   const [tab, setTab] = useState<"locatii" | "live">("locatii");
