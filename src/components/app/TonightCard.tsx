@@ -315,8 +315,14 @@ export default function TonightCard() {
               <>
                 Te-ai băgat.{" "}
                 <span
-                  className="text-white"
-                  style={{ textShadow: "0 0 16px oklch(0.85 0.16 215 / 0.75)" }}
+                  className="font-extrabold"
+                  style={{
+                    background: "linear-gradient(90deg, #ff3d8b, #00e5ff)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                    textShadow: "0 0 18px oklch(0.85 0.16 215 / 0.35)",
+                  }}
                 >
                   {count}
                 </span>{" "}
@@ -324,7 +330,19 @@ export default function TonightCard() {
               </>
             ) : (
               <>
-                Unde <span className="italic text-white/95">ieși</span>?
+                Unde{" "}
+                <span
+                  className="italic"
+                  style={{
+                    background: "linear-gradient(90deg, #ff3d8b, #c724ff, #00e5ff)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                  }}
+                >
+                  ieși
+                </span>
+                ?
               </>
             )}
           </h3>
