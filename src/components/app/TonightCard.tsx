@@ -315,8 +315,14 @@ export default function TonightCard() {
               <>
                 Te-ai băgat.{" "}
                 <span
-                  className="text-white"
-                  style={{ textShadow: "0 0 16px rgba(251,191,36,0.45)" }}
+                  className="font-extrabold"
+                  style={{
+                    background: "linear-gradient(90deg, #ff3d8b, #00e5ff)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                    textShadow: "0 0 18px oklch(0.85 0.16 215 / 0.35)",
+                  }}
                 >
                   {count}
                 </span>{" "}
@@ -324,7 +330,19 @@ export default function TonightCard() {
               </>
             ) : (
               <>
-                Unde <span className="italic text-white/95">ieși</span>?
+                Unde{" "}
+                <span
+                  className="italic"
+                  style={{
+                    background: "linear-gradient(90deg, #ff3d8b, #c724ff, #00e5ff)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                  }}
+                >
+                  ieși
+                </span>
+                ?
               </>
             )}
           </h3>
@@ -332,7 +350,7 @@ export default function TonightCard() {
             <div className="mt-1.5 text-[11px] text-white/75 flex items-center gap-1.5">
               {myIntent.venue?.name && (
                 <>
-                  <MapPin size={11} className="text-amber-300/90" /> {myIntent.venue.name}
+                  <MapPin size={11} className="text-neon-cyan/90" /> {myIntent.venue.name}
                 </>
               )}
               {myIntent.note && <span className="text-white/55">· {myIntent.note}</span>}
@@ -384,8 +402,9 @@ export default function TonightCard() {
               <div
                 className="absolute z-20 inset-x-0 mt-1 rounded-xl border overflow-hidden"
                 style={{
-                  background: "rgba(35, 14, 9, 0.98)",
+                  background: "oklch(0.14 0.035 285 / 0.98)",
                   borderColor: "rgba(255,255,255,0.15)",
+                  boxShadow: "0 18px 40px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,61,139,0.12)",
                 }}
               >
                 {venues.map((v) => (
