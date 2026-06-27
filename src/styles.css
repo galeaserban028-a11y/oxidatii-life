@@ -1226,3 +1226,7 @@ main.oxi-compact .rounded-2xl {
 main.oxi-compact .h-72 {
   height: 12rem;
 }
+
+.oxi-frame-metallic {
+  animation: oxi-frame-spin 14s linear infinite;
+}
