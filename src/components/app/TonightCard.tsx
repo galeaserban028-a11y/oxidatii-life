@@ -317,11 +317,8 @@ export default function TonightCard() {
                 <span
                   className="font-extrabold"
                   style={{
-                    background: "linear-gradient(90deg, #ff3d8b, #00e5ff)",
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    color: "transparent",
-                    textShadow: "0 0 18px oklch(0.85 0.16 215 / 0.35)",
+                    color: "#00e5ff",
+                    textShadow: "0 0 12px rgba(0,229,255,0.6), 0 0 2px rgba(255,61,139,0.4)",
                   }}
                 >
                   {count}
