@@ -250,14 +250,17 @@ export function AvatarFrame({
 
       {/* Inner glowing orbit — fast-spinning conic gradient masked to thin ring */}
       <div
-        className="pointer-events-none absolute oxi-hypershard-orbit"
+        className="pointer-events-none absolute rounded-full oxi-hypershard-orbit"
         style={{
-          inset: preview ? 2 : 4,
+          inset: preview ? 2 : 3,
           background: frame.orbit,
+          WebkitMask: "radial-gradient(circle, transparent 58%, #000 62%, #000 96%, transparent 100%)",
+          mask: "radial-gradient(circle, transparent 58%, #000 62%, #000 96%, transparent 100%)",
           zIndex: 3,
         }}
         aria-hidden
       />
+
 
       {/* Avatar inner — clipped circle */}
       <div
