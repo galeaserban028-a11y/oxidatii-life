@@ -816,19 +816,14 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
     overflow: hidden;
     border-radius: 18px;
     padding: 10px 12px;
-    /* Deep glass that matches the dark app surface */
-    background:
-      radial-gradient(120% 90% at 0% 0%, rgba(244, 114, 182, 0.18), transparent 55%),
-      radial-gradient(120% 90% at 100% 100%, rgba(251, 146, 60, 0.14), transparent 60%),
-      linear-gradient(180deg, rgba(20, 12, 28, 0.92), rgba(12, 8, 18, 0.96));
+    /* Transparent — inherits page background */
+    background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.06) inset,
-      0 -20px 40px -24px rgba(244, 114, 182, 0.35) inset,
-      0 12px 32px -16px rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(14px) saturate(1.15);
-    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+      0 1px 0 rgba(255, 255, 255, 0.04) inset,
+      0 8px 24px -18px rgba(0, 0, 0, 0.6);
   }
+
   /* hairline gradient border (premium jewelry edge) */
   .tonight-card::before {
     content: "";
