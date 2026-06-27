@@ -873,7 +873,8 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.32em;
-    color: rgba(251, 191, 36, 0.85);
+    color: oklch(0.85 0.16 215 / 0.9);
+    text-shadow: 0 0 12px oklch(0.85 0.16 215 / 0.55);
   }
 
   .tonight-title {
