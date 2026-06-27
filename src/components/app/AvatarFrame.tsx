@@ -126,7 +126,9 @@ export function AvatarFrame({
   style,
 }: AvatarFrameProps) {
   const frame = frameId ? FRAME_STYLES[frameId] : null;
-  const thickness = preview ? 4 : 5;
+  const thickness = preview ? 4 : 9;
+  const gap = preview ? 0 : 2;
+
   const dimension = size ? { width: size, height: size } : undefined;
 
   if (!frame) {
