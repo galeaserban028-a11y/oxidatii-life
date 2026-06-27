@@ -92,7 +92,7 @@ export const notifyPartyJoin = createServerFn({ method: "POST" })
       body: `@${name} s-a alăturat la „${party.title}"`,
       url: `/app/party/${party.id}`,
       tag: `join-${party.id}`,
-    });
+    }, { kind: "party_join", important: true, maxPerWindow: 3, windowMinutes: 60 });
     return res;
   });
 
