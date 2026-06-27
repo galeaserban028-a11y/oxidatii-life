@@ -56,12 +56,36 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
         .upload(path, file, { upsert: false });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
+
+      // AI moderation (skip videos — only image+caption)
+      const isVideo = file.type.startsWith("video/");
+      const trimmedCaption = caption.trim();
+      try {
+        if (!isVideo) {
+          const v = await modMedia({ data: { imageUrl: pub.publicUrl, caption: trimmedCaption || null } });
+          if (!v.allowed) {
+            await supabase.storage.from("venue-photos").remove([path]);
+            toast.error(v.reason || "Conținut respins de moderare");
+            return;
+          }
+        } else if (trimmedCaption) {
+          const v = await modText({ data: { text: trimmedCaption } });
+          if (!v.allowed) {
+            await supabase.storage.from("venue-photos").remove([path]);
+            toast.error(v.reason || "Descrierea nu respectă regulile");
+            return;
+          }
+        }
+      } catch {
+        // moderation is best-effort; continue if it fails
+      }
+
       const { error: insErr } = await supabase.from("venue_photos").insert({
         user_id: user.id,
         venue_id: selectedVenue.id,
         photo_url: pub.publicUrl,
-        caption: caption.trim() || null,
-        media_type: file.type.startsWith("video/") ? "video" : "image",
+        caption: trimmedCaption || null,
+        media_type: isVideo ? "video" : "image",
       });
       if (insErr) throw insErr;
       toast.success("Faza ta e live.");
