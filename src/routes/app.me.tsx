@@ -595,25 +595,10 @@ function MePage() {
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className={`relative shrink-0 active:scale-95 transition ${theme ? "" : "h-[92px] w-[92px] rounded-full p-[2.5px] bg-gradient-to-br from-[#ff3d8b] via-[#ffea00] to-[#c724ff] shadow-[0_0_28px_rgba(199,36,255,0.4)]"}`}
+              className={`relative shrink-0 active:scale-95 transition ${activeFrameId ? "h-[92px] w-[92px]" : theme ? "" : "h-[92px] w-[92px] rounded-full p-[2.5px] bg-gradient-to-br from-[#ff3d8b] via-[#ffea00] to-[#c724ff] shadow-[0_0_28px_rgba(199,36,255,0.4)]"}`}
               aria-label="Schimbă poza de profil"
             >
-              {theme ? (
-                <AvatarAura theme={theme} size={92}>
-                  <AvatarFrame
-                    frameId={activeFrameId}
-                    className="h-full w-full"
-                    innerClassName="bg-[#0a0a0a] flex items-center justify-center text-3xl"
-                    style={instrument}
-                  >
-                    {profile.avatar_url ? (
-                      <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      (profile.handle ?? "?")[0].toUpperCase()
-                    )}
-                  </AvatarFrame>
-                </AvatarAura>
-              ) : (
+              {activeFrameId ? (
                 <AvatarFrame
                   frameId={activeFrameId}
                   className="h-full w-full"
@@ -626,7 +611,26 @@ function MePage() {
                     (profile.handle ?? "?")[0].toUpperCase()
                   )}
                 </AvatarFrame>
+              ) : theme ? (
+                <AvatarAura theme={theme} size={92}>
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-3xl">
+                      {(profile.handle ?? "?")[0].toUpperCase()}
+                    </div>
+                  )}
+                </AvatarAura>
+              ) : (
+                <div className="h-full w-full rounded-full overflow-hidden bg-[#0a0a0a] flex items-center justify-center text-3xl">
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    (profile.handle ?? "?")[0].toUpperCase()
+                  )}
+                </div>
               )}
+
               <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#0a0a0a] border border-white/15 text-white/80 flex items-center justify-center shadow-lg z-10">
                 <Camera size={13} strokeWidth={2.4} />
               </div>
