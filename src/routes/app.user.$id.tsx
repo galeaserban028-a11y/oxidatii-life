@@ -336,6 +336,9 @@ function UserPage() {
                             <MapPin size={11} /> {profile.city.name}
                           </div>
                         )}
+                        <div className="mt-1.5">
+                          <CreatorEarningsBadge userId={profile.id} />
+                        </div>
                         {profile.bio && (
                           <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
                             {profile.bio}
