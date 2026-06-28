@@ -723,6 +723,8 @@ function Composer({
   uploading,
   onVoice,
   theme,
+  viewOnce,
+  toggleViewOnce,
 }: {
   text: string;
   setText: (v: string | ((s: string) => string)) => void;
@@ -736,7 +738,10 @@ function Composer({
   uploading: boolean;
   onVoice: (blob: Blob, ms: number) => void;
   theme: Theme;
+  viewOnce: boolean;
+  toggleViewOnce: () => void;
 }) {
+
   const [recording, setRecording] = useState(false);
   const [recMs, setRecMs] = useState(0);
   const recRef = useRef<MediaRecorder | null>(null);
