@@ -37,12 +37,14 @@ async def restore_session(page):
 
 
 async def dismiss_overlays(page):
-    btn = page.get_by_role("button", name=lambda n: n and ("18+" in n or "DA" in n.upper()))
-    try:
-        if await btn.count():
-            await btn.first.click(timeout=1000)
-    except Exception:
-        pass
+    import re
+    for sel in [page.get_by_role("button", name=re.compile(r"18\+|DA, AM", re.I))]:
+        try:
+            if await sel.count():
+                await sel.first.click(timeout=1000)
+                await page.wait_for_timeout(200)
+        except Exception:
+            pass
 
 
 async def test_reels(page):
