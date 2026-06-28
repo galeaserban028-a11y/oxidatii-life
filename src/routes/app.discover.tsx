@@ -68,6 +68,15 @@ function DiscoverPage() {
     },
   });
 
+  const { data: pymk } = useQuery({
+    queryKey: ["pymk", user?.id],
+    enabled: !!user && q.trim().length < 2,
+    queryFn: async (): Promise<(Profile & { common_venues: number })[]> => {
+      const { data } = await supabase.rpc("get_people_you_may_know", { p_limit: 12 });
+      return (data ?? []) as any;
+    },
+  });
+
   async function doFollow(id: string) {
     if (!user) return;
     const { error } = await supabase
