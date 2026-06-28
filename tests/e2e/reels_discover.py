@@ -32,6 +32,17 @@ async def restore_session(page):
         await page.evaluate(
             f"window.localStorage.setItem({json.dumps(STORAGE_KEY)}, {json.dumps(SESSION_JSON)})"
         )
+    # Pre-accept age gate so it doesn't block subsequent navigations.
+    await page.evaluate("localStorage.setItem('oxi:age-verified', 'true')")
+
+
+async def dismiss_overlays(page):
+    btn = page.get_by_role("button", name=lambda n: n and ("18+" in n or "DA" in n.upper()))
+    try:
+        if await btn.count():
+            await btn.first.click(timeout=1000)
+    except Exception:
+        pass
 
 
 async def test_reels(page):
