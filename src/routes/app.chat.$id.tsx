@@ -19,8 +19,11 @@ import {
   Pause,
   MoreVertical,
   Trash2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { notifyChatMessage } from "@/lib/notifications-extra.functions";
+
 import { ReportDialog } from "@/components/app/ReportDialog";
 import {
   DropdownMenu,
