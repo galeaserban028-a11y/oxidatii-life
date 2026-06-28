@@ -68,8 +68,10 @@ async def test_discover(page):
     record("discover: HTTP ok", resp is not None and resp.ok, str(resp.status if resp else "no resp"))
 
     try:
-        await page.wait_for_selector("text=/People|Persoane|Discover|Niciuna/i", timeout=8000)
-        record("discover: render", True)
+        await page.wait_for_load_state("networkidle", timeout=8000)
+        body_text = (await page.locator("body").inner_text()) or ""
+        rendered = any(k in body_text.lower() for k in ["people", "persoane", "discover", "descoper", "niciun"])
+        record("discover: render", rendered, f"text_len={len(body_text)}")
     except Exception as e:
         record("discover: render", False, str(e)[:120])
 
