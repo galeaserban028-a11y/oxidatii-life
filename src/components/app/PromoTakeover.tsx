@@ -82,9 +82,7 @@ async function loadActive(
   const campaign = weighted[Math.floor(Math.random() * weighted.length)];
 
   const { data: biz } = await supabase
-    .from("business_accounts")
-    .select("id, brand_name, logo_url")
-    .eq("id", campaign.business_id)
+    .rpc("get_business_account_public", { _id: campaign.business_id })
     .maybeSingle();
 
   return { campaign, biz: (biz as Biz) ?? null };

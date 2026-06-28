@@ -263,6 +263,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "business_battles_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "business_battles_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
@@ -314,6 +321,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_metrics_daily_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts_public"
             referencedColumns: ["id"]
           },
         ]
@@ -372,6 +386,13 @@ export type Database = {
             referencedRelation: "business_accounts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "business_offers_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       business_reviews: {
@@ -411,6 +432,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_reviews_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts_public"
             referencedColumns: ["id"]
           },
           {
@@ -595,6 +623,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts_public"
             referencedColumns: ["id"]
           },
           {
@@ -1190,6 +1225,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exclusive_partner_slots_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts_public"
             referencedColumns: ["id"]
           },
           {
@@ -2470,11 +2512,115 @@ export type Database = {
             referencedRelation: "business_accounts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "wallet_ledger_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      business_accounts_public: {
+        Row: {
+          address: string | null
+          brand_name: string | null
+          city_id: string | null
+          cover_url: string | null
+          created_at: string | null
+          description: string | null
+          exclusive_city_id: string | null
+          featured_score: number | null
+          id: string | null
+          instagram_handle: string | null
+          is_exclusive_slot: boolean | null
+          lat: number | null
+          live_energy: number | null
+          lng: number | null
+          logo_url: string | null
+          owner_user_id: string | null
+          pro_tier: string | null
+          reputation_score: number | null
+          slug: string | null
+          tier: Database["public"]["Enums"]["business_tier"] | null
+          tiktok_handle: string | null
+          total_reviews: number | null
+          total_visits: number | null
+          type: Database["public"]["Enums"]["business_type"] | null
+          venue_id: string | null
+          verified: boolean | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          brand_name?: string | null
+          city_id?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          exclusive_city_id?: string | null
+          featured_score?: number | null
+          id?: string | null
+          instagram_handle?: string | null
+          is_exclusive_slot?: boolean | null
+          lat?: number | null
+          live_energy?: number | null
+          lng?: number | null
+          logo_url?: string | null
+          owner_user_id?: string | null
+          pro_tier?: string | null
+          reputation_score?: number | null
+          slug?: string | null
+          tier?: Database["public"]["Enums"]["business_tier"] | null
+          tiktok_handle?: string | null
+          total_reviews?: number | null
+          total_visits?: number | null
+          type?: Database["public"]["Enums"]["business_type"] | null
+          venue_id?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          brand_name?: string | null
+          city_id?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          exclusive_city_id?: string | null
+          featured_score?: number | null
+          id?: string | null
+          instagram_handle?: string | null
+          is_exclusive_slot?: boolean | null
+          lat?: number | null
+          live_energy?: number | null
+          lng?: number | null
+          logo_url?: string | null
+          owner_user_id?: string | null
+          pro_tier?: string | null
+          reputation_score?: number | null
+          slug?: string | null
+          tier?: Database["public"]["Enums"]["business_tier"] | null
+          tiktok_handle?: string | null
+          total_reviews?: number | null
+          total_visits?: number | null
+          type?: Database["public"]["Enums"]["business_type"] | null
+          venue_id?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_accounts_exclusive_city_id_fkey"
+            columns: ["exclusive_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       admin_business_wallet_total: { Args: never; Returns: number }
@@ -2635,6 +2781,82 @@ export type Database = {
         }[]
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_business_account_public: {
+        Args: { _id: string }
+        Returns: {
+          address: string | null
+          brand_name: string | null
+          city_id: string | null
+          cover_url: string | null
+          created_at: string | null
+          description: string | null
+          exclusive_city_id: string | null
+          featured_score: number | null
+          id: string | null
+          instagram_handle: string | null
+          is_exclusive_slot: boolean | null
+          lat: number | null
+          live_energy: number | null
+          lng: number | null
+          logo_url: string | null
+          owner_user_id: string | null
+          pro_tier: string | null
+          reputation_score: number | null
+          slug: string | null
+          tier: Database["public"]["Enums"]["business_tier"] | null
+          tiktok_handle: string | null
+          total_reviews: number | null
+          total_visits: number | null
+          type: Database["public"]["Enums"]["business_type"] | null
+          venue_id: string | null
+          verified: boolean | null
+          website: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "business_accounts_public"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_business_account_public_by_venue: {
+        Args: { _venue_id: string }
+        Returns: {
+          address: string | null
+          brand_name: string | null
+          city_id: string | null
+          cover_url: string | null
+          created_at: string | null
+          description: string | null
+          exclusive_city_id: string | null
+          featured_score: number | null
+          id: string | null
+          instagram_handle: string | null
+          is_exclusive_slot: boolean | null
+          lat: number | null
+          live_energy: number | null
+          lng: number | null
+          logo_url: string | null
+          owner_user_id: string | null
+          pro_tier: string | null
+          reputation_score: number | null
+          slug: string | null
+          tier: Database["public"]["Enums"]["business_tier"] | null
+          tiktok_handle: string | null
+          total_reviews: number | null
+          total_visits: number | null
+          type: Database["public"]["Enums"]["business_type"] | null
+          venue_id: string | null
+          verified: boolean | null
+          website: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "business_accounts_public"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_business_contact: {
         Args: { _business_id: string }
         Returns: {
@@ -2898,6 +3120,44 @@ export type Database = {
         Returns: boolean
       }
       iso_week_start: { Args: { _ts: string }; Returns: string }
+      list_business_accounts_public: {
+        Args: never
+        Returns: {
+          address: string | null
+          brand_name: string | null
+          city_id: string | null
+          cover_url: string | null
+          created_at: string | null
+          description: string | null
+          exclusive_city_id: string | null
+          featured_score: number | null
+          id: string | null
+          instagram_handle: string | null
+          is_exclusive_slot: boolean | null
+          lat: number | null
+          live_energy: number | null
+          lng: number | null
+          logo_url: string | null
+          owner_user_id: string | null
+          pro_tier: string | null
+          reputation_score: number | null
+          slug: string | null
+          tier: Database["public"]["Enums"]["business_tier"] | null
+          tiktok_handle: string | null
+          total_reviews: number | null
+          total_visits: number | null
+          type: Database["public"]["Enums"]["business_type"] | null
+          venue_id: string | null
+          verified: boolean | null
+          website: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "business_accounts_public"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       record_profile_visit: {
         Args: { _profile_id: string }
         Returns: undefined

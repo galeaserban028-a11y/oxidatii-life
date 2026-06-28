@@ -90,9 +90,7 @@ function VenuePage() {
           .eq("venue_id", id)
           .gt("expires_at", new Date().toISOString()),
         supabase
-          .from("business_accounts")
-          .select("id, brand_name")
-          .eq("venue_id", id)
+          .rpc("get_business_account_public_by_venue", { _venue_id: id })
           .maybeSingle(),
       ]);
       return { venue, photos: photos ?? [], liveCount: liveCount ?? 0, biz: biz ?? null };
@@ -309,7 +307,7 @@ function VenuePage() {
 
         {/* Real ratings & reviews */}
         {data.biz?.id && (
-          <BusinessReviewCard businessId={data.biz.id} brandName={data.biz.brand_name} />
+          <BusinessReviewCard businessId={data.biz.id} brandName={data.biz.brand_name ?? undefined} />
         )}
 
         {/* Photo gallery — only user-uploaded */}
