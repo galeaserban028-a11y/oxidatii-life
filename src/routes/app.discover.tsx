@@ -68,6 +68,15 @@ function DiscoverPage() {
     },
   });
 
+  const { data: pymk } = useQuery({
+    queryKey: ["pymk", user?.id],
+    enabled: !!user && q.trim().length < 2,
+    queryFn: async (): Promise<(Profile & { common_venues: number })[]> => {
+      const { data } = await supabase.rpc("get_people_you_may_know", { p_limit: 12 });
+      return (data ?? []) as any;
+    },
+  });
+
   async function doFollow(id: string) {
     if (!user) return;
     const { error } = await supabase
@@ -137,6 +146,38 @@ function DiscoverPage() {
           <path d="m21 21-4.35-4.35" />
         </svg>
       </div>
+
+      {q.trim().length < 2 && pymk && pymk.length > 0 && (
+        <section className="space-y-2">
+          <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+            persoane pe care le-ai putea cunoaște
+          </div>
+          <div className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-2 snap-x">
+            {pymk.map((p) => (
+              <Link
+                key={p.id}
+                to="/app/user/$id"
+                params={{ id: p.id }}
+                className="snap-start shrink-0 w-32 rounded-2xl border border-white/10 bg-zinc-900/40 p-3 text-center backdrop-blur"
+              >
+                {p.avatar_url ? (
+                  <img src={p.avatar_url} alt="" className="w-16 h-16 rounded-full object-cover mx-auto border border-white/10" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple mx-auto flex items-center justify-center text-white font-display">
+                    {(p.handle ?? p.display_name ?? "?")[0]?.toUpperCase()}
+                  </div>
+                )}
+                <div className="font-display text-xs mt-2 truncate">
+                  {p.display_name ?? `@${p.handle ?? "—"}`}
+                </div>
+                <div className="font-mono text-[9px] uppercase tracking-widest text-amber-400/80 mt-0.5">
+                  {p.common_venues} locuri comune
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {q.trim().length < 2 && (
         <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 pt-2">
