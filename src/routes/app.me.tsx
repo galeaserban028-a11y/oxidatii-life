@@ -745,6 +745,14 @@ function MePage() {
           </div>
 
           <div className="mt-8">
+            <StreakHero
+              current={(profile as any).current_streak ?? 0}
+              longest={(profile as any).longest_streak ?? 0}
+              lastStreakWeek={(profile as any).last_streak_week ?? null}
+            />
+          </div>
+
+          <div className="mt-6">
             <ReputationCard
               userId={user.id}
               sprits={profile.lifetime_sprits ?? 0}
