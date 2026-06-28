@@ -93,7 +93,7 @@ async def test_discover(page):
     await page.screenshot(path=str(OUT / "discover.png"))
 
     # PYMK dismiss persistence: if a dismiss button exists, click & reload, expect storage updated.
-    dismiss = page.locator("button[aria-label*='dismiss' i], button:has(svg.lucide-x)").first
+    dismiss = page.locator("button[aria-label='ascunde sugestia']").first
     if await dismiss.count():
         try:
             await dismiss.click(timeout=1500)
