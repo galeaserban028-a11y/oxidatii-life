@@ -295,7 +295,14 @@ function FazePage() {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <Link
+            to="/app/reels"
+            className="px-3 py-2 rounded-full bg-white/10 border border-white/15 text-[11px] font-bold tracking-wide uppercase text-white active:scale-95 transition"
+            aria-label="Deschide Reels"
+          >
+            ▶ Reels
+          </Link>
           <button
             onClick={() => setOpen(true)}
             aria-label="Postează o fază"
@@ -303,6 +310,7 @@ function FazePage() {
           >
             + Postează
           </button>
+
           <Link
             to="/app/notifications"
             className="relative p-2 rounded-full bg-white/5 border border-white/10 active:scale-95 transition"

@@ -32,6 +32,7 @@ import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppScanRouteImport } from './routes/app.scan'
 import { Route as AppRequestsRouteImport } from './routes/app.requests'
 import { Route as AppReplayRouteImport } from './routes/app.replay'
+import { Route as AppReelsRouteImport } from './routes/app.reels'
 import { Route as AppPremiumRouteImport } from './routes/app.premium'
 import { Route as AppPartiesRouteImport } from './routes/app.parties'
 import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
@@ -186,6 +187,11 @@ const AppRequestsRoute = AppRequestsRouteImport.update({
 const AppReplayRoute = AppReplayRouteImport.update({
   id: '/replay',
   path: '/replay',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReelsRoute = AppReelsRouteImport.update({
+  id: '/reels',
+  path: '/reels',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPremiumRoute = AppPremiumRouteImport.update({
@@ -424,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
+  '/app/reels': typeof AppReelsRoute
   '/app/replay': typeof AppReplayRouteWithChildren
   '/app/requests': typeof AppRequestsRoute
   '/app/scan': typeof AppScanRoute
@@ -487,6 +494,7 @@ export interface FileRoutesByTo {
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
+  '/app/reels': typeof AppReelsRoute
   '/app/replay': typeof AppReplayRouteWithChildren
   '/app/requests': typeof AppRequestsRoute
   '/app/scan': typeof AppScanRoute
@@ -553,6 +561,7 @@ export interface FileRoutesById {
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
+  '/app/reels': typeof AppReelsRoute
   '/app/replay': typeof AppReplayRouteWithChildren
   '/app/requests': typeof AppRequestsRoute
   '/app/scan': typeof AppScanRoute
@@ -620,6 +629,7 @@ export interface FileRouteTypes {
     | '/app/notifications'
     | '/app/parties'
     | '/app/premium'
+    | '/app/reels'
     | '/app/replay'
     | '/app/requests'
     | '/app/scan'
@@ -683,6 +693,7 @@ export interface FileRouteTypes {
     | '/app/notifications'
     | '/app/parties'
     | '/app/premium'
+    | '/app/reels'
     | '/app/replay'
     | '/app/requests'
     | '/app/scan'
@@ -748,6 +759,7 @@ export interface FileRouteTypes {
     | '/app/notifications'
     | '/app/parties'
     | '/app/premium'
+    | '/app/reels'
     | '/app/replay'
     | '/app/requests'
     | '/app/scan'
@@ -963,6 +975,13 @@ declare module '@tanstack/react-router' {
       path: '/replay'
       fullPath: '/app/replay'
       preLoaderRoute: typeof AppReplayRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/reels': {
+      id: '/app/reels'
+      path: '/reels'
+      fullPath: '/app/reels'
+      preLoaderRoute: typeof AppReelsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/premium': {
@@ -1314,6 +1333,7 @@ interface AppRouteChildren {
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppPartiesRoute: typeof AppPartiesRoute
   AppPremiumRoute: typeof AppPremiumRoute
+  AppReelsRoute: typeof AppReelsRoute
   AppReplayRoute: typeof AppReplayRouteWithChildren
   AppRequestsRoute: typeof AppRequestsRoute
   AppScanRoute: typeof AppScanRoute
@@ -1353,6 +1373,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppNotificationsRoute: AppNotificationsRoute,
   AppPartiesRoute: AppPartiesRoute,
   AppPremiumRoute: AppPremiumRoute,
+  AppReelsRoute: AppReelsRoute,
   AppReplayRoute: AppReplayRouteWithChildren,
   AppRequestsRoute: AppRequestsRoute,
   AppScanRoute: AppScanRoute,
