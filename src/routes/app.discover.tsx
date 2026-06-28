@@ -82,14 +82,23 @@ function DiscoverPage() {
     },
   });
 
-  const { data: pymk } = useQuery({
+  const [dismissed, setDismissed] = useState<Set<string>>(() => loadDismissed());
+  useEffect(() => { saveDismissed(dismissed); }, [dismissed]);
+
+  const { data: pymk, refetch: refetchPymk, isFetching: pymkLoading } = useQuery({
     queryKey: ["pymk", user?.id],
     enabled: !!user && q.trim().length < 2,
-    queryFn: async (): Promise<(Profile & { common_venues: number })[]> => {
-      const { data } = await supabase.rpc("get_people_you_may_know", { p_limit: 12 });
+    queryFn: async (): Promise<(Profile & { common_venues: number; city_name: string | null; last_seen_at: string | null })[]> => {
+      const { data } = await supabase.rpc("get_people_you_may_know", { p_limit: 16 });
       return (data ?? []) as any;
     },
+    staleTime: 5 * 60_000,
   });
+
+  function dismissPymk(id: string) {
+    setDismissed((s) => new Set(s).add(id));
+  }
+
 
   async function doFollow(id: string) {
     if (!user) return;
