@@ -997,6 +997,33 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_tips: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          message: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          message?: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          message?: string | null
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       crystal_ball_unlocks: {
         Row: {
           created_at: string
@@ -2879,6 +2906,7 @@ export type Database = {
           unique_users: number
         }[]
       }
+      get_creator_earnings: { Args: { p_user_id: string }; Returns: Json }
       get_crystal_ball: { Args: never; Returns: Json }
       get_decision_poll: { Args: { _poll_id: string }; Returns: Json }
       get_drop_stats: { Args: never; Returns: Json }
@@ -3027,6 +3055,18 @@ export type Database = {
         }
         Returns: Json
       }
+      get_people_you_may_know: {
+        Args: { p_limit?: number }
+        Returns: {
+          aura: number
+          avatar_url: string
+          common_venues: number
+          display_name: string
+          handle: string
+          id: string
+          rank: string
+        }[]
+      }
       get_profile_card: {
         Args: { _id: string }
         Returns: {
@@ -3036,6 +3076,19 @@ export type Database = {
           handle: string
           id: string
           is_public: boolean
+        }[]
+      }
+      get_reels_for_you: {
+        Args: { p_limit?: number }
+        Returns: {
+          caption: string
+          id: string
+          media_type: string
+          photo_url: string
+          score: number
+          taken_at: string
+          user_id: string
+          venue_id: string
         }[]
       }
       get_replay_data: { Args: { _date: string }; Returns: Json }
@@ -3177,6 +3230,10 @@ export type Database = {
       spend_coins: {
         Args: { _amount: number; _kind: string; _ref_id?: string }
         Returns: number
+      }
+      tip_creator: {
+        Args: { p_amount: number; p_message?: string; p_recipient_id: string }
+        Returns: Json
       }
       unlock_crystal_ball: { Args: never; Returns: Json }
     }
