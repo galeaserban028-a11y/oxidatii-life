@@ -45,6 +45,9 @@ function AppLayout() {
   const nav = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isMe = pathname === "/app/me" || pathname.startsWith("/app/me/");
+  const isReels = pathname === "/app/reels" || pathname.startsWith("/app/reels/");
+  const isFullscreen = isMe || isReels;
+
   const { user, profile, loading } = useAuth();
   const { compact } = useCompactMode();
   const mainRef = useRef<HTMLElement>(null);
@@ -108,20 +111,28 @@ function AppLayout() {
       {/* Centered phone-width column: on desktop the app looks like a phone column,
           on actual phones it fills the whole screen. */}
       <div className="mx-auto w-full max-w-[480px] min-w-0">
-        {!isMe && <InstallBanner />}
-        {!isMe && <AppHeader />}
-        <PullToRefresh>
-          <SwipeNavigator>
-            <PageTransition>
-              <div ref={outletRef} className="contents" data-page-root>
-                <Outlet />
-              </div>
-            </PageTransition>
-          </SwipeNavigator>
-        </PullToRefresh>
+        {!isFullscreen && <InstallBanner />}
+        {!isFullscreen && <AppHeader />}
+        {isReels ? (
+          <div ref={outletRef} className="contents" data-page-root>
+            <Outlet />
+          </div>
+        ) : (
+          <PullToRefresh>
+            <SwipeNavigator>
+              <PageTransition>
+                <div ref={outletRef} className="contents" data-page-root>
+                  <Outlet />
+                </div>
+              </PageTransition>
+            </SwipeNavigator>
+          </PullToRefresh>
+        )}
       </div>
-      <BottomTabBar />
+      {!isReels && <BottomTabBar />}
       <TutorialOverlay />
+
+
     </main>
   );
 }
