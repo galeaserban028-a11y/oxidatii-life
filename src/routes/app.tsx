@@ -45,6 +45,9 @@ function AppLayout() {
   const nav = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isMe = pathname === "/app/me" || pathname.startsWith("/app/me/");
+  const isReels = pathname === "/app/reels" || pathname.startsWith("/app/reels/");
+  const isFullscreen = isMe || isReels;
+
   const { user, profile, loading } = useAuth();
   const { compact } = useCompactMode();
   const mainRef = useRef<HTMLElement>(null);
