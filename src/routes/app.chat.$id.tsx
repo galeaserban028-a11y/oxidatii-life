@@ -1002,7 +1002,16 @@ function MessageBubble({
     );
   }
 
+  if (viewOnceMatch) {
+    return (
+      <div {...pressProps}>
+        <ViewOnceBubble url={viewOnceMatch} msgId={msgId} mine={mine} theme={theme} />
+      </div>
+    );
+  }
+
   if (imgMatch) {
+
     return (
       <a
         {...pressProps}
