@@ -337,7 +337,7 @@ function ChatPage() {
   const uploadAndSend = async (
     file: Blob,
     ext: string,
-    prefix: "📷" | "🎤",
+    prefix: "📷" | "🎤" | "👁️",
     durationMs?: number,
   ) => {
     if (!user) return;
@@ -378,8 +378,10 @@ function ChatPage() {
 
   const onPickImage = (file: File) => {
     const ext = file.name.split(".").pop() || "jpg";
-    uploadAndSend(file, ext, "📷");
+    uploadAndSend(file, ext, viewOnce ? "👁️" : "📷");
+    setViewOnce(false);
   };
+
 
   const otherProfiles: Profile[] = data
     ? (data.members
