@@ -25,12 +25,22 @@ type Reel = {
 };
 
 async function loadReels(): Promise<Reel[]> {
-  const { data: photos } = await supabase
-    .from("venue_photos")
-    .select("id, photo_url, caption, taken_at, user_id, venue_id, media_type")
-    .order("taken_at", { ascending: false })
-    .limit(80);
-  const items = photos ?? [];
+  // Try For You ranking first; fall back to plain recency if RPC unavailable.
+  let items: any[] = [];
+  const { data: fyp } = await supabase.rpc("get_reels_for_you", { p_limit: 80 });
+  if (Array.isArray(fyp) && fyp.length) {
+    items = fyp.map((r: any) => ({
+      id: r.id, photo_url: r.photo_url, caption: r.caption, taken_at: r.taken_at,
+      user_id: r.user_id, venue_id: r.venue_id, media_type: r.media_type,
+    }));
+  } else {
+    const { data: photos } = await supabase
+      .from("venue_photos")
+      .select("id, photo_url, caption, taken_at, user_id, venue_id, media_type")
+      .order("taken_at", { ascending: false })
+      .limit(80);
+    items = photos ?? [];
+  }
   if (!items.length) return [];
   const userIds = Array.from(new Set(items.map((p) => p.user_id)));
   const venueIds = Array.from(new Set(items.map((p) => p.venue_id)));
