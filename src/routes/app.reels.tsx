@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { TipCreatorButton } from "@/components/app/TipCreatorDialog";
 
 export const Route = createFileRoute("/app/reels")({
   head: () => ({ meta: [{ title: "Reels · OXIDAȚII" }] }),
@@ -22,16 +23,17 @@ type Reel = {
   avatar_url: string | null;
   venue_name: string | null;
   city_name: string | null;
+  reason: "friend" | "follow" | "city" | "fresh" | null;
 };
 
 async function loadReels(): Promise<Reel[]> {
-  // Try For You ranking first; fall back to plain recency if RPC unavailable.
   let items: any[] = [];
   const { data: fyp } = await supabase.rpc("get_reels_for_you", { p_limit: 80 });
   if (Array.isArray(fyp) && fyp.length) {
     items = fyp.map((r: any) => ({
       id: r.id, photo_url: r.photo_url, caption: r.caption, taken_at: r.taken_at,
       user_id: r.user_id, venue_id: r.venue_id, media_type: r.media_type,
+      is_friend: r.is_friend, is_follow: r.is_follow, same_city: r.same_city,
     }));
   } else {
     const { data: photos } = await supabase
@@ -50,29 +52,41 @@ async function loadReels(): Promise<Reel[]> {
   ]);
   const pmap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
   const vmap = new Map((venues ?? []).map((v: any) => [v.id, v]));
-  // Videos first, then photos.
-  return items
-    .map((p: any) => {
-      const isVideo =
-        p.media_type === "video" || /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(p.photo_url);
-      const prof = pmap.get(p.user_id);
-      const ven = vmap.get(p.venue_id);
-      return {
-        id: p.id,
-        url: p.photo_url,
-        caption: p.caption,
-        user_id: p.user_id,
-        venue_id: p.venue_id,
-        isVideo,
-        handle: prof?.handle ?? prof?.display_name ?? "anonim",
-        display_name: prof?.display_name ?? null,
-        avatar_url: prof?.avatar_url ?? null,
-        venue_name: ven?.name ?? null,
-        city_name: ven?.city?.name ?? null,
-      } as Reel;
-    });
-
+  return items.map((p: any) => {
+    const isVideo =
+      p.media_type === "video" || /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(p.photo_url);
+    const prof = pmap.get(p.user_id);
+    const ven = vmap.get(p.venue_id);
+    const reason: Reel["reason"] = p.is_friend
+      ? "friend"
+      : p.is_follow
+        ? "follow"
+        : p.same_city
+          ? "city"
+          : "fresh";
+    return {
+      id: p.id,
+      url: p.photo_url,
+      caption: p.caption,
+      user_id: p.user_id,
+      venue_id: p.venue_id,
+      isVideo,
+      handle: prof?.handle ?? prof?.display_name ?? "anonim",
+      display_name: prof?.display_name ?? null,
+      avatar_url: prof?.avatar_url ?? null,
+      venue_name: ven?.name ?? null,
+      city_name: ven?.city?.name ?? null,
+      reason,
+    } as Reel;
+  });
 }
+
+const REASON_PILL: Record<NonNullable<Reel["reason"]>, { label: string; cls: string }> = {
+  friend: { label: "👥 prieten", cls: "bg-emerald-500/15 text-emerald-200 border-emerald-400/30" },
+  follow: { label: "✦ urmărești", cls: "bg-violet-500/15 text-violet-200 border-violet-400/30" },
+  city:   { label: "📍 același oraș", cls: "bg-sky-500/15 text-sky-200 border-sky-400/30" },
+  fresh:  { label: "🔥 proaspăt", cls: "bg-amber-500/15 text-amber-200 border-amber-400/30" },
+};
 
 function ReelTile({
   reel,
@@ -90,6 +104,9 @@ function ReelTile({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
   const [paused, setPaused] = useState(false);
+  const { user } = useAuth();
+  const isOwn = user?.id === reel.user_id;
+  const pill = reel.reason ? REASON_PILL[reel.reason] : null;
 
   useEffect(() => {
     const v = videoRef.current;
@@ -122,9 +139,17 @@ function ReelTile({
         />
       )}
 
-      {/* Gradient overlays */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-60 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+
+      {/* Reason pill — why this reel */}
+      {pill && (
+        <div className="absolute top-[calc(env(safe-area-inset-top)+58px)] left-3 z-10">
+          <div className={`px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border backdrop-blur-md ${pill.cls}`}>
+            {pill.label}
+          </div>
+        </div>
+      )}
 
       {paused && reel.isVideo && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -137,7 +162,7 @@ function ReelTile({
       )}
 
       {/* Right action rail */}
-      <div className="absolute right-3 bottom-32 flex flex-col items-center gap-5 text-white">
+      <div className="absolute right-3 bottom-32 flex flex-col items-center gap-4 text-white">
         <button
           onClick={onToggleLike}
           className="flex flex-col items-center gap-1 active:scale-90 transition"
@@ -166,6 +191,11 @@ function ReelTile({
           </div>
           <span className="text-[11px] font-semibold">Coment</span>
         </button>
+        {!isOwn && (
+          <div className="flex flex-col items-center gap-1">
+            <TipCreatorButton recipientId={reel.user_id} recipientName={reel.display_name ?? reel.handle} />
+          </div>
+        )}
         {reel.isVideo && (
           <button
             onClick={() => setMuted((m) => !m)}

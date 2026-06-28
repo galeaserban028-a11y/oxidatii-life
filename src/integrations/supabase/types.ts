@@ -3060,10 +3060,12 @@ export type Database = {
         Returns: {
           aura: number
           avatar_url: string
+          city_name: string
           common_venues: number
           display_name: string
           handle: string
           id: string
+          last_seen_at: string
           rank: string
         }[]
       }
@@ -3083,8 +3085,11 @@ export type Database = {
         Returns: {
           caption: string
           id: string
+          is_follow: boolean
+          is_friend: boolean
           media_type: string
           photo_url: string
+          same_city: boolean
           score: number
           taken_at: string
           user_id: string
