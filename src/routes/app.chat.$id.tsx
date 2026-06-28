@@ -863,11 +863,12 @@ function Composer({
             <button
               type="button"
               onClick={toggleViewOnce}
-              aria-label="foto efemeră"
-              title={viewOnce ? "Foto efemeră activă — se va vedea o singură dată" : "Foto normală"}
-              className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 transition active:bg-foreground/10 ${viewOnce ? "text-neon-purple bg-foreground/10" : "text-muted-foreground"}`}
+              aria-label="foto care dispare după vizualizare"
+              title={viewOnce ? "Activ: următoarea poză se vede o singură dată, apoi dispare" : "Activează pentru poză care se vede o singură dată"}
+              className={`h-9 px-2.5 rounded-full flex items-center gap-1 shrink-0 transition active:bg-foreground/10 ${viewOnce ? "text-neon-purple bg-neon-purple/15 ring-1 ring-neon-purple/40" : "text-muted-foreground"}`}
             >
-              {viewOnce ? <Eye size={18} /> : <EyeOff size={18} />}
+              {viewOnce ? <Eye size={16} /> : <EyeOff size={16} />}
+              <span className="text-[10px] font-black tracking-widest uppercase">1×</span>
             </button>
             <button
               type="button"
@@ -929,10 +930,10 @@ function MessageBubble({
   theme: Theme;
   onDelete?: () => void;
 }) {
-  const imgMatch = body.startsWith("📷 ") ? body.slice(2).trim() : null;
-  const giftMatch = body.startsWith("🎁 ") ? body.slice(2).trim() : null;
-  const voiceMatch = body.startsWith("🎤 ") ? body.slice(2).trim() : null;
-  const viewOnceMatch = body.startsWith("👁️ ") ? body.slice(2).trim() : null;
+  const imgMatch = body.startsWith("📷 ") ? body.slice("📷 ".length).trim() : null;
+  const giftMatch = body.startsWith("🎁 ") ? body.slice("🎁 ".length).trim() : null;
+  const voiceMatch = body.startsWith("🎤 ") ? body.slice("🎤 ".length).trim() : null;
+  const viewOnceMatch = body.startsWith("👁️ ") ? body.slice("👁️ ".length).trim() : null;
 
 
   // Long-press / right-click handlers for delete on own messages
