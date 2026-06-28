@@ -43,8 +43,11 @@ async def test_reels(page):
 
     # Wait for either content or empty state
     try:
-        await page.wait_for_selector("video, [data-reel], text=/Reels|Niciun reel|For You/i", timeout=8000)
-        record("reels: render", True)
+        await page.wait_for_load_state("networkidle", timeout=8000)
+        body_text = (await page.locator("body").inner_text()) or ""
+        has_video = await page.locator("video").count()
+        rendered = has_video > 0 or any(k in body_text.lower() for k in ["reel", "for you", "niciun"])
+        record("reels: render", rendered, f"video={has_video}, text_len={len(body_text)}")
     except Exception as e:
         record("reels: render", False, str(e)[:120])
 
