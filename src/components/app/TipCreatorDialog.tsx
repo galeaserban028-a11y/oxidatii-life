@@ -70,14 +70,12 @@ export function TipCreatorButton({
     queryKey: ["my-coin-balance", user?.id],
     enabled: !!user && open,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("coin_balance")
-        .eq("id", user!.id)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("get_my_account_state");
       if (error) throw error;
-      return (data?.coin_balance as number | undefined) ?? 0;
+      const row = Array.isArray(data) ? data[0] : data;
+      return (row?.coin_balance as number | undefined) ?? 0;
     },
+
   });
 
   const { data: earnings } = useQuery({
