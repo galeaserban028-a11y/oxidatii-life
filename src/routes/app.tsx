@@ -113,18 +113,25 @@ function AppLayout() {
       <div className="mx-auto w-full max-w-[480px] min-w-0">
         {!isFullscreen && <InstallBanner />}
         {!isFullscreen && <AppHeader />}
-        <PullToRefresh>
-          <SwipeNavigator>
-            <PageTransition>
-              <div ref={outletRef} className="contents" data-page-root>
-                <Outlet />
-              </div>
-            </PageTransition>
-          </SwipeNavigator>
-        </PullToRefresh>
+        {isReels ? (
+          <div ref={outletRef} className="contents" data-page-root>
+            <Outlet />
+          </div>
+        ) : (
+          <PullToRefresh>
+            <SwipeNavigator>
+              <PageTransition>
+                <div ref={outletRef} className="contents" data-page-root>
+                  <Outlet />
+                </div>
+              </PageTransition>
+            </SwipeNavigator>
+          </PullToRefresh>
+        )}
       </div>
       {!isReels && <BottomTabBar />}
       <TutorialOverlay />
+
 
     </main>
   );
