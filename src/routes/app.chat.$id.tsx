@@ -1231,3 +1231,124 @@ function GiftSheet({ onClose, onSend }: { onClose: () => void; onSend: (g: Gift)
     </div>
   );
 }
+
+function ViewOnceBubble({
+  url,
+  msgId,
+  mine,
+  theme,
+}: {
+  url: string;
+  msgId: string;
+  mine: boolean;
+  theme: Theme;
+}) {
+  const storageKey = `vo-seen:${msgId}`;
+  const [seen, setSeen] = useState<boolean>(() => {
+    if (typeof localStorage === "undefined") return false;
+    return localStorage.getItem(storageKey) === "1";
+  });
+  const [viewing, setViewing] = useState(false);
+  const [remaining, setRemaining] = useState(10);
+
+  // Sender always sees "Foto efemeră — trimisă"
+  if (mine) {
+    return (
+      <div
+        className={`px-4 py-3 rounded-3xl min-w-[200px] flex items-center gap-3 bg-gradient-to-br ${theme.mine} ${theme.mineShadow} text-white`}
+      >
+        <Eye size={20} />
+        <div className="leading-tight">
+          <div className="font-display font-black text-sm">Foto efemeră</div>
+          <div className="text-[10px] opacity-80 uppercase tracking-widest">trimisă</div>
+        </div>
+      </div>
+    );
+  }
+
+  const open = () => {
+    if (seen) return;
+    setViewing(true);
+    setRemaining(10);
+  };
+
+  // Countdown while viewing
+  useEffect(() => {
+    if (!viewing) return;
+    const t = window.setInterval(() => {
+      setRemaining((r) => {
+        if (r <= 1) {
+          window.clearInterval(t);
+          localStorage.setItem(storageKey, "1");
+          setSeen(true);
+          setViewing(false);
+          return 0;
+        }
+        return r - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [viewing, storageKey]);
+
+  const closeAndMark = () => {
+    localStorage.setItem(storageKey, "1");
+    setSeen(true);
+    setViewing(false);
+  };
+
+  return (
+    <>
+      <button
+        onClick={open}
+        disabled={seen}
+        className={`px-4 py-3 rounded-3xl min-w-[200px] flex items-center gap-3 transition active:scale-[0.98] ${
+          seen
+            ? "bg-foreground/[0.05] text-muted-foreground"
+            : "bg-gradient-to-br from-neon-purple/30 via-neon-crimson/20 to-transparent border border-neon-purple/30 text-foreground"
+        }`}
+      >
+        {seen ? <EyeOff size={20} /> : <Eye size={20} className="text-neon-purple" />}
+        <div className="leading-tight text-left">
+          <div className="font-display font-black text-sm">
+            {seen ? "Foto văzută" : "Foto efemeră"}
+          </div>
+          <div className="text-[10px] opacity-80 uppercase tracking-widest">
+            {seen ? "nu se mai poate redeschide" : "apasă pentru a vedea o singură dată"}
+          </div>
+        </div>
+      </button>
+
+      {viewing &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[200] bg-black flex items-center justify-center animate-fade-in"
+            onClick={closeAndMark}
+          >
+            <img
+              src={url}
+              alt=""
+              className="max-h-full max-w-full object-contain select-none pointer-events-none"
+              draggable={false}
+            />
+            <div className="absolute top-[max(env(safe-area-inset-top),1rem)] left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 border border-white/15 text-white text-xs font-mono">
+              <Eye size={14} className="text-neon-purple" />
+              dispare în {remaining}s
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                closeAndMark();
+              }}
+              className="absolute top-[max(env(safe-area-inset-top),1rem)] right-4 h-10 w-10 rounded-full bg-black/60 border border-white/15 text-white flex items-center justify-center"
+              aria-label="închide"
+            >
+              <X size={18} />
+            </button>
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+}
+
