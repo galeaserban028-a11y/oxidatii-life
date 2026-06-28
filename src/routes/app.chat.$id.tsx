@@ -651,7 +651,10 @@ function ChatPage() {
         uploading={uploading}
         onVoice={(blob, ms) => uploadAndSend(blob, "webm", "🎤", ms)}
         theme={theme}
+        viewOnce={viewOnce}
+        toggleViewOnce={() => setViewOnce((v) => !v)}
       />
+
       <input
         ref={fileRef}
         type="file"
