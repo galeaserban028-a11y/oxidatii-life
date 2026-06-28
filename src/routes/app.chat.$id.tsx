@@ -862,13 +862,23 @@ function Composer({
             />
             <button
               type="button"
+              onClick={toggleViewOnce}
+              aria-label="foto efemeră"
+              title={viewOnce ? "Foto efemeră activă — se va vedea o singură dată" : "Foto normală"}
+              className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 transition active:bg-foreground/10 ${viewOnce ? "text-neon-purple bg-foreground/10" : "text-muted-foreground"}`}
+            >
+              {viewOnce ? <Eye size={18} /> : <EyeOff size={18} />}
+            </button>
+            <button
+              type="button"
               onClick={onPickFile}
               disabled={uploading}
               aria-label="imagine"
-              className="h-9 w-9 rounded-full flex items-center justify-center shrink-0 text-muted-foreground active:bg-foreground/10 transition disabled:opacity-50"
+              className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 active:bg-foreground/10 transition disabled:opacity-50 ${viewOnce ? "text-neon-purple" : "text-muted-foreground"}`}
             >
               {uploading ? <Loader2 size={18} className="animate-spin" /> : <ImageIcon size={18} />}
             </button>
+
           </div>
           {text.trim() ? (
             <button
