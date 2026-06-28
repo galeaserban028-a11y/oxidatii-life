@@ -307,7 +307,7 @@ function VenuePage() {
 
         {/* Real ratings & reviews */}
         {data.biz?.id && (
-          <BusinessReviewCard businessId={data.biz.id} brandName={data.biz.brand_name} />
+          <BusinessReviewCard businessId={data.biz.id} brandName={data.biz.brand_name ?? undefined} />
         )}
 
         {/* Photo gallery — only user-uploaded */}
