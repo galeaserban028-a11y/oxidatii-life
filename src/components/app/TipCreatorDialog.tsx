@@ -56,7 +56,7 @@ export function TipCreatorButton({
     const { data, error } = await supabase.rpc("tip_creator", {
       p_recipient_id: recipientId,
       p_amount: amount,
-      p_message: msg.trim() || null,
+      p_message: msg.trim() || undefined,
     });
     setSending(false);
     if (error) {
