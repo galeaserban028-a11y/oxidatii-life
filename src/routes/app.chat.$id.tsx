@@ -19,8 +19,11 @@ import {
   Pause,
   MoreVertical,
   Trash2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { notifyChatMessage } from "@/lib/notifications-extra.functions";
+
 import { ReportDialog } from "@/components/app/ReportDialog";
 import {
   DropdownMenu,
@@ -142,7 +145,9 @@ function ChatPage() {
   const [showGifts, setShowGifts] = useState(false);
   const [showThemes, setShowThemes] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [viewOnce, setViewOnce] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -332,7 +337,7 @@ function ChatPage() {
   const uploadAndSend = async (
     file: Blob,
     ext: string,
-    prefix: "📷" | "🎤",
+    prefix: "📷" | "🎤" | "👁️",
     durationMs?: number,
   ) => {
     if (!user) return;
@@ -373,8 +378,10 @@ function ChatPage() {
 
   const onPickImage = (file: File) => {
     const ext = file.name.split(".").pop() || "jpg";
-    uploadAndSend(file, ext, "📷");
+    uploadAndSend(file, ext, viewOnce ? "👁️" : "📷");
+    setViewOnce(false);
   };
+
 
   const otherProfiles: Profile[] = data
     ? (data.members
@@ -588,6 +595,7 @@ function ChatPage() {
                     {g.items.map((m, i) => (
                       <MessageBubble
                         key={m.id}
+                        msgId={m.id}
                         body={m.body}
                         mine={g.mine}
                         first={i === 0}
@@ -597,6 +605,7 @@ function ChatPage() {
                         onDelete={g.mine ? () => deleteMessage(m.id) : undefined}
                       />
                     ))}
+
                     <div className="text-[10px] text-muted-foreground px-2.5">
                       {new Date(last.created_at).toLocaleTimeString("ro-RO", {
                         hour: "2-digit",
@@ -642,7 +651,10 @@ function ChatPage() {
         uploading={uploading}
         onVoice={(blob, ms) => uploadAndSend(blob, "webm", "🎤", ms)}
         theme={theme}
+        viewOnce={viewOnce}
+        toggleViewOnce={() => setViewOnce((v) => !v)}
       />
+
       <input
         ref={fileRef}
         type="file"
@@ -711,6 +723,8 @@ function Composer({
   uploading,
   onVoice,
   theme,
+  viewOnce,
+  toggleViewOnce,
 }: {
   text: string;
   setText: (v: string | ((s: string) => string)) => void;
@@ -724,7 +738,10 @@ function Composer({
   uploading: boolean;
   onVoice: (blob: Blob, ms: number) => void;
   theme: Theme;
+  viewOnce: boolean;
+  toggleViewOnce: () => void;
 }) {
+
   const [recording, setRecording] = useState(false);
   const [recMs, setRecMs] = useState(0);
   const recRef = useRef<MediaRecorder | null>(null);
@@ -845,13 +862,23 @@ function Composer({
             />
             <button
               type="button"
+              onClick={toggleViewOnce}
+              aria-label="foto efemeră"
+              title={viewOnce ? "Foto efemeră activă — se va vedea o singură dată" : "Foto normală"}
+              className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 transition active:bg-foreground/10 ${viewOnce ? "text-neon-purple bg-foreground/10" : "text-muted-foreground"}`}
+            >
+              {viewOnce ? <Eye size={18} /> : <EyeOff size={18} />}
+            </button>
+            <button
+              type="button"
               onClick={onPickFile}
               disabled={uploading}
               aria-label="imagine"
-              className="h-9 w-9 rounded-full flex items-center justify-center shrink-0 text-muted-foreground active:bg-foreground/10 transition disabled:opacity-50"
+              className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 active:bg-foreground/10 transition disabled:opacity-50 ${viewOnce ? "text-neon-purple" : "text-muted-foreground"}`}
             >
               {uploading ? <Loader2 size={18} className="animate-spin" /> : <ImageIcon size={18} />}
             </button>
+
           </div>
           {text.trim() ? (
             <button
@@ -884,6 +911,7 @@ function fmtRec(ms: number) {
 }
 
 function MessageBubble({
+  msgId,
   body,
   mine,
   first,
@@ -892,6 +920,7 @@ function MessageBubble({
   theme,
   onDelete,
 }: {
+  msgId: string;
   body: string;
   mine: boolean;
   first: boolean;
@@ -903,6 +932,8 @@ function MessageBubble({
   const imgMatch = body.startsWith("📷 ") ? body.slice(2).trim() : null;
   const giftMatch = body.startsWith("🎁 ") ? body.slice(2).trim() : null;
   const voiceMatch = body.startsWith("🎤 ") ? body.slice(2).trim() : null;
+  const viewOnceMatch = body.startsWith("👁️ ") ? body.slice(2).trim() : null;
+
 
   // Long-press / right-click handlers for delete on own messages
   const pressTimer = useRef<number | null>(null);
@@ -971,7 +1002,16 @@ function MessageBubble({
     );
   }
 
+  if (viewOnceMatch) {
+    return (
+      <div {...pressProps}>
+        <ViewOnceBubble url={viewOnceMatch} msgId={msgId} mine={mine} theme={theme} />
+      </div>
+    );
+  }
+
   if (imgMatch) {
+
     return (
       <a
         {...pressProps}
@@ -1191,3 +1231,124 @@ function GiftSheet({ onClose, onSend }: { onClose: () => void; onSend: (g: Gift)
     </div>
   );
 }
+
+function ViewOnceBubble({
+  url,
+  msgId,
+  mine,
+  theme,
+}: {
+  url: string;
+  msgId: string;
+  mine: boolean;
+  theme: Theme;
+}) {
+  const storageKey = `vo-seen:${msgId}`;
+  const [seen, setSeen] = useState<boolean>(() => {
+    if (typeof localStorage === "undefined") return false;
+    return localStorage.getItem(storageKey) === "1";
+  });
+  const [viewing, setViewing] = useState(false);
+  const [remaining, setRemaining] = useState(10);
+
+  // Sender always sees "Foto efemeră — trimisă"
+  if (mine) {
+    return (
+      <div
+        className={`px-4 py-3 rounded-3xl min-w-[200px] flex items-center gap-3 bg-gradient-to-br ${theme.mine} ${theme.mineShadow} text-white`}
+      >
+        <Eye size={20} />
+        <div className="leading-tight">
+          <div className="font-display font-black text-sm">Foto efemeră</div>
+          <div className="text-[10px] opacity-80 uppercase tracking-widest">trimisă</div>
+        </div>
+      </div>
+    );
+  }
+
+  const open = () => {
+    if (seen) return;
+    setViewing(true);
+    setRemaining(10);
+  };
+
+  // Countdown while viewing
+  useEffect(() => {
+    if (!viewing) return;
+    const t = window.setInterval(() => {
+      setRemaining((r) => {
+        if (r <= 1) {
+          window.clearInterval(t);
+          localStorage.setItem(storageKey, "1");
+          setSeen(true);
+          setViewing(false);
+          return 0;
+        }
+        return r - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [viewing, storageKey]);
+
+  const closeAndMark = () => {
+    localStorage.setItem(storageKey, "1");
+    setSeen(true);
+    setViewing(false);
+  };
+
+  return (
+    <>
+      <button
+        onClick={open}
+        disabled={seen}
+        className={`px-4 py-3 rounded-3xl min-w-[200px] flex items-center gap-3 transition active:scale-[0.98] ${
+          seen
+            ? "bg-foreground/[0.05] text-muted-foreground"
+            : "bg-gradient-to-br from-neon-purple/30 via-neon-crimson/20 to-transparent border border-neon-purple/30 text-foreground"
+        }`}
+      >
+        {seen ? <EyeOff size={20} /> : <Eye size={20} className="text-neon-purple" />}
+        <div className="leading-tight text-left">
+          <div className="font-display font-black text-sm">
+            {seen ? "Foto văzută" : "Foto efemeră"}
+          </div>
+          <div className="text-[10px] opacity-80 uppercase tracking-widest">
+            {seen ? "nu se mai poate redeschide" : "apasă pentru a vedea o singură dată"}
+          </div>
+        </div>
+      </button>
+
+      {viewing &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[200] bg-black flex items-center justify-center animate-fade-in"
+            onClick={closeAndMark}
+          >
+            <img
+              src={url}
+              alt=""
+              className="max-h-full max-w-full object-contain select-none pointer-events-none"
+              draggable={false}
+            />
+            <div className="absolute top-[max(env(safe-area-inset-top),1rem)] left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 border border-white/15 text-white text-xs font-mono">
+              <Eye size={14} className="text-neon-purple" />
+              dispare în {remaining}s
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                closeAndMark();
+              }}
+              className="absolute top-[max(env(safe-area-inset-top),1rem)] right-4 h-10 w-10 rounded-full bg-black/60 border border-white/15 text-white flex items-center justify-center"
+              aria-label="închide"
+            >
+              <X size={18} />
+            </button>
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+}
+
