@@ -795,7 +795,7 @@ function Composer({
         e.preventDefault();
         onSend();
       }}
-      className="flex items-end gap-2 px-3 pt-2 pb-[max(env(safe-area-inset-bottom),0.6rem)] border-t border-foreground/[0.06] bg-background/60 backdrop-blur-2xl"
+      className="flex items-end gap-2 pt-2 pb-[max(env(safe-area-inset-bottom),0.6rem)] pl-[max(env(safe-area-inset-left),0.75rem)] pr-[max(env(safe-area-inset-right),0.75rem)] border-t border-foreground/[0.06] bg-background/60 backdrop-blur-2xl"
     >
       {recording ? (
         <div className="flex-1 flex items-center gap-3 rounded-3xl bg-foreground/[0.07] border border-neon-crimson/40 pl-4 pr-2 py-2.5 animate-fade-in">
