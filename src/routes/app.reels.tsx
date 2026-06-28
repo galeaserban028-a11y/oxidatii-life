@@ -70,8 +70,8 @@ async function loadReels(): Promise<Reel[]> {
         venue_name: ven?.name ?? null,
         city_name: ven?.city?.name ?? null,
       } as Reel;
-    })
-    .sort((a, b) => Number(b.isVideo) - Number(a.isVideo));
+    });
+
 }
 
 function ReelTile({
