@@ -72,6 +72,7 @@ import { Route as AppAdminContentRouteImport } from './routes/app.admin.content'
 import { Route as AppAdminCampaignsRouteImport } from './routes/app.admin.campaigns'
 import { Route as AppAdminBusinessesRouteImport } from './routes/app.admin.businesses'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicCronStreakRiskRouteImport } from './routes/api/public/cron.streak-risk'
 import { Route as ApiPublicCronHeatAlertsRouteImport } from './routes/api/public/cron.heat-alerts'
 
 const TermsRoute = TermsRouteImport.update({
@@ -392,6 +393,11 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronStreakRiskRoute = ApiPublicCronStreakRiskRouteImport.update({
+  id: '/api/public/cron/streak-risk',
+  path: '/api/public/cron/streak-risk',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronHeatAlertsRoute = ApiPublicCronHeatAlertsRouteImport.update({
   id: '/api/public/cron/heat-alerts',
   path: '/api/public/cron/heat-alerts',
@@ -462,6 +468,7 @@ export interface FileRoutesByFullPath {
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin/': typeof AppAdminIndexRoute
   '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
+  '/api/public/cron/streak-risk': typeof ApiPublicCronStreakRiskRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -526,6 +533,7 @@ export interface FileRoutesByTo {
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin': typeof AppAdminIndexRoute
   '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
+  '/api/public/cron/streak-risk': typeof ApiPublicCronStreakRiskRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -593,6 +601,7 @@ export interface FileRoutesById {
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin/': typeof AppAdminIndexRoute
   '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
+  '/api/public/cron/streak-risk': typeof ApiPublicCronStreakRiskRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -661,6 +670,7 @@ export interface FileRouteTypes {
     | '/app/venue/$id'
     | '/app/admin/'
     | '/api/public/cron/heat-alerts'
+    | '/api/public/cron/streak-risk'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -725,6 +735,7 @@ export interface FileRouteTypes {
     | '/app/venue/$id'
     | '/app/admin'
     | '/api/public/cron/heat-alerts'
+    | '/api/public/cron/streak-risk'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -791,6 +802,7 @@ export interface FileRouteTypes {
     | '/app/venue/$id'
     | '/app/admin/'
     | '/api/public/cron/heat-alerts'
+    | '/api/public/cron/streak-risk'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -811,6 +823,7 @@ export interface RootRouteChildren {
   DotwellKnownAppleAppSiteAssociationRoute: typeof DotwellKnownAppleAppSiteAssociationRoute
   DotwellKnownAssetlinksDotjsonRoute: typeof DotwellKnownAssetlinksDotjsonRoute
   ApiPublicCronHeatAlertsRoute: typeof ApiPublicCronHeatAlertsRoute
+  ApiPublicCronStreakRiskRoute: typeof ApiPublicCronStreakRiskRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -1257,6 +1270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/streak-risk': {
+      id: '/api/public/cron/streak-risk'
+      path: '/api/public/cron/streak-risk'
+      fullPath: '/api/public/cron/streak-risk'
+      preLoaderRoute: typeof ApiPublicCronStreakRiskRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/heat-alerts': {
       id: '/api/public/cron/heat-alerts'
       path: '/api/public/cron/heat-alerts'
@@ -1416,6 +1436,7 @@ const rootRouteChildren: RootRouteChildren = {
     DotwellKnownAppleAppSiteAssociationRoute,
   DotwellKnownAssetlinksDotjsonRoute: DotwellKnownAssetlinksDotjsonRoute,
   ApiPublicCronHeatAlertsRoute: ApiPublicCronHeatAlertsRoute,
+  ApiPublicCronStreakRiskRoute: ApiPublicCronStreakRiskRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
