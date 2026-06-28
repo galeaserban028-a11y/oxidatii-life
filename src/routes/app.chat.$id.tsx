@@ -666,7 +666,7 @@ function ChatPage() {
         onOpenGifts={() => setShowGifts(true)}
         onPickFile={() => fileRef.current?.click()}
         uploading={uploading}
-        onVoice={(blob, ms) => uploadAndSend(blob, "webm", "🎤", ms)}
+        onVoice={(blob, ms, ext) => uploadAndSend(blob, ext, "🎤", ms)}
         theme={theme}
         viewOnce={viewOnce}
         toggleViewOnce={() => setViewOnce((v) => !v)}
@@ -830,7 +830,7 @@ function Composer({
   onOpenGifts: () => void;
   onPickFile: () => void;
   uploading: boolean;
-  onVoice: (blob: Blob, ms: number) => void;
+  onVoice: (blob: Blob, ms: number, ext: string) => void;
   theme: Theme;
   viewOnce: boolean;
   toggleViewOnce: () => void;
@@ -842,13 +842,29 @@ function Composer({
   const chunksRef = useRef<Blob[]>([]);
   const startRef = useRef<number>(0);
   const tickRef = useRef<number | null>(null);
+  const recMimeRef = useRef<{ mime: string; ext: string }>({ mime: "audio/webm", ext: "webm" });
 
   const startRec = async () => {
     try {
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+        alert("Telefonul/browserul nu suportă înregistrarea vocală aici.");
+        return;
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mr = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "",
-      });
+      const candidates = [
+        { mime: "audio/webm;codecs=opus", ext: "webm" },
+        { mime: "audio/webm", ext: "webm" },
+        { mime: "audio/mp4", ext: "m4a" },
+        { mime: "audio/aac", ext: "aac" },
+        { mime: "audio/ogg;codecs=opus", ext: "ogg" },
+      ];
+      const picked = candidates.find((c) => MediaRecorder.isTypeSupported(c.mime));
+      const mr = picked ? new MediaRecorder(stream, { mimeType: picked.mime }) : new MediaRecorder(stream);
+      const actualMime = mr.mimeType || picked?.mime || "audio/webm";
+      recMimeRef.current = {
+        mime: actualMime,
+        ext: actualMime.includes("mp4") ? "m4a" : actualMime.includes("aac") ? "aac" : actualMime.includes("ogg") ? "ogg" : "webm",
+      };
       chunksRef.current = [];
       mr.ondataavailable = (e) => {
         if (e.data.size) chunksRef.current.push(e.data);
@@ -856,12 +872,13 @@ function Composer({
       mr.onstop = () => {
         stream.getTracks().forEach((t) => t.stop());
         const ms = Date.now() - startRef.current;
-        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
-        if (ms > 400 && blob.size > 0) onVoice(blob, ms);
+        const { mime, ext } = recMimeRef.current;
+        const blob = new Blob(chunksRef.current, { type: mime });
+        if (ms > 400 && blob.size > 0) onVoice(blob, ms, ext);
       };
       recRef.current = mr;
       startRef.current = Date.now();
-      mr.start();
+      mr.start(250);
       setRecording(true);
       setRecMs(0);
       tickRef.current = window.setInterval(() => setRecMs(Date.now() - startRef.current), 100);
@@ -1024,18 +1041,10 @@ function MessageBubble({
   theme: Theme;
   onDelete?: () => void;
 }) {
-  // Robust prefix detection by first codepoint (handles VS16 / variation selectors)
-  const cp = body.codePointAt(0);
-  const afterPrefix = () => {
-    // Skip the emoji codepoint + optional VS16 + any whitespace
-    let i = String.fromCodePoint(cp ?? 0).length;
-    while (i < body.length && (body.charCodeAt(i) === 0xfe0f || /\s/.test(body[i]))) i++;
-    return body.slice(i).trim();
-  };
-  const imgMatch = cp === 0x1f4f7 ? afterPrefix() : null; // 📷
-  const giftMatch = cp === 0x1f381 ? afterPrefix() : null; // 🎁
-  const voiceMatch = cp === 0x1f3a4 ? afterPrefix() : null; // 🎤
-  const viewOnceMatch = cp === 0x1f441 ? afterPrefix() : null; // 👁
+  const imgMatch = stripMediaPrefix(body, 0x1f4f7); // 📷
+  const giftMatch = stripMediaPrefix(body, 0x1f381); // 🎁
+  const voiceMatch = stripMediaPrefix(body, 0x1f3a4); // 🎤
+  const viewOnceMatch = stripMediaPrefix(body, 0x1f441); // 👁
 
 
   // Long-press / right-click handlers for delete on own messages
@@ -1114,23 +1123,10 @@ function MessageBubble({
   }
 
   if (imgMatch) {
-
     return (
-      <a
-        {...pressProps}
-        href={imgMatch}
-        target="_blank"
-        rel="noreferrer"
-        onClick={(e) => {
-          if (longPressFired.current) {
-            e.preventDefault();
-            longPressFired.current = false;
-          }
-        }}
-        className="block max-w-[260px] rounded-3xl overflow-hidden border border-foreground/10 shadow-lg"
-      >
-        <img src={imgMatch} alt="" className="w-full h-auto object-cover" />
-      </a>
+      <div {...pressProps} className="max-w-[260px]">
+        <ImageBubble url={imgMatch} />
+      </div>
     );
   }
 
@@ -1164,6 +1160,43 @@ function MessageBubble({
   );
 }
 
+function stripMediaPrefix(body: string, codePoint: number) {
+  const trimmed = body.trimStart();
+  if (trimmed.codePointAt(0) !== codePoint) return null;
+  let i = String.fromCodePoint(codePoint).length;
+  while (i < trimmed.length) {
+    const char = trimmed[i];
+    const code = trimmed.charCodeAt(i);
+    if (code === 0xfe0f || code === 0x200d || /\s/.test(char)) {
+      i += 1;
+      continue;
+    }
+    break;
+  }
+  return trimmed.slice(i).trim();
+}
+
+function ImageBubble({ url }: { url: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className="rounded-3xl border border-foreground/10 bg-foreground/[0.06] px-4 py-3 text-sm text-muted-foreground">
+        Poza nu se poate încărca.
+      </div>
+    );
+  }
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="block rounded-3xl overflow-hidden border border-foreground/10 shadow-lg bg-foreground/[0.04]"
+    >
+      <img src={url} alt="poză trimisă" onError={() => setFailed(true)} className="w-full h-auto object-cover" />
+    </a>
+  );
+}
+
 function VoiceBubble({
   url,
   seconds,
@@ -1178,14 +1211,23 @@ function VoiceBubble({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [audioError, setAudioError] = useState(false);
 
-  const toggle = () => {
+  const toggle = async () => {
     const a = audioRef.current;
     if (!a) return;
     if (playing) {
       a.pause();
     } else {
-      a.play();
+      try {
+        if (a.ended || (Number.isFinite(a.duration) && a.currentTime >= a.duration - 0.05)) {
+          a.currentTime = 0;
+          setProgress(0);
+        }
+        await a.play();
+      } catch {
+        setAudioError(true);
+      }
     }
   };
 
@@ -1196,18 +1238,22 @@ function VoiceBubble({
     const onEnd = () => {
       setPlaying(false);
       setProgress(0);
+      a.currentTime = 0;
     };
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
+    const onError = () => setAudioError(true);
     a.addEventListener("timeupdate", onTime);
     a.addEventListener("ended", onEnd);
     a.addEventListener("play", onPlay);
     a.addEventListener("pause", onPause);
+    a.addEventListener("error", onError);
     return () => {
       a.removeEventListener("timeupdate", onTime);
       a.removeEventListener("ended", onEnd);
       a.removeEventListener("play", onPlay);
       a.removeEventListener("pause", onPause);
+      a.removeEventListener("error", onError);
     };
   }, [seconds]);
 
@@ -1247,7 +1293,8 @@ function VoiceBubble({
       >
         {fmtRec(seconds * 1000)}
       </div>
-      <audio ref={audioRef} src={url} preload="metadata" />
+      {audioError && <div className="text-[10px] opacity-70">eroare audio</div>}
+      <audio ref={audioRef} src={url} preload="auto" playsInline />
     </div>
   );
 }
@@ -1353,6 +1400,26 @@ function ViewOnceBubble({
   });
   const [viewing, setViewing] = useState(false);
   const [remaining, setRemaining] = useState(10);
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  // Countdown only after the image actually loaded, so a failed photo is not burned.
+  useEffect(() => {
+    if (!viewing || !loaded) return;
+    const t = window.setInterval(() => {
+      setRemaining((r) => {
+        if (r <= 1) {
+          window.clearInterval(t);
+          localStorage.setItem(storageKey, "1");
+          setSeen(true);
+          setViewing(false);
+          return 0;
+        }
+        return r - 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(t);
+  }, [viewing, loaded, storageKey]);
 
   // Sender always sees "Foto efemeră — trimisă"
   if (mine) {
@@ -1372,30 +1439,16 @@ function ViewOnceBubble({
   const open = () => {
     if (seen) return;
     setViewing(true);
+    setLoaded(false);
+    setFailed(false);
     setRemaining(10);
   };
 
-  // Countdown while viewing
-  useEffect(() => {
-    if (!viewing) return;
-    const t = window.setInterval(() => {
-      setRemaining((r) => {
-        if (r <= 1) {
-          window.clearInterval(t);
-          localStorage.setItem(storageKey, "1");
-          setSeen(true);
-          setViewing(false);
-          return 0;
-        }
-        return r - 1;
-      });
-    }, 1000);
-    return () => window.clearInterval(t);
-  }, [viewing, storageKey]);
-
-  const closeAndMark = () => {
-    localStorage.setItem(storageKey, "1");
-    setSeen(true);
+  const closeViewer = (markSeen = loaded) => {
+    if (markSeen) {
+      localStorage.setItem(storageKey, "1");
+      setSeen(true);
+    }
     setViewing(false);
   };
 
@@ -1426,22 +1479,36 @@ function ViewOnceBubble({
         createPortal(
           <div
             className="fixed inset-0 z-[200] bg-black flex items-center justify-center animate-fade-in"
-            onClick={closeAndMark}
+            onClick={() => closeViewer()}
           >
-            <img
-              src={url}
-              alt=""
-              className="max-h-full max-w-full object-contain select-none pointer-events-none"
-              draggable={false}
-            />
+            {!loaded && !failed && (
+              <div className="absolute inset-0 flex items-center justify-center text-white/70 text-xs uppercase tracking-widest">
+                se încarcă poza…
+              </div>
+            )}
+            {failed ? (
+              <div className="mx-6 rounded-3xl border border-white/15 bg-white/10 p-5 text-center text-white">
+                <div className="font-display font-black mb-1">Poza nu se poate încărca</div>
+                <div className="text-xs text-white/60">Încearcă din nou. Nu am marcat-o ca văzută.</div>
+              </div>
+            ) : (
+              <img
+                src={url}
+                alt="poză efemeră"
+                onLoad={() => setLoaded(true)}
+                onError={() => setFailed(true)}
+                className={`max-h-full max-w-full object-contain select-none pointer-events-none transition-opacity ${loaded ? "opacity-100" : "opacity-0"}`}
+                draggable={false}
+              />
+            )}
             <div className="absolute top-[max(env(safe-area-inset-top),1rem)] left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 border border-white/15 text-white text-xs font-mono">
               <Eye size={14} className="text-neon-purple" />
-              dispare în {remaining}s
+              {failed ? "eroare" : loaded ? `dispare în ${remaining}s` : "se pregătește"}
             </div>
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                closeAndMark();
+                closeViewer();
               }}
               className="absolute top-[max(env(safe-area-inset-top),1rem)] right-4 h-10 w-10 rounded-full bg-black/60 border border-white/15 text-white flex items-center justify-center"
               aria-label="închide"
