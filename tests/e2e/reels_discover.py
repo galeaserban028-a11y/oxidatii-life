@@ -52,6 +52,7 @@ async def test_reels(page):
     page.on("pageerror", lambda e: errors.append(str(e)))
 
     resp = await page.goto(f"{BASE}/app/reels", wait_until="domcontentloaded")
+    await dismiss_overlays(page)
     record("reels: HTTP ok", resp is not None and resp.ok, str(resp.status if resp else "no resp"))
 
     # Wait for either content or empty state
