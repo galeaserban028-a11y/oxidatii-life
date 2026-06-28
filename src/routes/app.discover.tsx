@@ -1,9 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
+import { MapPin, RefreshCw, UserPlus, X, Sparkles } from "lucide-react";
+
+const PYMK_DISMISS_KEY = "oxi:pymk:dismissed";
+function loadDismissed(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(PYMK_DISMISS_KEY) || "[]"));
+  } catch {
+    return new Set();
+  }
+}
+function saveDismissed(s: Set<string>) {
+  try { localStorage.setItem(PYMK_DISMISS_KEY, JSON.stringify([...s])); } catch {}
+}
+
 
 export const Route = createFileRoute("/app/discover")({
   head: () => ({ meta: [{ title: "Caută oameni · OXIDAȚII" }] }),
