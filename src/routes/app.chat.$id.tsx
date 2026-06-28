@@ -911,6 +911,7 @@ function fmtRec(ms: number) {
 }
 
 function MessageBubble({
+  msgId,
   body,
   mine,
   first,
@@ -919,6 +920,7 @@ function MessageBubble({
   theme,
   onDelete,
 }: {
+  msgId: string;
   body: string;
   mine: boolean;
   first: boolean;
@@ -930,6 +932,8 @@ function MessageBubble({
   const imgMatch = body.startsWith("📷 ") ? body.slice(2).trim() : null;
   const giftMatch = body.startsWith("🎁 ") ? body.slice(2).trim() : null;
   const voiceMatch = body.startsWith("🎤 ") ? body.slice(2).trim() : null;
+  const viewOnceMatch = body.startsWith("👁️ ") ? body.slice(2).trim() : null;
+
 
   // Long-press / right-click handlers for delete on own messages
   const pressTimer = useRef<number | null>(null);
