@@ -145,7 +145,9 @@ function ChatPage() {
   const [showGifts, setShowGifts] = useState(false);
   const [showThemes, setShowThemes] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [viewOnce, setViewOnce] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
