@@ -50,6 +50,7 @@ import { ThemeAtmosphere } from "@/components/app/ThemeAtmosphere";
 import { AvatarAura } from "@/components/app/AvatarAura";
 import { SignatureReveal } from "@/components/app/SignatureReveal";
 import { AvatarFrame } from "@/components/app/AvatarFrame";
+import { StreakHero } from "@/components/app/StreakHero";
 
 export const Route = createFileRoute("/app/me")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
