@@ -170,37 +170,95 @@ function DiscoverPage() {
         </svg>
       </div>
 
-      {q.trim().length < 2 && pymk && pymk.length > 0 && (
-        <section className="space-y-2">
-          <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
-            persoane pe care le-ai putea cunoaște
-          </div>
-          <div className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-2 snap-x">
-            {pymk.map((p) => (
-              <Link
-                key={p.id}
-                to="/app/user/$id"
-                params={{ id: p.id }}
-                className="snap-start shrink-0 w-32 rounded-2xl border border-white/10 bg-zinc-900/40 p-3 text-center backdrop-blur"
+      {q.trim().length < 2 && (() => {
+        const visible = (pymk ?? []).filter((p) => !dismissed.has(p.id));
+        if (visible.length === 0) return null;
+        return (
+          <section className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 flex items-center gap-1.5">
+                <Sparkles size={11} className="text-amber-400/70" />
+                persoane pe care le-ai putea cunoaște
+              </div>
+              <button
+                onClick={() => refetchPymk()}
+                className="text-zinc-500 hover:text-zinc-300 active:scale-90 transition p-1"
+                aria-label="reîmprospătează"
               >
-                {p.avatar_url ? (
-                  <img src={p.avatar_url} alt="" className="w-16 h-16 rounded-full object-cover mx-auto border border-white/10" />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple mx-auto flex items-center justify-center text-white font-display">
-                    {(p.handle ?? p.display_name ?? "?")[0]?.toUpperCase()}
+                <RefreshCw size={13} className={pymkLoading ? "animate-spin" : ""} />
+              </button>
+            </div>
+            <div className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-2 snap-x scrollbar-none">
+              {visible.map((p) => {
+                const status = following?.get(p.id);
+                const isFollowing = status === "accepted" || status === "pending";
+                return (
+                  <div
+                    key={p.id}
+                    className="snap-start shrink-0 w-36 relative rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/70 to-zinc-950/40 p-3 backdrop-blur-md overflow-hidden group"
+                  >
+                    {/* Subtle aura */}
+                    <div className="absolute -top-8 -right-8 size-20 bg-amber-400/10 rounded-full blur-2xl pointer-events-none" />
+
+                    {/* Dismiss */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); dismissPymk(p.id); }}
+                      className="absolute top-1.5 right-1.5 size-6 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-zinc-400 hover:text-zinc-200 hover:bg-black/60 z-10"
+                      aria-label="ascunde sugestia"
+                    >
+                      <X size={11} />
+                    </button>
+
+                    <Link
+                      to="/app/user/$id"
+                      params={{ id: p.id }}
+                      className="block text-center"
+                    >
+                      <div className="relative mx-auto w-fit">
+                        {p.avatar_url ? (
+                          <img src={p.avatar_url} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-white/15" />
+                        ) : (
+                          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center text-white font-display text-xl">
+                            {(p.handle ?? p.display_name ?? "?")[0]?.toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="font-display text-xs mt-2 truncate">
+                        {p.display_name ?? `@${p.handle ?? "—"}`}
+                      </div>
+                      {p.handle && p.display_name && (
+                        <div className="font-mono text-[9px] text-zinc-500 truncate">@{p.handle}</div>
+                      )}
+                      {p.city_name && (
+                        <div className="flex items-center justify-center gap-0.5 text-[9px] text-zinc-400 mt-1">
+                          <MapPin size={8} /> {p.city_name}
+                        </div>
+                      )}
+                      <div className="mt-1.5 font-mono text-[9px] uppercase tracking-widest text-amber-300/90">
+                        {p.common_venues} loc{p.common_venues === 1 ? "" : "uri"} comun{p.common_venues === 1 ? "" : "e"}
+                      </div>
+                    </Link>
+
+                    <button
+                      onClick={() => isFollowing ? doUnfollow(p.id) : doFollow(p.id)}
+                      disabled={isFollowing}
+                      className={`mt-2.5 w-full py-1.5 rounded-lg font-display uppercase text-[10px] tracking-widest flex items-center justify-center gap-1 transition ${
+                        isFollowing
+                          ? "bg-zinc-800 text-zinc-400 border border-white/5"
+                          : "bg-gradient-to-r from-neon-crimson to-neon-purple text-white active:scale-[0.97] shadow-[0_4px_14px_-4px_rgba(255,61,139,0.5)]"
+                      }`}
+                    >
+                      {!isFollowing && <UserPlus size={10} strokeWidth={2.6} />}
+                      {status === "pending" ? "trimis" : isFollowing ? "urmărești" : "follow"}
+                    </button>
                   </div>
-                )}
-                <div className="font-display text-xs mt-2 truncate">
-                  {p.display_name ?? `@${p.handle ?? "—"}`}
-                </div>
-                <div className="font-mono text-[9px] uppercase tracking-widest text-amber-400/80 mt-0.5">
-                  {p.common_venues} locuri comune
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+                );
+              })}
+            </div>
+          </section>
+        );
+      })()}
+
 
       {q.trim().length < 2 && (
         <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500 pt-2">
