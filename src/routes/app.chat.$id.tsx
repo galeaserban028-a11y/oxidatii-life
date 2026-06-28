@@ -930,10 +930,18 @@ function MessageBubble({
   theme: Theme;
   onDelete?: () => void;
 }) {
-  const imgMatch = body.startsWith("📷 ") ? body.slice("📷 ".length).trim() : null;
-  const giftMatch = body.startsWith("🎁 ") ? body.slice("🎁 ".length).trim() : null;
-  const voiceMatch = body.startsWith("🎤 ") ? body.slice("🎤 ".length).trim() : null;
-  const viewOnceMatch = body.startsWith("👁️ ") ? body.slice("👁️ ".length).trim() : null;
+  // Robust prefix detection by first codepoint (handles VS16 / variation selectors)
+  const cp = body.codePointAt(0);
+  const afterPrefix = () => {
+    // Skip the emoji codepoint + optional VS16 + any whitespace
+    let i = String.fromCodePoint(cp ?? 0).length;
+    while (i < body.length && (body.charCodeAt(i) === 0xfe0f || /\s/.test(body[i]))) i++;
+    return body.slice(i).trim();
+  };
+  const imgMatch = cp === 0x1f4f7 ? afterPrefix() : null; // 📷
+  const giftMatch = cp === 0x1f381 ? afterPrefix() : null; // 🎁
+  const voiceMatch = cp === 0x1f3a4 ? afterPrefix() : null; // 🎤
+  const viewOnceMatch = cp === 0x1f441 ? afterPrefix() : null; // 👁
 
 
   // Long-press / right-click handlers for delete on own messages
