@@ -378,9 +378,25 @@ function ChatPage() {
   };
 
   const onPickImage = (file: File) => {
+    const url = URL.createObjectURL(file);
+    setPendingImage({ file, url });
+  };
+
+  const confirmSendPendingImage = async () => {
+    if (!pendingImage) return;
+    const { file, url } = pendingImage;
     const ext = file.name.split(".").pop() || "jpg";
-    uploadAndSend(file, ext, viewOnce ? "👁️" : "📷");
+    const useViewOnce = viewOnce;
+    setPendingImage(null);
+    URL.revokeObjectURL(url);
+    await uploadAndSend(file, ext, useViewOnce ? "👁️" : "📷");
     setViewOnce(false);
+  };
+
+  const cancelPendingImage = () => {
+    if (pendingImage) URL.revokeObjectURL(pendingImage.url);
+    setPendingImage(null);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
 
