@@ -111,8 +111,8 @@ function AppLayout() {
       {/* Centered phone-width column: on desktop the app looks like a phone column,
           on actual phones it fills the whole screen. */}
       <div className="mx-auto w-full max-w-[480px] min-w-0">
-        {!isMe && <InstallBanner />}
-        {!isMe && <AppHeader />}
+        {!isFullscreen && <InstallBanner />}
+        {!isFullscreen && <AppHeader />}
         <PullToRefresh>
           <SwipeNavigator>
             <PageTransition>
@@ -123,8 +123,9 @@ function AppLayout() {
           </SwipeNavigator>
         </PullToRefresh>
       </div>
-      <BottomTabBar />
+      {!isReels && <BottomTabBar />}
       <TutorialOverlay />
+
     </main>
   );
 }
