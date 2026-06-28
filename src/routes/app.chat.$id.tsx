@@ -595,6 +595,7 @@ function ChatPage() {
                     {g.items.map((m, i) => (
                       <MessageBubble
                         key={m.id}
+                        msgId={m.id}
                         body={m.body}
                         mine={g.mine}
                         first={i === 0}
@@ -604,6 +605,7 @@ function ChatPage() {
                         onDelete={g.mine ? () => deleteMessage(m.id) : undefined}
                       />
                     ))}
+
                     <div className="text-[10px] text-muted-foreground px-2.5">
                       {new Date(last.created_at).toLocaleTimeString("ro-RO", {
                         hour: "2-digit",
