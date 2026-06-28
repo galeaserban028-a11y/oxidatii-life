@@ -929,10 +929,10 @@ function MessageBubble({
   theme: Theme;
   onDelete?: () => void;
 }) {
-  const imgMatch = body.startsWith("📷 ") ? body.slice(2).trim() : null;
-  const giftMatch = body.startsWith("🎁 ") ? body.slice(2).trim() : null;
-  const voiceMatch = body.startsWith("🎤 ") ? body.slice(2).trim() : null;
-  const viewOnceMatch = body.startsWith("👁️ ") ? body.slice(2).trim() : null;
+  const imgMatch = body.startsWith("📷 ") ? body.slice("📷 ".length).trim() : null;
+  const giftMatch = body.startsWith("🎁 ") ? body.slice("🎁 ".length).trim() : null;
+  const voiceMatch = body.startsWith("🎤 ") ? body.slice("🎤 ".length).trim() : null;
+  const viewOnceMatch = body.startsWith("👁️ ") ? body.slice("👁️ ".length).trim() : null;
 
 
   // Long-press / right-click handlers for delete on own messages
