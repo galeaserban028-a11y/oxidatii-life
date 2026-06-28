@@ -410,6 +410,12 @@ function UserPage() {
                             targetName={profile.display_name ?? profile.handle}
                           />
                         )}
+                        {!isBlocking && !isBlockedBy && (
+                          <TipCreatorButton
+                            recipientId={profile.id}
+                            recipientName={profile.display_name ?? profile.handle}
+                          />
+                        )}
                         {!isBlocking && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
