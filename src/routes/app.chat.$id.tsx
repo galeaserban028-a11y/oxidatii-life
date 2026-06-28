@@ -829,7 +829,7 @@ function Composer({
         </div>
       ) : (
         <>
-          <div className="flex-1 flex items-end gap-1 rounded-3xl bg-foreground/[0.06] border border-foreground/10 pl-1.5 pr-1.5 py-1.5 focus-within:border-foreground/25 transition-colors">
+          <div className="flex-1 min-w-0 flex items-end gap-1 rounded-3xl bg-foreground/[0.06] border border-foreground/10 pl-1.5 pr-1.5 py-1.5 focus-within:border-foreground/25 transition-colors">
             <button
               type="button"
               onClick={() => setShowEmoji((s) => !s)}
