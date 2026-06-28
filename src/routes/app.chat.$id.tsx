@@ -685,6 +685,83 @@ function ChatPage() {
 
       {showGifts && <GiftSheet onClose={() => setShowGifts(false)} onSend={sendGift} />}
 
+      {pendingImage &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[210] bg-black/85 backdrop-blur-xl flex flex-col animate-fade-in"
+            style={{
+              paddingTop: "max(env(safe-area-inset-top), 1rem)",
+              paddingBottom: "max(env(safe-area-inset-bottom), 1rem)",
+            }}
+          >
+            <div className="flex items-center justify-between px-4 pb-3">
+              <button
+                onClick={cancelPendingImage}
+                className="h-10 w-10 rounded-full bg-white/10 border border-white/15 text-white flex items-center justify-center"
+                aria-label="anulează"
+              >
+                <X size={20} />
+              </button>
+              <div className="text-white/90 font-display font-black uppercase text-sm tracking-widest">
+                Previzualizare
+              </div>
+              <button
+                onClick={() => setViewOnce((v) => !v)}
+                className={`h-10 px-3 rounded-full border flex items-center gap-1.5 text-xs font-semibold ${
+                  viewOnce
+                    ? "bg-neon-purple/30 border-neon-purple/50 text-white"
+                    : "bg-white/10 border-white/15 text-white/80"
+                }`}
+                aria-label="vezi o singură dată"
+              >
+                <Eye size={16} /> 1×
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 flex items-center justify-center px-4">
+              <img
+                src={pendingImage.url}
+                alt=""
+                className="max-h-full max-w-full object-contain rounded-2xl"
+              />
+            </div>
+            <div className="px-4 pt-4 flex items-center gap-2">
+              <button
+                onClick={cancelPendingImage}
+                className="flex-1 h-12 rounded-2xl bg-white/10 border border-white/15 text-white font-semibold"
+              >
+                Anulează
+              </button>
+              <button
+                onClick={confirmSendPendingImage}
+                disabled={uploading}
+                className="flex-[1.4] h-12 rounded-2xl bg-gradient-to-r from-neon-purple to-neon-crimson text-white font-display font-black uppercase tracking-widest text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" /> Trimite…
+                  </>
+                ) : viewOnce ? (
+                  <>
+                    <Eye size={16} /> Trimite 1×
+                  </>
+                ) : (
+                  <>
+                    <Send size={16} /> Trimite
+                  </>
+                )}
+              </button>
+            </div>
+            {viewOnce && (
+              <div className="px-4 pt-2 text-center text-[11px] uppercase tracking-widest text-white/60">
+                Se vede o singură dată, apoi dispare
+              </div>
+            )}
+          </div>,
+          document.body,
+        )}
+
+
       <AlertDialog
         open={!!deleteTarget}
         onOpenChange={(open) => {
