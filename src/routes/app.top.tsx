@@ -428,6 +428,30 @@ function TopPage() {
           </>
         )}
       </div>
+
+      {exportOpen && top3.length > 0 && (
+        <LeaderboardExportSheet
+          top3={top3.map((r) => ({
+            user_id: r.user_id,
+            handle: r.handle,
+            display_name: r.display_name,
+            avatar_url: r.avatar_url,
+            spritz_score: r.spritz_score,
+          }))}
+          me={
+            myRank && (myRank as any).in_top
+              ? {
+                  rank: (myRank as any).rank,
+                  spritz_score: (myRank as any).spritz_score,
+                  handle: profile?.handle ?? null,
+                }
+              : null
+          }
+          scopeLabel={scope === "world" ? "lume" : scope === "city" ? "oraș" : (COUNTRY_LABEL[country] ?? country).replace(/^.+?\s/, "")}
+          monthLabel={monthLabel}
+          onClose={() => setExportOpen(false)}
+        />
+      )}
     </div>
   );
 }
