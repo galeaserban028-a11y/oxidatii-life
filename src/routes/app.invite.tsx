@@ -30,8 +30,10 @@ function InvitePage() {
     supabase.rpc("get_my_referral_stats").then(({ data }) => setStats(data as Stats));
   }, [user]);
 
-  const link = stats?.code ? `https://oxidatii.life/?ref=${stats.code}` : "";
-  const message = `Hai pe OXIDAȚII cu mine 🍹. Cod: ${stats?.code} sau ${link}`;
+  const link = stats?.code
+    ? `https://oxidatii.life/?ref=${stats.code}&utm_source=app&utm_medium=share&utm_campaign=invite`
+    : "";
+  const message = `Hai pe OXIDAȚII cu mine 🍹. Cod: ${stats?.code} → 50 șprițuri din prima. ${link}`;
 
   const copy = async () => {
     await navigator.clipboard.writeText(link);
