@@ -413,7 +413,7 @@ const TRIGGER = 80; // more intentional open threshold
 const VELOCITY_THRESHOLD = 1.2; // px/ms — fast left flick also opens
 const VISIBILITY_THRESHOLD = 28; // show delete button only after deliberate left swipe
 
-function formatPreview(body: string | null | undefined): React.ReactNode {
+function formatPreview(body: string | null | undefined): ReactNode {
   if (!body) return "";
   const trimmed = body.trim();
   const isUrl = /^https?:\/\/\S+$/i.test(trimmed);
