@@ -770,16 +770,11 @@ export function RomaniaMap3D({
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
       event.preventDefault();
-      canvas.addEventListener(
-        "webglcontextrestored",
-        () => {
-          setMapFailed(false);
-          try {
-            map.triggerRepaint();
-          } catch {}
-        },
-        { once: true },
-      );
+      // On mobile GPUs (mai ales iOS Safari/PWA) contextul WebGL se pierde
+      // când telefonul economisește memorie. Reinițializăm complet harta
+      // ca să nu rămână ecran negru / mapa "buguită".
+      setMapFailed(false);
+      setTimeout(() => setRetryKey((k) => k + 1), 250);
     };
     canvas.addEventListener("webglcontextlost", onLost as any);
 

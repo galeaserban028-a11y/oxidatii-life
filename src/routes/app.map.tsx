@@ -1060,8 +1060,8 @@ function MapPage() {
               onClick={() => setSettingsOpen(true)}
               aria-label="Setări hartă"
               style={{
-                top: "calc(env(safe-area-inset-top) + 0.75rem)",
-                right: "calc(env(safe-area-inset-right) + 0.75rem)",
+                top: "0.5rem",
+                right: "0.5rem",
               }}
               className="absolute z-20 h-8 w-8 grid place-items-center rounded-full backdrop-blur-xl bg-black/45 border border-white/10 text-white/70 active:scale-95 transition"
             >
