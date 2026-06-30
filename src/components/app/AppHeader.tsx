@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { ChevronLeft, Minimize2, Maximize2, Wand2 } from "lucide-react";
+import { ChevronLeft, Minimize2, Maximize2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import logoBanner from "@/assets/logo-oxidatii.png";
 
