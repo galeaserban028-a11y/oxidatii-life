@@ -611,17 +611,19 @@ function ChatPage() {
                       </div>
                     )}
                     {g.items.map((m, i) => (
-                      <MessageBubble
-                        key={m.id}
-                        msgId={m.id}
-                        body={m.body}
-                        mine={g.mine}
-                        first={i === 0}
-                        last={i === g.items.length - 1}
-                        groupLen={g.items.length}
-                        theme={theme}
-                        onDelete={g.mine ? () => deleteMessage(m.id) : undefined}
-                      />
+                      <div key={m.id} className={`relative group flex flex-col ${g.mine ? "items-end" : "items-start"}`}>
+                        <MessageBubble
+                          msgId={m.id}
+                          body={m.body}
+                          mine={g.mine}
+                          first={i === 0}
+                          last={i === g.items.length - 1}
+                          groupLen={g.items.length}
+                          theme={theme}
+                          onDelete={g.mine ? () => deleteMessage(m.id) : undefined}
+                        />
+                        <MessageReactions messageId={m.id} align={g.mine ? "right" : "left"} />
+                      </div>
                     ))}
 
                     <div className="text-[10px] text-muted-foreground px-2.5">
