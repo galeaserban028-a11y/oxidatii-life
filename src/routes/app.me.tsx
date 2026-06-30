@@ -133,6 +133,18 @@ function MePage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Streak Flex auto-prompt at new milestones (3/7/14/30/100 weeks).
+  const currentStreak = (profile as any)?.current_streak ?? 0;
+  const [streakFlex, setStreakFlex] = useState<number | null>(null);
+  useEffect(() => {
+    const m = streakMilestoneReached(currentStreak);
+    if (!m) return;
+    if (readSeenMilestone() < m) {
+      const t = setTimeout(() => setStreakFlex(m), 600);
+      return () => clearTimeout(t);
+    }
+  }, [currentStreak]);
+
   async function shareProfile() {
     if (!user) return;
     // Always use the published domain so shared links work for anyone, not just preview users
