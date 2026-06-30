@@ -47,6 +47,7 @@ import { Route as AppFollowersRouteImport } from './routes/app.followers'
 import { Route as AppFeedRouteImport } from './routes/app.feed'
 import { Route as AppFazeRouteImport } from './routes/app.faze'
 import { Route as AppDiscoverRouteImport } from './routes/app.discover'
+import { Route as AppCameraRouteImport } from './routes/app.camera'
 import { Route as AppBlockedRouteImport } from './routes/app.blocked'
 import { Route as AppBizRouteImport } from './routes/app.biz'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
@@ -266,6 +267,11 @@ const AppDiscoverRoute = AppDiscoverRouteImport.update({
   path: '/discover',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCameraRoute = AppCameraRouteImport.update({
+  id: '/camera',
+  path: '/camera',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBlockedRoute = AppBlockedRouteImport.update({
   id: '/blocked',
   path: '/blocked',
@@ -429,6 +435,7 @@ export interface FileRoutesByFullPath {
   '/app/admin': typeof AppAdminRouteWithChildren
   '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
+  '/app/camera': typeof AppCameraRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
@@ -495,6 +502,7 @@ export interface FileRoutesByTo {
   '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
+  '/app/camera': typeof AppCameraRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
@@ -564,6 +572,7 @@ export interface FileRoutesById {
   '/app/admin': typeof AppAdminRouteWithChildren
   '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
+  '/app/camera': typeof AppCameraRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
@@ -634,6 +643,7 @@ export interface FileRouteTypes {
     | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
+    | '/app/camera'
     | '/app/discover'
     | '/app/faze'
     | '/app/feed'
@@ -700,6 +710,7 @@ export interface FileRouteTypes {
     | '/.well-known/assetlinks.json'
     | '/app/biz'
     | '/app/blocked'
+    | '/app/camera'
     | '/app/discover'
     | '/app/faze'
     | '/app/feed'
@@ -768,6 +779,7 @@ export interface FileRouteTypes {
     | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
+    | '/app/camera'
     | '/app/discover'
     | '/app/faze'
     | '/app/feed'
@@ -1108,6 +1120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDiscoverRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/camera': {
+      id: '/app/camera'
+      path: '/camera'
+      fullPath: '/app/camera'
+      preLoaderRoute: typeof AppCameraRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/blocked': {
       id: '/app/blocked'
       path: '/blocked'
@@ -1360,6 +1379,7 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppBizRoute: typeof AppBizRouteWithChildren
   AppBlockedRoute: typeof AppBlockedRoute
+  AppCameraRoute: typeof AppCameraRoute
   AppDiscoverRoute: typeof AppDiscoverRoute
   AppFazeRoute: typeof AppFazeRoute
   AppFeedRoute: typeof AppFeedRoute
@@ -1400,6 +1420,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
   AppBizRoute: AppBizRouteWithChildren,
   AppBlockedRoute: AppBlockedRoute,
+  AppCameraRoute: AppCameraRoute,
   AppDiscoverRoute: AppDiscoverRoute,
   AppFazeRoute: AppFazeRoute,
   AppFeedRoute: AppFeedRoute,
