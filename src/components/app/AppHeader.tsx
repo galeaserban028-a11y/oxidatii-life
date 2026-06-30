@@ -42,14 +42,6 @@ export function AppHeader() {
         />
       </div>
       <div className="flex items-center gap-1.5">
-        <Link
-          to="/app/camera"
-          aria-label="AI Camera"
-          className="h-8 w-8 flex items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-cyan-400 text-black shadow-[0_0_14px_-2px_rgba(217,70,239,0.7)] active:scale-95 transition"
-          title="AI Camera"
-        >
-          <Wand2 size={15} />
-        </Link>
         <button
           onClick={toggle}
           aria-label={compact ? "Dezactivează modul compact" : "Activează modul compact"}
