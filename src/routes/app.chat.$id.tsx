@@ -160,7 +160,7 @@ function ChatPage() {
     enabled: !!user,
     queryFn: async () => {
       const [{ data: conv }, { data: members }, { data: messages }] = await Promise.all([
-        supabase.from("conversations").select("id,kind,title,party_id").eq("id", id).single(),
+        supabase.from("conversations").select("id,kind,title,party_id,created_by").eq("id", id).single(),
         supabase.from("conversation_members").select("user_id").eq("conversation_id", id),
         supabase
           .from("messages")
