@@ -26,6 +26,7 @@ import { notifyChatMessage } from "@/lib/notifications-extra.functions";
 
 import { ReportDialog } from "@/components/app/ReportDialog";
 import { MessageReactions } from "@/components/app/MessageReactions";
+import { GroupSettingsSheet } from "@/components/app/GroupSettingsSheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
