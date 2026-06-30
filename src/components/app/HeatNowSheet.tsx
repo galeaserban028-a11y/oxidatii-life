@@ -93,8 +93,8 @@ export function HeatNowButton({
       aria-label="Heat Now"
       aria-pressed={enabled}
       style={{
-        top: "calc(env(safe-area-inset-top) + 0.75rem)",
-        right: "calc(env(safe-area-inset-right) + 3rem)",
+        top: "0.5rem",
+        right: "3rem",
       }}
       className={`absolute z-20 h-8 px-2.5 flex items-center gap-1.5 rounded-full backdrop-blur-xl border transition active:scale-95 ${
         enabled
