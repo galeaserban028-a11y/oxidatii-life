@@ -3112,6 +3112,23 @@ export type Database = {
           is_public: boolean
         }[]
       }
+      get_public_profile: {
+        Args: { _handle: string }
+        Returns: {
+          active_frame_id: string
+          aura: number
+          avatar_url: string
+          bio: string
+          city_name: string
+          city_slug: string
+          current_streak: number
+          display_name: string
+          handle: string
+          id: string
+          lifetime_sprits: number
+          rank: string
+        }[]
+      }
       get_reels_for_you: {
         Args: { p_limit?: number }
         Returns: {
