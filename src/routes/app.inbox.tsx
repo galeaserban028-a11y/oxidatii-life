@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { throttle } from "@/lib/throttle";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM, createGroupChat } from "@/lib/chat";
-import { ArrowLeft, PenSquare, Users, Loader2, Search, X, Check, Trash2 } from "lucide-react";
+import { ArrowLeft, PenSquare, Users, Loader2, Search, X, Check, Trash2, ImageIcon, Video, Mic, Paperclip, Link2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/inbox")({
