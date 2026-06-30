@@ -74,6 +74,11 @@ function InvitePage() {
         </button>
       </div>
 
+      {/* Creative kit */}
+      {stats?.code && <InviteShareKit code={stats.code} />}
+
+
+
       {/* Progress */}
       <div className="rounded-2xl border border-white/10 bg-white/5 p-5 mb-4">
         <div className="flex items-center justify-between mb-3">
