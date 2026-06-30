@@ -74,22 +74,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Select only columns readable for cross-user via RLS. Sensitive private
       // fields (coin_balance, last_boost_at, map_*, location_consent) are
       // fetched separately via the get_my_account_state() RPC for self.
-      const profileRequest = supabase
-        .from("profiles")
-        .select(
-          "id, handle, display_name, city_id, avatar_url, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, active_frame_id, profile_theme_id, music_clip_url, profile_bg_url, theme_intensity, bio",
-        )
-        .eq("id", uid)
-        .maybeSingle();
+      const fetchBundle = () => {
+        const profileRequest = supabase
+          .from("profiles")
+          .select(
+            "id, handle, display_name, city_id, avatar_url, rank, aura, lifetime_sprits, current_streak, longest_streak, is_public, active_frame_id, profile_theme_id, music_clip_url, profile_bg_url, theme_intensity, bio",
+          )
+          .eq("id", uid)
+          .maybeSingle();
 
-      const stateRequest = supabase.rpc("get_my_account_state");
-      const timeout = new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 5000));
-      const result = await Promise.race([Promise.all([profileRequest, stateRequest]), timeout]);
+        const stateRequest = supabase.rpc("get_my_account_state");
+        const timeout = new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 12000));
+        return Promise.race([Promise.all([profileRequest, stateRequest]), timeout]);
+      };
+
+      let result = await fetchBundle();
+      if (result === null) {
+        await supabase.auth.refreshSession().catch(() => null);
+        result = await fetchBundle();
+      }
 
       if (!mountedRef.current) return;
       if (result === null) {
         console.warn("Profile load timed out");
-        setProfile(null);
         return;
       }
       const [profileRes, stateRes] = result as [
@@ -101,10 +108,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
         return;
       }
+      if (stateRes.error) {
+        console.error("Could not load private account state", stateRes.error);
+        setProfile(null);
+        return;
+      }
       const baseProfile = profileRes.data as Record<string, unknown> | null;
       const stateRows = (stateRes.data ?? []) as Array<Record<string, unknown>>;
       const stateRow = stateRows[0] ?? null;
-      setProfile(baseProfile ? ({ ...baseProfile, ...(stateRow ?? {}) } as Profile) : null);
+      if (baseProfile && !stateRow) {
+        console.warn("Private account state returned no row");
+        setProfile(null);
+        return;
+      }
+      setProfile(baseProfile ? ({ ...baseProfile, ...stateRow } as Profile) : null);
     } finally {
       if (mountedRef.current) setProfileLoading(false);
     }
