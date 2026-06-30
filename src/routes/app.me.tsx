@@ -1142,6 +1142,18 @@ function MePage() {
           OXIDAȚII · construit pe oameni reali · made in Balcani
         </p>
       </div>
+
+      {streakFlex !== null && (
+        <StreakFlexSheet
+          current={currentStreak}
+          milestone={streakFlex as any}
+          handle={profile?.handle ?? null}
+          onClose={() => {
+            writeSeenMilestone(streakFlex);
+            setStreakFlex(null);
+          }}
+        />
+      )}
     </div>
   );
 }
