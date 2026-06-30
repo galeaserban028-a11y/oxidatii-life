@@ -25,7 +25,7 @@ import {
   Rocket,
   Gem,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useFollowStats, useIncomingFollowRequests } from "@/lib/follows";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
