@@ -26,6 +26,7 @@ import { notifyChatMessage } from "@/lib/notifications-extra.functions";
 
 import { ReportDialog } from "@/components/app/ReportDialog";
 import { MessageReactions } from "@/components/app/MessageReactions";
+import { GroupSettingsSheet } from "@/components/app/GroupSettingsSheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -145,6 +146,7 @@ function ChatPage() {
   const [showEmoji, setShowEmoji] = useState(false);
   const [showGifts, setShowGifts] = useState(false);
   const [showThemes, setShowThemes] = useState(false);
+  const [showGroupSettings, setShowGroupSettings] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [viewOnce, setViewOnce] = useState(false);
   const [pendingImage, setPendingImage] = useState<{ file: File; url: string } | null>(null);
@@ -160,7 +162,7 @@ function ChatPage() {
     enabled: !!user,
     queryFn: async () => {
       const [{ data: conv }, { data: members }, { data: messages }] = await Promise.all([
-        supabase.from("conversations").select("id,kind,title,party_id").eq("id", id).single(),
+        supabase.from("conversations").select("id,kind,title,party_id,created_by").eq("id", id).single(),
         supabase.from("conversation_members").select("user_id").eq("conversation_id", id),
         supabase
           .from("messages")
@@ -177,7 +179,7 @@ function ChatPage() {
         : { data: [] };
       const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
       return {
-        conv: conv ?? { id, kind: "dm", title: null, party_id: null },
+        conv: conv ?? { id, kind: "dm", title: null, party_id: null, created_by: null },
         members: members ?? [],
         messages: messages ?? [],
         profMap,
@@ -480,15 +482,18 @@ function ChatPage() {
             </div>
           </Link>
         ) : (
-          <div className="flex items-center gap-3 flex-1 min-w-0">
+          <button
+            onClick={() => setShowGroupSettings(true)}
+            className="flex items-center gap-3 flex-1 min-w-0 text-left active:opacity-70 transition"
+          >
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-neon-purple to-neon-crimson flex items-center justify-center shrink-0">
               <Users size={20} className="text-white" />
             </div>
             <div className="flex-1 min-w-0 leading-tight">
               <div className="font-display font-black text-base truncate">{title}</div>
-              <div className="text-[11px] text-muted-foreground truncate">{subtitle}</div>
+              <div className="text-[11px] text-muted-foreground truncate">{subtitle} · setări</div>
             </div>
-          </div>
+          </button>
         )}
 
         <button
@@ -800,6 +805,17 @@ function ChatPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {data && data.conv.kind !== "dm" && (
+        <GroupSettingsSheet
+          open={showGroupSettings}
+          onClose={() => setShowGroupSettings(false)}
+          conversationId={id}
+          title={data.conv.title ?? null}
+          createdBy={(data.conv as any).created_by ?? null}
+          members={data.members}
+          profMap={data.profMap as Map<string, any>}
+        />
+      )}
     </div>
   );
 
