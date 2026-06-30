@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Crown, Copy, Share2, ChevronLeft, Sparkles } from "lucide-react";
+import { InviteShareKit } from "@/components/app/InviteShareKit";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/invite")({
@@ -29,8 +30,10 @@ function InvitePage() {
     supabase.rpc("get_my_referral_stats").then(({ data }) => setStats(data as Stats));
   }, [user]);
 
-  const link = stats?.code ? `https://oxidatii.life/?ref=${stats.code}` : "";
-  const message = `Hai pe OXIDAȚII cu mine 🍹. Cod: ${stats?.code} sau ${link}`;
+  const link = stats?.code
+    ? `https://oxidatii.life/?ref=${stats.code}&utm_source=app&utm_medium=share&utm_campaign=invite`
+    : "";
+  const message = `Hai pe OXIDAȚII cu mine 🍹. Cod: ${stats?.code} → 50 șprițuri din prima. ${link}`;
 
   const copy = async () => {
     await navigator.clipboard.writeText(link);
@@ -70,6 +73,11 @@ function InvitePage() {
           <Share2 className="w-4 h-4" /> Trimite invitație
         </button>
       </div>
+
+      {/* Creative kit */}
+      {stats?.code && <InviteShareKit code={stats.code} />}
+
+
 
       {/* Progress */}
       <div className="rounded-2xl border border-white/10 bg-white/5 p-5 mb-4">
