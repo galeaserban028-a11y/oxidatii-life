@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { throttle } from "@/lib/throttle";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM, createGroupChat } from "@/lib/chat";
-import { ArrowLeft, PenSquare, Users, Loader2, Search, X, Check, Trash2, ImageIcon, Video, Mic, Paperclip, Link2 } from "lucide-react";
+import { ArrowLeft, PenSquare, Users, Loader2, Search, X, Check, Trash2, ImageIcon, Video, Mic, Paperclip } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/inbox")({
@@ -422,10 +422,11 @@ function formatPreview(body: string | null | undefined): ReactNode {
     if (/\.(mp4|mov|webm|m4v)(\?|$)/i.test(trimmed)) return <Video size={14} className="inline text-cyan-400" />;
     if (/\.(mp3|m4a|ogg|wav|webm)(\?|$)/i.test(trimmed)) return <Mic size={14} className="inline text-lime-400" />;
     if (/\/storage\/v1\/object\//i.test(trimmed)) return <Paperclip size={14} className="inline text-zinc-400" />;
-    return <Link2 size={14} className="inline text-zinc-400" />;
+    // Generic link: show clean URL text, no emoji/icon
+    return trimmed.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
   }
-  // Strip inline URLs from mixed text
-  return trimmed.replace(/https?:\/\/\S+/gi, "🔗");
+  // Strip inline URLs from mixed text (no emoji, no icon)
+  return trimmed.replace(/https?:\/\/\S+/gi, "").replace(/\s+/g, " ").trim();
 }
 
 function ConversationRow({
