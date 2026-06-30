@@ -413,6 +413,22 @@ const TRIGGER = 80; // more intentional open threshold
 const VELOCITY_THRESHOLD = 1.2; // px/ms — fast left flick also opens
 const VISIBILITY_THRESHOLD = 28; // show delete button only after deliberate left swipe
 
+function formatPreview(body: string | null | undefined): string {
+  if (!body) return "";
+  const trimmed = body.trim();
+  // Detect Supabase storage / image / video URLs and replace with friendly label
+  const isUrl = /^https?:\/\/\S+$/i.test(trimmed);
+  if (isUrl) {
+    if (/\.(png|jpe?g|gif|webp|heic|heif|avif)(\?|$)/i.test(trimmed)) return "📷 Poză";
+    if (/\.(mp4|mov|webm|m4v)(\?|$)/i.test(trimmed)) return "🎥 Video";
+    if (/\.(mp3|m4a|ogg|wav|webm)(\?|$)/i.test(trimmed)) return "🎤 Mesaj vocal";
+    if (/\/storage\/v1\/object\//i.test(trimmed)) return "📎 Atașament";
+    return "🔗 Link";
+  }
+  // Strip inline URLs from mixed text
+  return trimmed.replace(/https?:\/\/\S+/gi, "🔗 link");
+}
+
 function ConversationRow({
   conv,
   title,
@@ -528,7 +544,11 @@ function ConversationRow({
 
   if (removed) return null;
 
-  const subtitle = conv.last ? conv.last.body : isDM ? "Spune ceva 👋" : "Grup nou";
+  const subtitle = conv.last
+    ? formatPreview(conv.last.body)
+    : isDM
+      ? "Spune ceva 👋"
+      : "Grup nou";
 
   return (
     <div className="relative overflow-hidden">
