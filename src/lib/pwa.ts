@@ -1,10 +1,10 @@
-// Guarded registration wrapper for the app-shell service worker (/sw.js).
-// Refuses registration in dev, inside iframes, on Lovable preview hosts, and
-// when the URL has ?sw=off. In any refused context, unregisters matching SWs.
-// The Firebase/push service worker (/push-sw.js) is handled separately.
+// PWA repair helper.
+// We keep installability via the manifest, but remove the old app-shell/offline
+// worker because stale cached chunks can block auth/profile pages in installed apps.
+// The push worker (/push-sw.js) is handled separately and is intentionally untouched.
 
-const APP_SW_URL = "/sw.js";
-const RELOAD_ON_SW_UPDATE_KEY = "oxi-pwa-reloaded-for-update-v1";
+const APP_SW_PATHS = new Set(["/sw.js", "/service-worker.js"]);
+const APP_CACHE_NAMES = new Set(["html-nav", "static-assets", "images"]);
 
 function isInIframe(): boolean {
   try {
@@ -27,7 +27,26 @@ function isPreviewHost(host: string): boolean {
   );
 }
 
-async function unregisterAppSw(): Promise<void> {
+function isAppShellCache(name: string): boolean {
+  return (
+    APP_CACHE_NAMES.has(name) ||
+    name.startsWith("workbox-precache-") ||
+    /(^|-)precache-v\d+-/.test(name) ||
+    /(^|-)runtime-/.test(name)
+  );
+}
+
+async function deleteAppShellCaches(): Promise<void> {
+  if (typeof caches === "undefined") return;
+  try {
+    const names = await caches.keys();
+    await Promise.allSettled(names.filter(isAppShellCache).map((name) => caches.delete(name)));
+  } catch {
+    // ignore
+  }
+}
+
+async function unregisterAppShellWorkers(): Promise<void> {
   if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
   try {
     const regs = await navigator.serviceWorker.getRegistrations();
@@ -35,7 +54,8 @@ async function unregisterAppSw(): Promise<void> {
       regs.map(async (reg) => {
         const url =
           reg.active?.scriptURL ?? reg.waiting?.scriptURL ?? reg.installing?.scriptURL ?? "";
-        if (url.endsWith(APP_SW_URL)) {
+        const path = url ? new URL(url).pathname : "";
+        if (APP_SW_PATHS.has(path)) {
           await reg.unregister();
         }
       }),
@@ -45,41 +65,18 @@ async function unregisterAppSw(): Promise<void> {
   }
 }
 
+export async function repairInstalledPwa(options: { reload?: boolean } = {}): Promise<void> {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return;
+  await unregisterAppShellWorkers();
+  await deleteAppShellCaches();
+  if (options.reload) window.location.reload();
+}
+
 export async function registerAppServiceWorker(): Promise<void> {
   if (typeof window === "undefined" || typeof navigator === "undefined") return;
-  if (!("serviceWorker" in navigator)) return;
-
   const url = new URL(window.location.href);
   const host = window.location.hostname;
-  const refuse =
-    !import.meta.env.PROD ||
-    isInIframe() ||
-    isPreviewHost(host) ||
-    url.searchParams.get("sw") === "off";
-
-  if (refuse) {
-    await unregisterAppSw();
-    return;
-  }
-
-  try {
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (refreshing) return;
-      refreshing = true;
-      try {
-        if (sessionStorage.getItem(RELOAD_ON_SW_UPDATE_KEY) === "1") return;
-        sessionStorage.setItem(RELOAD_ON_SW_UPDATE_KEY, "1");
-      } catch {}
-      window.location.reload();
-    });
-
-    const reg = await navigator.serviceWorker.register(APP_SW_URL, {
-      scope: "/",
-      updateViaCache: "none",
-    });
-    await reg.update().catch(() => {});
-  } catch (err) {
-    console.warn("[pwa] sw registration failed", err);
-  }
+  // In dev/preview this cleans any old SW left by previous experiments.
+  // On the published app it removes the old offline shell while keeping PWA install metadata.
+  await repairInstalledPwa({ reload: url.searchParams.get("sw") === "off" });
 }

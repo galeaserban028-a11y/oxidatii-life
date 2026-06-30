@@ -23,7 +23,7 @@ function LoginPage() {
     // Otherwise we send already-onboarded users to /onboarding (profile still null).
     if (loading || !user) return;
     if (profile) {
-      nav({ to: profile.onboarded ? "/app/map" : "/onboarding", replace: true });
+      nav({ to: profile.onboarded === false ? "/onboarding" : "/app/map", replace: true });
     } else {
       // No profile row (rare — trigger should have created one). Send to onboarding to recover.
       nav({ to: "/onboarding", replace: true });
