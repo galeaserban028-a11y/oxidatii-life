@@ -805,6 +805,17 @@ function ChatPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {data && data.conv.kind !== "dm" && (
+        <GroupSettingsSheet
+          open={showGroupSettings}
+          onClose={() => setShowGroupSettings(false)}
+          conversationId={id}
+          title={data.conv.title ?? null}
+          createdBy={(data.conv as any).created_by ?? null}
+          members={data.members}
+          profMap={data.profMap as Map<string, any>}
+        />
+      )}
     </div>
   );
 
