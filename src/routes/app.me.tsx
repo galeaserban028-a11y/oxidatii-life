@@ -25,7 +25,7 @@ import {
   Rocket,
   Gem,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useFollowStats, useIncomingFollowRequests } from "@/lib/follows";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
@@ -51,6 +51,7 @@ import { AvatarAura } from "@/components/app/AvatarAura";
 import { SignatureReveal } from "@/components/app/SignatureReveal";
 import { AvatarFrame } from "@/components/app/AvatarFrame";
 import { StreakHero } from "@/components/app/StreakHero";
+import { StreakFlexSheet, streakMilestoneReached, readSeenMilestone, writeSeenMilestone } from "@/components/app/StreakFlexSheet";
 import { repairInstalledPwa } from "@/lib/pwa";
 
 export const Route = createFileRoute("/app/me")({
@@ -131,6 +132,18 @@ function MePage() {
   const [editBio, setEditBio] = useState((profile as any)?.bio ?? "");
   const [savingProfile, setSavingProfile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Streak Flex auto-prompt at new milestones (3/7/14/30/100 weeks).
+  const currentStreak = (profile as any)?.current_streak ?? 0;
+  const [streakFlex, setStreakFlex] = useState<number | null>(null);
+  useEffect(() => {
+    const m = streakMilestoneReached(currentStreak);
+    if (!m) return;
+    if (readSeenMilestone() < m) {
+      const t = setTimeout(() => setStreakFlex(m), 600);
+      return () => clearTimeout(t);
+    }
+  }, [currentStreak]);
 
   async function shareProfile() {
     if (!user) return;
@@ -1129,6 +1142,18 @@ function MePage() {
           OXIDAȚII · construit pe oameni reali · made in Balcani
         </p>
       </div>
+
+      {streakFlex !== null && (
+        <StreakFlexSheet
+          current={currentStreak}
+          milestone={streakFlex as any}
+          handle={profile?.handle ?? null}
+          onClose={() => {
+            writeSeenMilestone(streakFlex);
+            setStreakFlex(null);
+          }}
+        />
+      )}
     </div>
   );
 }

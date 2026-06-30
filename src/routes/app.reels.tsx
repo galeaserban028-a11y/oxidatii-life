@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { TipCreatorButton } from "@/components/app/TipCreatorDialog";
+import { shareReel } from "@/lib/reelShare";
 
 export const Route = createFileRoute("/app/reels")({
   head: () => ({ meta: [{ title: "Reels · OXIDAȚII" }] }),
@@ -196,6 +197,34 @@ function ReelTile({
             <TipCreatorButton recipientId={reel.user_id} recipientName={reel.display_name ?? reel.handle} />
           </div>
         )}
+        <button
+          onClick={async () => {
+            try {
+              await shareReel({
+                id: reel.id,
+                url: reel.url,
+                caption: reel.caption,
+                handle: reel.handle,
+                venue_name: reel.venue_name,
+                isVideo: reel.isVideo,
+              });
+              import("@/lib/native").then(({ haptic }) => haptic?.("light")).catch(() => {});
+            } catch {
+              toast.error("Nu s-a putut partaja.");
+            }
+          }}
+          className="flex flex-col items-center gap-1 active:scale-90 transition"
+          aria-label="share"
+        >
+          <div className="size-12 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center">
+            <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+          </div>
+          <span className="text-[11px] font-semibold">Share</span>
+        </button>
         {reel.isVideo && (
           <button
             onClick={() => setMuted((m) => !m)}

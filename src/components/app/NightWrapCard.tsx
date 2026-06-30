@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sparkles, ChevronRight } from "lucide-react";
 import { NightWrapSheet } from "./NightWrapSheet";
 
@@ -6,6 +6,21 @@ export function NightWrapCard({ wrap }: { wrap: any }) {
   const [open, setOpen] = useState(false);
   const stats = wrap.stats ?? {};
   const previewPhoto = wrap.photo_urls?.[0];
+
+  // Auto-open the share sheet once per night (viral loop trigger).
+  useEffect(() => {
+    if (!wrap?.night_date) return;
+    const key = `wrap_autoopened_${wrap.night_date}`;
+    try {
+      if (!localStorage.getItem(key)) {
+        const t = setTimeout(() => {
+          setOpen(true);
+          localStorage.setItem(key, "1");
+        }, 900);
+        return () => clearTimeout(t);
+      }
+    } catch { /* storage blocked */ }
+  }, [wrap?.night_date]);
 
   return (
     <>

@@ -5,9 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Globe2, ChevronDown, Compass, Users, Moon, TrendingUp, Sparkles, Info } from "lucide-react";
+import { Globe2, ChevronDown, Compass, Users, Moon, TrendingUp, Sparkles, Info, Share2 } from "lucide-react";
 import { SpritzOfDayStrip } from "@/components/app/SpritzOfDayStrip";
 import { FadeIn } from "@/components/app/FadeIn";
+import { LeaderboardExportSheet } from "@/components/app/LeaderboardExportSheet";
 
 export const Route = createFileRoute("/app/top")({
   head: () => ({ meta: [{ title: "Top · OXIDAȚII" }] }),
@@ -67,6 +68,7 @@ function TopPage() {
   const [country, setCountry] = useState<string>("RO");
   const [countryOpen, setCountryOpen] = useState(false);
   const [showFormula, setShowFormula] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -162,13 +164,23 @@ function TopPage() {
               Score
             </em>
           </h1>
-          <button
-            onClick={() => setShowFormula(true)}
-            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/10 bg-white/[0.04] text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition"
-          >
-            <Info size={11} />
-            Reguli & cum se calculează
-          </button>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setShowFormula(true)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/10 bg-white/[0.04] text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition"
+            >
+              <Info size={11} />
+              Reguli & cum se calculează
+            </button>
+            <button
+              onClick={() => setExportOpen(true)}
+              disabled={top3.length === 0}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#ffea00]/30 bg-[#ffea00]/10 text-[11px] text-[#ffea00] hover:bg-[#ffea00]/15 transition disabled:opacity-40"
+            >
+              <Share2 size={11} />
+              Export 9:16
+            </button>
+          </div>
 
           <AnimatePresence>
             {showFormula && (
@@ -416,6 +428,30 @@ function TopPage() {
           </>
         )}
       </div>
+
+      {exportOpen && top3.length > 0 && (
+        <LeaderboardExportSheet
+          top3={top3.map((r) => ({
+            user_id: r.user_id,
+            handle: r.handle,
+            display_name: r.display_name,
+            avatar_url: r.avatar_url,
+            spritz_score: r.spritz_score,
+          }))}
+          me={
+            myRank && (myRank as any).in_top
+              ? {
+                  rank: (myRank as any).rank,
+                  spritz_score: (myRank as any).spritz_score,
+                  handle: profile?.handle ?? null,
+                }
+              : null
+          }
+          scopeLabel={scope === "world" ? "lume" : scope === "city" ? "oraș" : (COUNTRY_LABEL[country] ?? country).replace(/^.+?\s/, "")}
+          monthLabel={monthLabel}
+          onClose={() => setExportOpen(false)}
+        />
+      )}
     </div>
   );
 }
