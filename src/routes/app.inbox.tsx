@@ -528,7 +528,11 @@ function ConversationRow({
 
   if (removed) return null;
 
-  const subtitle = conv.last ? conv.last.body : isDM ? "Spune ceva 👋" : "Grup nou";
+  const subtitle = conv.last
+    ? formatPreview(conv.last.body)
+    : isDM
+      ? "Spune ceva 👋"
+      : "Grup nou";
 
   return (
     <div className="relative overflow-hidden">
