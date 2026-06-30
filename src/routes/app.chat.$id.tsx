@@ -177,7 +177,7 @@ function ChatPage() {
         : { data: [] };
       const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
       return {
-        conv: conv ?? { id, kind: "dm", title: null, party_id: null },
+        conv: conv ?? { id, kind: "dm", title: null, party_id: null, created_by: null },
         members: members ?? [],
         messages: messages ?? [],
         profMap,
