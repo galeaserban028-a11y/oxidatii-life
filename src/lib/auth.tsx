@@ -57,6 +57,21 @@ type Ctx = {
 
 const AuthCtx = createContext<Ctx | null>(null);
 
+type ProfileQueryResult = Awaited<
+  ReturnType<
+    ReturnType<
+      ReturnType<
+        ReturnType<
+          ReturnType<
+            ReturnType<typeof supabase.from<"profiles">>["select"]
+          >["eq"]
+        >["maybeSingle"]
+      >
+    >
+  >
+>;
+type AccountStateQueryResult = Awaited<ReturnType<typeof supabase.rpc<"get_my_account_state">>>;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -99,10 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.warn("Profile load timed out");
         return;
       }
-      const [profileRes, stateRes] = result as [
-        Awaited<typeof profileRequest>,
-        Awaited<typeof stateRequest>,
-      ];
+      const [profileRes, stateRes] = result as [ProfileQueryResult, AccountStateQueryResult];
       if (profileRes.error) {
         console.error("Could not load profile", profileRes.error);
         setProfile(null);
