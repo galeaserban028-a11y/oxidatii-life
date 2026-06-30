@@ -251,7 +251,7 @@ function Index() {
         <Testimonial
           name="Andrei, 21"
           city="UBB Cluj"
-          quote="Frate, gata cu „unde sunteți?" pe WhatsApp. Deschid harta și-i văd pe toți."
+          quote={`Frate, gata cu „unde sunteți?" pe WhatsApp. Deschid harta și-i văd pe toți.`}
         />
         <Testimonial
           name="Maria, 23"
