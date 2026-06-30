@@ -23,6 +23,7 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as AppWrappedRouteImport } from './routes/app.wrapped'
 import { Route as AppTopRouteImport } from './routes/app.top'
 import { Route as AppSquadRouteImport } from './routes/app.squad'
@@ -144,6 +145,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const UHandleRoute = UHandleRouteImport.update({
+  id: '/u/$handle',
+  path: '/u/$handle',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppWrappedRoute = AppWrappedRouteImport.update({
   id: '/wrapped',
@@ -446,6 +452,7 @@ export interface FileRoutesByFullPath {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/wrapped': typeof AppWrappedRoute
+  '/u/$handle': typeof UHandleRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
@@ -511,6 +518,7 @@ export interface FileRoutesByTo {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/wrapped': typeof AppWrappedRoute
+  '/u/$handle': typeof UHandleRoute
   '/app': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
@@ -579,6 +587,7 @@ export interface FileRoutesById {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/wrapped': typeof AppWrappedRoute
+  '/u/$handle': typeof UHandleRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
   '/app/admin/campaigns': typeof AppAdminCampaignsRoute
@@ -648,6 +657,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/wrapped'
+    | '/u/$handle'
     | '/app/'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
@@ -713,6 +723,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/wrapped'
+    | '/u/$handle'
     | '/app'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
@@ -780,6 +791,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/wrapped'
+    | '/u/$handle'
     | '/app/'
     | '/app/admin/businesses'
     | '/app/admin/campaigns'
@@ -822,6 +834,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   DotwellKnownAppleAppSiteAssociationRoute: typeof DotwellKnownAppleAppSiteAssociationRoute
   DotwellKnownAssetlinksDotjsonRoute: typeof DotwellKnownAssetlinksDotjsonRoute
+  UHandleRoute: typeof UHandleRoute
   ApiPublicCronHeatAlertsRoute: typeof ApiPublicCronHeatAlertsRoute
   ApiPublicCronStreakRiskRoute: typeof ApiPublicCronStreakRiskRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -926,6 +939,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/u/$handle': {
+      id: '/u/$handle'
+      path: '/u/$handle'
+      fullPath: '/u/$handle'
+      preLoaderRoute: typeof UHandleRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/app/wrapped': {
       id: '/app/wrapped'
@@ -1435,6 +1455,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotwellKnownAppleAppSiteAssociationRoute:
     DotwellKnownAppleAppSiteAssociationRoute,
   DotwellKnownAssetlinksDotjsonRoute: DotwellKnownAssetlinksDotjsonRoute,
+  UHandleRoute: UHandleRoute,
   ApiPublicCronHeatAlertsRoute: ApiPublicCronHeatAlertsRoute,
   ApiPublicCronStreakRiskRoute: ApiPublicCronStreakRiskRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,

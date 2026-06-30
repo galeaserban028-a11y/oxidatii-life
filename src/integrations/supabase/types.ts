@@ -1411,6 +1411,38 @@ export type Database = {
         }
         Relationships: []
       }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string
@@ -3078,6 +3110,23 @@ export type Database = {
           handle: string
           id: string
           is_public: boolean
+        }[]
+      }
+      get_public_profile: {
+        Args: { _handle: string }
+        Returns: {
+          active_frame_id: string
+          aura: number
+          avatar_url: string
+          bio: string
+          city_name: string
+          city_slug: string
+          current_streak: number
+          display_name: string
+          handle: string
+          id: string
+          lifetime_sprits: number
+          rank: string
         }[]
       }
       get_reels_for_you: {
