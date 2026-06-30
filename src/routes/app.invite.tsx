@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Crown, Copy, Share2, ChevronLeft, Sparkles } from "lucide-react";
+import { InviteShareKit } from "@/components/app/InviteShareKit";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/invite")({
