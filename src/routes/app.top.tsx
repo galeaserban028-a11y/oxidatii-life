@@ -164,13 +164,23 @@ function TopPage() {
               Score
             </em>
           </h1>
-          <button
-            onClick={() => setShowFormula(true)}
-            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/10 bg-white/[0.04] text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition"
-          >
-            <Info size={11} />
-            Reguli & cum se calculează
-          </button>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setShowFormula(true)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-white/10 bg-white/[0.04] text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition"
+            >
+              <Info size={11} />
+              Reguli & cum se calculează
+            </button>
+            <button
+              onClick={() => setExportOpen(true)}
+              disabled={top3.length === 0}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[#ffea00]/30 bg-[#ffea00]/10 text-[11px] text-[#ffea00] hover:bg-[#ffea00]/15 transition disabled:opacity-40"
+            >
+              <Share2 size={11} />
+              Export 9:16
+            </button>
+          </div>
 
           <AnimatePresence>
             {showFormula && (
