@@ -413,20 +413,19 @@ const TRIGGER = 80; // more intentional open threshold
 const VELOCITY_THRESHOLD = 1.2; // px/ms — fast left flick also opens
 const VISIBILITY_THRESHOLD = 28; // show delete button only after deliberate left swipe
 
-function formatPreview(body: string | null | undefined): string {
+function formatPreview(body: string | null | undefined): React.ReactNode {
   if (!body) return "";
   const trimmed = body.trim();
-  // Detect Supabase storage / image / video URLs and replace with friendly label
   const isUrl = /^https?:\/\/\S+$/i.test(trimmed);
   if (isUrl) {
-    if (/\.(png|jpe?g|gif|webp|heic|heif|avif)(\?|$)/i.test(trimmed)) return "📷 Poză";
-    if (/\.(mp4|mov|webm|m4v)(\?|$)/i.test(trimmed)) return "🎥 Video";
-    if (/\.(mp3|m4a|ogg|wav|webm)(\?|$)/i.test(trimmed)) return "🎤 Mesaj vocal";
-    if (/\/storage\/v1\/object\//i.test(trimmed)) return "📎 Atașament";
-    return "🔗 Link";
+    if (/\.(png|jpe?g|gif|webp|heic|heif|avif)(\?|$)/i.test(trimmed)) return <ImageIcon size={14} className="inline text-fuchsia-400" />;
+    if (/\.(mp4|mov|webm|m4v)(\?|$)/i.test(trimmed)) return <Video size={14} className="inline text-cyan-400" />;
+    if (/\.(mp3|m4a|ogg|wav|webm)(\?|$)/i.test(trimmed)) return <Mic size={14} className="inline text-lime-400" />;
+    if (/\/storage\/v1\/object\//i.test(trimmed)) return <Paperclip size={14} className="inline text-zinc-400" />;
+    return <Link2 size={14} className="inline text-zinc-400" />;
   }
   // Strip inline URLs from mixed text
-  return trimmed.replace(/https?:\/\/\S+/gi, "🔗 link");
+  return trimmed.replace(/https?:\/\/\S+/gi, "🔗");
 }
 
 function ConversationRow({
