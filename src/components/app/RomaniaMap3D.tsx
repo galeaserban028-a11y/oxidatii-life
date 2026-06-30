@@ -327,6 +327,7 @@ export function RomaniaMap3D({
   const promotedMarkers = useRef<Map<string, Marker>>(new Map());
   const loadedRef = useRef(false);
   const compactMapRef = useRef(false);
+  const contextRetryTimerRef = useRef<number | null>(null);
   const onCityClickRef = useRef<typeof onCityClick>(onCityClick);
   const nav = useNavigate();
   const navRef = useRef(nav);
@@ -346,6 +347,8 @@ export function RomaniaMap3D({
     setMapFailed(false);
     let map: MlMap;
     let resizeObserver: ResizeObserver | null = null;
+    let contextRetryTimer: number | null = null;
+    let contextWasLost = false;
     const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
     try {
       map = new maplibregl.Map({
@@ -770,13 +773,29 @@ export function RomaniaMap3D({
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
       event.preventDefault();
-      // On mobile GPUs (mai ales iOS Safari/PWA) contextul WebGL se pierde
-      // când telefonul economisește memorie. Reinițializăm complet harta
-      // ca să nu rămână ecran negru / mapa "buguită".
+      contextWasLost = true;
+      if (contextRetryTimer) window.clearTimeout(contextRetryTimer);
+      contextRetryTimer = window.setTimeout(() => {
+        if (!contextWasLost) return;
+        setMapFailed(true);
+      }, 1800);
+      contextRetryTimerRef.current = contextRetryTimer;
+    };
+    const onRestored = () => {
+      contextWasLost = false;
+      if (contextRetryTimer) {
+        window.clearTimeout(contextRetryTimer);
+        contextRetryTimer = null;
+      }
+      contextRetryTimerRef.current = null;
       setMapFailed(false);
-      setTimeout(() => setRetryKey((k) => k + 1), 250);
+      requestAnimationFrame(() => {
+        map.resize();
+        map.triggerRepaint();
+      });
     };
     canvas.addEventListener("webglcontextlost", onLost as any);
+    canvas.addEventListener("webglcontextrestored", onRestored as any);
 
     mapRef.current = map;
     return () => {
@@ -787,8 +806,13 @@ export function RomaniaMap3D({
       promotedMarkers.current.forEach((m) => m.remove());
       promotedMarkers.current.clear();
       try {
+        if (contextRetryTimer) window.clearTimeout(contextRetryTimer);
+        if (contextRetryTimerRef.current) window.clearTimeout(contextRetryTimerRef.current);
+        canvas.removeEventListener("webglcontextlost", onLost as any);
+        canvas.removeEventListener("webglcontextrestored", onRestored as any);
         map.remove();
       } catch {}
+      contextRetryTimerRef.current = null;
       resizeObserver?.disconnect();
       mapRef.current = null;
       loadedRef.current = false;
@@ -1295,9 +1319,9 @@ export function RomaniaMap3D({
           70%  { opacity: 1; transform: scale(1.08); }
           100% { opacity: 1; transform: scale(1); }
         }
-        .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; }
+        .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; background:#0d0b1e !important; }
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
-        .maplibregl-canvas { outline:none !important; }
+        .maplibregl-canvas { outline:none !important; background:#0d0b1e !important; }
         .maplibregl-marker { position:absolute !important; top:0; left:0; will-change:transform; contain:layout style; z-index:2; }
         .maplibregl-ctrl-top-right { position:absolute; top:10px; right:10px; z-index:3; display:flex; flex-direction:column; gap:8px; }
         .maplibregl-ctrl-group { background: rgba(3,4,10,0.9) !important; border: 1px solid rgba(198,107,255,0.25) !important; }

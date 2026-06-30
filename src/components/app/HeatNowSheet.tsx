@@ -13,6 +13,9 @@ type HeatCell = HeatNowCell & {
   top_venue_name: string | null;
 };
 
+const EMPTY_HEAT_CELLS: HeatCell[] = [];
+const EMPTY_MAP_HEAT_CELLS: HeatNowCell[] = [];
+
 export function HeatNowButton({
   cityId,
   onFocus,
@@ -32,7 +35,7 @@ export function HeatNowButton({
     localStorage.setItem("oxi-heat-now", enabled ? "1" : "0");
   }, [enabled]);
 
-  const { data: cells = [] } = useQuery({
+  const { data } = useQuery({
     queryKey: ["heat-now", cityId ?? "all"],
     enabled: enabled,
     refetchInterval: 60_000,
@@ -44,10 +47,11 @@ export function HeatNowButton({
       return (data ?? []) as HeatCell[];
     },
   });
+  const cells = data ?? EMPTY_HEAT_CELLS;
 
   // Push cells (or empty when disabled) to the parent so the map can render them.
   useEffect(() => {
-    onCellsChange?.(enabled ? cells : []);
+    onCellsChange?.(enabled ? cells : EMPTY_MAP_HEAT_CELLS);
   }, [cells, enabled, onCellsChange]);
 
   // Alert on new hot zones
