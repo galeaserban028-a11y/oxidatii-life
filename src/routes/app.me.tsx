@@ -51,6 +51,7 @@ import { AvatarAura } from "@/components/app/AvatarAura";
 import { SignatureReveal } from "@/components/app/SignatureReveal";
 import { AvatarFrame } from "@/components/app/AvatarFrame";
 import { StreakHero } from "@/components/app/StreakHero";
+import { StreakFlexSheet, streakMilestoneReached, readSeenMilestone, writeSeenMilestone } from "@/components/app/StreakFlexSheet";
 import { repairInstalledPwa } from "@/lib/pwa";
 
 export const Route = createFileRoute("/app/me")({
