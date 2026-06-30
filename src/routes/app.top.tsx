@@ -68,6 +68,7 @@ function TopPage() {
   const [country, setCountry] = useState<string>("RO");
   const [countryOpen, setCountryOpen] = useState(false);
   const [showFormula, setShowFormula] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
