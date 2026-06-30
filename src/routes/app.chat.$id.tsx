@@ -146,6 +146,7 @@ function ChatPage() {
   const [showEmoji, setShowEmoji] = useState(false);
   const [showGifts, setShowGifts] = useState(false);
   const [showThemes, setShowThemes] = useState(false);
+  const [showGroupSettings, setShowGroupSettings] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [viewOnce, setViewOnce] = useState(false);
   const [pendingImage, setPendingImage] = useState<{ file: File; url: string } | null>(null);
