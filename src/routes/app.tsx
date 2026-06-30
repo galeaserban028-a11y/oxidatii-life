@@ -85,7 +85,7 @@ function AppLayout() {
   useEffect(() => {
     if (loading) return;
     if (!user) nav({ to: "/login", replace: true });
-    else if (profile && !profile.onboarded) nav({ to: "/onboarding", replace: true });
+    else if (profile && profile.onboarded === false) nav({ to: "/onboarding", replace: true });
   }, [user, profile, loading, nav]);
 
   if (loading || !user) {

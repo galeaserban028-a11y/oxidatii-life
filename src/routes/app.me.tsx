@@ -51,6 +51,7 @@ import { AvatarAura } from "@/components/app/AvatarAura";
 import { SignatureReveal } from "@/components/app/SignatureReveal";
 import { AvatarFrame } from "@/components/app/AvatarFrame";
 import { StreakHero } from "@/components/app/StreakHero";
+import { repairInstalledPwa } from "@/lib/pwa";
 
 export const Route = createFileRoute("/app/me")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -329,14 +330,7 @@ function MePage() {
           </button>
           <button
             onClick={() => {
-              if ("serviceWorker" in navigator) {
-                navigator.serviceWorker
-                  .getRegistrations()
-                  .then((regs) => Promise.all(regs.map((r) => r.unregister())))
-                  .finally(() => window.location.reload());
-              } else {
-                window.location.reload();
-              }
+              repairInstalledPwa({ reload: true });
             }}
             className="inline-flex items-center justify-center rounded-md border border-foreground/20 px-4 py-2 text-sm"
           >
