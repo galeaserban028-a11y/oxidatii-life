@@ -14,7 +14,6 @@ import {
   Beer,
   List,
   Navigation,
-  Sparkles,
   Settings,
   Ghost,
 } from "lucide-react";
@@ -319,7 +318,6 @@ function MapPage() {
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
   const [autoLocated, setAutoLocated] = useState(false);
   const focusedFromSearchRef = useRef<string | null>(null);
-  const initialSelfFocusDoneRef = useRef(false);
 
   const { data: citiesData, isLoading } = useQuery({
     queryKey: ["cities"],
@@ -656,20 +654,6 @@ function MapPage() {
     profile?.handle,
     user,
   ]);
-
-  // If we already know where the current user is (live row, cached GPS, or
-  // city fallback), open the map around them once. Otherwise the default
-  // "toate" country view stays zoomed out over Europe, so bottles/clusters
-  // look missing until the user manually zooms.
-  useEffect(() => {
-    if (initialSelfFocusDoneRef.current) return;
-    if (search.venue || country !== "all" || cityId !== "all") return;
-    const me = mapFriendPins.find((pin) => pin.is_me);
-    if (!me || !Number.isFinite(me.lat) || !Number.isFinite(me.lng)) return;
-    initialSelfFocusDoneRef.current = true;
-    setFitBounds(null);
-    setFocusCity({ lat: me.lat, lng: me.lng, zoom: geo ? 14 : 13 });
-  }, [cityId, country, geo, mapFriendPins, search.venue]);
 
   const publishPosition = useCallback(
     async (pos: GeolocationPosition, ensureLive = false, recenter = false) => {
@@ -1087,14 +1071,6 @@ function MapPage() {
             onCellsChange={setHeatNowCells}
           />
 
-          <Link
-            to="/app/radar"
-            className="flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-black/60 px-3 py-1.5 text-xs font-semibold text-cyan-200 shadow-[0_0_16px_rgba(34,211,238,0.35)] backdrop-blur-md"
-            title="Spritz Radar Live — AR"
-          >
-            <Sparkles size={14} />
-            AR Radar
-          </Link>
         </div>
 
         <MapSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
