@@ -132,53 +132,80 @@ function RadarPage() {
     };
   }, []);
 
-  // MUST be triggered by a user gesture — iOS Safari blocks camera/compass otherwise
-  async function startRadar() {
+  // MUST be triggered by a user gesture — iOS Safari blocks camera/compass otherwise.
+  // Order matters on iOS: DeviceOrientationEvent.requestPermission() must be invoked
+  // FIRST, synchronously inside the gesture. After the first `await` the gesture
+  // context is lost and Safari silently ignores the permission prompt.
+  function startRadar() {
     if (starting || started) return;
     setStarting(true);
     setCamError(null);
-    try {
-      // 1. Camera — synchronous within gesture
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false,
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play().catch(() => {});
-        setCamReady(true);
-      }
 
-      // 2. iOS compass permission — must be in gesture chain
-      const iosPerm = (DeviceOrientationEvent as any)?.requestPermission;
-      if (typeof iosPerm === "function") {
-        try {
-          const r = await iosPerm();
-          if (r !== "granted") {
-            setNeedsOrient(true);
-            toast.error("Permite busola pentru AR");
-          }
-        } catch {
-          setNeedsOrient(true);
-        }
-      }
+    // 1. iOS compass permission — fire-and-forget synchronously in the gesture
+    const iosPerm = (DeviceOrientationEvent as any)?.requestPermission;
+    const orientPromise: Promise<string> =
+      typeof iosPerm === "function"
+        ? iosPerm().catch(() => "denied")
+        : Promise.resolve("granted");
 
-      setStarted(true);
-    } catch (e: any) {
-      const name = e?.name;
-      if (name === "NotAllowedError") {
-        setCamError("Permisiune refuzată. Activează camera din setările browserului.");
-      } else if (name === "NotFoundError") {
-        setCamError("Nicio cameră găsită pe acest dispozitiv.");
-      } else if (name === "NotReadableError") {
-        setCamError("Camera e folosită de altă aplicație. Închide-o și încearcă din nou.");
-      } else {
-        setCamError(e?.message || "Nu am putut porni camera");
-      }
-    } finally {
-      setStarting(false);
+    // 2. Camera — also kicked off inside the gesture
+    const camPromise = navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+      audio: false,
+    });
+
+    // 3. Kick off geolocation prompt inside the gesture too (helps on iOS PWA)
+    if ("geolocation" in navigator) {
+      try {
+        navigator.geolocation.getCurrentPosition(
+          (p) =>
+            setPos({
+              lat: p.coords.latitude,
+              lng: p.coords.longitude,
+              acc: p.coords.accuracy,
+            }),
+          () => {},
+          { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
+        );
+      } catch {}
     }
+
+    (async () => {
+      try {
+        const stream = await camPromise;
+        streamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => {});
+          setCamReady(true);
+        }
+
+        const orientResult = await orientPromise;
+        if (orientResult !== "granted" && typeof iosPerm === "function") {
+          setNeedsOrient(true);
+          toast.error("Permite busola pentru AR");
+        }
+
+        setStarted(true);
+      } catch (e: any) {
+        const name = e?.name;
+        if (name === "NotAllowedError") {
+          setCamError("Permisiune refuzată. Activează camera din setările Safari (aA → Website Settings → Camera → Allow).");
+        } else if (name === "NotFoundError") {
+          setCamError("Nicio cameră găsită pe acest dispozitiv.");
+        } else if (name === "NotReadableError") {
+          setCamError("Camera e folosită de altă aplicație. Închide-o și încearcă din nou.");
+        } else {
+          setCamError(e?.message || "Nu am putut porni camera");
+        }
+      } finally {
+        setStarting(false);
+      }
+    })();
   }
 
   async function enableCompass() {
