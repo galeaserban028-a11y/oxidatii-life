@@ -451,6 +451,7 @@ function ReelsPage() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [muted, setMuted] = useState(true);
   const [commentsFor, setCommentsFor] = useState<Reel | null>(null);
   const seenAds = useRef(new Set<string>());
 
