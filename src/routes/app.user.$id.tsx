@@ -336,7 +336,7 @@ function UserPage() {
                           </div>
                         )}
                         <div className="font-display font-bold text-lg sm:text-2xl flex items-center gap-1.5 flex-wrap min-w-0">
-                          <span className="break-words min-w-0">@{handle}</span>
+                          <span className="break-words min-w-0 max-w-full">@{handle}</span>
                           {!isPublic && (
                             <Lock size={14} className="text-neon-crimson shrink-0" />
                           )}
