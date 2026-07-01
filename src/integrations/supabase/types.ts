@@ -2840,6 +2840,10 @@ export type Database = {
         }[]
       }
       generate_referral_code: { Args: never; Returns: string }
+      get_biz_stats: {
+        Args: { _business_id: string; _days?: number }
+        Returns: Json
+      }
       get_business_account_public: {
         Args: { _id: string }
         Returns: {
@@ -3316,6 +3320,7 @@ export type Database = {
         | "boost_story"
         | "boost_push"
         | "boost_brand"
+        | "boost_reel"
       campaign_status: "draft" | "active" | "paused" | "exhausted" | "ended"
       ledger_kind: "topup" | "spend" | "refund" | "bonus" | "adjustment"
       premium_tier: "vip" | "vip_plus" | "pro" | "elite"
@@ -3473,6 +3478,7 @@ export const Constants = {
         "boost_story",
         "boost_push",
         "boost_brand",
+        "boost_reel",
       ],
       campaign_status: ["draft", "active", "paused", "exhausted", "ended"],
       ledger_kind: ["topup", "spend", "refund", "bonus", "adjustment"],
