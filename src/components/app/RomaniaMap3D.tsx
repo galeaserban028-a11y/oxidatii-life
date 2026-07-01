@@ -1565,7 +1565,7 @@ export function RomaniaMap3D({
       <div ref={containerRef} className="absolute inset-0" />
 
       {/* Loading skeleton — hides the black flash while tiles fetch on first entry. */}
-      {mapReadyTick === 0 && !mapFailed && (
+      {!firstPaintDone && !mapFailed && (
         <div
           className="absolute inset-0 z-10 pointer-events-none grid place-items-center overflow-hidden"
           style={{
