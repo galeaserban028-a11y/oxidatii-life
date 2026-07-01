@@ -6,8 +6,10 @@ import { useAuth } from "@/lib/auth";
 import { useEffect, useRef, useState } from "react";
 import { BusinessReviewCard } from "@/components/biz/BusinessReviewCard";
 import { ReportDialog } from "@/components/app/ReportDialog";
+import { CheckInShareSheet } from "@/components/app/CheckInShareSheet";
 import { toast } from "sonner";
 import { evalOpenNow, normalizeHours, formatSlot, DAY_KEYS, DAY_LABELS } from "@/lib/openingHours";
+
 
 export const Route = createFileRoute("/app/venue/$id")({
   loader: async ({ params }) => {
