@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import {
@@ -17,6 +17,9 @@ import {
   Film,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
+import { syncCheckoutToProfile } from "@/lib/premium.functions";
+import { getStripeEnvironment } from "@/lib/stripe";
 
 
 export const Route = createFileRoute("/app/biz")({
@@ -24,13 +27,21 @@ export const Route = createFileRoute("/app/biz")({
   component: BizPage,
 });
 
-// Cele trei pachete simple. Atât. Plată one-shot pentru o postare.
+// Cele trei pachete simple. Plată one-shot via Stripe pentru fiecare postare.
 type TierId = "t500" | "t1000" | "t2500";
-const TIERS: { id: TierId; priceRon: number; days: number; label: string; color: string }[] = [
-  { id: "t500", priceRon: 500, days: 2, label: "2 zile", color: "#00e5ff" },
-  { id: "t1000", priceRon: 1000, days: 5, label: "5 zile", color: "#ff3d8b" },
-  { id: "t2500", priceRon: 2500, days: 30, label: "30 zile", color: "#ffea00" },
+const TIERS: {
+  id: TierId;
+  priceRon: number;
+  days: number;
+  label: string;
+  color: string;
+  priceId: "boost_2d" | "boost_5d" | "boost_30d";
+}[] = [
+  { id: "t500", priceRon: 500, days: 2, label: "2 zile", color: "#00e5ff", priceId: "boost_2d" },
+  { id: "t1000", priceRon: 1000, days: 5, label: "5 zile", color: "#ff3d8b", priceId: "boost_5d" },
+  { id: "t2500", priceRon: 2500, days: 30, label: "30 zile", color: "#ffea00", priceId: "boost_30d" },
 ];
+
 
 async function loadBiz(userId: string) {
   const { data } = await supabase
