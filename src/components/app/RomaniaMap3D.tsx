@@ -1081,7 +1081,7 @@ export function RomaniaMap3D({
     };
     if (loadedRef.current) apply();
     else map.once("load", apply);
-  }, [venues, promotedMeta, retryKey]);
+  }, [venues, promotedMeta, retryKey, mapReadyTick]);
 
   // Heatmap pulse intentionally removed — it called setPaintProperty every
   // 120ms which forced a full WebGL repaint and dropped the whole map below
@@ -1108,7 +1108,7 @@ export function RomaniaMap3D({
     };
     if (loadedRef.current) apply();
     else map.once("load", apply);
-  }, [heatNowCells, retryKey]);
+  }, [heatNowCells, retryKey, mapReadyTick]);
 
   // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
   // halo. Replaces the bottle silhouette so paying businesses are instantly
@@ -1228,7 +1228,7 @@ export function RomaniaMap3D({
     };
     if (loadedRef.current) build();
     else map.once("load", build);
-  }, [venues, promotedMeta, retryKey]);
+  }, [venues, promotedMeta, retryKey, mapReadyTick]);
 
   // CITIES → only the hottest cities get a tiny label; the basemap provides
   // the clean city/country typography, avoiding the previous label pile-up.
@@ -1343,7 +1343,7 @@ export function RomaniaMap3D({
     requestAnimationFrame(() =>
       resolveCityLabelCollisions(containerRef.current, compactMapRef.current),
     );
-  }, [cities, retryKey]);
+  }, [cities, retryKey, mapReadyTick]);
 
   // FOCUS city programmatically. easeTo is lighter than flyTo on mobile GPUs.
   useEffect(() => {
@@ -1503,7 +1503,7 @@ export function RomaniaMap3D({
         friendMarkers.current.delete(id);
       }
     }
-  }, [friends, retryKey]);
+  }, [friends, retryKey, mapReadyTick]);
 
   const mePin = friends.find((f) => f.is_me);
 
