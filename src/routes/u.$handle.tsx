@@ -140,10 +140,10 @@ function PublicProfilePage() {
               )}
             </div>
             <div className="min-w-0">
-              <h1 className="text-2xl font-display font-black leading-tight truncate">
+              <h1 className="text-2xl font-display font-black leading-tight break-words">
                 {display}
               </h1>
-              <div className="text-sm text-muted-foreground truncate">{handle}</div>
+              <div className="text-sm text-muted-foreground break-words">{handle}</div>
               {p.city_name && (
                 <div className="mt-1 inline-flex items-center gap-1 text-[11px] uppercase tracking-widest text-muted-foreground">
                   <MapPin className="h-3 w-3" />
