@@ -133,21 +133,155 @@ function BizPage() {
   const list = businesses ?? [];
   const activeBiz = list[0];
 
+  // === EMPTY STATE — sales pitch page ===
   if (!isLoading && list.length === 0) {
     return (
-      <div className="max-w-md mx-auto px-4 pt-10 pb-24 space-y-6 text-center">
-        <div className="text-5xl">📣</div>
-        <h1 className="font-display uppercase text-2xl">Promovare</h1>
-        <p className="text-sm text-zinc-400">
-          Creează-ți brandul ca să postezi reclame pe ecranul principal al aplicației.
-        </p>
-        <button
-          onClick={() => setCreateOpen(true)}
-          className="inline-flex items-center gap-1.5 font-display uppercase text-[11px] tracking-widest px-5 py-3 rounded-2xl text-white"
-          style={{ background: "var(--gradient-chaos)" }}
-        >
-          <Plus size={12} /> Creează brand
-        </button>
+      <div className="min-h-screen bg-[#03130d] text-[#f5f0e0] pb-24">
+        {/* HERO */}
+        <section className="relative overflow-hidden border-b border-[#c9a84c]/20">
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-60"
+            style={{
+              background:
+                "radial-gradient(1200px 500px at 20% 0%, rgba(13,122,95,0.35), transparent 60%), radial-gradient(800px 400px at 90% 100%, rgba(201,168,76,0.18), transparent 60%)",
+            }}
+          />
+          <div className="relative max-w-5xl mx-auto px-6 pt-14 pb-16">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/5 px-3 py-1.5 mb-8">
+              <span className="size-1.5 rounded-full bg-[#c9a84c] animate-pulse" />
+              <span className="font-[Hind] text-[10px] uppercase tracking-[0.28em] text-[#c9a84c]">
+                Business · România
+              </span>
+            </div>
+            <h1
+              className="text-[13vw] sm:text-[80px] lg:text-[104px] leading-[0.88] uppercase text-[#f5f0e0]"
+              style={{ fontFamily: "'Archivo Black', sans-serif", letterSpacing: "-0.02em" }}
+            >
+              Fii văzut.
+              <br />
+              <span className="text-[#c9a84c]">Fii ales.</span>
+            </h1>
+            <p className="mt-6 max-w-xl font-[Hind] text-base sm:text-lg text-[#f5f0e0]/70 leading-relaxed">
+              Ajungi în fața a mii de tineri care ies în oraș astă-seară. Fără agenție, fără
+              contract lunar. Plătești o singură dată, apari instant.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button
+                onClick={() => setCreateOpen(true)}
+                className="group inline-flex items-center gap-2 rounded-2xl bg-[#c9a84c] px-6 py-4 text-[#03130d] font-[Hind] font-bold uppercase tracking-[0.14em] text-sm shadow-[0_16px_40px_-12px_rgba(201,168,76,0.6)] transition hover:scale-[1.02]"
+              >
+                Începe promovarea
+                <span className="transition group-hover:translate-x-1">→</span>
+              </button>
+              <div className="flex items-center gap-2 text-[11px] font-[Hind] text-[#f5f0e0]/50 uppercase tracking-widest">
+                <span className="size-1 rounded-full bg-emerald-400" />
+                setup 60 sec
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PROOF BAND */}
+        <section className="border-b border-[#c9a84c]/10 bg-[#052419]/50">
+          <div className="max-w-5xl mx-auto px-6 py-8 grid grid-cols-3 gap-6 text-center">
+            {[
+              { n: "12k+", l: "utilizatori activi" },
+              { n: "94%", l: "GenZ · Millennial" },
+              { n: "3×", l: "engagement vs feed" },
+            ].map((s) => (
+              <div key={s.l}>
+                <div
+                  className="text-3xl sm:text-4xl text-[#c9a84c]"
+                  style={{ fontFamily: "'Archivo Black', sans-serif" }}
+                >
+                  {s.n}
+                </div>
+                <div className="mt-1 font-[Hind] text-[10px] uppercase tracking-[0.24em] text-[#f5f0e0]/50">
+                  {s.l}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* PRICING */}
+        <section className="border-b border-[#c9a84c]/10">
+          <div className="max-w-5xl mx-auto px-6 py-14">
+            <div className="mb-10">
+              <div className="font-[Hind] text-[10px] uppercase tracking-[0.28em] text-[#c9a84c]/80 mb-3">
+                Pachete · plată per postare
+              </div>
+              <h2
+                className="text-4xl sm:text-5xl uppercase text-[#f5f0e0] leading-none"
+                style={{ fontFamily: "'Archivo Black', sans-serif", letterSpacing: "-0.01em" }}
+              >
+                Alege durata.
+                <br />
+                <span className="text-[#0d7a5f]">Restul îl facem noi.</span>
+              </h2>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {TIERS.map((t, i) => (
+                <div
+                  key={t.id}
+                  className={`relative rounded-3xl border p-6 transition ${
+                    i === 1
+                      ? "border-[#c9a84c] bg-gradient-to-b from-[#c9a84c]/10 to-transparent"
+                      : "border-[#c9a84c]/15 bg-[#052419]/40 hover:border-[#c9a84c]/40"
+                  }`}
+                >
+                  {i === 1 && (
+                    <div className="absolute -top-3 left-6 rounded-full bg-[#c9a84c] px-3 py-1 font-[Hind] text-[9px] uppercase tracking-widest text-[#03130d] font-bold">
+                      Recomandat
+                    </div>
+                  )}
+                  <div className="font-[Hind] text-[10px] uppercase tracking-[0.24em] text-[#f5f0e0]/50">
+                    {t.label}
+                  </div>
+                  <div className="mt-3 flex items-baseline gap-1.5">
+                    <span
+                      className="text-5xl text-[#f5f0e0]"
+                      style={{ fontFamily: "'Archivo Black', sans-serif" }}
+                    >
+                      {t.priceRon}
+                    </span>
+                    <span className="font-[Hind] text-sm uppercase tracking-widest text-[#c9a84c]">
+                      RON
+                    </span>
+                  </div>
+                  <ul className="mt-5 space-y-2 font-[Hind] text-sm text-[#f5f0e0]/70">
+                    <li className="flex gap-2">
+                      <span className="text-[#c9a84c]">✓</span> Feed principal
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="text-[#c9a84c]">✓</span> Analytics live
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="text-[#c9a84c]">✓</span> Fără comision
+                    </li>
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* FINAL CTA */}
+        <section>
+          <div className="max-w-5xl mx-auto px-6 py-14 text-center">
+            <button
+              onClick={() => setCreateOpen(true)}
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#c9a84c] px-8 py-5 text-[#03130d] font-[Hind] font-bold uppercase tracking-[0.16em] text-sm shadow-[0_20px_50px_-12px_rgba(201,168,76,0.7)] transition hover:scale-[1.02]"
+            >
+              <Plus size={16} /> Creează brandul tău
+            </button>
+            <p className="mt-4 font-[Hind] text-[11px] uppercase tracking-widest text-[#f5f0e0]/40">
+              Plată securizată · Stripe · Fără abonament
+            </p>
+          </div>
+        </section>
+
         <CreateBusinessSheet
           open={createOpen}
           onClose={() => setCreateOpen(false)}
@@ -163,66 +297,121 @@ function BizPage() {
   if (isLoading || !activeBiz) {
     return (
       <div className="px-4 pt-10">
-        <div className="h-32 rounded-2xl bg-zinc-900/30 border border-white/5 animate-pulse" />
+        <div className="h-32 rounded-2xl bg-[#052419]/40 border border-[#c9a84c]/10 animate-pulse" />
       </div>
     );
   }
 
+  // === ACTIVE BIZ — cockpit ===
   return (
-    <div className="max-w-3xl mx-auto px-4 pt-6 pb-24 space-y-6">
-      <header className="rounded-2xl bg-zinc-900/40 border border-white/10 p-4 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sunset-magenta to-sunset-amber flex items-center justify-center">
-            <Building2 size={22} className="text-white" />
+    <div className="min-h-screen bg-[#03130d] text-[#f5f0e0] pb-28">
+      {/* HERO cockpit */}
+      <section className="relative overflow-hidden border-b border-[#c9a84c]/20">
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-70"
+          style={{
+            background:
+              "radial-gradient(900px 400px at 10% 0%, rgba(13,122,95,0.4), transparent 60%), radial-gradient(700px 350px at 100% 100%, rgba(201,168,76,0.14), transparent 60%)",
+          }}
+        />
+        <div className="relative max-w-5xl mx-auto px-6 pt-10 pb-8">
+          <div className="flex items-center gap-2 font-[Hind] text-[10px] uppercase tracking-[0.28em] text-[#c9a84c]/80 mb-4">
+            <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Brand activ
           </div>
-          <div>
-            <div className="font-display uppercase text-lg">{activeBiz.brand_name}</div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">
-              promovare · plată per postare
-            </div>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h1
+              className="text-4xl sm:text-6xl uppercase text-[#f5f0e0] leading-[0.9]"
+              style={{ fontFamily: "'Archivo Black', sans-serif", letterSpacing: "-0.01em" }}
+            >
+              {activeBiz.brand_name}
+            </h1>
+            <button
+              onClick={() => setPostOpen(true)}
+              className="inline-flex items-center gap-2 rounded-2xl bg-[#c9a84c] px-5 py-3.5 text-[#03130d] font-[Hind] font-bold uppercase tracking-[0.14em] text-xs shadow-[0_12px_30px_-10px_rgba(201,168,76,0.6)] transition hover:scale-[1.02]"
+            >
+              <Plus size={13} /> Postare nouă
+            </button>
           </div>
         </div>
-        <button
-          onClick={() => setPostOpen(true)}
-          className="inline-flex items-center gap-1.5 font-display uppercase text-[11px] tracking-widest px-4 py-2.5 rounded-2xl text-white"
-          style={{ background: "var(--gradient-chaos)" }}
-        >
-          <Plus size={12} /> Postare nouă
-        </button>
-      </header>
+      </section>
 
-      <Link
-        to="/app/biz/dashboard"
-        className="flex items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-br from-[#ff3d8b]/15 via-[#c724ff]/10 to-[#00e5ff]/10 p-4 hover:border-white/25 transition"
-      >
-        <div className="size-11 rounded-xl bg-white/10 flex items-center justify-center">
-          <BarChart3 size={20} className="text-white" />
-        </div>
-        <div className="flex-1">
-          <div className="font-display uppercase text-sm text-white">Business Dashboard</div>
-          <div className="text-[11px] text-white/60">Heatmap clienți · vizitatori unici · sponsored reels · 99 RON/lună</div>
-        </div>
-        <div className="text-white/50">→</div>
-      </Link>
-
-
-      {/* Pachete */}
-      <div className="grid grid-cols-3 gap-2">
-        {TIERS.map((t) => (
-          <div
-            key={t.id}
-            className="rounded-2xl border border-white/10 bg-zinc-900/40 p-3 text-center"
+      {/* DASHBOARD BANNER */}
+      <section className="border-b border-[#c9a84c]/10">
+        <div className="max-w-5xl mx-auto px-6 py-6">
+          <Link
+            to="/app/biz/dashboard"
+            className="group flex items-center gap-4 rounded-2xl border border-[#0d7a5f]/40 bg-gradient-to-r from-[#0d7a5f]/25 via-[#064e3b]/15 to-transparent p-5 hover:border-[#c9a84c]/50 transition"
           >
-            <div className="font-display text-2xl" style={{ color: t.color }}>
-              {t.priceRon}
+            <div className="size-12 rounded-xl bg-[#c9a84c] flex items-center justify-center text-[#03130d]">
+              <BarChart3 size={22} />
             </div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">RON</div>
-            <div className="text-[11px] text-zinc-300 mt-1">{t.label}</div>
-          </div>
-        ))}
-      </div>
+            <div className="flex-1 min-w-0">
+              <div
+                className="uppercase text-base text-[#f5f0e0]"
+                style={{ fontFamily: "'Archivo Black', sans-serif" }}
+              >
+                Business Dashboard
+              </div>
+              <div className="font-[Hind] text-[11px] text-[#f5f0e0]/60 mt-0.5">
+                Heatmap · vizitatori unici · reels sponsorizate · 99 RON/lună
+              </div>
+            </div>
+            <div className="text-[#c9a84c] transition group-hover:translate-x-1">→</div>
+          </Link>
+        </div>
+      </section>
 
-      <CampaignList businessId={activeBiz.id} />
+      {/* PRICING QUICK */}
+      <section className="border-b border-[#c9a84c]/10">
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          <div className="font-[Hind] text-[10px] uppercase tracking-[0.28em] text-[#c9a84c]/80 mb-4">
+            Pachete disponibile
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {TIERS.map((t, i) => (
+              <div
+                key={t.id}
+                className={`rounded-2xl border p-4 text-center ${
+                  i === 1
+                    ? "border-[#c9a84c]/60 bg-[#c9a84c]/5"
+                    : "border-[#c9a84c]/15 bg-[#052419]/40"
+                }`}
+              >
+                <div
+                  className="text-3xl text-[#f5f0e0]"
+                  style={{ fontFamily: "'Archivo Black', sans-serif" }}
+                >
+                  {t.priceRon}
+                </div>
+                <div className="font-[Hind] text-[9px] uppercase tracking-[0.24em] text-[#c9a84c]">
+                  RON
+                </div>
+                <div className="font-[Hind] text-[11px] text-[#f5f0e0]/60 mt-1.5">{t.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CAMPAIGNS */}
+      <section>
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          <div className="flex items-baseline justify-between mb-5">
+            <h2
+              className="text-2xl uppercase text-[#f5f0e0]"
+              style={{ fontFamily: "'Archivo Black', sans-serif" }}
+            >
+              Postările tale
+            </h2>
+            <span className="font-[Hind] text-[10px] uppercase tracking-[0.24em] text-[#f5f0e0]/40">
+              live · draft · expirat
+            </span>
+          </div>
+          <CampaignList businessId={activeBiz.id} />
+        </div>
+      </section>
 
       {postOpen && (
         <PostModal
