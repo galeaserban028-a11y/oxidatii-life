@@ -474,6 +474,7 @@ export function RomaniaMap3D({
     let loadWatchdog: number | null = null;
     let restoreHealthTimer: number | null = null;
     let contextWasLost = false;
+    let disposed = false;
     const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
     try {
       map = new maplibregl.Map({
@@ -551,6 +552,7 @@ export function RomaniaMap3D({
     }, 6500);
 
     const setupInteractiveLayers = () => {
+      if (disposed) return;
       if (loadedRef.current || map.getSource(VENUES_SRC)) return;
       try {
         map.addSource(VENUES_SRC, {
@@ -1010,6 +1012,7 @@ export function RomaniaMap3D({
 
     mapRef.current = map;
     return () => {
+      disposed = true;
       cityMarkers.current.forEach((m) => m.remove());
       cityMarkers.current.clear();
       friendMarkers.current.forEach((m) => m.remove());
