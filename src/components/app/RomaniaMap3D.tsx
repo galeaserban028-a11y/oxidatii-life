@@ -536,6 +536,7 @@ export function RomaniaMap3D({
       try {
         map.resize();
         map.triggerRepaint();
+        markFirstPaint();
       } catch {}
     };
     map.on("styledata", onStyleData);
@@ -548,7 +549,7 @@ export function RomaniaMap3D({
       // retry loop itself was causing the endless "se încarcă harta" state.
       setupInteractiveLayers();
       markFirstPaint();
-    }, 2800);
+    }, isSmall ? 900 : 1200);
 
     const setupInteractiveLayers = () => {
       if (disposed) return;
@@ -938,7 +939,8 @@ export function RomaniaMap3D({
     // caused the first seconds to show a different/empty map until zooming.
     map.once("style.load", setupInteractiveLayers);
     map.once("load", setupInteractiveLayers);
-    firstPaintTimer = window.setTimeout(markFirstPaint, isSmall ? 3200 : 1800);
+    map.once("render", markFirstPaint);
+    firstPaintTimer = window.setTimeout(markFirstPaint, isSmall ? 1400 : 1800);
     window.setTimeout(setupInteractiveLayers, 260);
 
     // One-shot health check after the very first idle. Retrying on every
