@@ -454,11 +454,11 @@ export function RomaniaMap3D({
     // fetch tiles for the wrong viewport, and the user then has to zoom
     // in/out to force a correct re-fetch. Wait for a real size first.
     const initialRect = containerRef.current.getBoundingClientRect();
-    if (initialRect.width < 40 || initialRect.height < 40) {
+    if (initialRect.width < 8 || initialRect.height < 8) {
       const el = containerRef.current;
       const ro = new ResizeObserver(() => {
         const r = el.getBoundingClientRect();
-        if (r.width >= 40 && r.height >= 40) {
+        if (r.width >= 8 && r.height >= 8) {
           ro.disconnect();
           setRetryKey((k) => k + 1);
         }
@@ -466,6 +466,7 @@ export function RomaniaMap3D({
       ro.observe(el);
       return () => ro.disconnect();
     }
+
 
     setMapFailed(false);
     let map: MlMap;
