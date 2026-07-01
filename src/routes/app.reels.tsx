@@ -300,31 +300,32 @@ function ReelTile({
           </div>
           <span className="text-[11px] font-semibold">Share</span>
         </button>
-        {reel.isVideo && (
-          <button
-            onPointerDown={handleSoundToggle}
-            onTouchStart={handleSoundToggle}
-            onMouseDown={handleSoundToggle}
-            onClick={handleSoundToggle}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") handleSoundToggle(e);
-            }}
-            className="size-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center active:scale-90 transition"
-            aria-label="mute"
-            aria-pressed={!muted}
-          >
-            {muted ? (
-              <svg viewBox="0 0 24 24" className="size-5 fill-white">
-                <path d="M3 9v6h4l5 4V5L7 9H3zm13.59 3L19 9.59 17.59 8 15 10.59 12.41 8 11 9.59 13.59 12 11 14.41 12.41 16 15 13.41 17.59 16 19 14.41 16.59 12z" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" className="size-5 fill-white">
-                <path d="M3 9v6h4l5 4V5L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z" />
-              </svg>
-            )}
-          </button>
-        )}
       </div>
+
+      {reel.isVideo && (
+        <button
+          onPointerDown={handleSoundToggle}
+          onTouchStart={handleSoundToggle}
+          onMouseDown={handleSoundToggle}
+          onClick={handleSoundToggle}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") handleSoundToggle(e);
+          }}
+          className="absolute right-3 top-[calc(env(safe-area-inset-top)+58px)] z-20 min-h-11 min-w-11 rounded-full bg-black/45 border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,.35)] backdrop-blur-md flex items-center justify-center active:scale-90 transition"
+          aria-label="mute"
+          aria-pressed={!muted}
+        >
+          {muted ? (
+            <svg viewBox="0 0 24 24" className="size-5 fill-white">
+              <path d="M3 9v6h4l5 4V5L7 9H3zm13.59 3L19 9.59 17.59 8 15 10.59 12.41 8 11 9.59 13.59 12 11 14.41 12.41 16 15 13.41 17.59 16 19 14.41 16.59 12z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" className="size-5 fill-white">
+              <path d="M3 9v6h4l5 4V5L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4z" />
+            </svg>
+          )}
+        </button>
+      )}
 
       {/* Bottom info */}
       <div className="absolute inset-x-0 bottom-0 px-4 pb-24 text-white">
