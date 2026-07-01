@@ -1,6 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Flame, Sparkles, Trophy, MapPin } from "lucide-react";
+import { OG_COVER_URL } from "@/lib/og";
+
 
 type PublicProfile = {
   id: string;
@@ -40,7 +42,7 @@ export const Route = createFileRoute("/u/$handle")({
       ? String(p.bio).slice(0, 155)
       : `Profilul ${handle} pe OXIDAȚII — sprițuri, check-in-uri și momente din nightlife.`;
     const url = `${SITE}/u/${params.handle.toLowerCase()}`;
-    const image = p?.avatar_url ?? undefined;
+    const image = p?.avatar_url ?? OG_COVER_URL;
     return {
       meta: [
         { title },
@@ -49,17 +51,14 @@ export const Route = createFileRoute("/u/$handle")({
         { property: "og:description", content: desc },
         { property: "og:url", content: url },
         { property: "og:type", content: "profile" },
-        ...(image
-          ? [
-              { property: "og:image", content: image },
-              { name: "twitter:image", content: image },
-              { name: "twitter:card", content: "summary_large_image" },
-            ]
-          : [{ name: "twitter:card", content: "summary" }]),
+        { property: "og:image", content: image },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: image },
         { name: "twitter:title", content: title },
         { name: "twitter:description", content: desc },
       ],
       links: [{ rel: "canonical", href: url }],
+
       scripts: p
         ? [
             {
