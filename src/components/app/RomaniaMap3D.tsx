@@ -436,6 +436,8 @@ export function RomaniaMap3D({
   const [mapFailed, setMapFailed] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [mapReadyTick, setMapReadyTick] = useState(0);
+  const [firstPaintDone, setFirstPaintDone] = useState(false);
+
 
   useEffect(() => {
     navRef.current = nav;
