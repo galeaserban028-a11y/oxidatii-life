@@ -2969,6 +2969,36 @@ export type Database = {
           unique_users: number
         }[]
       }
+      get_campaign_public: {
+        Args: { _id: string }
+        Returns: {
+          body: string
+          business_brand_name: string
+          business_cover_url: string
+          business_id: string
+          business_logo_url: string
+          cta_text: string
+          cta_url: string
+          ends_at: string
+          entry_kind: string
+          entry_price_text: string
+          event_starts_at: string
+          id: string
+          image_urls: string[]
+          kind: string
+          party_id: string
+          special_guest: string
+          starts_at: string
+          status: string
+          street: string
+          subtitle: string
+          theme_color: string
+          title: string
+          venue_id: string
+          venue_name: string
+          video_url: string
+        }[]
+      }
       get_creator_earnings: { Args: { p_user_id: string }; Returns: Json }
       get_crystal_ball: { Args: never; Returns: Json }
       get_decision_poll: { Args: { _poll_id: string }; Returns: Json }
