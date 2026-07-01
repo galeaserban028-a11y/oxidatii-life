@@ -49,7 +49,11 @@ const ALLOWED_PRICES = new Set([
   "last_call_send",
   "last_call_reveal",
   "biz_dashboard_monthly",
+  "boost_2d",
+  "boost_5d",
+  "boost_30d",
 ]);
+
 
 const COIN_PACKS: Record<string, number> = {
   coins_mic: 50,
