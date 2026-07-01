@@ -85,6 +85,7 @@ function RadarPage() {
   const [camError, setCamError] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [compassLimited, setCompassLimited] = useState(false);
   const [venues, setVenues] = useState<RadarVenue[]>([]);
   const [friends, setFriends] = useState<RadarFriend[]>([]);
   const [selected, setSelected] = useState<RadarVenue | null>(null);
@@ -132,23 +133,24 @@ function RadarPage() {
     };
   }, []);
 
-  // MUST be triggered by a user gesture — iOS Safari blocks camera/compass otherwise.
-  // Order matters on iOS: DeviceOrientationEvent.requestPermission() must be invoked
-  // FIRST, synchronously inside the gesture. After the first `await` the gesture
-  // context is lost and Safari silently ignores the permission prompt.
+  // MUST be triggered by a user gesture — iOS Safari blocks camera otherwise.
+  // Important: iOS Safari is unreliable when camera + motion permission prompts
+  // are launched at the exact same time. Start the camera from this tap, then ask
+  // for compass from a second direct tap only if iOS requires it. This prevents
+  // the "permission accepted, then infinite loading" state.
   function startRadar() {
     if (starting || started) return;
     setStarting(true);
     setCamError(null);
+    setCompassLimited(false);
 
-    // 1. iOS compass permission — fire-and-forget synchronously in the gesture
-    const iosPerm = (DeviceOrientationEvent as any)?.requestPermission;
-    const orientPromise: Promise<string> =
-      typeof iosPerm === "function"
-        ? iosPerm().catch(() => "denied")
-        : Promise.resolve("granted");
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCamError("Safari nu oferă acces la cameră aici. Deschide aplicația pe HTTPS/Safari și încearcă din nou.");
+      setStarting(false);
+      return;
+    }
 
-    // 2. Camera — also kicked off inside the gesture
+    // Camera is kicked off immediately inside the gesture.
     const camPromise = navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: { ideal: "environment" },
@@ -158,7 +160,7 @@ function RadarPage() {
       audio: false,
     });
 
-    // 3. Kick off geolocation prompt inside the gesture too (helps on iOS PWA)
+    // Kick off geolocation prompt inside the gesture too (helps on iOS PWA)
     if ("geolocation" in navigator) {
       try {
         navigator.geolocation.getCurrentPosition(
@@ -176,7 +178,12 @@ function RadarPage() {
 
     (async () => {
       try {
-        const stream = await camPromise;
+        const stream = await Promise.race([
+          camPromise,
+          new Promise<never>((_, reject) =>
+            window.setTimeout(() => reject(new Error("Camera a rămas blocată la permisiune.")), 15000),
+          ),
+        ]);
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -184,13 +191,15 @@ function RadarPage() {
           setCamReady(true);
         }
 
-        const orientResult = await orientPromise;
-        if (orientResult !== "granted" && typeof iosPerm === "function") {
-          setNeedsOrient(true);
-          toast.error("Permite busola pentru AR");
-        }
-
         setStarted(true);
+
+        const iosPerm =
+          typeof DeviceOrientationEvent !== "undefined"
+            ? (DeviceOrientationEvent as any)?.requestPermission
+            : undefined;
+        if (typeof iosPerm === "function") {
+          setNeedsOrient(true);
+        }
       } catch (e: any) {
         const name = e?.name;
         if (name === "NotAllowedError") {
@@ -210,13 +219,41 @@ function RadarPage() {
 
   async function enableCompass() {
     try {
-      const r = await (DeviceOrientationEvent as any).requestPermission();
-      if (r === "granted") setNeedsOrient(false);
-      else toast.error("Permisiunea de busolă e necesară pentru AR");
+      const iosPerm =
+        typeof DeviceOrientationEvent !== "undefined"
+          ? (DeviceOrientationEvent as any)?.requestPermission
+          : undefined;
+      if (typeof iosPerm !== "function") {
+        setNeedsOrient(false);
+        setCompassLimited(true);
+        setHeading(0);
+        return;
+      }
+      const r = await iosPerm();
+      if (r === "granted") {
+        setNeedsOrient(false);
+        setCompassLimited(false);
+      } else {
+        setNeedsOrient(false);
+        setCompassLimited(true);
+        setHeading(0);
+        toast.error("Busola nu e activă, dar radar-ul pornește fără blocaj.");
+      }
     } catch {
       setNeedsOrient(false);
+      setCompassLimited(true);
+      setHeading(0);
     }
   }
+
+  useEffect(() => {
+    if (!started || needsOrient || heading !== null) return;
+    const id = window.setTimeout(() => {
+      setCompassLimited(true);
+      setHeading(0);
+    }, 4500);
+    return () => window.clearTimeout(id);
+  }, [started, needsOrient, heading]);
 
 
   // 4. Load venues + friends around user
@@ -555,7 +592,11 @@ function RadarPage() {
       {!camError && (!pos || !hasHeading) && camReady && !needsOrient && (
         <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-black/70 px-4 py-3 text-center text-sm backdrop-blur-md">
           <Loader2 className="mx-auto mb-1 h-4 w-4 animate-spin text-cyan-300" />
-          {!pos ? "Caut locația ta…" : "Calibrez busola… mișcă telefonul în opt"}
+          {!pos
+            ? "Caut locația ta…"
+            : compassLimited
+              ? "Radar pornit fără busolă"
+              : "Calibrez busola… mișcă telefonul în opt"}
         </div>
       )}
 
