@@ -476,9 +476,14 @@ export function RomaniaMap3D({
     let contextRetryTimer: number | null = null;
     let loadWatchdog: number | null = null;
     let restoreHealthTimer: number | null = null;
+    let firstPaintTimer: number | null = null;
     let contextWasLost = false;
     let disposed = false;
     const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
+    const markFirstPaint = () => {
+      if (!disposed) setFirstPaintDone(true);
+    };
+    setFirstPaintDone(false);
     try {
       map = new maplibregl.Map({
         container: containerRef.current,
@@ -502,11 +507,9 @@ export function RomaniaMap3D({
         canvasContextAttributes: {
           alpha: false,
           antialias: !isSmall,
-          desynchronized: true,
           failIfMajorPerformanceCaveat: false,
           powerPreference: "high-performance",
           preserveDrawingBuffer: false,
-          contextType: isSmall ? "webgl" : undefined,
         },
       } as any);
     } catch (error) {
@@ -583,6 +586,7 @@ export function RomaniaMap3D({
       repaintMap(map);
       window.setTimeout(() => repaintMap(map), 120);
       window.setTimeout(() => repaintMap(map), 480);
+      window.setTimeout(markFirstPaint, isSmall ? 320 : 180);
 
       if (!isSmall) {
         // Desktop-only heat layer. On mobile GPUs the heatmap blur competes
@@ -933,6 +937,8 @@ export function RomaniaMap3D({
     // caused the first seconds to show a different/empty map until zooming.
     map.once("style.load", setupInteractiveLayers);
     map.once("load", setupInteractiveLayers);
+    map.once("render", () => window.setTimeout(markFirstPaint, isSmall ? 450 : 250));
+    firstPaintTimer = window.setTimeout(markFirstPaint, isSmall ? 2200 : 1600);
     window.setTimeout(setupInteractiveLayers, 260);
 
     // One-shot health check after the very first idle. Retrying on every
@@ -945,7 +951,7 @@ export function RomaniaMap3D({
         return;
       }
       repaintMap(map);
-      setFirstPaintDone(true);
+      markFirstPaint();
     });
 
 
@@ -1033,6 +1039,7 @@ export function RomaniaMap3D({
         if (contextRetryTimerRef.current) window.clearTimeout(contextRetryTimerRef.current);
         if (loadWatchdog) window.clearTimeout(loadWatchdog);
         if (restoreHealthTimer) window.clearTimeout(restoreHealthTimer);
+        if (firstPaintTimer) window.clearTimeout(firstPaintTimer);
         document.removeEventListener("visibilitychange", reviveMap);
         window.removeEventListener("pageshow", reviveMap);
         window.removeEventListener("focus", reviveMap);
