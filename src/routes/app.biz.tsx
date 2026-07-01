@@ -154,6 +154,21 @@ function BizPage() {
         </button>
       </header>
 
+      <Link
+        to="/app/biz/dashboard"
+        className="flex items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-br from-[#ff3d8b]/15 via-[#c724ff]/10 to-[#00e5ff]/10 p-4 hover:border-white/25 transition"
+      >
+        <div className="size-11 rounded-xl bg-white/10 flex items-center justify-center">
+          <BarChart3 size={20} className="text-white" />
+        </div>
+        <div className="flex-1">
+          <div className="font-display uppercase text-sm text-white">Business Dashboard</div>
+          <div className="text-[11px] text-white/60">Heatmap clienți · vizitatori unici · sponsored reels · 99 RON/lună</div>
+        </div>
+        <div className="text-white/50">→</div>
+      </Link>
+
+
       {/* Pachete */}
       <div className="grid grid-cols-3 gap-2">
         {TIERS.map((t) => (
