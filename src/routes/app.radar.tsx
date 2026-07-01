@@ -193,7 +193,10 @@ function RadarPage() {
 
         setStarted(true);
 
-        const iosPerm = (DeviceOrientationEvent as any)?.requestPermission;
+        const iosPerm =
+          typeof DeviceOrientationEvent !== "undefined"
+            ? (DeviceOrientationEvent as any)?.requestPermission
+            : undefined;
         if (typeof iosPerm === "function") {
           setNeedsOrient(true);
         }
@@ -216,7 +219,17 @@ function RadarPage() {
 
   async function enableCompass() {
     try {
-      const r = await (DeviceOrientationEvent as any).requestPermission();
+      const iosPerm =
+        typeof DeviceOrientationEvent !== "undefined"
+          ? (DeviceOrientationEvent as any)?.requestPermission
+          : undefined;
+      if (typeof iosPerm !== "function") {
+        setNeedsOrient(false);
+        setCompassLimited(true);
+        setHeading(0);
+        return;
+      }
+      const r = await iosPerm();
       if (r === "granted") {
         setNeedsOrient(false);
         setCompassLimited(false);
