@@ -43,6 +43,20 @@ const TYPE_COLOR: Record<string, string> = {
 
 const NEON_BACKBONE_SRC = "oxi-neon-backbone";
 const CRITICAL_STYLE_LAYERS = ["oxi-backbone-core"];
+const MAPLIBRE_WORKER_URL = "/maplibre-gl-csp-worker.js?v=oxi-map-stable-20260701";
+
+function configureMapLibreRuntime() {
+  if (typeof window === "undefined") return;
+  try {
+    maplibregl.setWorkerCount(1);
+    if (maplibregl.getWorkerUrl() !== MAPLIBRE_WORKER_URL) {
+      maplibregl.setWorkerUrl(MAPLIBRE_WORKER_URL);
+    }
+  } catch {
+    // If a browser blocks explicit worker setup, MapLibre can still fall back
+    // to its bundled worker; we just avoid crashing the map page.
+  }
+}
 
 // Local fallback lines: even if vector tiles are late or WebGL restores only
 // partially on mobile, the map still opens with visible neon structure.
@@ -464,6 +478,7 @@ export function RomaniaMap3D({
     };
     setFirstPaintDone(false);
     try {
+      configureMapLibreRuntime();
       map = new maplibregl.Map({
         container: containerRef.current,
         style: buildNeonStyle(isSmall),
