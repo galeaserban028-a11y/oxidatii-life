@@ -203,7 +203,7 @@ function ReelTile({
           loop
           muted={muted || !active}
           playsInline
-          preload="metadata"
+          preload={active ? "auto" : "metadata"}
           className="absolute inset-0 h-full w-full object-cover"
           onClick={() => setPaused((p) => !p)}
         />
@@ -356,6 +356,7 @@ function ReelTile({
 
 function SponsoredTile({ ad, active }: { ad: Sponsored; active: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const lastSoundToggleAtRef = useRef(0);
   const [muted, setMuted] = useState(true);
   const isVideo = !!ad.video_url;
   const src = ad.video_url || ad.image_url || "";
@@ -364,9 +365,28 @@ function SponsoredTile({ ad, active }: { ad: Sponsored; active: boolean }) {
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+    setVideoMuted(v, !active || muted);
     if (active) v.play().catch(() => {});
     else v.pause();
-  }, [active]);
+  }, [active, muted]);
+
+  const handleSponsoredSoundToggle = (e: SyntheticEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const now = performance.now();
+    if (now - lastSoundToggleAtRef.current < 900) return;
+    lastSoundToggleAtRef.current = now;
+
+    const nextMuted = !muted;
+    const v = videoRef.current;
+    if (v) {
+      setVideoMuted(v, nextMuted);
+      v.play().catch(() => {
+        if (!nextMuted) toast.info("Atinge încă o dată pe sunet.");
+      });
+    }
+    setMuted(nextMuted);
+  };
 
   const handleClick = async () => {
     try {
@@ -382,9 +402,9 @@ function SponsoredTile({ ad, active }: { ad: Sponsored; active: boolean }) {
           ref={videoRef}
           src={src}
           loop
-          muted={muted}
+          muted={muted || !active}
           playsInline
-          preload="metadata"
+          preload={active ? "auto" : "metadata"}
           className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
@@ -402,9 +422,16 @@ function SponsoredTile({ ad, active }: { ad: Sponsored; active: boolean }) {
 
       {isVideo && (
         <button
-          onClick={() => setMuted((m) => !m)}
+          onPointerDown={handleSponsoredSoundToggle}
+          onTouchStart={handleSponsoredSoundToggle}
+          onMouseDown={handleSponsoredSoundToggle}
+          onClick={handleSponsoredSoundToggle}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") handleSponsoredSoundToggle(e);
+          }}
           className="absolute right-3 top-[calc(env(safe-area-inset-top)+58px)] z-10 size-9 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center"
           aria-label="mute"
+          aria-pressed={!muted}
         >
           <span className="text-white text-xs">{muted ? "🔇" : "🔊"}</span>
         </button>
