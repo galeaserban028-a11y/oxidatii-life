@@ -349,7 +349,7 @@ function UserPage() {
                           )}
                         </AvatarFrame>
                       )}
-                      <div className="min-w-0 flex-1 pr-12">
+                      <div className="min-w-0 flex-1 pr-14">
                         <div className="font-display font-bold text-2xl truncate flex items-center gap-1.5 flex-wrap">
                           @{handle}
                           {!isPublic && <Lock size={14} className="text-neon-crimson shrink-0" />}
