@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,8 +13,11 @@ import {
   MousePointerClick,
   Megaphone,
   Image as ImageIcon,
+  BarChart3,
+  Film,
 } from "lucide-react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/app/biz")({
   head: () => ({ meta: [{ title: "Promovare · OXIDAȚII" }] }),
@@ -151,6 +154,21 @@ function BizPage() {
         </button>
       </header>
 
+      <Link
+        to="/app/biz/dashboard"
+        className="flex items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-br from-[#ff3d8b]/15 via-[#c724ff]/10 to-[#00e5ff]/10 p-4 hover:border-white/25 transition"
+      >
+        <div className="size-11 rounded-xl bg-white/10 flex items-center justify-center">
+          <BarChart3 size={20} className="text-white" />
+        </div>
+        <div className="flex-1">
+          <div className="font-display uppercase text-sm text-white">Business Dashboard</div>
+          <div className="text-[11px] text-white/60">Heatmap clienți · vizitatori unici · sponsored reels · 99 RON/lună</div>
+        </div>
+        <div className="text-white/50">→</div>
+      </Link>
+
+
       {/* Pachete */}
       <div className="grid grid-cols-3 gap-2">
         {TIERS.map((t) => (
@@ -279,27 +297,33 @@ function PostModal({
   onCreated: () => void;
 }) {
   const { user } = useAuth();
+  const [mode, setMode] = useState<"feed" | "reel">("feed");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [ctaUrl, setCtaUrl] = useState("");
+  const [ctaText, setCtaText] = useState("");
   const [uploading, setUploading] = useState(false);
   const [tier, setTier] = useState<TierId>("t500");
   const [busy, setBusy] = useState(false);
 
-  const handleFile = async (file: File) => {
+  const handleFile = async (file: File, target: "image" | "video" = "image") => {
     if (!user?.id) return toast.error("Trebuie să fii autentificat");
-    if (file.size > 10 * 1024 * 1024) return toast.error("Fișier prea mare (max 10MB)");
+    const maxMb = target === "video" ? 60 : 10;
+    if (file.size > maxMb * 1024 * 1024) return toast.error(`Fișier prea mare (max ${maxMb}MB)`);
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const ext = file.name.split(".").pop()?.toLowerCase() || (target === "video" ? "mp4" : "jpg");
       const path = `${user.id}/campaigns/${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("venue-photos")
         .upload(path, file, { contentType: file.type, upsert: false });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
-      setImageUrl(pub.publicUrl);
-      toast.success("Imagine încărcată");
+      if (target === "video") setVideoUrl(pub.publicUrl);
+      else setImageUrl(pub.publicUrl);
+      toast.success(target === "video" ? "Video încărcat" : "Imagine încărcată");
     } catch (e: any) {
       toast.error(e?.message || "Eroare la încărcare");
     } finally {
@@ -309,7 +333,9 @@ function PostModal({
 
   const submit = async () => {
     if (!title.trim()) return toast.error("Adaugă un titlu");
-    if (!imageUrl.trim()) return toast.error("Adaugă o imagine");
+    if (mode === "feed" && !imageUrl.trim()) return toast.error("Adaugă o imagine");
+    if (mode === "reel" && !videoUrl.trim() && !imageUrl.trim())
+      return toast.error("Adaugă un video sau o imagine pentru reel");
     const cfg = TIERS.find((t) => t.id === tier)!;
     setBusy(true);
     const now = new Date();
@@ -318,19 +344,23 @@ function PostModal({
       business_id: businessId,
       title: title.trim(),
       body: body.trim() || null,
-      kind: "boost_feed",
+      kind: mode === "reel" ? "boost_reel" : "boost_feed",
       status: "active",
       bid_cents: 0,
       budget_cents: cfg.priceRon * 100,
-      image_urls: [imageUrl.trim()],
+      image_urls: imageUrl.trim() ? [imageUrl.trim()] : [],
+      video_url: mode === "reel" && videoUrl.trim() ? videoUrl.trim() : null,
+      cta_url: ctaUrl.trim() || null,
+      cta_text: ctaText.trim() || null,
       starts_at: now.toISOString(),
       ends_at: endsAt.toISOString(),
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success(`Postare publicată · ${cfg.label}`);
+    toast.success(`${mode === "reel" ? "Sponsored Reel" : "Postare"} publicat · ${cfg.label}`);
     onCreated();
   };
+
 
   const inputClass =
     "w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none";
@@ -357,7 +387,76 @@ function PostModal({
             </button>
           </div>
           <div className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
-            <Field label="Imagine">
+            <Field label="Tip campanie">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMode("feed")}
+                  className={`px-3 py-3 rounded-xl border text-left transition ${
+                    mode === "feed"
+                      ? "border-[#ff3d8b] bg-[#ff3d8b]/10"
+                      : "border-white/10 hover:border-white/30"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-xs font-display uppercase text-white">
+                    <ImageIcon size={13} /> Feed
+                  </div>
+                  <div className="text-[10px] text-zinc-400 mt-1">Card pe ecranul principal</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMode("reel")}
+                  className={`px-3 py-3 rounded-xl border text-left transition ${
+                    mode === "reel"
+                      ? "border-[#c724ff] bg-[#c724ff]/10"
+                      : "border-white/10 hover:border-white/30"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-xs font-display uppercase text-white">
+                    <Film size={13} /> Sponsored Reel
+                  </div>
+                  <div className="text-[10px] text-zinc-400 mt-1">Video în feed-ul Reels</div>
+                </button>
+              </div>
+            </Field>
+
+            {mode === "reel" && (
+              <Field label="Video (max 60MB, mp4/webm)">
+                {videoUrl ? (
+                  <div className="relative rounded-xl overflow-hidden border border-white/10">
+                    <video src={videoUrl} className="w-full max-h-72" controls />
+                    <button
+                      type="button"
+                      onClick={() => setVideoUrl("")}
+                      className="absolute top-2 right-2 bg-black/70 rounded-full p-1.5"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <label
+                    className={`flex flex-col items-center justify-center gap-2 cursor-pointer ${inputClass} py-10 border-dashed text-zinc-400 hover:text-white hover:border-[#c724ff]/50`}
+                  >
+                    {uploading ? <Loader2 size={18} className="animate-spin" /> : <Film size={18} />}
+                    <span className="text-[11px] font-mono uppercase tracking-widest">
+                      {uploading ? "se încarcă..." : "alege video"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/webm,video/quicktime"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handleFile(f, "video");
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                )}
+              </Field>
+            )}
+
+            <Field label={mode === "reel" ? "Imagine (fallback dacă nu ai video)" : "Imagine"}>
               {imageUrl ? (
                 <div className="relative rounded-xl overflow-hidden border border-white/10">
                   <img src={imageUrl} alt="preview" className="w-full max-h-72 object-cover" />
@@ -390,6 +489,29 @@ function PostModal({
                 </label>
               )}
             </Field>
+
+            {mode === "reel" && (
+              <>
+                <Field label="Buton CTA text (opțional)">
+                  <input
+                    value={ctaText}
+                    onChange={(e) => setCtaText(e.target.value)}
+                    placeholder="Rezervă masă"
+                    className={inputClass}
+                    maxLength={15}
+                  />
+                </Field>
+                <Field label="Buton CTA link (opțional)">
+                  <input
+                    value={ctaUrl}
+                    onChange={(e) => setCtaUrl(e.target.value)}
+                    placeholder="https://..."
+                    className={inputClass}
+                  />
+                </Field>
+              </>
+            )}
+
 
             <Field label="Titlu">
               <input

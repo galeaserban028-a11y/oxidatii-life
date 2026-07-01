@@ -45,6 +45,7 @@ const ALLOWED_PRICES = new Set([
   "replay_night",
   "last_call_send",
   "last_call_reveal",
+  "biz_dashboard_monthly",
 ]);
 
 const COIN_PACKS: Record<string, number> = {
@@ -55,7 +56,7 @@ const COIN_PACKS: Record<string, number> = {
   coins_legenda: 5000,
 };
 
-// À la carte one-time SKUs auto-provisioned in Stripe if the lookup_key is missing.
+// À la carte SKUs auto-provisioned in Stripe if the lookup_key is missing.
 // Amounts in RON minor units (bani).
 const ALACARTE_SKUS: Record<
   string,
@@ -66,13 +67,14 @@ const ALACARTE_SKUS: Record<
     currency: string;
     kind: string;
     days?: number;
+    recurring?: "month" | "year";
   }
 > = {
   crystal_ball_7d: {
     name: "Crystal Ball · 7 zile",
     description:
       "Vezi cine ți-a vizitat profilul și cine a fost fizic aproape de tine în ultimele 7 zile.",
-    amount: 300, // 3.00 RON
+    amount: 300,
     currency: "ron",
     kind: "crystal_ball",
     days: 7,
@@ -81,25 +83,35 @@ const ALACARTE_SKUS: Record<
     name: "Replay Night · 1 seară",
     description:
       "Reaserează noaptea de ieri: traseu, venue-uri, poze, spritz-uri — generat automat și share-uibil pe Stories.",
-    amount: 999, // 9.99 RON
+    amount: 999,
     currency: "ron",
     kind: "replay_night",
   },
   last_call_send: {
     name: "Last Call · trimite ping",
     description: "Trimite un ping anonim cuiva: \"Cineva vrea să te vadă diseară 👀\".",
-    amount: 299, // 2.99 RON
+    amount: 299,
     currency: "ron",
     kind: "last_call_send",
   },
   last_call_reveal: {
     name: "Last Call · reveal",
     description: "Află cine ți-a trimis pingul Last Call.",
-    amount: 499, // 4.99 RON
+    amount: 499,
     currency: "ron",
     kind: "last_call_reveal",
   },
+  biz_dashboard_monthly: {
+    name: "Business Dashboard · lunar",
+    description:
+      "Heatmap clienți, statistici vizite, campanii push și acces la promovare Sponsored Reel pentru business-urile tale.",
+    amount: 9900, // 99.00 RON
+    currency: "ron",
+    kind: "biz_dashboard",
+    recurring: "month",
+  },
 };
+
 
 // price_id → premium tier + one-time coin grant. Must match webhook at src/routes/api/public/payments/webhook.tsx
 const TIER_MAP: Record<string, { tier: "vip" | "vip_plus" | "pro" | "elite"; coins: number }> = {
@@ -188,6 +200,7 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
           lookup_key: data.priceId,
           nickname: sku.name,
           metadata: { lovable_external_id: data.priceId },
+          ...(sku.recurring && { recurring: { interval: sku.recurring } }),
         });
       } else {
         return { error: "Preț indisponibil" };
@@ -403,7 +416,9 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
       }
       const priceLookup = price.lookup_key || price.metadata?.lovable_external_id || price.id;
       const tierInfo = priceLookup ? TIER_MAP[priceLookup] : null;
-      if (!tierInfo) {
+      const isBizDashboard =
+        priceLookup === "biz_dashboard_monthly" || session.metadata?.kind === "biz_dashboard";
+      if (!tierInfo && !isBizDashboard) {
         return { success: false, error: "Nu am recunoscut produsul cumpărat" };
       }
 
@@ -433,6 +448,11 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
         { onConflict: "stripe_subscription_id" },
       );
 
+      if (isBizDashboard) {
+        return { success: true, tier: "biz_dashboard" };
+      }
+      const tier = tierInfo!;
+
       // Apply premium tier and grant one-time coins on first upgrade
       const { data: prof } = await supabaseAdmin
         .from("profiles")
@@ -440,7 +460,7 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
         .eq("id", userId)
         .maybeSingle();
       const currentCoins = (prof?.coin_balance as number | undefined) ?? 0;
-      const wasUpgraded = prof?.premium_tier !== tierInfo.tier;
+      const wasUpgraded = prof?.premium_tier !== tier.tier;
 
       const PREMIUM_FRAME: Record<string, string> = {
         vip: "vip_aurum",
@@ -448,7 +468,7 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
         pro: "pro_holo",
         elite: "elite_diamond",
       };
-      const frameId = PREMIUM_FRAME[tierInfo.tier];
+      const frameId = PREMIUM_FRAME[tier.tier];
       if (frameId) {
         await supabaseAdmin
           .from("user_frames")
@@ -461,18 +481,19 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
       await supabaseAdmin
         .from("profiles")
         .update({
-          premium_tier: tierInfo.tier,
+          premium_tier: tier.tier,
           premium_until: periodEndIso,
-          ...(wasUpgraded && { coin_balance: currentCoins + tierInfo.coins }),
+          ...(wasUpgraded && { coin_balance: currentCoins + tier.coins }),
           ...(wasUpgraded && frameId && !prof?.active_frame_id && { active_frame_id: frameId }),
         })
         .eq("id", userId);
 
-      return { success: true, tier: tierInfo.tier };
+      return { success: true, tier: tier.tier };
     } catch (error) {
       return { success: false, error: getStripeErrorMessage(error) };
     }
   });
+
 
 export const createPremiumPortalSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
