@@ -308,7 +308,27 @@ function VenuePage() {
               }
               toast.success("Ești aici · vizibil 4h");
               qc.invalidateQueries({ queryKey: ["venue", id] });
-            }}
+
+              // Fetch stats & open share sheet
+              try {
+                const { data: prof } = await supabase
+                  .from("profiles")
+                  .select("display_name,avatar_url,lifetime_sprits,current_streak")
+                  .eq("id", user.id)
+                  .maybeSingle();
+                setShareData({
+                  userName:
+                    prof?.display_name ||
+                    (user.email ? user.email.split("@")[0] : "Oxidat"),
+                  userAvatar: prof?.avatar_url ?? null,
+                  spritzScore: prof?.lifetime_sprits ?? null,
+                  streak: prof?.current_streak ?? null,
+                });
+                setShareOpen(true);
+              } catch (e) {
+                console.warn("[checkin share] profile fetch failed", e);
+              }
+
             className="rounded-2xl bg-card border border-border text-foreground py-3.5 text-sm font-semibold active:scale-[0.98] transition"
           >
             Sunt aici
