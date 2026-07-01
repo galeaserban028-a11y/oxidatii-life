@@ -945,7 +945,9 @@ export function RomaniaMap3D({
         return;
       }
       repaintMap(map);
+      setFirstPaintDone(true);
     });
+
 
 
     map.on("error", (event) => {
