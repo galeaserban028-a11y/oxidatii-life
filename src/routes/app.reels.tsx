@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { TipCreatorButton } from "@/components/app/TipCreatorDialog";
 import { shareReel } from "@/lib/reelShare";
 import { recordCampaignEvent } from "@/lib/business-promotion.functions";
+import { CommentsSheet } from "@/components/app/faze/CommentsSheet";
 
 export const Route = createFileRoute("/app/reels")({
   head: () => ({ meta: [{ title: "Reels · OXIDAȚII" }] }),
