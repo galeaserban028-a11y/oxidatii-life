@@ -282,18 +282,13 @@ function ReelTile({
               e.stopPropagation();
               const v = videoRef.current;
               const next = !muted;
-              setMuted(next);
+              // Optimistically set element state inside the user gesture (iOS req)
               if (v) {
                 v.muted = next;
                 v.volume = 1;
-                if (!next) {
-                  // iOS Safari: must call play() inside the user gesture
-                  v.play().catch(() => {
-                    v.muted = true;
-                    setMuted(true);
-                  });
-                }
+                v.play().catch(() => {});
               }
+              onToggleMute();
             }}
             className="size-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center active:scale-90 transition"
             aria-label="mute"
