@@ -6,11 +6,48 @@ import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { TipCreatorButton } from "@/components/app/TipCreatorDialog";
 import { shareReel } from "@/lib/reelShare";
+import { recordCampaignEvent } from "@/lib/business-promotion.functions";
 
 export const Route = createFileRoute("/app/reels")({
   head: () => ({ meta: [{ title: "Reels · OXIDAȚII" }] }),
   component: ReelsPage,
 });
+
+type Sponsored = {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  cta_text: string | null;
+  cta_url: string | null;
+  video_url: string | null;
+  image_url: string | null;
+  theme_color: string | null;
+  brand_name: string | null;
+};
+
+async function loadSponsored(): Promise<Sponsored[]> {
+  const { data } = await supabase
+    .from("campaigns")
+    .select(
+      "id, title, subtitle, cta_text, cta_url, video_url, image_urls, theme_color, kind, business:business_accounts(brand_name)",
+    )
+    .eq("kind", "boost_reel")
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(10);
+  return (data ?? []).map((c: any) => ({
+    id: c.id,
+    title: c.title,
+    subtitle: c.subtitle,
+    cta_text: c.cta_text,
+    cta_url: c.cta_url,
+    video_url: c.video_url,
+    image_url: Array.isArray(c.image_urls) && c.image_urls[0] ? c.image_urls[0] : null,
+    theme_color: c.theme_color,
+    brand_name: c.business?.brand_name ?? null,
+  }));
+}
+
 
 type Reel = {
   id: string;
