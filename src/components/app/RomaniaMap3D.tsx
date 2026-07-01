@@ -549,13 +549,12 @@ export function RomaniaMap3D({
 
     loadWatchdog = window.setTimeout(() => {
       if (loadedRef.current) return;
-      if (autoRetryCountRef.current < 2) {
-        autoRetryCountRef.current += 1;
-        setRetryKey((k) => k + 1);
-      } else {
-        setMapFailed(true);
-      }
-    }, 6500);
+      // On iPhone/Safari the native WebGL + glyph pipeline can be late even
+      // though the map is about to paint. Do not tear the map down here — the
+      // retry loop itself was causing the endless "se încarcă harta" state.
+      setupInteractiveLayers();
+      markFirstPaint();
+    }, 2800);
 
     const setupInteractiveLayers = () => {
       if (disposed) return;
@@ -945,12 +944,8 @@ export function RomaniaMap3D({
     // idle (as before) caused sporadic hard resets of the whole map during
     // normal panning when a tile momentarily failed to fetch.
     map.once("idle", () => {
-      if (!mapHasCriticalLayers(map) && autoRetryCountRef.current < 2) {
-        autoRetryCountRef.current += 1;
-        setRetryKey((k) => k + 1);
-        return;
-      }
       repaintMap(map);
+      if (!mapHasCriticalLayers(map)) setupInteractiveLayers();
       markFirstPaint();
     });
 
@@ -989,7 +984,8 @@ export function RomaniaMap3D({
       if (contextRetryTimer) window.clearTimeout(contextRetryTimer);
       contextRetryTimer = window.setTimeout(() => {
         if (!contextWasLost) return;
-        setRetryKey((k) => k + 1);
+        containerRef.current?.classList.remove("oxi-map-recovering");
+        markFirstPaint();
       }, 2200);
       contextRetryTimerRef.current = contextRetryTimer;
     };
@@ -1005,12 +1001,8 @@ export function RomaniaMap3D({
       repaintMap(map);
       if (restoreHealthTimer) window.clearTimeout(restoreHealthTimer);
       restoreHealthTimer = window.setTimeout(() => {
-        if (!mapHasCriticalLayers(map) && autoRetryCountRef.current < 2) {
-          autoRetryCountRef.current += 1;
-          setRetryKey((k) => k + 1);
-        } else {
-          repaintMap(map);
-        }
+        if (!mapHasCriticalLayers(map)) setupInteractiveLayers();
+        repaintMap(map);
       }, 350);
     };
     canvas.addEventListener("webglcontextlost", onLost as any);
