@@ -483,6 +483,13 @@ export type Database = {
             referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "campaign_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       campaign_likes: {
@@ -507,6 +514,13 @@ export type Database = {
             columns: ["campaign_id"]
             isOneToOne: false
             referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_likes_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns_public"
             referencedColumns: ["id"]
           },
         ]
@@ -2676,6 +2690,107 @@ export type Database = {
             columns: ["exclusive_city_id"]
             isOneToOne: false
             referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns_public: {
+        Row: {
+          body: string | null
+          business_id: string | null
+          cta_text: string | null
+          cta_url: string | null
+          ends_at: string | null
+          entry_kind: string | null
+          entry_price_text: string | null
+          event_starts_at: string | null
+          id: string | null
+          image_urls: string[] | null
+          kind: Database["public"]["Enums"]["campaign_kind"] | null
+          party_id: string | null
+          special_guest: string | null
+          starts_at: string | null
+          status: Database["public"]["Enums"]["campaign_status"] | null
+          street: string | null
+          subtitle: string | null
+          theme_color: string | null
+          title: string | null
+          venue_id: string | null
+          video_url: string | null
+        }
+        Insert: {
+          body?: string | null
+          business_id?: string | null
+          cta_text?: string | null
+          cta_url?: string | null
+          ends_at?: string | null
+          entry_kind?: string | null
+          entry_price_text?: string | null
+          event_starts_at?: string | null
+          id?: string | null
+          image_urls?: string[] | null
+          kind?: Database["public"]["Enums"]["campaign_kind"] | null
+          party_id?: string | null
+          special_guest?: string | null
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"] | null
+          street?: string | null
+          subtitle?: string | null
+          theme_color?: string | null
+          title?: string | null
+          venue_id?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          body?: string | null
+          business_id?: string | null
+          cta_text?: string | null
+          cta_url?: string | null
+          ends_at?: string | null
+          entry_kind?: string | null
+          entry_price_text?: string | null
+          event_starts_at?: string | null
+          id?: string | null
+          image_urls?: string[] | null
+          kind?: Database["public"]["Enums"]["campaign_kind"] | null
+          party_id?: string | null
+          special_guest?: string | null
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["campaign_status"] | null
+          street?: string | null
+          subtitle?: string | null
+          theme_color?: string | null
+          title?: string | null
+          venue_id?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_accounts_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_party_id_fkey"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "parties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
             referencedColumns: ["id"]
           },
         ]
