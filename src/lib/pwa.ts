@@ -78,7 +78,7 @@ export async function repairInstalledPwa(options: { reload?: boolean } = {}): Pr
   const hadCaches = await deleteAppShellCaches();
   const shouldReload = options.reload || hadWorker || hadCaches;
   if (!shouldReload) return;
-  const reloadKey = "oxi_pwa_repair_reloaded_v2";
+  const reloadKey = "oxi_pwa_repair_reloaded_v3_map_worker";
   if (sessionStorage.getItem(reloadKey) === "1") return;
   sessionStorage.setItem(reloadKey, "1");
   window.location.reload();

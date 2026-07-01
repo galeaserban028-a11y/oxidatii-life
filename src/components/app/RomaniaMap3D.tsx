@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import maplibregl, { Map as MlMap, Marker } from "maplibre-gl";
+import maplibregl from "maplibre-gl";
+import type { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Crosshair, Plus, Minus } from "lucide-react";
 
@@ -43,6 +44,20 @@ const TYPE_COLOR: Record<string, string> = {
 
 const NEON_BACKBONE_SRC = "oxi-neon-backbone";
 const CRITICAL_STYLE_LAYERS = ["oxi-backbone-core"];
+const MAPLIBRE_WORKER_URL = "/maplibre-gl-csp-worker.js?v=oxi-map-csp-20260701b";
+
+function configureMapLibreRuntime() {
+  if (typeof window === "undefined") return;
+  try {
+    maplibregl.setWorkerCount(1);
+    if (maplibregl.getWorkerUrl() !== MAPLIBRE_WORKER_URL) {
+      maplibregl.setWorkerUrl(MAPLIBRE_WORKER_URL);
+    }
+  } catch {
+    // If a browser blocks explicit worker setup, MapLibre can still fall back
+    // to its bundled worker; we just avoid crashing the map page.
+  }
+}
 
 // Local fallback lines: even if vector tiles are late or WebGL restores only
 // partially on mobile, the map still opens with visible neon structure.
@@ -464,6 +479,7 @@ export function RomaniaMap3D({
     };
     setFirstPaintDone(false);
     try {
+      configureMapLibreRuntime();
       map = new maplibregl.Map({
         container: containerRef.current,
         style: buildNeonStyle(isSmall),
@@ -521,6 +537,7 @@ export function RomaniaMap3D({
       try {
         map.resize();
         map.triggerRepaint();
+        markFirstPaint();
       } catch {}
     };
     map.on("styledata", onStyleData);
@@ -533,7 +550,7 @@ export function RomaniaMap3D({
       // retry loop itself was causing the endless "se încarcă harta" state.
       setupInteractiveLayers();
       markFirstPaint();
-    }, 2800);
+    }, isSmall ? 900 : 1200);
 
     const setupInteractiveLayers = () => {
       if (disposed) return;
@@ -923,7 +940,8 @@ export function RomaniaMap3D({
     // caused the first seconds to show a different/empty map until zooming.
     map.once("style.load", setupInteractiveLayers);
     map.once("load", setupInteractiveLayers);
-    firstPaintTimer = window.setTimeout(markFirstPaint, isSmall ? 3200 : 1800);
+    map.once("render", markFirstPaint);
+    firstPaintTimer = window.setTimeout(markFirstPaint, isSmall ? 1400 : 1800);
     window.setTimeout(setupInteractiveLayers, 260);
 
     // One-shot health check after the very first idle. Retrying on every
