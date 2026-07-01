@@ -16,28 +16,20 @@ type PromoTile = {
 };
 
 async function loadPromoTiles(): Promise<PromoTile[]> {
-  const nowIso = new Date().toISOString();
-  const { data } = await supabase
-    .from("campaigns")
-    .select(
-      "id, title, theme_color, image_urls, business_accounts!inner(logo_url, cover_url, brand_name), venues(name)",
-    )
-    .eq("status", "active")
-    .lte("starts_at", nowIso)
-    .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
-    .limit(20);
+  const { data } = await supabase.rpc("get_active_campaigns", { _limit: 20 });
   return ((data ?? []) as any[]).map((c) => ({
     campaignId: c.id,
     title: c.title ?? null,
-    brand: c.venues?.name ?? c.business_accounts?.brand_name ?? null,
+    brand: c.venue_name ?? c.business_brand_name ?? null,
     cover:
-      (c.image_urls?.[0] as string | undefined) ??
-      c.business_accounts?.cover_url ??
-      c.business_accounts?.logo_url ??
+      (Array.isArray(c.image_urls) && c.image_urls[0]) ||
+      c.business_cover_url ||
+      c.business_logo_url ||
       null,
     theme: c.theme_color ?? "#ff3d8b",
   }));
 }
+
 
 type StoryRow = {
   id: string;

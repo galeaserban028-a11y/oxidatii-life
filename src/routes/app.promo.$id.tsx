@@ -21,18 +21,16 @@ function PromoPage() {
     queryKey: ["promo", id],
     queryFn: async () => {
       const { data: campaign, error } = await supabase
-        .from("campaigns")
-        .select(
-          "id,business_id,title,body,subtitle,cta_text,cta_url,image_urls,theme_color,starts_at,ends_at,impressions,clicks",
-        )
-        .eq("id", id)
-        .single();
+        .rpc("get_campaign_public", { _id: id })
+        .maybeSingle();
       if (error) throw error;
+      if (!campaign) throw new Error("Campanie indisponibilă");
       const biz = await supabase
-        .rpc("get_business_account_public", { _id: campaign.business_id })
+        .rpc("get_business_account_public", { _id: (campaign as any).business_id })
         .maybeSingle();
       return { campaign, biz: biz.data };
     },
+
   });
 
   const { data: likeState } = useQuery({

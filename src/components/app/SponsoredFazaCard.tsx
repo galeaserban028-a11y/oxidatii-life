@@ -33,45 +33,46 @@ export function usePromoCards() {
   return useQuery({
     queryKey: ["faze-promo-cards"],
     queryFn: async (): Promise<AdCard[]> => {
-      const nowIso = new Date().toISOString();
-      const { data, error } = await supabase
-        .from("campaigns")
-        .select(
-          "id, title, body, subtitle, theme_color, image_urls, video_url, cta_url, cta_text, venue_id, business_accounts!inner(logo_url, cover_url, brand_name, reputation_score, total_reviews)",
-        )
-        .eq("status", "active")
-        .lte("starts_at", nowIso)
-        .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
-        .limit(10);
+      const { data, error } = await supabase.rpc("get_active_campaigns", { _limit: 10 });
       if (error) {
         console.warn("[usePromoCards]", error.message);
         return [];
       }
       const rows = (data ?? []) as any[];
-      const venueIds = Array.from(new Set(rows.map((r) => r.venue_id).filter(Boolean)));
-      const venuesMap = new Map<string, string>();
-      if (venueIds.length) {
-        const { data: vs } = await supabase.from("venues").select("id, name").in("id", venueIds);
-        (vs ?? []).forEach((v: any) => venuesMap.set(v.id, v.name));
-      }
-      return rows.map((c) => ({
-        id: c.id as string,
-        title: (c.title as string | null) ?? null,
-        body: (c.body as string | null) ?? (c.subtitle as string | null) ?? null,
-        brand: (venuesMap.get(c.venue_id) ?? c.business_accounts?.brand_name ?? null) as
-          | string
-          | null,
-        logo: (c.business_accounts?.logo_url ?? null) as string | null,
-        cover: ((c.image_urls?.[0] as string | undefined) ??
-          c.business_accounts?.cover_url ??
-          null) as string | null,
-        video: (c.video_url as string | null) ?? null,
-        ctaUrl: (c.cta_url as string | null) ?? null,
-        ctaText: (c.cta_text as string | null) ?? null,
-        theme: (c.theme_color ?? "#ff3d8b") as string,
-        rating: (c.business_accounts?.reputation_score as number | null) ?? null,
-        reviewsCount: (c.business_accounts?.total_reviews as number | null) ?? null,
-      }));
+      // Fetch review counts via safe public RPC (avoids business_accounts direct read)
+      const bizIds = Array.from(new Set(rows.map((r) => r.business_id).filter(Boolean)));
+      const bizExtras = new Map<string, { rating: number | null; reviews: number | null }>();
+      await Promise.all(
+        bizIds.map(async (id) => {
+          const { data: b } = await supabase
+            .rpc("get_business_account_public", { _id: id })
+            .maybeSingle();
+          if (b) {
+            bizExtras.set(id, {
+              rating: (b as any).reputation_score ?? null,
+              reviews: (b as any).total_reviews ?? null,
+            });
+          }
+        }),
+      );
+      return rows.map((c) => {
+        const extras = bizExtras.get(c.business_id) ?? { rating: null, reviews: null };
+        return {
+          id: c.id as string,
+          title: (c.title as string | null) ?? null,
+          body: (c.body as string | null) ?? (c.subtitle as string | null) ?? null,
+          brand: (c.venue_name ?? c.business_brand_name ?? null) as string | null,
+          logo: (c.business_logo_url ?? null) as string | null,
+          cover: ((Array.isArray(c.image_urls) && c.image_urls[0]) ?? c.business_cover_url ?? null) as string | null,
+          video: (c.video_url as string | null) ?? null,
+          ctaUrl: (c.cta_url as string | null) ?? null,
+          ctaText: (c.cta_text as string | null) ?? null,
+          theme: (c.theme_color ?? "#ff3d8b") as string,
+          rating: extras.rating,
+          reviewsCount: extras.reviews,
+        };
+      });
+
     },
     refetchInterval: 120_000,
   });

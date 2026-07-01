@@ -27,15 +27,10 @@ type Sponsored = {
 };
 
 async function loadSponsored(): Promise<Sponsored[]> {
-  const { data } = await supabase
-    .from("campaigns")
-    .select(
-      "id, title, subtitle, cta_text, cta_url, video_url, image_urls, theme_color, kind, business:business_accounts(brand_name)",
-    )
-    .eq("kind", "boost_reel")
-    .eq("status", "active")
-    .order("created_at", { ascending: false })
-    .limit(10);
+  const { data } = await supabase.rpc("get_active_campaigns", {
+    _kinds: ["boost_reel"],
+    _limit: 10,
+  });
   return (data ?? []).map((c: any) => ({
     id: c.id,
     title: c.title,
@@ -45,7 +40,7 @@ async function loadSponsored(): Promise<Sponsored[]> {
     video_url: c.video_url,
     image_url: Array.isArray(c.image_urls) && c.image_urls[0] ? c.image_urls[0] : null,
     theme_color: c.theme_color,
-    brand_name: c.business?.brand_name ?? null,
+    brand_name: c.business_brand_name ?? null,
   }));
 }
 

@@ -59,18 +59,11 @@ function markSeenFull(id: string) {
 async function loadActive(
   excludeIds: string[] = [],
 ): Promise<{ campaign: Campaign; biz: Biz | null } | null> {
-  const nowIso = new Date().toISOString();
-  const { data } = await supabase
-    .from("campaigns")
-    .select(
-      "id, business_id, kind, title, subtitle, cta_text, cta_url, image_urls, theme_color, venue_id, party_id, event_starts_at, entry_kind, entry_price_text, street, special_guest, video_url",
-    )
-    .eq("status", "active")
-    .lte("starts_at", nowIso)
-    .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
-    .in("kind", ["boost_story", "boost_feed", "boost_discover"])
-    .order("bid_cents", { ascending: false })
-    .limit(20);
+  const { data } = await supabase.rpc("get_active_campaigns", {
+    _kinds: ["boost_story", "boost_feed", "boost_discover"],
+    _limit: 20,
+  });
+
 
   const dismissed = new Set([...getDismissed(), ...excludeIds]);
   const list = ((data ?? []) as Campaign[]).filter((c) => !dismissed.has(c.id));

@@ -395,17 +395,8 @@ function MapPage() {
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     queryFn: async () => {
-      const nowIso = new Date().toISOString();
-      const { data, error } = await supabase
-        .from("campaigns")
-        .select(
-          "id, title, venue_id, theme_color, image_urls, business_id, business_accounts!inner(venue_id, logo_url, cover_url, brand_name, tier)",
-        )
-        .eq("status", "active")
-        .lte("starts_at", nowIso)
-        .or(`ends_at.is.null,ends_at.gt.${nowIso}`);
+      const { data, error } = await supabase.rpc("get_active_campaigns", { _limit: 50 });
       if (error) throw error;
-      const tierRank: Record<string, number> = { starter: 1, popular: 2, elite: 3, exclusive: 4 };
       const map: Record<
         string,
         {
@@ -418,26 +409,25 @@ function MapPage() {
         }
       > = {};
       for (const c of (data ?? []) as any[]) {
-        const vid = c.venue_id ?? c.business_accounts?.venue_id;
+        const vid = c.venue_id;
         if (!vid) continue;
-        const tier = (c.business_accounts?.tier as string) ?? "starter";
-        const existing = map[vid];
-        if (existing && (tierRank[existing.tier] ?? 0) >= (tierRank[tier] ?? 0)) continue;
+        if (map[vid]) continue;
         const cover =
-          (c.image_urls?.[0] as string | undefined) ??
-          c.business_accounts?.logo_url ??
-          c.business_accounts?.cover_url ??
+          (Array.isArray(c.image_urls) && c.image_urls[0]) ||
+          c.business_logo_url ||
+          c.business_cover_url ||
           null;
         map[vid] = {
           theme: c.theme_color ?? "#ff3d8b",
           cover,
           campaignId: c.id,
           title: c.title ?? null,
-          venueName: c.business_accounts?.brand_name ?? null,
-          tier,
+          venueName: c.venue_name ?? c.business_brand_name ?? null,
+          tier: "starter",
         };
       }
       return map;
+
     },
     refetchInterval: 60_000,
   });
