@@ -273,6 +273,8 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
         ...(data.extra?.target_id && { target_id: data.extra.target_id }),
         ...(data.extra?.ping_id && { ping_id: data.extra.ping_id }),
         ...(data.extra?.date && { replay_date: data.extra.date }),
+        ...(data.extra?.campaign_id && { campaign_id: data.extra.campaign_id }),
+
       };
 
       const session = await stripe.checkout.sessions.create({
