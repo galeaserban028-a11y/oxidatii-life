@@ -1360,7 +1360,7 @@ export function RomaniaMap3D({
       duration: compactMapRef.current ? 500 : 850,
       essential: true,
     });
-  }, [focusCity]);
+  }, [focusCity, mapReadyTick]);
 
   // FIT BOUNDS — used for country/region zoom
   useEffect(() => {
@@ -1379,7 +1379,7 @@ export function RomaniaMap3D({
     };
     if (loadedRef.current) fit();
     else map.once("load", fit);
-  }, [fitBounds]);
+  }, [fitBounds, mapReadyTick]);
 
   // FRIENDS → diff-only DOM markers. When a friend's coords change, smoothly
   // tween the marker between the old and new positions so it looks like they
