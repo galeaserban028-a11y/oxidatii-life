@@ -1086,6 +1086,15 @@ function MapPage() {
             onFocus={(lat, lng) => setFocusCity({ lat, lng, zoom: 14.5 })}
             onCellsChange={setHeatNowCells}
           />
+
+          <Link
+            to="/app/radar"
+            className="flex items-center gap-1.5 rounded-full border border-cyan-400/40 bg-black/60 px-3 py-1.5 text-xs font-semibold text-cyan-200 shadow-[0_0_16px_rgba(34,211,238,0.35)] backdrop-blur-md"
+            title="Spritz Radar Live — AR"
+          >
+            <Sparkles size={14} />
+            AR Radar
+          </Link>
         </div>
 
         <MapSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
