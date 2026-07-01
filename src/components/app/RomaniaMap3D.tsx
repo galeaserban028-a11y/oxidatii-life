@@ -383,7 +383,7 @@ function resolveCityLabelCollisions(container: HTMLElement | null, compact: bool
 }
 
 function mapHasCriticalLayers(map: MlMap) {
-  return CRITICAL_STYLE_LAYERS.some((layer) => !!map.getLayer(layer));
+  return CRITICAL_STYLE_LAYERS.every((layer) => !!map.getLayer(layer));
 }
 
 function repaintMap(map: MlMap) {
@@ -435,6 +435,7 @@ export function RomaniaMap3D({
   const autoRetryCountRef = useRef(0);
   const [mapFailed, setMapFailed] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  const [mapReadyTick, setMapReadyTick] = useState(0);
 
   useEffect(() => {
     navRef.current = nav;
@@ -473,6 +474,7 @@ export function RomaniaMap3D({
     let loadWatchdog: number | null = null;
     let restoreHealthTimer: number | null = null;
     let contextWasLost = false;
+    let disposed = false;
     const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
     try {
       map = new maplibregl.Map({
@@ -549,7 +551,22 @@ export function RomaniaMap3D({
       }
     }, 6500);
 
-    map.on("load", () => {
+    const setupInteractiveLayers = () => {
+      if (disposed) return;
+      if (loadedRef.current || map.getSource(VENUES_SRC)) return;
+      try {
+        map.addSource(VENUES_SRC, {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+          cluster: true,
+          clusterRadius: 48,
+          clusterMaxZoom: 12,
+        });
+      } catch {
+        window.setTimeout(setupInteractiveLayers, 120);
+        return;
+      }
+
       loadedRef.current = true;
       autoRetryCountRef.current = 0;
       if (loadWatchdog) {
@@ -563,18 +580,6 @@ export function RomaniaMap3D({
       repaintMap(map);
       window.setTimeout(() => repaintMap(map), 120);
       window.setTimeout(() => repaintMap(map), 480);
-
-      // GPU-rendered venue layer + clustering — handles thousands of points at 60fps
-      // Enable real clustering so the cluster layers below actually render
-      // (previously cluster:false meant clusters were declared but never used,
-      // forcing thousands of individual symbols → frame drops).
-      map.addSource(VENUES_SRC, {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-        cluster: true,
-        clusterRadius: 48,
-        clusterMaxZoom: 12,
-      });
 
       if (!isSmall) {
         // Desktop-only heat layer. On mobile GPUs the heatmap blur competes
@@ -917,7 +922,15 @@ export function RomaniaMap3D({
       });
 
       repaintMap(map);
-    });
+      setMapReadyTick((tick) => tick + 1);
+    };
+
+    // Add OXIDAȚII overlays as soon as the style exists, not on full map
+    // "load". Full load can wait on slow vector tiles/glyphs on mobile, which
+    // caused the first seconds to show a different/empty map until zooming.
+    map.once("style.load", setupInteractiveLayers);
+    map.once("load", setupInteractiveLayers);
+    window.setTimeout(setupInteractiveLayers, 260);
 
     map.on("idle", () => {
       if (!mapHasCriticalLayers(map) && autoRetryCountRef.current < 2) {
@@ -999,6 +1012,7 @@ export function RomaniaMap3D({
 
     mapRef.current = map;
     return () => {
+      disposed = true;
       cityMarkers.current.forEach((m) => m.remove());
       cityMarkers.current.clear();
       friendMarkers.current.forEach((m) => m.remove());
@@ -1070,7 +1084,7 @@ export function RomaniaMap3D({
     };
     if (loadedRef.current) apply();
     else map.once("load", apply);
-  }, [venues, promotedMeta, retryKey]);
+  }, [venues, promotedMeta, retryKey, mapReadyTick]);
 
   // Heatmap pulse intentionally removed — it called setPaintProperty every
   // 120ms which forced a full WebGL repaint and dropped the whole map below
@@ -1097,7 +1111,7 @@ export function RomaniaMap3D({
     };
     if (loadedRef.current) apply();
     else map.once("load", apply);
-  }, [heatNowCells, retryKey]);
+  }, [heatNowCells, retryKey, mapReadyTick]);
 
   // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
   // halo. Replaces the bottle silhouette so paying businesses are instantly
@@ -1217,7 +1231,7 @@ export function RomaniaMap3D({
     };
     if (loadedRef.current) build();
     else map.once("load", build);
-  }, [venues, promotedMeta, retryKey]);
+  }, [venues, promotedMeta, retryKey, mapReadyTick]);
 
   // CITIES → only the hottest cities get a tiny label; the basemap provides
   // the clean city/country typography, avoiding the previous label pile-up.
@@ -1332,7 +1346,7 @@ export function RomaniaMap3D({
     requestAnimationFrame(() =>
       resolveCityLabelCollisions(containerRef.current, compactMapRef.current),
     );
-  }, [cities, retryKey]);
+  }, [cities, retryKey, mapReadyTick]);
 
   // FOCUS city programmatically. easeTo is lighter than flyTo on mobile GPUs.
   useEffect(() => {
@@ -1492,7 +1506,7 @@ export function RomaniaMap3D({
         friendMarkers.current.delete(id);
       }
     }
-  }, [friends, retryKey]);
+  }, [friends, retryKey, mapReadyTick]);
 
   const mePin = friends.find((f) => f.is_me);
 
