@@ -170,6 +170,7 @@ function DashboardPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 pt-6 pb-24 space-y-5">
+      <BackBtn />
       <header className="flex items-center justify-between gap-3">
         <div>
           <h1 className="font-display uppercase text-xl text-white">Dashboard</h1>
