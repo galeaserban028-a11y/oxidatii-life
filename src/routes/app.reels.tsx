@@ -309,6 +309,89 @@ function ReelTile({
   );
 }
 
+function SponsoredTile({ ad, active }: { ad: Sponsored; active: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
+  const isVideo = !!ad.video_url;
+  const src = ad.video_url || ad.image_url || "";
+  const color = ad.theme_color || "#ff3d8b";
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (active) v.play().catch(() => {});
+    else v.pause();
+  }, [active]);
+
+  const handleClick = async () => {
+    try {
+      await recordCampaignEvent({ data: { campaignId: ad.id, eventType: "click" } });
+    } catch {}
+    if (ad.cta_url) window.open(ad.cta_url, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <section className="relative h-[100svh] w-full snap-start snap-always overflow-hidden bg-black">
+      {isVideo ? (
+        <video
+          ref={videoRef}
+          src={src}
+          loop
+          muted={muted}
+          playsInline
+          preload="metadata"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <img src={src} alt={ad.title} className="absolute inset-0 h-full w-full object-cover" />
+      )}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+      <div
+        className="absolute top-[calc(env(safe-area-inset-top)+58px)] left-3 z-10 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border backdrop-blur-md"
+        style={{ background: `${color}22`, borderColor: `${color}66`, color: "#fff" }}
+      >
+        ✦ Sponsorizat{ad.brand_name ? ` · ${ad.brand_name}` : ""}
+      </div>
+
+      {isVideo && (
+        <button
+          onClick={() => setMuted((m) => !m)}
+          className="absolute right-3 top-[calc(env(safe-area-inset-top)+58px)] z-10 size-9 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center"
+          aria-label="mute"
+        >
+          <span className="text-white text-xs">{muted ? "🔇" : "🔊"}</span>
+        </button>
+      )}
+
+      <div className="absolute inset-x-0 bottom-0 px-4 pb-28 text-white space-y-3">
+        <div>
+          <div className="font-display uppercase text-2xl leading-tight" style={{ textShadow: "0 2px 12px rgba(0,0,0,.6)" }}>
+            {ad.title}
+          </div>
+          {ad.subtitle && (
+            <p className="text-[14px] text-white/85 mt-1 line-clamp-2 max-w-[85%]">{ad.subtitle}</p>
+          )}
+        </div>
+        {(ad.cta_url || ad.cta_text) && (
+          <button
+            onClick={handleClick}
+            className="inline-flex items-center gap-2 font-display uppercase text-[12px] tracking-widest px-5 py-3 rounded-2xl text-black active:scale-95 transition"
+            style={{ background: color, boxShadow: `0 8px 32px ${color}55` }}
+          >
+            {ad.cta_text || "Află mai mult"} →
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
+type FeedItem =
+  | { kind: "reel"; reel: Reel }
+  | { kind: "ad"; ad: Sponsored };
+
 function ReelsPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -316,6 +399,11 @@ function ReelsPage() {
     queryKey: ["reels"],
     queryFn: loadReels,
     staleTime: 30_000,
+  });
+  const { data: sponsored = [] } = useQuery({
+    queryKey: ["reels-sponsored"],
+    queryFn: loadSponsored,
+    staleTime: 60_000,
   });
   const { data: myLikes = new Set<string>() } = useQuery({
     queryKey: ["reels-likes", user?.id, reels.map((r) => r.id).join(",")],
@@ -334,8 +422,24 @@ function ReelsPage() {
     },
   });
 
+  // Interleave sponsored slides every 5 reels
+  const feed: FeedItem[] = (() => {
+    if (!reels.length) return [];
+    const items: FeedItem[] = [];
+    let adIdx = 0;
+    reels.forEach((r, i) => {
+      items.push({ kind: "reel", reel: r });
+      if ((i + 1) % 5 === 0 && sponsored.length) {
+        items.push({ kind: "ad", ad: sponsored[adIdx % sponsored.length] });
+        adIdx++;
+      }
+    });
+    return items;
+  })();
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const seenAds = useRef(new Set<string>());
 
   useEffect(() => {
     const el = containerRef.current;
@@ -354,7 +458,17 @@ function ReelsPage() {
     );
     tiles.forEach((t) => io.observe(t));
     return () => io.disconnect();
-  }, [reels.length]);
+  }, [feed.length]);
+
+  // Track sponsored impressions once per view
+  useEffect(() => {
+    const item = feed[activeIdx];
+    if (!item || item.kind !== "ad") return;
+    const id = item.ad.id;
+    if (seenAds.current.has(id)) return;
+    seenAds.current.add(id);
+    recordCampaignEvent({ data: { campaignId: id, eventType: "impression" } }).catch(() => {});
+  }, [activeIdx, feed]);
 
   async function toggleLike(reel: Reel) {
     if (!user) {
@@ -373,7 +487,6 @@ function ReelsPage() {
 
   return (
     <div className="fixed inset-0 bg-black z-40">
-      {/* Top bar */}
       <div className="absolute top-0 inset-x-0 z-50 flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+10px)] pb-3 bg-gradient-to-b from-black/60 to-transparent">
         <Link to="/app/faze" className="text-white/80 text-[13px] font-medium active:scale-95">
           ← Faze
@@ -386,7 +499,7 @@ function ReelsPage() {
         <div className="absolute inset-0 flex items-center justify-center text-white/60">
           Se încarcă reels…
         </div>
-      ) : reels.length === 0 ? (
+      ) : feed.length === 0 ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white/70 gap-3 px-8 text-center">
           <div className="text-5xl">🎬</div>
           <div className="text-lg font-semibold">Niciun reel încă.</div>
@@ -402,19 +515,26 @@ function ReelsPage() {
           ref={containerRef}
           className="h-[100svh] w-full overflow-y-scroll snap-y snap-mandatory no-scrollbar overscroll-contain"
         >
-          {reels.map((r, idx) => (
-            <div key={r.id} data-reel data-idx={idx}>
-              <ReelTile
-                reel={r}
-                active={idx === activeIdx}
-                liked={myLikes.has(r.id)}
-                onToggleLike={() => toggleLike(r)}
-                onOpenComments={() => toast.message("Deschide comentariile din feed.")}
-              />
-            </div>
-          ))}
+          {feed.map((item, idx) =>
+            item.kind === "reel" ? (
+              <div key={`r-${item.reel.id}`} data-reel data-idx={idx}>
+                <ReelTile
+                  reel={item.reel}
+                  active={idx === activeIdx}
+                  liked={myLikes.has(item.reel.id)}
+                  onToggleLike={() => toggleLike(item.reel)}
+                  onOpenComments={() => toast.message("Deschide comentariile din feed.")}
+                />
+              </div>
+            ) : (
+              <div key={`a-${item.ad.id}-${idx}`} data-reel data-idx={idx}>
+                <SponsoredTile ad={item.ad} active={idx === activeIdx} />
+              </div>
+            ),
+          )}
         </div>
       )}
     </div>
   );
 }
+
