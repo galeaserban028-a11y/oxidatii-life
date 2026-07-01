@@ -42,7 +42,7 @@ const TYPE_COLOR: Record<string, string> = {
 };
 
 const NEON_BACKBONE_SRC = "oxi-neon-backbone";
-const CRITICAL_STYLE_LAYERS = ["oxi-backbone-core", "admin-country", "roads-major"];
+const CRITICAL_STYLE_LAYERS = ["oxi-backbone-core"];
 
 // Local fallback lines: even if vector tiles are late or WebGL restores only
 // partially on mobile, the map still opens with visible neon structure.
@@ -304,27 +304,6 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
       },
     });
   }
-  layers.push({
-    id: "place-city",
-    type: "symbol",
-    source: "openmaptiles",
-    "source-layer": "place",
-    filter: ["in", "class", "city", "town"],
-    minzoom: 4,
-    layout: {
-      "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
-      "text-font": ["Noto Sans Regular"],
-      "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 13, 12, 17],
-      "text-letter-spacing": 0.08,
-      "text-transform": "uppercase",
-    },
-    paint: {
-      "text-color": "#ffffff",
-      "text-halo-color": "#ff3df0",
-      "text-halo-width": lowEnd ? 1.2 : 2,
-      "text-halo-blur": lowEnd ? 1.5 : 3,
-    },
-  });
   return {
     version: 8,
     glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
@@ -712,23 +691,25 @@ export function RomaniaMap3D({
         },
       });
 
-      map.addLayer({
-        id: "venues-cluster-count",
-        type: "symbol",
-        source: VENUES_SRC,
-        filter: ["has", "point_count"],
-        layout: {
-          "text-field": "{point_count_abbreviated}",
-          "text-size": ["step", ["get", "point_count"], 10, 80, 11, 240, 12],
-          "text-font": ["Noto Sans Bold"],
-          "text-allow-overlap": true,
-        },
-        paint: {
-          "text-color": "#ffffff",
-          "text-halo-color": "rgba(0,0,0,0.85)",
-          "text-halo-width": 1.2,
-        },
-      });
+      if (!isSmall) {
+        map.addLayer({
+          id: "venues-cluster-count",
+          type: "symbol",
+          source: VENUES_SRC,
+          filter: ["has", "point_count"],
+          layout: {
+            "text-field": "{point_count_abbreviated}",
+            "text-size": ["step", ["get", "point_count"], 10, 80, 11, 240, 12],
+            "text-font": ["Noto Sans Bold"],
+            "text-allow-overlap": true,
+          },
+          paint: {
+            "text-color": "#ffffff",
+            "text-halo-color": "rgba(0,0,0,0.85)",
+            "text-halo-width": 1.2,
+          },
+        });
+      }
 
       // unclustered points → clear wine-bottle pins
       map.addLayer({
@@ -773,16 +754,20 @@ export function RomaniaMap3D({
           "icon-ignore-placement": true,
           "icon-anchor": "center",
           "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
-          // Numele localului apare doar de la zoom 12+ ca să nu se aglomereze
-          // harta la zoom mic.
-          "text-field": ["step", ["zoom"], "", 12, ["get", "name"]],
-          "text-font": ["Noto Sans Bold"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 12, 10, 16, 13],
-          "text-offset": [0, 1.4],
-          "text-anchor": "top",
-          "text-optional": true,
-          "text-letter-spacing": 0.04,
-          "text-max-width": 8,
+          ...(isSmall
+            ? {}
+            : {
+                // Numele localului apare doar de la zoom 12+ ca să nu se aglomereze
+                // harta la zoom mic.
+                "text-field": ["step", ["zoom"], "", 12, ["get", "name"]],
+                "text-font": ["Noto Sans Bold"],
+                "text-size": ["interpolate", ["linear"], ["zoom"], 12, 10, 16, 13],
+                "text-offset": [0, 1.4],
+                "text-anchor": "top",
+                "text-optional": true,
+                "text-letter-spacing": 0.04,
+                "text-max-width": 8,
+              }),
         },
         paint: {
           "text-color": "#ffffff",
@@ -909,23 +894,25 @@ export function RomaniaMap3D({
           ],
         },
       });
-      map.addLayer({
-        id: "heat-now-label",
-        type: "symbol",
-        source: "heat-now-src",
-        layout: {
-          "text-field": ["to-string", ["get", "score"]],
-          "text-font": ["Noto Sans Bold"],
-          "text-size": 11,
-          "text-allow-overlap": true,
-          "text-ignore-placement": true,
-        },
-        paint: {
-          "text-color": "#ffffff",
-          "text-halo-color": "rgba(6,7,10,0.85)",
-          "text-halo-width": 1.2,
-        },
-      });
+      if (!isSmall) {
+        map.addLayer({
+          id: "heat-now-label",
+          type: "symbol",
+          source: "heat-now-src",
+          layout: {
+            "text-field": ["to-string", ["get", "score"]],
+            "text-font": ["Noto Sans Bold"],
+            "text-size": 11,
+            "text-allow-overlap": true,
+            "text-ignore-placement": true,
+          },
+          paint: {
+            "text-color": "#ffffff",
+            "text-halo-color": "rgba(6,7,10,0.85)",
+            "text-halo-width": 1.2,
+          },
+        });
+      }
 
       repaintMap(map);
       setMapReadyTick((tick) => tick + 1);
@@ -936,8 +923,7 @@ export function RomaniaMap3D({
     // caused the first seconds to show a different/empty map until zooming.
     map.once("style.load", setupInteractiveLayers);
     map.once("load", setupInteractiveLayers);
-    map.once("render", () => window.setTimeout(markFirstPaint, isSmall ? 450 : 250));
-    firstPaintTimer = window.setTimeout(markFirstPaint, isSmall ? 2200 : 1600);
+    firstPaintTimer = window.setTimeout(markFirstPaint, isSmall ? 3200 : 1800);
     window.setTimeout(setupInteractiveLayers, 260);
 
     // One-shot health check after the very first idle. Retrying on every
@@ -1563,34 +1549,35 @@ export function RomaniaMap3D({
 
       <div ref={containerRef} className="absolute inset-0" />
 
-      {/* Loading skeleton — hides the black flash while tiles fetch on first entry. */}
-      <div
-        aria-hidden={firstPaintDone}
-        className={`absolute inset-0 z-10 pointer-events-none grid place-items-center overflow-hidden transition-opacity duration-500 ${firstPaintDone || mapFailed ? "opacity-0" : "opacity-100"}`}
-        style={{
-          background:
-            "radial-gradient(80% 60% at 50% 40%, rgba(198,107,255,0.18), transparent 65%), radial-gradient(60% 45% at 50% 70%, rgba(255,61,139,0.14), transparent 70%), #0d0b1e",
-        }}
-      >
+      {/* Loading skeleton — removed from DOM after first paint so it cannot cover the map in PWA. */}
+      {!firstPaintDone && !mapFailed && (
         <div
-          className="absolute inset-0 opacity-40"
+          className="absolute inset-0 z-10 pointer-events-none grid place-items-center overflow-hidden transition-opacity duration-300"
           style={{
-            backgroundImage:
-              "linear-gradient(rgba(198,107,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(198,107,255,0.08) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-            maskImage: "radial-gradient(circle at 50% 50%, #000 40%, transparent 75%)",
+            background:
+              "radial-gradient(80% 60% at 50% 40%, rgba(198,107,255,0.18), transparent 65%), radial-gradient(60% 45% at 50% 70%, rgba(255,61,139,0.14), transparent 70%), #0d0b1e",
           }}
-        />
-        <div className="relative z-10 flex flex-col items-center gap-3">
-          <div className="relative h-12 w-12">
-            <div className="absolute inset-0 rounded-full border-2 border-[#c66bff]/30" />
-            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#ff3d8b] animate-spin" />
-          </div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
-            se încarcă harta
+        >
+          <div
+            className="absolute inset-0 opacity-40"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(198,107,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(198,107,255,0.08) 1px, transparent 1px)",
+              backgroundSize: "48px 48px",
+              maskImage: "radial-gradient(circle at 50% 50%, #000 40%, transparent 75%)",
+            }}
+          />
+          <div className="relative z-10 flex flex-col items-center gap-3">
+            <div className="relative h-12 w-12">
+              <div className="absolute inset-0 rounded-full border-2 border-[#c66bff]/30" />
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#ff3d8b] animate-spin" />
+            </div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
+              se încarcă harta
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
 
       {mapFailed && (
