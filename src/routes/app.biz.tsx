@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,8 +13,11 @@ import {
   MousePointerClick,
   Megaphone,
   Image as ImageIcon,
+  BarChart3,
+  Film,
 } from "lucide-react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/app/biz")({
   head: () => ({ meta: [{ title: "Promovare · OXIDAȚII" }] }),
