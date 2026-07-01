@@ -265,7 +265,17 @@ function ReelTile({
         </button>
         {reel.isVideo && (
           <button
-            onClick={() => setMuted((m) => !m)}
+            onClick={() => {
+              const v = videoRef.current;
+              setMuted((m) => {
+                const next = !m;
+                if (v) {
+                  v.muted = next;
+                  if (!next) v.play().catch(() => {});
+                }
+                return next;
+              });
+            }}
             className="size-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center active:scale-90 transition"
             aria-label="mute"
           >
