@@ -22,7 +22,7 @@ import { syncCheckoutToProfile } from "@/lib/premium.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 
 
-export const Route = createFileRoute("/app/biz")({
+export const Route = createFileRoute("/app/biz/")({
   head: () => ({ meta: [{ title: "Promovare · OXIDAȚII" }] }),
   component: BizPage,
 });

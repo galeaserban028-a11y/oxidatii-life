@@ -48,10 +48,10 @@ import { Route as AppFeedRouteImport } from './routes/app.feed'
 import { Route as AppFazeRouteImport } from './routes/app.faze'
 import { Route as AppDiscoverRouteImport } from './routes/app.discover'
 import { Route as AppBlockedRouteImport } from './routes/app.blocked'
-import { Route as AppBizRouteImport } from './routes/app.biz'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as DotwellKnownAssetlinksDotjsonRouteImport } from './routes/[.]well-known.assetlinks[.]json'
 import { Route as DotwellKnownAppleAppSiteAssociationRouteImport } from './routes/[.]well-known.apple-app-site-association'
+import { Route as AppBizIndexRouteImport } from './routes/app.biz.index'
 import { Route as AppAdminIndexRouteImport } from './routes/app.admin.index'
 import { Route as AppVenueIdRouteImport } from './routes/app.venue.$id'
 import { Route as AppUserIdRouteImport } from './routes/app.user.$id'
@@ -272,11 +272,6 @@ const AppBlockedRoute = AppBlockedRouteImport.update({
   path: '/blocked',
   getParentRoute: () => AppRoute,
 } as any)
-const AppBizRoute = AppBizRouteImport.update({
-  id: '/biz',
-  path: '/biz',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -294,6 +289,11 @@ const DotwellKnownAppleAppSiteAssociationRoute =
     path: '/.well-known/apple-app-site-association',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AppBizIndexRoute = AppBizIndexRouteImport.update({
+  id: '/biz/',
+  path: '/biz/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -355,14 +355,14 @@ const AppChatIdRoute = AppChatIdRouteImport.update({
   getParentRoute: () => AppRoute,
 } as any)
 const AppBizExclusiveRoute = AppBizExclusiveRouteImport.update({
-  id: '/exclusive',
-  path: '/exclusive',
-  getParentRoute: () => AppBizRoute,
+  id: '/biz/exclusive',
+  path: '/biz/exclusive',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppBizDashboardRoute = AppBizDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AppBizRoute,
+  id: '/biz/dashboard',
+  path: '/biz/dashboard',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppAdminUsersRoute = AppAdminUsersRouteImport.update({
   id: '/users',
@@ -433,7 +433,6 @@ export interface FileRoutesByFullPath {
   '/.well-known/apple-app-site-association': typeof DotwellKnownAppleAppSiteAssociationRoute
   '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/app/admin': typeof AppAdminRouteWithChildren
-  '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
@@ -481,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin/': typeof AppAdminIndexRoute
+  '/app/biz/': typeof AppBizIndexRoute
   '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
   '/api/public/cron/streak-risk': typeof ApiPublicCronStreakRiskRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -500,7 +500,6 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/.well-known/apple-app-site-association': typeof DotwellKnownAppleAppSiteAssociationRoute
   '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
-  '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
@@ -548,6 +547,7 @@ export interface FileRoutesByTo {
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin': typeof AppAdminIndexRoute
+  '/app/biz': typeof AppBizIndexRoute
   '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
   '/api/public/cron/streak-risk': typeof ApiPublicCronStreakRiskRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -570,7 +570,6 @@ export interface FileRoutesById {
   '/.well-known/apple-app-site-association': typeof DotwellKnownAppleAppSiteAssociationRoute
   '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/app/admin': typeof AppAdminRouteWithChildren
-  '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
@@ -618,6 +617,7 @@ export interface FileRoutesById {
   '/app/user/$id': typeof AppUserIdRoute
   '/app/venue/$id': typeof AppVenueIdRoute
   '/app/admin/': typeof AppAdminIndexRoute
+  '/app/biz/': typeof AppBizIndexRoute
   '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
   '/api/public/cron/streak-risk': typeof ApiPublicCronStreakRiskRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -641,7 +641,6 @@ export interface FileRouteTypes {
     | '/.well-known/apple-app-site-association'
     | '/.well-known/assetlinks.json'
     | '/app/admin'
-    | '/app/biz'
     | '/app/blocked'
     | '/app/discover'
     | '/app/faze'
@@ -689,6 +688,7 @@ export interface FileRouteTypes {
     | '/app/user/$id'
     | '/app/venue/$id'
     | '/app/admin/'
+    | '/app/biz/'
     | '/api/public/cron/heat-alerts'
     | '/api/public/cron/streak-risk'
     | '/api/public/payments/webhook'
@@ -708,7 +708,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/.well-known/apple-app-site-association'
     | '/.well-known/assetlinks.json'
-    | '/app/biz'
     | '/app/blocked'
     | '/app/discover'
     | '/app/faze'
@@ -756,6 +755,7 @@ export interface FileRouteTypes {
     | '/app/user/$id'
     | '/app/venue/$id'
     | '/app/admin'
+    | '/app/biz'
     | '/api/public/cron/heat-alerts'
     | '/api/public/cron/streak-risk'
     | '/api/public/payments/webhook'
@@ -777,7 +777,6 @@ export interface FileRouteTypes {
     | '/.well-known/apple-app-site-association'
     | '/.well-known/assetlinks.json'
     | '/app/admin'
-    | '/app/biz'
     | '/app/blocked'
     | '/app/discover'
     | '/app/faze'
@@ -825,6 +824,7 @@ export interface FileRouteTypes {
     | '/app/user/$id'
     | '/app/venue/$id'
     | '/app/admin/'
+    | '/app/biz/'
     | '/api/public/cron/heat-alerts'
     | '/api/public/cron/streak-risk'
     | '/api/public/payments/webhook'
@@ -1127,13 +1127,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBlockedRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/biz': {
-      id: '/app/biz'
-      path: '/biz'
-      fullPath: '/app/biz'
-      preLoaderRoute: typeof AppBizRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/admin': {
       id: '/app/admin'
       path: '/admin'
@@ -1154,6 +1147,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/.well-known/apple-app-site-association'
       preLoaderRoute: typeof DotwellKnownAppleAppSiteAssociationRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/biz/': {
+      id: '/app/biz/'
+      path: '/biz'
+      fullPath: '/app/biz/'
+      preLoaderRoute: typeof AppBizIndexRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app/admin/': {
       id: '/app/admin/'
@@ -1241,17 +1241,17 @@ declare module '@tanstack/react-router' {
     }
     '/app/biz/exclusive': {
       id: '/app/biz/exclusive'
-      path: '/exclusive'
+      path: '/biz/exclusive'
       fullPath: '/app/biz/exclusive'
       preLoaderRoute: typeof AppBizExclusiveRouteImport
-      parentRoute: typeof AppBizRoute
+      parentRoute: typeof AppRoute
     }
     '/app/biz/dashboard': {
       id: '/app/biz/dashboard'
-      path: '/dashboard'
+      path: '/biz/dashboard'
       fullPath: '/app/biz/dashboard'
       preLoaderRoute: typeof AppBizDashboardRouteImport
-      parentRoute: typeof AppBizRoute
+      parentRoute: typeof AppRoute
     }
     '/app/admin/users': {
       id: '/app/admin/users'
@@ -1352,19 +1352,6 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
   AppAdminRouteChildren,
 )
 
-interface AppBizRouteChildren {
-  AppBizDashboardRoute: typeof AppBizDashboardRoute
-  AppBizExclusiveRoute: typeof AppBizExclusiveRoute
-}
-
-const AppBizRouteChildren: AppBizRouteChildren = {
-  AppBizDashboardRoute: AppBizDashboardRoute,
-  AppBizExclusiveRoute: AppBizExclusiveRoute,
-}
-
-const AppBizRouteWithChildren =
-  AppBizRoute._addFileChildren(AppBizRouteChildren)
-
 interface AppReplayRouteChildren {
   AppReplayDateRoute: typeof AppReplayDateRoute
 }
@@ -1379,7 +1366,6 @@ const AppReplayRouteWithChildren = AppReplayRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
-  AppBizRoute: typeof AppBizRouteWithChildren
   AppBlockedRoute: typeof AppBlockedRoute
   AppDiscoverRoute: typeof AppDiscoverRoute
   AppFazeRoute: typeof AppFazeRoute
@@ -1405,6 +1391,8 @@ interface AppRouteChildren {
   AppTopRoute: typeof AppTopRoute
   AppWrappedRoute: typeof AppWrappedRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppBizDashboardRoute: typeof AppBizDashboardRoute
+  AppBizExclusiveRoute: typeof AppBizExclusiveRoute
   AppChatIdRoute: typeof AppChatIdRoute
   AppCitySlugRoute: typeof AppCitySlugRoute
   AppMeArchiveRoute: typeof AppMeArchiveRoute
@@ -1415,11 +1403,11 @@ interface AppRouteChildren {
   AppStreetIdRoute: typeof AppStreetIdRoute
   AppUserIdRoute: typeof AppUserIdRoute
   AppVenueIdRoute: typeof AppVenueIdRoute
+  AppBizIndexRoute: typeof AppBizIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
-  AppBizRoute: AppBizRouteWithChildren,
   AppBlockedRoute: AppBlockedRoute,
   AppDiscoverRoute: AppDiscoverRoute,
   AppFazeRoute: AppFazeRoute,
@@ -1445,6 +1433,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppTopRoute: AppTopRoute,
   AppWrappedRoute: AppWrappedRoute,
   AppIndexRoute: AppIndexRoute,
+  AppBizDashboardRoute: AppBizDashboardRoute,
+  AppBizExclusiveRoute: AppBizExclusiveRoute,
   AppChatIdRoute: AppChatIdRoute,
   AppCitySlugRoute: AppCitySlugRoute,
   AppMeArchiveRoute: AppMeArchiveRoute,
@@ -1455,6 +1445,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppStreetIdRoute: AppStreetIdRoute,
   AppUserIdRoute: AppUserIdRoute,
   AppVenueIdRoute: AppVenueIdRoute,
+  AppBizIndexRoute: AppBizIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
