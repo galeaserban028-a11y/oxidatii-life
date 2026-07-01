@@ -285,6 +285,34 @@ function UserPage() {
                     </div>
                   )}
                   <div className="relative z-10">
+                    {!isMe && user && !isBlocking && !isBlockedBy && (
+                      <div className="absolute top-0 right-0 z-20">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              className="p-2 rounded-xl bg-secondary/70 backdrop-blur border border-border text-foreground flex items-center justify-center active:scale-[0.98] transition"
+                              aria-label="Mai multe"
+                            >
+                              <MoreVertical size={18} />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <ReportDialog
+                              targetType="user"
+                              targetId={profile.id}
+                              variant="menu-item"
+                              label={`Raportează @${handle}`}
+                            />
+                            <DropdownMenuItem
+                              onClick={() => setConfirmBlock("block")}
+                              className="text-neon-crimson focus:text-neon-crimson"
+                            >
+                              <ShieldOff size={14} className="mr-2" /> Blochează @{handle}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    )}
                     <div className="flex items-center gap-4">
                       {theme ? (
                         <AvatarAura theme={theme} size={80}>
@@ -321,7 +349,7 @@ function UserPage() {
                           )}
                         </AvatarFrame>
                       )}
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1 pr-14">
                         <div className="font-display font-bold text-2xl truncate flex items-center gap-1.5 flex-wrap">
                           @{handle}
                           {!isPublic && <Lock size={14} className="text-neon-crimson shrink-0" />}
@@ -414,36 +442,10 @@ function UserPage() {
                           />
                         )}
                         {!isBlocking && !isBlockedBy && (
-                          <div className="flex items-center gap-1">
-                            <TipCreatorButton
-                              recipientId={profile.id}
-                              recipientName={profile.display_name ?? profile.handle}
-                            />
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button
-                                  className="px-3 py-3 rounded-xl bg-secondary border border-border text-foreground flex items-center justify-center active:scale-[0.98] transition"
-                                  aria-label="Mai multe"
-                                >
-                                  <MoreVertical size={18} />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <ReportDialog
-                                  targetType="user"
-                                  targetId={profile.id}
-                                  variant="menu-item"
-                                  label={`Raportează @${handle}`}
-                                />
-                                <DropdownMenuItem
-                                  onClick={() => setConfirmBlock("block")}
-                                  className="text-neon-crimson focus:text-neon-crimson"
-                                >
-                                  <ShieldOff size={14} className="mr-2" /> Blochează @{handle}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
+                          <TipCreatorButton
+                            recipientId={profile.id}
+                            recipientName={profile.display_name ?? profile.handle}
+                          />
                         )}
                       </div>
                     )}
