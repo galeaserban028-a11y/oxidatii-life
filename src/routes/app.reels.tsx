@@ -546,6 +546,20 @@ function ReelsPage() {
           )}
         </div>
       )}
+      {commentsFor && (
+        <CommentsSheet
+          photo={{
+            id: commentsFor.id,
+            photo_url: commentsFor.url,
+            caption: commentsFor.caption,
+            created_at: new Date().toISOString(),
+            user_id: commentsFor.user_id,
+            venue_id: commentsFor.venue_id,
+            media_type: commentsFor.isVideo ? "video" : "image",
+          }}
+          onClose={() => setCommentsFor(null)}
+        />
+      )}
     </div>
   );
 }
