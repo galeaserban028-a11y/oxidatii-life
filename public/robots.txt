@@ -11,4 +11,4 @@ Disallow: /app/requests
 Disallow: /onboarding
 Disallow: /lovable
 
-Sitemap: https://oxidatii.lovable.app/sitemap.xml
+Sitemap: https://oxidatii.life/sitemap.xml

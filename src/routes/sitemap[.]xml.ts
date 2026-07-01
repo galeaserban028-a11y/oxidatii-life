@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 
-const BASE_URL = "https://oxidatii.lovable.app";
+const BASE_URL = "https://oxidatii.life";
 
 const STATIC_PATHS = [
   { path: "/", changefreq: "daily", priority: "1.0" },
@@ -41,11 +41,26 @@ export const Route = createFileRoute("/sitemap.xml")({
             process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
           if (url && key) {
             const sb = createClient(url, key);
-            const [{ data: cities }, { data: venues }, { data: streets }] = await Promise.all([
-              sb.from("cities").select("slug,updated_at").limit(500),
-              sb.from("venues").select("id,updated_at").limit(1000),
-              sb.from("streets").select("id,updated_at").limit(1000),
-            ]);
+            const [{ data: cities }, { data: venues }, { data: streets }, { data: handles }] =
+              await Promise.all([
+                sb.from("cities").select("slug,updated_at").limit(500),
+                sb.from("venues").select("id,updated_at").limit(1000),
+                sb.from("streets").select("id,updated_at").limit(1000),
+                sb
+                  .from("profiles_public")
+                  .select("handle,updated_at")
+                  .not("handle", "is", null)
+                  .limit(5000),
+              ]);
+            for (const p of handles ?? []) {
+              if (p.handle)
+                entries.push({
+                  path: `/u/${p.handle}`,
+                  lastmod: p.updated_at ?? undefined,
+                  changefreq: "weekly",
+                  priority: "0.6",
+                });
+            }
             for (const c of cities ?? []) {
               if (c.slug)
                 entries.push({
