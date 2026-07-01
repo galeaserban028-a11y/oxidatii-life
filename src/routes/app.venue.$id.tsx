@@ -67,6 +67,14 @@ function VenuePage() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareData, setShareData] = useState<{
+    userName: string;
+    userAvatar: string | null;
+    spritzScore: number | null;
+    streak: number | null;
+  } | null>(null);
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["venue", id],
