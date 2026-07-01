@@ -383,7 +383,7 @@ function resolveCityLabelCollisions(container: HTMLElement | null, compact: bool
 }
 
 function mapHasCriticalLayers(map: MlMap) {
-  return CRITICAL_STYLE_LAYERS.some((layer) => !!map.getLayer(layer));
+  return CRITICAL_STYLE_LAYERS.every((layer) => !!map.getLayer(layer));
 }
 
 function repaintMap(map: MlMap) {
@@ -435,6 +435,7 @@ export function RomaniaMap3D({
   const autoRetryCountRef = useRef(0);
   const [mapFailed, setMapFailed] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  const [mapReadyTick, setMapReadyTick] = useState(0);
 
   useEffect(() => {
     navRef.current = nav;
@@ -549,7 +550,21 @@ export function RomaniaMap3D({
       }
     }, 6500);
 
-    map.on("load", () => {
+    const setupInteractiveLayers = () => {
+      if (loadedRef.current || map.getSource(VENUES_SRC)) return;
+      try {
+        map.addSource(VENUES_SRC, {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+          cluster: true,
+          clusterRadius: 48,
+          clusterMaxZoom: 12,
+        });
+      } catch {
+        window.setTimeout(setupInteractiveLayers, 120);
+        return;
+      }
+
       loadedRef.current = true;
       autoRetryCountRef.current = 0;
       if (loadWatchdog) {
@@ -563,18 +578,6 @@ export function RomaniaMap3D({
       repaintMap(map);
       window.setTimeout(() => repaintMap(map), 120);
       window.setTimeout(() => repaintMap(map), 480);
-
-      // GPU-rendered venue layer + clustering — handles thousands of points at 60fps
-      // Enable real clustering so the cluster layers below actually render
-      // (previously cluster:false meant clusters were declared but never used,
-      // forcing thousands of individual symbols → frame drops).
-      map.addSource(VENUES_SRC, {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-        cluster: true,
-        clusterRadius: 48,
-        clusterMaxZoom: 12,
-      });
 
       if (!isSmall) {
         // Desktop-only heat layer. On mobile GPUs the heatmap blur competes
@@ -917,7 +920,15 @@ export function RomaniaMap3D({
       });
 
       repaintMap(map);
-    });
+      setMapReadyTick((tick) => tick + 1);
+    };
+
+    // Add OXIDAȚII overlays as soon as the style exists, not on full map
+    // "load". Full load can wait on slow vector tiles/glyphs on mobile, which
+    // caused the first seconds to show a different/empty map until zooming.
+    map.once("style.load", setupInteractiveLayers);
+    map.once("load", setupInteractiveLayers);
+    window.setTimeout(setupInteractiveLayers, 260);
 
     map.on("idle", () => {
       if (!mapHasCriticalLayers(map) && autoRetryCountRef.current < 2) {
