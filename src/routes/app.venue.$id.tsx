@@ -6,8 +6,10 @@ import { useAuth } from "@/lib/auth";
 import { useEffect, useRef, useState } from "react";
 import { BusinessReviewCard } from "@/components/biz/BusinessReviewCard";
 import { ReportDialog } from "@/components/app/ReportDialog";
+import { CheckInShareSheet } from "@/components/app/CheckInShareSheet";
 import { toast } from "sonner";
 import { evalOpenNow, normalizeHours, formatSlot, DAY_KEYS, DAY_LABELS } from "@/lib/openingHours";
+
 
 export const Route = createFileRoute("/app/venue/$id")({
   loader: async ({ params }) => {
@@ -65,6 +67,14 @@ function VenuePage() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareData, setShareData] = useState<{
+    userName: string;
+    userAvatar: string | null;
+    spritzScore: number | null;
+    streak: number | null;
+  } | null>(null);
+
 
   const { data, isLoading } = useQuery({
     queryKey: ["venue", id],
@@ -298,8 +308,29 @@ function VenuePage() {
               }
               toast.success("Ești aici · vizibil 4h");
               qc.invalidateQueries({ queryKey: ["venue", id] });
+
+              // Fetch stats & open share sheet
+              try {
+                const { data: prof } = await supabase
+                  .from("profiles")
+                  .select("display_name,avatar_url,lifetime_sprits,current_streak")
+                  .eq("id", user.id)
+                  .maybeSingle();
+                setShareData({
+                  userName:
+                    prof?.display_name ||
+                    (user.email ? user.email.split("@")[0] : "Oxidat"),
+                  userAvatar: prof?.avatar_url ?? null,
+                  spritzScore: prof?.lifetime_sprits ?? null,
+                  streak: prof?.current_streak ?? null,
+                });
+                setShareOpen(true);
+              } catch (e) {
+                console.warn("[checkin share] profile fetch failed", e);
+              }
             }}
             className="rounded-2xl bg-card border border-border text-foreground py-3.5 text-sm font-semibold active:scale-[0.98] transition"
+
           >
             Sunt aici
           </button>
@@ -380,6 +411,20 @@ function VenuePage() {
           )}
         </div>
       </div>
+
+      {shareData && (
+        <CheckInShareSheet
+          open={shareOpen}
+          onClose={() => setShareOpen(false)}
+          venueName={data.venue.name ?? "Local"}
+          venueCity={(data.venue as any)?.street?.city?.name ?? null}
+          userName={shareData.userName}
+          userAvatar={shareData.userAvatar}
+          spritzScore={shareData.spritzScore}
+          streak={shareData.streak}
+        />
+      )}
     </div>
   );
 }
+

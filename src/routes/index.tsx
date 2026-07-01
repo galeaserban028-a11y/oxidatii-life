@@ -4,6 +4,7 @@ import { AlcoholWarning } from "@/components/AlcoholWarning";
 import { SpritzIndexDial } from "@/components/app/SpritzIndexDial";
 import logoLight from "@/assets/logo-oxidatii-light.png";
 import { MapPin, Flame, Trophy, Users, Beer, Bell, Search, Plus, ChevronRight } from "lucide-react";
+import { OG_COVER_URL, SITE_URL } from "@/lib/og";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,9 +20,20 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă.",
       },
-      { property: "og:url", content: "https://oxidatii.lovable.app/" },
+      { property: "og:url", content: `${SITE_URL}/` },
+      { property: "og:type", content: "website" },
+      { property: "og:image", content: OG_COVER_URL },
+      { property: "og:image:width", content: "1216" },
+      { property: "og:image:height", content: "640" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: OG_COVER_URL },
+      { name: "twitter:title", content: "OXIDAȚII — Aplicația de șpriț" },
+      {
+        name: "twitter:description",
+        content: "Unde se bea șpriț acum, cu cine, și cine e rege la masă.",
+      },
     ],
-    links: [{ rel: "canonical", href: "https://oxidatii.lovable.app/" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
     scripts: [
       {
         type: "application/ld+json",
@@ -29,7 +41,7 @@ export const Route = createFileRoute("/")({
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: "OXIDAȚII",
-          url: "https://oxidatii.lovable.app/",
+          url: `${SITE_URL}/`,
           inLanguage: "ro-RO",
           description:
             "Aplicația care-ți spune unde se bea șpriț acum, cu cine, și cine e rege la masă.",
@@ -39,6 +51,7 @@ export const Route = createFileRoute("/")({
   }),
   component: Index,
 });
+
 
 function Index() {
   useEffect(() => {
