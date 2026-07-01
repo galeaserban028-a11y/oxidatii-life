@@ -28,7 +28,7 @@ export default defineConfig({
     // "_ is not defined" / missing helper references.
     build: { target: "es2022" },
     optimizeDeps: {
-      include: ["maplibre-gl"],
+      include: ["maplibre-gl/dist/maplibre-gl-csp.js"],
       esbuildOptions: { target: "es2022" },
     },
   },
