@@ -411,6 +411,20 @@ function VenuePage() {
           )}
         </div>
       </div>
+
+      {shareData && (
+        <CheckInShareSheet
+          open={shareOpen}
+          onClose={() => setShareOpen(false)}
+          venueName={data.venue.name ?? "Local"}
+          venueCity={(data.venue as any)?.street?.city?.name ?? null}
+          userName={shareData.userName}
+          userAvatar={shareData.userAvatar}
+          spritzScore={shareData.spritzScore}
+          streak={shareData.streak}
+        />
+      )}
     </div>
   );
 }
+
