@@ -3317,6 +3317,10 @@ export type Database = {
         Args: { p_amount: number; p_message?: string; p_recipient_id: string }
         Returns: Json
       }
+      track_campaign_event: {
+        Args: { _campaign_id: string; _event_type: string }
+        Returns: undefined
+      }
       unlock_crystal_ball: { Args: never; Returns: Json }
     }
     Enums: {
