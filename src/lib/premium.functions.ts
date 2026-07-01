@@ -448,6 +448,11 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
         { onConflict: "stripe_subscription_id" },
       );
 
+      if (isBizDashboard) {
+        return { success: true, tier: "biz_dashboard" };
+      }
+      const tier = tierInfo!;
+
       // Apply premium tier and grant one-time coins on first upgrade
       const { data: prof } = await supabaseAdmin
         .from("profiles")
@@ -455,7 +460,7 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
         .eq("id", userId)
         .maybeSingle();
       const currentCoins = (prof?.coin_balance as number | undefined) ?? 0;
-      const wasUpgraded = prof?.premium_tier !== tierInfo.tier;
+      const wasUpgraded = prof?.premium_tier !== tier.tier;
 
       const PREMIUM_FRAME: Record<string, string> = {
         vip: "vip_aurum",
@@ -463,7 +468,7 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
         pro: "pro_holo",
         elite: "elite_diamond",
       };
-      const frameId = PREMIUM_FRAME[tierInfo.tier];
+      const frameId = PREMIUM_FRAME[tier.tier];
       if (frameId) {
         await supabaseAdmin
           .from("user_frames")
@@ -476,18 +481,19 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
       await supabaseAdmin
         .from("profiles")
         .update({
-          premium_tier: tierInfo.tier,
+          premium_tier: tier.tier,
           premium_until: periodEndIso,
-          ...(wasUpgraded && { coin_balance: currentCoins + tierInfo.coins }),
+          ...(wasUpgraded && { coin_balance: currentCoins + tier.coins }),
           ...(wasUpgraded && frameId && !prof?.active_frame_id && { active_frame_id: frameId }),
         })
         .eq("id", userId);
 
-      return { success: true, tier: tierInfo.tier };
+      return { success: true, tier: tier.tier };
     } catch (error) {
       return { success: false, error: getStripeErrorMessage(error) };
     }
   });
+
 
 export const createPremiumPortalSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
