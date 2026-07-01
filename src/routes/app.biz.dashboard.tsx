@@ -4,7 +4,18 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
-import { BarChart3, Users, Eye, Sparkles, Megaphone, TrendingUp } from "lucide-react";
+import { BarChart3, Users, Eye, Sparkles, Megaphone, TrendingUp, ArrowLeft } from "lucide-react";
+
+function BackBtn() {
+  return (
+    <Link
+      to="/app/biz"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/80 text-xs hover:bg-white/10"
+    >
+      <ArrowLeft size={14} /> Înapoi
+    </Link>
+  );
+}
 
 export const Route = createFileRoute("/app/biz/dashboard")({
   head: () => ({ meta: [{ title: "Business Dashboard · OXIDAȚII" }] }),
