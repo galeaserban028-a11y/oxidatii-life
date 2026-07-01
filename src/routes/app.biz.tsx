@@ -587,18 +587,34 @@ function PostModal({
               {busy ? (
                 <Loader2 size={14} className="inline animate-spin" />
               ) : (
-                `Publică · ${TIERS.find((t) => t.id === tier)!.priceRon} RON`
+                `Continuă la plată · ${currentTier.priceRon} RON`
               )}
             </button>
             <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-600 text-center pt-1">
-              o postare · o imagine · apare în ecranul principal
+              plată securizată prin stripe · postarea se activează după confirmare
             </p>
           </div>
         </div>
       </div>
+      <PremiumCheckoutDialog
+        open={checkoutOpen && !!pendingCampaignId}
+        onClose={() => {
+          setCheckoutOpen(false);
+          // If they close without paying, campaign remains draft — clean up
+          if (pendingCampaignId) {
+            supabase.from("campaigns").delete().eq("id", pendingCampaignId).then(() => {});
+            setPendingCampaignId(null);
+          }
+        }}
+        priceId={currentTier.priceId}
+        title={`Promovare · ${currentTier.label}`}
+        extra={pendingCampaignId ? { campaign_id: pendingCampaignId } : undefined}
+        returnUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/app/biz?boost=success&session_id={CHECKOUT_SESSION_ID}`}
+      />
     </div>
   );
 }
+
 
 function CreateBusinessSheet({
   open,
