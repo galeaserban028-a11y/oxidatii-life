@@ -265,16 +265,22 @@ function ReelTile({
         </button>
         {reel.isVideo && (
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               const v = videoRef.current;
-              setMuted((m) => {
-                const next = !m;
-                if (v) {
-                  v.muted = next;
-                  if (!next) v.play().catch(() => {});
+              const next = !muted;
+              setMuted(next);
+              if (v) {
+                v.muted = next;
+                v.volume = 1;
+                if (!next) {
+                  // iOS Safari: must call play() inside the user gesture
+                  v.play().catch(() => {
+                    v.muted = true;
+                    setMuted(true);
+                  });
                 }
-                return next;
-              });
+              }
             }}
             className="size-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center active:scale-90 transition"
             aria-label="mute"
