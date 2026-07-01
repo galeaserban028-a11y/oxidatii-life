@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { TipCreatorButton } from "@/components/app/TipCreatorDialog";
 import { shareReel } from "@/lib/reelShare";
 import { recordCampaignEvent } from "@/lib/business-promotion.functions";
+import { CommentsSheet } from "@/components/app/faze/CommentsSheet";
 
 export const Route = createFileRoute("/app/reels")({
   head: () => ({ meta: [{ title: "Reels · OXIDAȚII" }] }),
@@ -264,7 +265,17 @@ function ReelTile({
         </button>
         {reel.isVideo && (
           <button
-            onClick={() => setMuted((m) => !m)}
+            onClick={() => {
+              const v = videoRef.current;
+              setMuted((m) => {
+                const next = !m;
+                if (v) {
+                  v.muted = next;
+                  if (!next) v.play().catch(() => {});
+                }
+                return next;
+              });
+            }}
             className="size-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center active:scale-90 transition"
             aria-label="mute"
           >
@@ -439,6 +450,7 @@ function ReelsPage() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [commentsFor, setCommentsFor] = useState<Reel | null>(null);
   const seenAds = useRef(new Set<string>());
 
   useEffect(() => {
@@ -523,7 +535,7 @@ function ReelsPage() {
                   active={idx === activeIdx}
                   liked={myLikes.has(item.reel.id)}
                   onToggleLike={() => toggleLike(item.reel)}
-                  onOpenComments={() => toast.message("Deschide comentariile din feed.")}
+                  onOpenComments={() => setCommentsFor(item.reel)}
                 />
               </div>
             ) : (
@@ -533,6 +545,20 @@ function ReelsPage() {
             ),
           )}
         </div>
+      )}
+      {commentsFor && (
+        <CommentsSheet
+          photo={{
+            id: commentsFor.id,
+            photo_url: commentsFor.url,
+            caption: commentsFor.caption,
+            created_at: new Date().toISOString(),
+            user_id: commentsFor.user_id,
+            venue_id: commentsFor.venue_id,
+            media_type: commentsFor.isVideo ? "video" : "image",
+          }}
+          onClose={() => setCommentsFor(null)}
+        />
       )}
     </div>
   );
