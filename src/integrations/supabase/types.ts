@@ -2845,7 +2845,9 @@ export type Database = {
         Returns: {
           body: string
           business_brand_name: string
+          business_cover_url: string
           business_id: string
+          business_logo_url: string
           cta_text: string
           cta_url: string
           entry_kind: string
@@ -2861,6 +2863,7 @@ export type Database = {
           theme_color: string
           title: string
           venue_id: string
+          venue_name: string
           video_url: string
         }[]
       }
