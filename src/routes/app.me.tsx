@@ -677,13 +677,13 @@ function MePage() {
           <div className="mt-6 space-y-1.5">
             <div
               style={instrument}
-              className="text-2xl leading-tight flex items-center gap-2 flex-wrap tracking-tight"
+              className="text-2xl leading-tight flex items-start gap-2 flex-wrap tracking-tight"
             >
-              <span>{profile.display_name || `@${profile.handle ?? "—"}`}</span>
+              <span className="min-w-0 break-words">{profile.display_name || `@${profile.handle ?? "—"}`}</span>
               <PremiumBadge tier={ent.tier} size="sm" />
             </div>
             {profile.display_name && profile.handle && (
-              <div className="text-[12px] font-mono text-white/40">@{profile.handle}</div>
+              <div className="text-[12px] font-mono text-white/40 break-words">@{profile.handle}</div>
             )}
             {(profile as any).bio && (
               <p className="text-[13px] text-white/80 pt-2 whitespace-pre-line leading-relaxed">
