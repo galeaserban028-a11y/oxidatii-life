@@ -2158,6 +2158,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "sprit_proofs_user_profile_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "sprit_proofs_venue_id_fkey"
             columns: ["venue_id"]
             isOneToOne: false
@@ -2674,6 +2681,84 @@ export type Database = {
           {
             foreignKeyName: "business_accounts_exclusive_city_id_fkey"
             columns: ["exclusive_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles_public: {
+        Row: {
+          active_frame_id: string | null
+          aura: number | null
+          avatar_url: string | null
+          bio: string | null
+          city_id: string | null
+          created_at: string | null
+          current_streak: number | null
+          display_name: string | null
+          handle: string | null
+          id: string | null
+          is_public: boolean | null
+          lifetime_sprits: number | null
+          longest_streak: number | null
+          music_clip_url: string | null
+          onboarded: boolean | null
+          profile_bg_url: string | null
+          profile_theme_id: string | null
+          rank: Database["public"]["Enums"]["balkan_rank"] | null
+        }
+        Insert: {
+          active_frame_id?: string | null
+          aura?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          city_id?: string | null
+          created_at?: string | null
+          current_streak?: number | null
+          display_name?: string | null
+          handle?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          lifetime_sprits?: number | null
+          longest_streak?: number | null
+          music_clip_url?: string | null
+          onboarded?: boolean | null
+          profile_bg_url?: string | null
+          profile_theme_id?: string | null
+          rank?: Database["public"]["Enums"]["balkan_rank"] | null
+        }
+        Update: {
+          active_frame_id?: string | null
+          aura?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          city_id?: string | null
+          created_at?: string | null
+          current_streak?: number | null
+          display_name?: string | null
+          handle?: string | null
+          id?: string | null
+          is_public?: boolean | null
+          lifetime_sprits?: number | null
+          longest_streak?: number | null
+          music_clip_url?: string | null
+          onboarded?: boolean | null
+          profile_bg_url?: string | null
+          profile_theme_id?: string | null
+          rank?: Database["public"]["Enums"]["balkan_rank"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_active_frame_id_fkey"
+            columns: ["active_frame_id"]
+            isOneToOne: false
+            referencedRelation: "avatar_frames"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_city_fk"
+            columns: ["city_id"]
             isOneToOne: false
             referencedRelation: "cities"
             referencedColumns: ["id"]
