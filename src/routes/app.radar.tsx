@@ -83,44 +83,38 @@ function RadarPage() {
   const [needsOrient, setNeedsOrient] = useState(false);
   const [camReady, setCamReady] = useState(false);
   const [camError, setCamError] = useState<string | null>(null);
+  const [started, setStarted] = useState(false);
+  const [starting, setStarting] = useState(false);
   const [venues, setVenues] = useState<RadarVenue[]>([]);
   const [friends, setFriends] = useState<RadarFriend[]>([]);
   const [selected, setSelected] = useState<RadarVenue | null>(null);
   const [loadingData, setLoadingData] = useState(false);
 
-  // 1. Camera
-  useEffect(() => {
-    let cancelled = false;
-    async function startCam() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: false,
-        });
-        if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play().catch(() => {});
-          setCamReady(true);
-        }
-      } catch (e: any) {
-        setCamError(e?.message || "Nu am putut accesa camera");
-      }
+  function onOrient(ev: DeviceOrientationEvent) {
+    const wk = (ev as any).webkitCompassHeading as number | undefined;
+    if (typeof wk === "number") {
+      setHeading(wk);
+      return;
     }
-    startCam();
-    return () => {
-      cancelled = true;
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    };
-  }, []);
+    if (typeof ev.alpha === "number") {
+      setHeading((360 - ev.alpha) % 360);
+    }
+  }
 
-  // 2. Geolocation (watch)
+  // Attach orientation listeners once permission is granted (or not needed)
   useEffect(() => {
+    if (!started || needsOrient) return;
+    window.addEventListener("deviceorientationabsolute" as any, onOrient as any, true);
+    window.addEventListener("deviceorientation", onOrient, true);
+    return () => {
+      window.removeEventListener("deviceorientationabsolute" as any, onOrient as any, true);
+      window.removeEventListener("deviceorientation", onOrient, true);
+    };
+  }, [started, needsOrient]);
+
+  // Geolocation watch after start
+  useEffect(() => {
+    if (!started) return;
     if (!("geolocation" in navigator)) return;
     const id = navigator.geolocation.watchPosition(
       (p) => setPos({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy }),
@@ -128,46 +122,75 @@ function RadarPage() {
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
     );
     return () => navigator.geolocation.clearWatch(id);
+  }, [started]);
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    };
   }, []);
 
-  // 3. Compass
-  useEffect(() => {
-    const iosPerm = (DeviceOrientationEvent as any)?.requestPermission;
-    if (typeof iosPerm === "function") setNeedsOrient(true);
+  // MUST be triggered by a user gesture — iOS Safari blocks camera/compass otherwise
+  async function startRadar() {
+    if (starting || started) return;
+    setStarting(true);
+    setCamError(null);
+    try {
+      // 1. Camera — synchronous within gesture
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(() => {});
+        setCamReady(true);
+      }
 
-    function onOrient(ev: DeviceOrientationEvent) {
-      const wk = (ev as any).webkitCompassHeading as number | undefined;
-      if (typeof wk === "number") {
-        setHeading(wk);
-        return;
+      // 2. iOS compass permission — must be in gesture chain
+      const iosPerm = (DeviceOrientationEvent as any)?.requestPermission;
+      if (typeof iosPerm === "function") {
+        try {
+          const r = await iosPerm();
+          if (r !== "granted") {
+            setNeedsOrient(true);
+            toast.error("Permite busola pentru AR");
+          }
+        } catch {
+          setNeedsOrient(true);
+        }
       }
-      if (typeof ev.alpha === "number") {
-        // Android: alpha is CCW from north; convert
-        setHeading((360 - ev.alpha) % 360);
+
+      setStarted(true);
+    } catch (e: any) {
+      const name = e?.name;
+      if (name === "NotAllowedError") {
+        setCamError("Permisiune refuzată. Activează camera din setările browserului.");
+      } else if (name === "NotFoundError") {
+        setCamError("Nicio cameră găsită pe acest dispozitiv.");
+      } else if (name === "NotReadableError") {
+        setCamError("Camera e folosită de altă aplicație. Închide-o și încearcă din nou.");
+      } else {
+        setCamError(e?.message || "Nu am putut porni camera");
       }
+    } finally {
+      setStarting(false);
     }
-    if (!needsOrient) {
-      window.addEventListener("deviceorientationabsolute" as any, onOrient as any, true);
-      window.addEventListener("deviceorientation", onOrient, true);
-    }
-    return () => {
-      window.removeEventListener("deviceorientationabsolute" as any, onOrient as any, true);
-      window.removeEventListener("deviceorientation", onOrient, true);
-    };
-  }, [needsOrient]);
+  }
 
   async function enableCompass() {
     try {
       const r = await (DeviceOrientationEvent as any).requestPermission();
-      if (r === "granted") {
-        setNeedsOrient(false);
-      } else {
-        toast.error("Permisiunea de busolă e necesară pentru AR");
-      }
+      if (r === "granted") setNeedsOrient(false);
+      else toast.error("Permisiunea de busolă e necesară pentru AR");
     } catch {
       setNeedsOrient(false);
     }
   }
+
 
   // 4. Load venues + friends around user
   useEffect(() => {
