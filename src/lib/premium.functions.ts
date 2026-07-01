@@ -23,8 +23,11 @@ type SyncResult =
         display_name: string | null;
         avatar_url: string | null;
       };
+      campaignId?: string;
+      boostDays?: number;
     }
   | { success: false; error: string };
+
 
 // Allowed price IDs (subscriptions + one-time coin packs + à la carte)
 const ALLOWED_PRICES = new Set([
