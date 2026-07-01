@@ -43,7 +43,7 @@ const TYPE_COLOR: Record<string, string> = {
 
 const NEON_BACKBONE_SRC = "oxi-neon-backbone";
 const CRITICAL_STYLE_LAYERS = ["oxi-backbone-core"];
-const MAPLIBRE_WORKER_URL = "/maplibre-gl-csp-worker.js?v=oxi-map-stable-20260701";
+const MAPLIBRE_WORKER_URL = "/maplibre-gl-csp-worker.js?v=oxi-map-csp-20260701b";
 
 function configureMapLibreRuntime() {
   if (typeof window === "undefined") return;
