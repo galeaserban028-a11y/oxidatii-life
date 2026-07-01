@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type SyntheticEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -122,6 +122,16 @@ const REASON_PILL: Record<NonNullable<Reel["reason"]>, { label: string; cls: str
   fresh:  { label: "🔥 proaspăt", cls: "bg-amber-500/15 text-amber-200 border-amber-400/30" },
 };
 
+function setVideoMuted(video: HTMLVideoElement, shouldMute: boolean) {
+  video.defaultMuted = shouldMute;
+  video.muted = shouldMute;
+  if (!shouldMute) {
+    try {
+      video.volume = 1;
+    } catch {}
+  }
+}
+
 function ReelTile({
   reel,
   active,
@@ -129,7 +139,7 @@ function ReelTile({
   onToggleLike,
   onOpenComments,
   muted,
-  onToggleMute,
+  onMuteChange,
 }: {
   reel: Reel;
   active: boolean;
@@ -137,36 +147,52 @@ function ReelTile({
   onToggleLike: () => void;
   onOpenComments: () => void;
   muted: boolean;
-  onToggleMute: () => void;
+  onMuteChange: (nextMuted: boolean) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const lastSoundToggleAtRef = useRef(0);
   const [paused, setPaused] = useState(false);
   const { user } = useAuth();
   const isOwn = user?.id === reel.user_id;
   const pill = reel.reason ? REASON_PILL[reel.reason] : null;
 
-  // Apply global mute pref to this video element imperatively (avoids iOS pause on prop change)
+  // Keep inactive videos silent and apply sound only to the visible reel.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    v.muted = muted;
-    if (!muted) v.volume = 1;
+    setVideoMuted(v, !active || muted);
   }, [muted, active]);
 
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     if (active && !paused) {
-      v.muted = muted;
-      v.play().catch(() => {
-        // If unmuted autoplay is blocked, fall back to muted playback
-        v.muted = true;
-        v.play().catch(() => {});
-      });
+      v.play().catch(() => {});
     } else {
       v.pause();
     }
-  }, [active, paused, muted]);
+  }, [active, paused]);
+
+  const handleSoundToggle = (e: SyntheticEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const now = performance.now();
+    if (now - lastSoundToggleAtRef.current < 900) return;
+    lastSoundToggleAtRef.current = now;
+
+    const nextMuted = !muted;
+    const v = videoRef.current;
+
+    if (v) {
+      setPaused(false);
+      setVideoMuted(v, nextMuted);
+      v.play().catch(() => {
+        if (!nextMuted) toast.info("Atinge încă o dată pe sunet.");
+      });
+    }
+
+    onMuteChange(nextMuted);
+  };
 
   return (
     <section className="relative h-[100svh] w-full snap-start snap-always overflow-hidden bg-black">
@@ -175,9 +201,7 @@ function ReelTile({
           ref={videoRef}
           src={reel.url}
           loop
-          muted
-
-
+          muted={muted || !active}
           playsInline
           preload="metadata"
           className="absolute inset-0 h-full w-full object-cover"
@@ -278,20 +302,16 @@ function ReelTile({
         </button>
         {reel.isVideo && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              const v = videoRef.current;
-              const next = !muted;
-              // Optimistically set element state inside the user gesture (iOS req)
-              if (v) {
-                v.muted = next;
-                v.volume = 1;
-                v.play().catch(() => {});
-              }
-              onToggleMute();
+            onPointerDown={handleSoundToggle}
+            onTouchStart={handleSoundToggle}
+            onMouseDown={handleSoundToggle}
+            onClick={handleSoundToggle}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") handleSoundToggle(e);
             }}
             className="size-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center active:scale-90 transition"
             aria-label="mute"
+            aria-pressed={!muted}
           >
             {muted ? (
               <svg viewBox="0 0 24 24" className="size-5 fill-white">
@@ -552,7 +572,7 @@ function ReelsPage() {
                   onToggleLike={() => toggleLike(item.reel)}
                   onOpenComments={() => setCommentsFor(item.reel)}
                   muted={muted}
-                  onToggleMute={() => setMuted((m) => !m)}
+                  onMuteChange={setMuted}
                 />
               </div>
             ) : (
