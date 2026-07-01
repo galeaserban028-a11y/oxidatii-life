@@ -117,7 +117,35 @@ const ALACARTE_SKUS: Record<
     kind: "biz_dashboard",
     recurring: "month",
   },
+  boost_2d: {
+    name: "Promovare · 2 zile",
+    description:
+      "Postarea ta apare 2 zile în feed-ul principal și în Faze cu badge Sponsorizat.",
+    amount: 50000, // 500 RON
+    currency: "ron",
+    kind: "campaign_boost",
+    days: 2,
+  },
+  boost_5d: {
+    name: "Promovare · 5 zile",
+    description:
+      "Postarea ta apare 5 zile în feed-ul principal și în Faze cu badge Sponsorizat.",
+    amount: 100000, // 1000 RON
+    currency: "ron",
+    kind: "campaign_boost",
+    days: 5,
+  },
+  boost_30d: {
+    name: "Promovare · 30 zile",
+    description:
+      "Postarea ta apare 30 de zile în feed-ul principal și în Faze cu badge Sponsorizat.",
+    amount: 250000, // 2500 RON
+    currency: "ron",
+    kind: "campaign_boost",
+    days: 30,
+  },
 };
+
 
 
 // price_id → premium tier + one-time coin grant. Must match webhook at src/routes/api/public/payments/webhook.tsx
