@@ -77,6 +77,32 @@ function BizPage() {
   const [busy, setBusy] = useState(false);
   const [postOpen, setPostOpen] = useState(false);
 
+  // After Stripe returns via ?boost=success&session_id=..., activate the campaign
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    const boost = url.searchParams.get("boost");
+    const sessionId = url.searchParams.get("session_id");
+    if (boost !== "success" || !sessionId) return;
+    // Clean URL immediately to prevent double-sync
+    url.searchParams.delete("boost");
+    url.searchParams.delete("session_id");
+    window.history.replaceState({}, "", url.toString());
+    (async () => {
+      const res = await syncCheckoutToProfile({
+        data: { sessionId, environment: getStripeEnvironment() },
+      });
+      if ("success" in res && res.success) {
+        toast.success(`Promovare activă · ${res.boostDays ?? ""} zile`);
+        qc.invalidateQueries({ queryKey: ["biz-campaigns"] });
+      } else if ("error" in res) {
+        toast.error(res.error);
+      }
+    })();
+  }, [qc]);
+
+
+
   if (!user)
     return (
       <div className="px-4 pt-10 text-center text-sm text-muted-foreground">
