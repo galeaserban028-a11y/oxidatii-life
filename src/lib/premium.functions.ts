@@ -23,8 +23,11 @@ type SyncResult =
         display_name: string | null;
         avatar_url: string | null;
       };
+      campaignId?: string;
+      boostDays?: number;
     }
   | { success: false; error: string };
+
 
 // Allowed price IDs (subscriptions + one-time coin packs + à la carte)
 const ALLOWED_PRICES = new Set([
@@ -46,7 +49,11 @@ const ALLOWED_PRICES = new Set([
   "last_call_send",
   "last_call_reveal",
   "biz_dashboard_monthly",
+  "boost_2d",
+  "boost_5d",
+  "boost_30d",
 ]);
+
 
 const COIN_PACKS: Record<string, number> = {
   coins_mic: 50,
@@ -110,7 +117,35 @@ const ALACARTE_SKUS: Record<
     kind: "biz_dashboard",
     recurring: "month",
   },
+  boost_2d: {
+    name: "Promovare · 2 zile",
+    description:
+      "Postarea ta apare 2 zile în feed-ul principal și în Faze cu badge Sponsorizat.",
+    amount: 50000, // 500 RON
+    currency: "ron",
+    kind: "campaign_boost",
+    days: 2,
+  },
+  boost_5d: {
+    name: "Promovare · 5 zile",
+    description:
+      "Postarea ta apare 5 zile în feed-ul principal și în Faze cu badge Sponsorizat.",
+    amount: 100000, // 1000 RON
+    currency: "ron",
+    kind: "campaign_boost",
+    days: 5,
+  },
+  boost_30d: {
+    name: "Promovare · 30 zile",
+    description:
+      "Postarea ta apare 30 de zile în feed-ul principal și în Faze cu badge Sponsorizat.",
+    amount: 250000, // 2500 RON
+    currency: "ron",
+    kind: "campaign_boost",
+    days: 30,
+  },
 };
+
 
 
 // price_id → premium tier + one-time coin grant. Must match webhook at src/routes/api/public/payments/webhook.tsx
@@ -162,7 +197,12 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
       priceId: string;
       returnUrl: string;
       environment: StripeEnv;
-      extra?: { target_id?: string; ping_id?: string; date?: string };
+      extra?: {
+        target_id?: string;
+        ping_id?: string;
+        date?: string;
+        campaign_id?: string;
+      };
     }) => {
       if (!ALLOWED_PRICES.has(data.priceId)) throw new Error("Invalid priceId");
       const uuidRe = /^[0-9a-fA-F-]{36}$/;
@@ -172,9 +212,12 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
       if (data.extra?.ping_id && !uuidRe.test(data.extra.ping_id))
         throw new Error("Invalid ping_id");
       if (data.extra?.date && !dateRe.test(data.extra.date)) throw new Error("Invalid date");
+      if (data.extra?.campaign_id && !uuidRe.test(data.extra.campaign_id))
+        throw new Error("Invalid campaign_id");
       return data;
     },
   )
+
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
     const { userId, claims } = context;
     const email = (claims as any)?.email as string | undefined;
@@ -230,6 +273,8 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
         ...(data.extra?.target_id && { target_id: data.extra.target_id }),
         ...(data.extra?.ping_id && { ping_id: data.extra.ping_id }),
         ...(data.extra?.date && { replay_date: data.extra.date }),
+        ...(data.extra?.campaign_id && { campaign_id: data.extra.campaign_id }),
+
       };
 
       const session = await stripe.checkout.sessions.create({
@@ -295,6 +340,49 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
       const isReplayNight = sessionKind === "replay_night" || priceId === "replay_night";
       const isLastCallSend = sessionKind === "last_call_send" || priceId === "last_call_send";
       const isLastCallReveal = sessionKind === "last_call_reveal" || priceId === "last_call_reveal";
+      const isCampaignBoost =
+        sessionKind === "campaign_boost" ||
+        (typeof priceId === "string" && priceId.startsWith("boost_"));
+
+      // À la carte: Campaign Boost — activate a draft campaign for N days
+      if (isCampaignBoost) {
+        const campaignId = session.metadata?.campaign_id;
+        if (!campaignId) return { success: false, error: "Campanie lipsă" };
+        const days = parseInt(session.metadata?.days ?? "0", 10) || 0;
+        if (days <= 0) return { success: false, error: "Durată invalidă" };
+
+        // Verify caller owns this campaign via RLS-scoped client
+        const { data: camp, error: campErr } = await context.supabase
+          .from("campaigns")
+          .select("id, business_id, status")
+          .eq("id", campaignId)
+          .maybeSingle();
+        if (campErr || !camp) return { success: false, error: "Campanie inexistentă" };
+
+        // Idempotent: if already active with matching session, just return
+        const now = new Date();
+        const endsAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+        const { error: updErr } = await supabaseAdmin
+          .from("campaigns")
+          .update({
+            status: "active",
+            starts_at: now.toISOString(),
+            ends_at: endsAt.toISOString(),
+          })
+          .eq("id", campaignId);
+        if (updErr) return { success: false, error: updErr.message };
+
+        await supabaseAdmin.from("wallet_ledger").insert({
+          business_id: camp.business_id,
+          kind: "topup",
+          amount_cents: session.amount_total ?? 0,
+          campaign_id: campaignId,
+          note: `stripe:${session.id}`,
+        });
+
+        return { success: true, campaignId, boostDays: days };
+      }
+
 
       // À la carte: Replay Night — unlock a specific day's wrap
       if (isReplayNight) {

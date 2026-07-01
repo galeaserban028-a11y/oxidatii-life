@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import {
@@ -17,6 +17,9 @@ import {
   Film,
 } from "lucide-react";
 import { toast } from "sonner";
+import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
+import { syncCheckoutToProfile } from "@/lib/premium.functions";
+import { getStripeEnvironment } from "@/lib/stripe";
 
 
 export const Route = createFileRoute("/app/biz")({
@@ -24,13 +27,21 @@ export const Route = createFileRoute("/app/biz")({
   component: BizPage,
 });
 
-// Cele trei pachete simple. Atât. Plată one-shot pentru o postare.
+// Cele trei pachete simple. Plată one-shot via Stripe pentru fiecare postare.
 type TierId = "t500" | "t1000" | "t2500";
-const TIERS: { id: TierId; priceRon: number; days: number; label: string; color: string }[] = [
-  { id: "t500", priceRon: 500, days: 2, label: "2 zile", color: "#00e5ff" },
-  { id: "t1000", priceRon: 1000, days: 5, label: "5 zile", color: "#ff3d8b" },
-  { id: "t2500", priceRon: 2500, days: 30, label: "30 zile", color: "#ffea00" },
+const TIERS: {
+  id: TierId;
+  priceRon: number;
+  days: number;
+  label: string;
+  color: string;
+  priceId: "boost_2d" | "boost_5d" | "boost_30d";
+}[] = [
+  { id: "t500", priceRon: 500, days: 2, label: "2 zile", color: "#00e5ff", priceId: "boost_2d" },
+  { id: "t1000", priceRon: 1000, days: 5, label: "5 zile", color: "#ff3d8b", priceId: "boost_5d" },
+  { id: "t2500", priceRon: 2500, days: 30, label: "30 zile", color: "#ffea00", priceId: "boost_30d" },
 ];
+
 
 async function loadBiz(userId: string) {
   const { data } = await supabase
@@ -65,6 +76,32 @@ function BizPage() {
   const [brand, setBrand] = useState("");
   const [busy, setBusy] = useState(false);
   const [postOpen, setPostOpen] = useState(false);
+
+  // After Stripe returns via ?boost=success&session_id=..., activate the campaign
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    const boost = url.searchParams.get("boost");
+    const sessionId = url.searchParams.get("session_id");
+    if (boost !== "success" || !sessionId) return;
+    // Clean URL immediately to prevent double-sync
+    url.searchParams.delete("boost");
+    url.searchParams.delete("session_id");
+    window.history.replaceState({}, "", url.toString());
+    (async () => {
+      const res = await syncCheckoutToProfile({
+        data: { sessionId, environment: getStripeEnvironment() },
+      });
+      if ("success" in res && res.success) {
+        toast.success(`Promovare activă · ${res.boostDays ?? ""} zile`);
+        qc.invalidateQueries({ queryKey: ["biz-campaigns"] });
+      } else if ("error" in res) {
+        toast.error(res.error);
+      }
+    })();
+  }, [qc]);
+
+
 
   if (!user)
     return (
@@ -307,6 +344,8 @@ function PostModal({
   const [uploading, setUploading] = useState(false);
   const [tier, setTier] = useState<TierId>("t500");
   const [busy, setBusy] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [pendingCampaignId, setPendingCampaignId] = useState<string | null>(null);
 
   const handleFile = async (file: File, target: "image" | "video" = "image") => {
     if (!user?.id) return toast.error("Trebuie să fii autentificat");
@@ -338,28 +377,34 @@ function PostModal({
       return toast.error("Adaugă un video sau o imagine pentru reel");
     const cfg = TIERS.find((t) => t.id === tier)!;
     setBusy(true);
-    const now = new Date();
-    const endsAt = new Date(now.getTime() + cfg.days * 24 * 60 * 60 * 1000);
-    const { error } = await supabase.from("campaigns").insert({
-      business_id: businessId,
-      title: title.trim(),
-      body: body.trim() || null,
-      kind: mode === "reel" ? "boost_reel" : "boost_feed",
-      status: "active",
-      bid_cents: 0,
-      budget_cents: cfg.priceRon * 100,
-      image_urls: imageUrl.trim() ? [imageUrl.trim()] : [],
-      video_url: mode === "reel" && videoUrl.trim() ? videoUrl.trim() : null,
-      cta_url: ctaUrl.trim() || null,
-      cta_text: ctaText.trim() || null,
-      starts_at: now.toISOString(),
-      ends_at: endsAt.toISOString(),
-    });
+    // Insert as DRAFT — activated after Stripe payment via syncCheckoutToProfile
+    const { data: inserted, error } = await supabase
+      .from("campaigns")
+      .insert({
+        business_id: businessId,
+        title: title.trim(),
+        body: body.trim() || null,
+        kind: mode === "reel" ? "boost_reel" : "boost_feed",
+        status: "draft",
+        bid_cents: 0,
+        budget_cents: cfg.priceRon * 100,
+        image_urls: imageUrl.trim() ? [imageUrl.trim()] : [],
+        video_url: mode === "reel" && videoUrl.trim() ? videoUrl.trim() : null,
+        cta_url: ctaUrl.trim() || null,
+        cta_text: ctaText.trim() || null,
+        starts_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
     setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success(`${mode === "reel" ? "Sponsored Reel" : "Postare"} publicat · ${cfg.label}`);
-    onCreated();
+    if (error || !inserted) return toast.error(error?.message || "Eroare la salvare");
+    setPendingCampaignId(inserted.id as string);
+    setCheckoutOpen(true);
   };
+
+  const currentTier = TIERS.find((t) => t.id === tier)!;
+
+
 
 
   const inputClass =
@@ -568,18 +613,34 @@ function PostModal({
               {busy ? (
                 <Loader2 size={14} className="inline animate-spin" />
               ) : (
-                `Publică · ${TIERS.find((t) => t.id === tier)!.priceRon} RON`
+                `Continuă la plată · ${currentTier.priceRon} RON`
               )}
             </button>
             <p className="text-[10px] font-mono uppercase tracking-widest text-zinc-600 text-center pt-1">
-              o postare · o imagine · apare în ecranul principal
+              plată securizată prin stripe · postarea se activează după confirmare
             </p>
           </div>
         </div>
       </div>
+      <PremiumCheckoutDialog
+        open={checkoutOpen && !!pendingCampaignId}
+        onClose={() => {
+          setCheckoutOpen(false);
+          // If they close without paying, campaign remains draft — clean up
+          if (pendingCampaignId) {
+            supabase.from("campaigns").delete().eq("id", pendingCampaignId).then(() => {});
+            setPendingCampaignId(null);
+          }
+        }}
+        priceId={currentTier.priceId}
+        title={`Promovare · ${currentTier.label}`}
+        extra={pendingCampaignId ? { campaign_id: pendingCampaignId } : undefined}
+        returnUrl={`${typeof window !== "undefined" ? window.location.origin : ""}/app/biz?boost=success&session_id={CHECKOUT_SESSION_ID}`}
+      />
     </div>
   );
 }
+
 
 function CreateBusinessSheet({
   open,
