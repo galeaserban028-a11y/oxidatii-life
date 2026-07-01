@@ -175,7 +175,9 @@ function ReelTile({
           ref={videoRef}
           src={reel.url}
           loop
-          muted={muted}
+          defaultMuted
+          // muted attr managed imperatively via useEffect to avoid iOS Safari reloads
+
           playsInline
           preload="metadata"
           className="absolute inset-0 h-full w-full object-cover"
