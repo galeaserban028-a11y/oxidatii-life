@@ -128,29 +128,45 @@ function ReelTile({
   liked,
   onToggleLike,
   onOpenComments,
+  muted,
+  onToggleMute,
 }: {
   reel: Reel;
   active: boolean;
   liked: boolean;
   onToggleLike: () => void;
   onOpenComments: () => void;
+  muted: boolean;
+  onToggleMute: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
   const [paused, setPaused] = useState(false);
   const { user } = useAuth();
   const isOwn = user?.id === reel.user_id;
   const pill = reel.reason ? REASON_PILL[reel.reason] : null;
 
+  // Apply global mute pref to this video element imperatively (avoids iOS pause on prop change)
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = muted;
+    if (!muted) v.volume = 1;
+  }, [muted, active]);
+
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     if (active && !paused) {
-      v.play().catch(() => {});
+      v.muted = muted;
+      v.play().catch(() => {
+        // If unmuted autoplay is blocked, fall back to muted playback
+        v.muted = true;
+        v.play().catch(() => {});
+      });
     } else {
       v.pause();
     }
-  }, [active, paused]);
+  }, [active, paused, muted]);
 
   return (
     <section className="relative h-[100svh] w-full snap-start snap-always overflow-hidden bg-black">
