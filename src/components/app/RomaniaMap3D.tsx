@@ -446,6 +446,26 @@ export function RomaniaMap3D({
   // INIT map once
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+
+    // Defer init until the container has real dimensions. When the map is
+    // mounted inside a route transition / animation the container can be
+    // 0×0 for a frame or two — creating maplibre at that instant makes it
+    // fetch tiles for the wrong viewport, and the user then has to zoom
+    // in/out to force a correct re-fetch. Wait for a real size first.
+    const initialRect = containerRef.current.getBoundingClientRect();
+    if (initialRect.width < 40 || initialRect.height < 40) {
+      const el = containerRef.current;
+      const ro = new ResizeObserver(() => {
+        const r = el.getBoundingClientRect();
+        if (r.width >= 40 && r.height >= 40) {
+          ro.disconnect();
+          setRetryKey((k) => k + 1);
+        }
+      });
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+
     setMapFailed(false);
     let map: MlMap;
     let resizeObserver: ResizeObserver | null = null;
@@ -494,10 +514,30 @@ export function RomaniaMap3D({
     map.dragRotate.disable();
     compactMapRef.current = isSmall;
     if (typeof ResizeObserver !== "undefined" && containerRef.current) {
-      resizeObserver = new ResizeObserver(() => requestAnimationFrame(() => map.resize()));
+      resizeObserver = new ResizeObserver(() => {
+        requestAnimationFrame(() => {
+          try {
+            map.resize();
+            map.triggerRepaint();
+          } catch {}
+        });
+      });
       resizeObserver.observe(containerRef.current);
     }
     // dragPan + scrollZoom rămân activate ca să se poată naviga și da zoom
+
+    // As soon as the style JSON is parsed (fires well before "load"), force
+    // an immediate resize so the tile fetcher requests tiles for the real
+    // viewport instead of the transient container size at construction time.
+    // This is what removes the "have to zoom in/out to see the map" bug.
+    const onStyleData = () => {
+      try {
+        map.resize();
+        map.triggerRepaint();
+      } catch {}
+    };
+    map.on("styledata", onStyleData);
+    map.once("sourcedata", onStyleData);
 
     loadWatchdog = window.setTimeout(() => {
       if (loadedRef.current) return;
@@ -517,7 +557,13 @@ export function RomaniaMap3D({
         loadWatchdog = null;
       }
       setMapFailed(false);
+      // Multiple staggered resizes: catches late layout shifts from the
+      // parent (sticky header, safe-area, address-bar collapse on mobile)
+      // without forcing extra visual changes.
       repaintMap(map);
+      window.setTimeout(() => repaintMap(map), 120);
+      window.setTimeout(() => repaintMap(map), 480);
+
       // GPU-rendered venue layer + clustering — handles thousands of points at 60fps
       // Enable real clustering so the cluster layers below actually render
       // (previously cluster:false meant clusters were declared but never used,
