@@ -321,36 +321,17 @@ function BoostedCard({ boosted, userId }: { boosted: any; userId: string }) {
   useEffect(() => {
     if (logged.current) return;
     logged.current = true;
-    // Fire-and-forget impression: insert event + bump campaign counters
-    (async () => {
-      await supabase.from("campaign_events").insert({
-        campaign_id: campaign.id,
-        user_id: userId,
-        event_type: "impression",
-        cost_cents: campaign.bid_cents,
-      });
-      await supabase
-        .from("campaigns")
-        .update({
-          impressions: (campaign.impressions ?? 0) + 1,
-          spent_cents: (campaign.spent_cents ?? 0) + (campaign.bid_cents ?? 0),
-        })
-        .eq("id", campaign.id);
-    })().catch(() => {});
-  }, [campaign.id, campaign.bid_cents, campaign.impressions, campaign.spent_cents, userId]);
+    supabase
+      .rpc("track_campaign_event", { _campaign_id: campaign.id, _event_type: "impression" })
+      .then(() => {})
+      .then(undefined, () => {});
+  }, [campaign.id, userId]);
 
   const onClick = async () => {
-    await supabase.from("campaign_events").insert({
-      campaign_id: campaign.id,
-      user_id: userId,
-      event_type: "click",
-      cost_cents: 0,
-    });
     await supabase
-      .from("campaigns")
-      .update({ clicks: (campaign.clicks ?? 0) + 1 })
-      .eq("id", campaign.id);
+      .rpc("track_campaign_event", { _campaign_id: campaign.id, _event_type: "click" });
   };
+
 
   return (
     <article className="rounded-2xl overflow-hidden border border-neon-purple/40 bg-gradient-to-br from-neon-purple/10 via-background to-neon-crimson/10 relative">
