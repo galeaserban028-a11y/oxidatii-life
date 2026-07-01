@@ -535,7 +535,7 @@ function ReelsPage() {
                   active={idx === activeIdx}
                   liked={myLikes.has(item.reel.id)}
                   onToggleLike={() => toggleLike(item.reel)}
-                  onOpenComments={() => toast.message("Deschide comentariile din feed.")}
+                  onOpenComments={() => setCommentsFor(item.reel)}
                 />
               </div>
             ) : (
