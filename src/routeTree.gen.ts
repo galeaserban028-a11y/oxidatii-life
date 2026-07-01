@@ -34,7 +34,6 @@ import { Route as AppScanRouteImport } from './routes/app.scan'
 import { Route as AppRequestsRouteImport } from './routes/app.requests'
 import { Route as AppReplayRouteImport } from './routes/app.replay'
 import { Route as AppReelsRouteImport } from './routes/app.reels'
-import { Route as AppRadarRouteImport } from './routes/app.radar'
 import { Route as AppPremiumRouteImport } from './routes/app.premium'
 import { Route as AppPartiesRouteImport } from './routes/app.parties'
 import { Route as AppNotificationsRouteImport } from './routes/app.notifications'
@@ -48,7 +47,6 @@ import { Route as AppFollowersRouteImport } from './routes/app.followers'
 import { Route as AppFeedRouteImport } from './routes/app.feed'
 import { Route as AppFazeRouteImport } from './routes/app.faze'
 import { Route as AppDiscoverRouteImport } from './routes/app.discover'
-import { Route as AppCameraRouteImport } from './routes/app.camera'
 import { Route as AppBlockedRouteImport } from './routes/app.blocked'
 import { Route as AppBizRouteImport } from './routes/app.biz'
 import { Route as AppAdminRouteImport } from './routes/app.admin'
@@ -204,11 +202,6 @@ const AppReelsRoute = AppReelsRouteImport.update({
   path: '/reels',
   getParentRoute: () => AppRoute,
 } as any)
-const AppRadarRoute = AppRadarRouteImport.update({
-  id: '/radar',
-  path: '/radar',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppPremiumRoute = AppPremiumRouteImport.update({
   id: '/premium',
   path: '/premium',
@@ -272,11 +265,6 @@ const AppFazeRoute = AppFazeRouteImport.update({
 const AppDiscoverRoute = AppDiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCameraRoute = AppCameraRouteImport.update({
-  id: '/camera',
-  path: '/camera',
   getParentRoute: () => AppRoute,
 } as any)
 const AppBlockedRoute = AppBlockedRouteImport.update({
@@ -447,7 +435,6 @@ export interface FileRoutesByFullPath {
   '/app/admin': typeof AppAdminRouteWithChildren
   '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
-  '/app/camera': typeof AppCameraRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
@@ -461,7 +448,6 @@ export interface FileRoutesByFullPath {
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
-  '/app/radar': typeof AppRadarRoute
   '/app/reels': typeof AppReelsRoute
   '/app/replay': typeof AppReplayRouteWithChildren
   '/app/requests': typeof AppRequestsRoute
@@ -516,7 +502,6 @@ export interface FileRoutesByTo {
   '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
-  '/app/camera': typeof AppCameraRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
@@ -530,7 +515,6 @@ export interface FileRoutesByTo {
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
-  '/app/radar': typeof AppRadarRoute
   '/app/reels': typeof AppReelsRoute
   '/app/replay': typeof AppReplayRouteWithChildren
   '/app/requests': typeof AppRequestsRoute
@@ -588,7 +572,6 @@ export interface FileRoutesById {
   '/app/admin': typeof AppAdminRouteWithChildren
   '/app/biz': typeof AppBizRouteWithChildren
   '/app/blocked': typeof AppBlockedRoute
-  '/app/camera': typeof AppCameraRoute
   '/app/discover': typeof AppDiscoverRoute
   '/app/faze': typeof AppFazeRoute
   '/app/feed': typeof AppFeedRoute
@@ -602,7 +585,6 @@ export interface FileRoutesById {
   '/app/notifications': typeof AppNotificationsRoute
   '/app/parties': typeof AppPartiesRoute
   '/app/premium': typeof AppPremiumRoute
-  '/app/radar': typeof AppRadarRoute
   '/app/reels': typeof AppReelsRoute
   '/app/replay': typeof AppReplayRouteWithChildren
   '/app/requests': typeof AppRequestsRoute
@@ -661,7 +643,6 @@ export interface FileRouteTypes {
     | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
-    | '/app/camera'
     | '/app/discover'
     | '/app/faze'
     | '/app/feed'
@@ -675,7 +656,6 @@ export interface FileRouteTypes {
     | '/app/notifications'
     | '/app/parties'
     | '/app/premium'
-    | '/app/radar'
     | '/app/reels'
     | '/app/replay'
     | '/app/requests'
@@ -730,7 +710,6 @@ export interface FileRouteTypes {
     | '/.well-known/assetlinks.json'
     | '/app/biz'
     | '/app/blocked'
-    | '/app/camera'
     | '/app/discover'
     | '/app/faze'
     | '/app/feed'
@@ -744,7 +723,6 @@ export interface FileRouteTypes {
     | '/app/notifications'
     | '/app/parties'
     | '/app/premium'
-    | '/app/radar'
     | '/app/reels'
     | '/app/replay'
     | '/app/requests'
@@ -801,7 +779,6 @@ export interface FileRouteTypes {
     | '/app/admin'
     | '/app/biz'
     | '/app/blocked'
-    | '/app/camera'
     | '/app/discover'
     | '/app/faze'
     | '/app/feed'
@@ -815,7 +792,6 @@ export interface FileRouteTypes {
     | '/app/notifications'
     | '/app/parties'
     | '/app/premium'
-    | '/app/radar'
     | '/app/reels'
     | '/app/replay'
     | '/app/requests'
@@ -1053,13 +1029,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReelsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/radar': {
-      id: '/app/radar'
-      path: '/radar'
-      fullPath: '/app/radar'
-      preLoaderRoute: typeof AppRadarRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/premium': {
       id: '/app/premium'
       path: '/premium'
@@ -1149,13 +1118,6 @@ declare module '@tanstack/react-router' {
       path: '/discover'
       fullPath: '/app/discover'
       preLoaderRoute: typeof AppDiscoverRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/camera': {
-      id: '/app/camera'
-      path: '/camera'
-      fullPath: '/app/camera'
-      preLoaderRoute: typeof AppCameraRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/blocked': {
@@ -1419,7 +1381,6 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRouteWithChildren
   AppBizRoute: typeof AppBizRouteWithChildren
   AppBlockedRoute: typeof AppBlockedRoute
-  AppCameraRoute: typeof AppCameraRoute
   AppDiscoverRoute: typeof AppDiscoverRoute
   AppFazeRoute: typeof AppFazeRoute
   AppFeedRoute: typeof AppFeedRoute
@@ -1433,7 +1394,6 @@ interface AppRouteChildren {
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppPartiesRoute: typeof AppPartiesRoute
   AppPremiumRoute: typeof AppPremiumRoute
-  AppRadarRoute: typeof AppRadarRoute
   AppReelsRoute: typeof AppReelsRoute
   AppReplayRoute: typeof AppReplayRouteWithChildren
   AppRequestsRoute: typeof AppRequestsRoute
@@ -1461,7 +1421,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRouteWithChildren,
   AppBizRoute: AppBizRouteWithChildren,
   AppBlockedRoute: AppBlockedRoute,
-  AppCameraRoute: AppCameraRoute,
   AppDiscoverRoute: AppDiscoverRoute,
   AppFazeRoute: AppFazeRoute,
   AppFeedRoute: AppFeedRoute,
@@ -1475,7 +1434,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppNotificationsRoute: AppNotificationsRoute,
   AppPartiesRoute: AppPartiesRoute,
   AppPremiumRoute: AppPremiumRoute,
-  AppRadarRoute: AppRadarRoute,
   AppReelsRoute: AppReelsRoute,
   AppReplayRoute: AppReplayRouteWithChildren,
   AppRequestsRoute: AppRequestsRoute,
