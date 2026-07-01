@@ -497,6 +497,33 @@ function RadarPage() {
         </div>
       )}
 
+      {/* Start gate — camera + compass need a user gesture on mobile */}
+      {!started && !camError && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/90 p-6 text-center">
+          <div className="max-w-sm space-y-5">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-cyan-400/40 bg-black">
+              <Sparkles className="h-8 w-8 text-cyan-300" />
+            </div>
+            <h2 className="text-2xl font-bold">Pornește Spritz Radar</h2>
+            <p className="text-sm text-white/70">
+              Îndreaptă telefonul spre stradă și vezi în AR localurile din jur, prietenii activi și heat-ul serii.
+              Avem nevoie de <b>camera</b>, <b>locație</b> și <b>busolă</b>.
+            </p>
+            <Button
+              onClick={startRadar}
+              disabled={starting}
+              className="w-full bg-cyan-400 text-black hover:bg-cyan-300"
+            >
+              {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Activează AR"}
+            </Button>
+            <Link to="/app/map" className="inline-block text-xs text-white/50 underline">
+              Înapoi la hartă
+            </Link>
+          </div>
+        </div>
+      )}
+
+
       {/* Waiting for GPS/heading */}
       {!camError && (!pos || !hasHeading) && camReady && !needsOrient && (
         <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-black/70 px-4 py-3 text-center text-sm backdrop-blur-md">
