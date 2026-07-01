@@ -416,7 +416,9 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
       }
       const priceLookup = price.lookup_key || price.metadata?.lovable_external_id || price.id;
       const tierInfo = priceLookup ? TIER_MAP[priceLookup] : null;
-      if (!tierInfo) {
+      const isBizDashboard =
+        priceLookup === "biz_dashboard_monthly" || session.metadata?.kind === "biz_dashboard";
+      if (!tierInfo && !isBizDashboard) {
         return { success: false, error: "Nu am recunoscut produsul cumpărat" };
       }
 
