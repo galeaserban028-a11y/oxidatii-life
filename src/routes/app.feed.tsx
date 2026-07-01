@@ -107,18 +107,14 @@ async function loadFeed(userId: string) {
   const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
   const venueMap = new Map((venues ?? []).map((v: any) => [v.id, v]));
 
-  // Boosted slot: one active campaign with budget remaining, randomized
-  const { data: campaigns } = await supabase
-    .from("campaigns")
-    .select("id, party_id, title, bid_cents, budget_cents, spent_cents, business_id")
-    .eq("status", "active")
-    .eq("kind", "boost_feed")
-    .limit(20);
+  // Boosted slot: fetch active boost_feed campaigns via safe RPC (no financial cols)
+  const { data: campaigns } = await supabase.rpc("get_active_campaigns", {
+    _kinds: ["boost_feed"],
+    _limit: 20,
+  });
 
   let boosted: any = null;
-  const eligible = (campaigns ?? []).filter(
-    (c) => (c.spent_cents ?? 0) + (c.bid_cents ?? 0) <= (c.budget_cents ?? 0) && c.party_id,
-  );
+  const eligible = (campaigns ?? []).filter((c: any) => c.party_id);
   if (eligible.length) {
     const pick = eligible[Math.floor(Math.random() * eligible.length)];
     const [{ data: party }, { data: biz }] = await Promise.all([
@@ -134,6 +130,7 @@ async function loadFeed(userId: string) {
     ]);
     if (party) boosted = { campaign: pick, party, business: biz };
   }
+
 
   return { items, profMap, venueMap, followingCount: (following ?? []).length, boosted };
 }
