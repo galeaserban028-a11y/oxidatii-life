@@ -164,7 +164,6 @@ function ReelTile({
           ref={videoRef}
           src={reel.url}
           loop
-          defaultMuted
           muted={muted}
           playsInline
           preload="metadata"
