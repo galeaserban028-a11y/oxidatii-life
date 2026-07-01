@@ -932,7 +932,10 @@ export function RomaniaMap3D({
     map.once("load", setupInteractiveLayers);
     window.setTimeout(setupInteractiveLayers, 260);
 
-    map.on("idle", () => {
+    // One-shot health check after the very first idle. Retrying on every
+    // idle (as before) caused sporadic hard resets of the whole map during
+    // normal panning when a tile momentarily failed to fetch.
+    map.once("idle", () => {
       if (!mapHasCriticalLayers(map) && autoRetryCountRef.current < 2) {
         autoRetryCountRef.current += 1;
         setRetryKey((k) => k + 1);
@@ -940,6 +943,7 @@ export function RomaniaMap3D({
       }
       repaintMap(map);
     });
+
 
     map.on("error", (event) => {
       console.warn("Map tile error", event.error);
