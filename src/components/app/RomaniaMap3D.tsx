@@ -436,6 +436,8 @@ export function RomaniaMap3D({
   const [mapFailed, setMapFailed] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [mapReadyTick, setMapReadyTick] = useState(0);
+  const [firstPaintDone, setFirstPaintDone] = useState(false);
+
 
   useEffect(() => {
     navRef.current = nav;
@@ -454,11 +456,11 @@ export function RomaniaMap3D({
     // fetch tiles for the wrong viewport, and the user then has to zoom
     // in/out to force a correct re-fetch. Wait for a real size first.
     const initialRect = containerRef.current.getBoundingClientRect();
-    if (initialRect.width < 40 || initialRect.height < 40) {
+    if (initialRect.width < 8 || initialRect.height < 8) {
       const el = containerRef.current;
       const ro = new ResizeObserver(() => {
         const r = el.getBoundingClientRect();
-        if (r.width >= 40 && r.height >= 40) {
+        if (r.width >= 8 && r.height >= 8) {
           ro.disconnect();
           setRetryKey((k) => k + 1);
         }
@@ -466,6 +468,7 @@ export function RomaniaMap3D({
       ro.observe(el);
       return () => ro.disconnect();
     }
+
 
     setMapFailed(false);
     let map: MlMap;
@@ -932,14 +935,20 @@ export function RomaniaMap3D({
     map.once("load", setupInteractiveLayers);
     window.setTimeout(setupInteractiveLayers, 260);
 
-    map.on("idle", () => {
+    // One-shot health check after the very first idle. Retrying on every
+    // idle (as before) caused sporadic hard resets of the whole map during
+    // normal panning when a tile momentarily failed to fetch.
+    map.once("idle", () => {
       if (!mapHasCriticalLayers(map) && autoRetryCountRef.current < 2) {
         autoRetryCountRef.current += 1;
         setRetryKey((k) => k + 1);
         return;
       }
       repaintMap(map);
+      setFirstPaintDone(true);
     });
+
+
 
     map.on("error", (event) => {
       console.warn("Map tile error", event.error);
@@ -1554,6 +1563,37 @@ export function RomaniaMap3D({
       `}</style>
 
       <div ref={containerRef} className="absolute inset-0" />
+
+      {/* Loading skeleton — hides the black flash while tiles fetch on first entry. */}
+      <div
+        aria-hidden={firstPaintDone}
+        className={`absolute inset-0 z-10 pointer-events-none grid place-items-center overflow-hidden transition-opacity duration-500 ${firstPaintDone || mapFailed ? "opacity-0" : "opacity-100"}`}
+        style={{
+          background:
+            "radial-gradient(80% 60% at 50% 40%, rgba(198,107,255,0.18), transparent 65%), radial-gradient(60% 45% at 50% 70%, rgba(255,61,139,0.14), transparent 70%), #0d0b1e",
+        }}
+      >
+        <div
+          className="absolute inset-0 opacity-40"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(198,107,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(198,107,255,0.08) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            maskImage: "radial-gradient(circle at 50% 50%, #000 40%, transparent 75%)",
+          }}
+        />
+        <div className="relative z-10 flex flex-col items-center gap-3">
+          <div className="relative h-12 w-12">
+            <div className="absolute inset-0 rounded-full border-2 border-[#c66bff]/30" />
+            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#ff3d8b] animate-spin" />
+          </div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
+            se încarcă harta
+          </div>
+        </div>
+      </div>
+
+
       {mapFailed && (
         <div className="absolute inset-0 z-20 grid place-items-center bg-background/95 px-6 text-center">
           <div>
