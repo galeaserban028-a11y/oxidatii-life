@@ -414,36 +414,36 @@ function UserPage() {
                           />
                         )}
                         {!isBlocking && !isBlockedBy && (
-                          <TipCreatorButton
-                            recipientId={profile.id}
-                            recipientName={profile.display_name ?? profile.handle}
-                          />
-                        )}
-                        {!isBlocking && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button
-                                className="px-3 py-3 rounded-xl bg-secondary border border-border text-foreground flex items-center justify-center active:scale-[0.98] transition"
-                                aria-label="Mai multe"
-                              >
-                                <MoreVertical size={18} />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <ReportDialog
-                                targetType="user"
-                                targetId={profile.id}
-                                variant="menu-item"
-                                label={`Raportează @${handle}`}
-                              />
-                              <DropdownMenuItem
-                                onClick={() => setConfirmBlock("block")}
-                                className="text-neon-crimson focus:text-neon-crimson"
-                              >
-                                <ShieldOff size={14} className="mr-2" /> Blochează @{handle}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <div className="flex items-center gap-1">
+                            <TipCreatorButton
+                              recipientId={profile.id}
+                              recipientName={profile.display_name ?? profile.handle}
+                            />
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  className="px-3 py-3 rounded-xl bg-secondary border border-border text-foreground flex items-center justify-center active:scale-[0.98] transition"
+                                  aria-label="Mai multe"
+                                >
+                                  <MoreVertical size={18} />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <ReportDialog
+                                  targetType="user"
+                                  targetId={profile.id}
+                                  variant="menu-item"
+                                  label={`Raportează @${handle}`}
+                                />
+                                <DropdownMenuItem
+                                  onClick={() => setConfirmBlock("block")}
+                                  className="text-neon-crimson focus:text-neon-crimson"
+                                >
+                                  <ShieldOff size={14} className="mr-2" /> Blochează @{handle}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         )}
                       </div>
                     )}
