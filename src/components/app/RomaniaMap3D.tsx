@@ -1568,36 +1568,31 @@ export function RomaniaMap3D({
       <div
         aria-hidden={firstPaintDone}
         className={`absolute inset-0 z-10 pointer-events-none grid place-items-center overflow-hidden transition-opacity duration-500 ${firstPaintDone || mapFailed ? "opacity-0" : "opacity-100"}`}
+        style={{
+          background:
+            "radial-gradient(80% 60% at 50% 40%, rgba(198,107,255,0.18), transparent 65%), radial-gradient(60% 45% at 50% 70%, rgba(255,61,139,0.14), transparent 70%), #0d0b1e",
+        }}
       >
-      {false && (
-
         <div
-          className="absolute inset-0 z-10 pointer-events-none grid place-items-center overflow-hidden"
+          className="absolute inset-0 opacity-40"
           style={{
-            background:
-              "radial-gradient(80% 60% at 50% 40%, rgba(198,107,255,0.18), transparent 65%), radial-gradient(60% 45% at 50% 70%, rgba(255,61,139,0.14), transparent 70%), #0d0b1e",
+            backgroundImage:
+              "linear-gradient(rgba(198,107,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(198,107,255,0.08) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+            maskImage: "radial-gradient(circle at 50% 50%, #000 40%, transparent 75%)",
           }}
-        >
-          <div
-            className="absolute inset-0 opacity-40"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(198,107,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(198,107,255,0.08) 1px, transparent 1px)",
-              backgroundSize: "48px 48px",
-              maskImage: "radial-gradient(circle at 50% 50%, #000 40%, transparent 75%)",
-            }}
-          />
-          <div className="relative z-10 flex flex-col items-center gap-3">
-            <div className="relative h-12 w-12">
-              <div className="absolute inset-0 rounded-full border-2 border-[#c66bff]/30" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#ff3d8b] animate-spin" />
-            </div>
-            <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
-              se încarcă harta
-            </div>
+        />
+        <div className="relative z-10 flex flex-col items-center gap-3">
+          <div className="relative h-12 w-12">
+            <div className="absolute inset-0 rounded-full border-2 border-[#c66bff]/30" />
+            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#ff3d8b] animate-spin" />
+          </div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
+            se încarcă harta
           </div>
         </div>
-      )}
+      </div>
+
 
       {mapFailed && (
         <div className="absolute inset-0 z-20 grid place-items-center bg-background/95 px-6 text-center">
