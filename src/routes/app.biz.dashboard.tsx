@@ -100,9 +100,6 @@ function DashboardPage() {
           <div className="absolute -top-24 -right-24 size-64 rounded-full blur-3xl opacity-40" style={{ background: "#ff3d8b" }} />
           <div className="absolute -bottom-24 -left-24 size-64 rounded-full blur-3xl opacity-30" style={{ background: "#c724ff" }} />
           <div className="relative space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest bg-white/10 border border-white/20 text-white">
-              <Sparkles size={12} /> Business Dashboard
-            </div>
             <h1 className="font-display uppercase text-3xl leading-none text-white">
               Vezi cine îți umple localul
             </h1>
