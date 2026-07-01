@@ -41,6 +41,69 @@ const TYPE_COLOR: Record<string, string> = {
   after: "#ff3d8b",
 };
 
+const NEON_BACKBONE_SRC = "oxi-neon-backbone";
+const CRITICAL_STYLE_LAYERS = ["oxi-backbone-core", "admin-country", "roads-major"];
+
+// Local fallback lines: even if vector tiles are late or WebGL restores only
+// partially on mobile, the map still opens with visible neon structure.
+const NEON_BACKBONE_GEOJSON = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      properties: { kind: "border" },
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [20.27, 46.18],
+          [21.18, 46.08],
+          [22.72, 47.65],
+          [24.38, 47.96],
+          [26.62, 48.25],
+          [28.22, 45.47],
+          [29.65, 44.17],
+          [27.79, 43.75],
+          [25.35, 43.65],
+          [22.69, 44.22],
+          [20.27, 46.18],
+        ],
+      },
+    },
+    {
+      type: "Feature",
+      properties: { kind: "route" },
+      geometry: {
+        type: "MultiLineString",
+        coordinates: [
+          [
+            [20.63, 45.75],
+            [21.23, 45.75],
+            [22.9, 46.18],
+            [23.59, 46.77],
+            [24.15, 45.8],
+            [25.59, 45.64],
+            [26.1, 44.43],
+          ],
+          [
+            [26.1, 44.43],
+            [26.92, 44.93],
+            [27.59, 47.16],
+          ],
+          [
+            [26.1, 44.43],
+            [28.63, 44.18],
+          ],
+          [
+            [21.23, 45.75],
+            [21.93, 47.05],
+            [23.59, 46.77],
+          ],
+        ],
+      },
+    },
+  ],
+};
+
 // Compact vector wine bottle. Kept non-circular so it reads as a bottle,
 // not as the old glowing dots/clusters.
 function makePinImage(color: string, lowEnd = false): ImageData {
@@ -179,6 +242,27 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
   }
   layers.push(
     {
+      id: "oxi-backbone-glow",
+      type: "line",
+      source: NEON_BACKBONE_SRC,
+      paint: {
+        "line-color": ["match", ["get", "kind"], "border", "#ff3df0", "#00e5ff"],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 2.5, 7, 5, 12, 11],
+        "line-blur": lowEnd ? 3 : 6,
+        "line-opacity": lowEnd ? 0.38 : 0.46,
+      },
+    },
+    {
+      id: "oxi-backbone-core",
+      type: "line",
+      source: NEON_BACKBONE_SRC,
+      paint: {
+        "line-color": ["match", ["get", "kind"], "border", "#ff5cf0", "#39ffd2"],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.65, 7, 1.1, 12, 2.4],
+        "line-opacity": 0.9,
+      },
+    },
+    {
       id: "admin-glow",
       type: "line",
       source: "openmaptiles",
@@ -249,6 +333,10 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
         type: "vector",
         url: "https://tiles.openfreemap.org/planet",
       },
+      [NEON_BACKBONE_SRC]: {
+        type: "geojson",
+        data: NEON_BACKBONE_GEOJSON,
+      },
     },
     layers,
   } as unknown as maplibregl.StyleSpecification;
@@ -294,6 +382,19 @@ function resolveCityLabelCollisions(container: HTMLElement | null, compact: bool
   }
 }
 
+function mapHasCriticalLayers(map: MlMap) {
+  return CRITICAL_STYLE_LAYERS.some((layer) => !!map.getLayer(layer));
+}
+
+function repaintMap(map: MlMap) {
+  requestAnimationFrame(() => {
+    try {
+      map.resize();
+      map.triggerRepaint();
+    } catch {}
+  });
+}
+
 export type HeatNowCell = {
   cell_id: string;
   lat: number;
@@ -331,6 +432,7 @@ export function RomaniaMap3D({
   const onCityClickRef = useRef<typeof onCityClick>(onCityClick);
   const nav = useNavigate();
   const navRef = useRef(nav);
+  const autoRetryCountRef = useRef(0);
   const [mapFailed, setMapFailed] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
 
@@ -348,6 +450,8 @@ export function RomaniaMap3D({
     let map: MlMap;
     let resizeObserver: ResizeObserver | null = null;
     let contextRetryTimer: number | null = null;
+    let loadWatchdog: number | null = null;
+    let restoreHealthTimer: number | null = null;
     let contextWasLost = false;
     const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
     try {
@@ -370,6 +474,15 @@ export function RomaniaMap3D({
           : Math.min(window.devicePixelRatio || 1, 1.75),
         antialias: !isSmall,
         maxTileCacheSize: isSmall ? 40 : 80,
+        canvasContextAttributes: {
+          alpha: false,
+          antialias: !isSmall,
+          desynchronized: true,
+          failIfMajorPerformanceCaveat: false,
+          powerPreference: "high-performance",
+          preserveDrawingBuffer: false,
+          contextType: isSmall ? "webgl" : undefined,
+        },
       } as any);
     } catch (error) {
       console.warn("Map init failed", error);
@@ -386,10 +499,25 @@ export function RomaniaMap3D({
     }
     // dragPan + scrollZoom rămân activate ca să se poată naviga și da zoom
 
+    loadWatchdog = window.setTimeout(() => {
+      if (loadedRef.current) return;
+      if (autoRetryCountRef.current < 2) {
+        autoRetryCountRef.current += 1;
+        setRetryKey((k) => k + 1);
+      } else {
+        setMapFailed(true);
+      }
+    }, 6500);
+
     map.on("load", () => {
       loadedRef.current = true;
+      autoRetryCountRef.current = 0;
+      if (loadWatchdog) {
+        window.clearTimeout(loadWatchdog);
+        loadWatchdog = null;
+      }
       setMapFailed(false);
-      requestAnimationFrame(() => map.resize());
+      repaintMap(map);
       // GPU-rendered venue layer + clustering — handles thousands of points at 60fps
       // Enable real clustering so the cluster layers below actually render
       // (previously cluster:false meant clusters were declared but never used,
@@ -742,7 +870,16 @@ export function RomaniaMap3D({
         },
       });
 
-      requestAnimationFrame(() => map.resize());
+      repaintMap(map);
+    });
+
+    map.on("idle", () => {
+      if (!mapHasCriticalLayers(map) && autoRetryCountRef.current < 2) {
+        autoRetryCountRef.current += 1;
+        setRetryKey((k) => k + 1);
+        return;
+      }
+      repaintMap(map);
     });
 
     map.on("error", (event) => {
@@ -774,28 +911,45 @@ export function RomaniaMap3D({
     const onLost = (event: Event) => {
       event.preventDefault();
       contextWasLost = true;
+      containerRef.current?.classList.add("oxi-map-recovering");
       if (contextRetryTimer) window.clearTimeout(contextRetryTimer);
       contextRetryTimer = window.setTimeout(() => {
         if (!contextWasLost) return;
-        setMapFailed(true);
-      }, 1800);
+        setRetryKey((k) => k + 1);
+      }, 2200);
       contextRetryTimerRef.current = contextRetryTimer;
     };
     const onRestored = () => {
       contextWasLost = false;
+      containerRef.current?.classList.remove("oxi-map-recovering");
       if (contextRetryTimer) {
         window.clearTimeout(contextRetryTimer);
         contextRetryTimer = null;
       }
       contextRetryTimerRef.current = null;
       setMapFailed(false);
-      requestAnimationFrame(() => {
-        map.resize();
-        map.triggerRepaint();
-      });
+      repaintMap(map);
+      if (restoreHealthTimer) window.clearTimeout(restoreHealthTimer);
+      restoreHealthTimer = window.setTimeout(() => {
+        if (!mapHasCriticalLayers(map) && autoRetryCountRef.current < 2) {
+          autoRetryCountRef.current += 1;
+          setRetryKey((k) => k + 1);
+        } else {
+          repaintMap(map);
+        }
+      }, 350);
     };
     canvas.addEventListener("webglcontextlost", onLost as any);
     canvas.addEventListener("webglcontextrestored", onRestored as any);
+
+    const reviveMap = () => {
+      if (document.visibilityState === "hidden") return;
+      repaintMap(map);
+      window.setTimeout(() => repaintMap(map), 180);
+    };
+    document.addEventListener("visibilitychange", reviveMap);
+    window.addEventListener("pageshow", reviveMap);
+    window.addEventListener("focus", reviveMap);
 
     mapRef.current = map;
     return () => {
@@ -808,6 +962,11 @@ export function RomaniaMap3D({
       try {
         if (contextRetryTimer) window.clearTimeout(contextRetryTimer);
         if (contextRetryTimerRef.current) window.clearTimeout(contextRetryTimerRef.current);
+        if (loadWatchdog) window.clearTimeout(loadWatchdog);
+        if (restoreHealthTimer) window.clearTimeout(restoreHealthTimer);
+        document.removeEventListener("visibilitychange", reviveMap);
+        window.removeEventListener("pageshow", reviveMap);
+        window.removeEventListener("focus", reviveMap);
         canvas.removeEventListener("webglcontextlost", onLost as any);
         canvas.removeEventListener("webglcontextrestored", onRestored as any);
         map.remove();
@@ -1322,7 +1481,8 @@ export function RomaniaMap3D({
         .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; background:#0d0b1e !important; }
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas { outline:none !important; background:#0d0b1e !important; }
-        .maplibregl-marker { position:absolute !important; top:0; left:0; will-change:transform; contain:layout style; z-index:2; }
+        .maplibregl-marker { position:absolute !important; top:0; left:0; will-change:transform; z-index:2; }
+        .oxi-map-recovering .maplibregl-canvas { opacity:0.001; }
         .maplibregl-ctrl-top-right { position:absolute; top:10px; right:10px; z-index:3; display:flex; flex-direction:column; gap:8px; }
         .maplibregl-ctrl-group { background: rgba(3,4,10,0.9) !important; border: 1px solid rgba(198,107,255,0.25) !important; }
         .maplibregl-ctrl-group button { background-color: transparent !important; }

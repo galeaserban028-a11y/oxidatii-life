@@ -1009,21 +1009,19 @@ function MapPage() {
               <div className="aspect-[5/4] animate-pulse bg-white/5" />
             </FadeIn>
           ) : (
-            <FadeIn key="map-ready" delay={0.08}>
-              <RomaniaMap3D
-                cities={citiesScoped}
-                venues={filtered}
-                promotedMeta={promotedMeta}
-                friends={mapFriendPins}
-                focusCity={focusCity}
-                fitBounds={fitBounds}
-                heatNowCells={heatNowCells}
-                onCityClick={(c) => {
-                  setCityId(c.id);
-                  setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
-                }}
-              />
-            </FadeIn>
+            <RomaniaMap3D
+              cities={citiesScoped}
+              venues={filtered}
+              promotedMeta={promotedMeta}
+              friends={mapFriendPins}
+              focusCity={focusCity}
+              fitBounds={fitBounds}
+              heatNowCells={heatNowCells}
+              onCityClick={(c) => {
+                setCityId(c.id);
+                setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
+              }}
+            />
           )}
 
           {activeCity && (
