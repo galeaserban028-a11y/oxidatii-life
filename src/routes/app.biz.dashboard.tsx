@@ -100,7 +100,8 @@ function DashboardPage() {
 
   if (!sub) {
     return (
-      <div className="max-w-lg mx-auto px-4 pt-6 pb-24 space-y-6">
+      <div className="max-w-lg mx-auto px-4 pt-6 pb-24 space-y-4">
+        <BackBtn />
         <div
           className="relative rounded-3xl p-6 overflow-hidden border border-white/10"
           style={{
