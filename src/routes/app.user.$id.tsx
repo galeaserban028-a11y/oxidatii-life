@@ -355,7 +355,7 @@ function UserPage() {
                     </div>
 
                     {!isMe && user && (
-                      <div className="mt-4 flex gap-2">
+                      <div className="mt-4 flex flex-wrap gap-2">
                         {isBlocking ? (
                           <button
                             onClick={() => setConfirmBlock("unblock")}
