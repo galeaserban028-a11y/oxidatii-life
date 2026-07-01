@@ -197,7 +197,12 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
       priceId: string;
       returnUrl: string;
       environment: StripeEnv;
-      extra?: { target_id?: string; ping_id?: string; date?: string };
+      extra?: {
+        target_id?: string;
+        ping_id?: string;
+        date?: string;
+        campaign_id?: string;
+      };
     }) => {
       if (!ALLOWED_PRICES.has(data.priceId)) throw new Error("Invalid priceId");
       const uuidRe = /^[0-9a-fA-F-]{36}$/;
@@ -207,9 +212,12 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
       if (data.extra?.ping_id && !uuidRe.test(data.extra.ping_id))
         throw new Error("Invalid ping_id");
       if (data.extra?.date && !dateRe.test(data.extra.date)) throw new Error("Invalid date");
+      if (data.extra?.campaign_id && !uuidRe.test(data.extra.campaign_id))
+        throw new Error("Invalid campaign_id");
       return data;
     },
   )
+
   .handler(async ({ data, context }): Promise<CheckoutResult> => {
     const { userId, claims } = context;
     const email = (claims as any)?.email as string | undefined;
