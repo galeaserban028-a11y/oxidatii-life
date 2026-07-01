@@ -328,8 +328,9 @@ function VenuePage() {
               } catch (e) {
                 console.warn("[checkin share] profile fetch failed", e);
               }
-
+            }}
             className="rounded-2xl bg-card border border-border text-foreground py-3.5 text-sm font-semibold active:scale-[0.98] transition"
+
           >
             Sunt aici
           </button>
