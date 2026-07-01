@@ -340,6 +340,49 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
       const isReplayNight = sessionKind === "replay_night" || priceId === "replay_night";
       const isLastCallSend = sessionKind === "last_call_send" || priceId === "last_call_send";
       const isLastCallReveal = sessionKind === "last_call_reveal" || priceId === "last_call_reveal";
+      const isCampaignBoost =
+        sessionKind === "campaign_boost" ||
+        (typeof priceId === "string" && priceId.startsWith("boost_"));
+
+      // À la carte: Campaign Boost — activate a draft campaign for N days
+      if (isCampaignBoost) {
+        const campaignId = session.metadata?.campaign_id;
+        if (!campaignId) return { success: false, error: "Campanie lipsă" };
+        const days = parseInt(session.metadata?.days ?? "0", 10) || 0;
+        if (days <= 0) return { success: false, error: "Durată invalidă" };
+
+        // Verify caller owns this campaign via RLS-scoped client
+        const { data: camp, error: campErr } = await context.supabase
+          .from("campaigns")
+          .select("id, business_id, status")
+          .eq("id", campaignId)
+          .maybeSingle();
+        if (campErr || !camp) return { success: false, error: "Campanie inexistentă" };
+
+        // Idempotent: if already active with matching session, just return
+        const now = new Date();
+        const endsAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+        const { error: updErr } = await supabaseAdmin
+          .from("campaigns")
+          .update({
+            status: "active",
+            starts_at: now.toISOString(),
+            ends_at: endsAt.toISOString(),
+          })
+          .eq("id", campaignId);
+        if (updErr) return { success: false, error: updErr.message };
+
+        await supabaseAdmin.from("wallet_ledger").insert({
+          business_id: camp.business_id,
+          kind: "topup",
+          amount_cents: session.amount_total ?? 0,
+          campaign_id: campaignId,
+          note: `stripe:${session.id}`,
+        });
+
+        return { success: true, campaignId, boostDays: days };
+      }
+
 
       // À la carte: Replay Night — unlock a specific day's wrap
       if (isReplayNight) {
