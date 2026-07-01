@@ -200,6 +200,7 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
           lookup_key: data.priceId,
           nickname: sku.name,
           metadata: { lovable_external_id: data.priceId },
+          ...(sku.recurring && { recurring: { interval: sku.recurring } }),
         });
       } else {
         return { error: "Preț indisponibil" };
