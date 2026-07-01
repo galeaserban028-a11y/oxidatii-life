@@ -1722,11 +1722,38 @@ export type Database = {
           },
         ]
       }
+      photo_comment_likes: {
+        Row: {
+          comment_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "photo_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       photo_comments: {
         Row: {
           body: string
           created_at: string
           id: string
+          parent_id: string | null
           photo_id: string
           user_id: string
         }
@@ -1734,6 +1761,7 @@ export type Database = {
           body: string
           created_at?: string
           id?: string
+          parent_id?: string | null
           photo_id: string
           user_id: string
         }
@@ -1741,10 +1769,18 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
+          parent_id?: string | null
           photo_id?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "photo_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "photo_comments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "photo_comments_photo_id_fkey"
             columns: ["photo_id"]
