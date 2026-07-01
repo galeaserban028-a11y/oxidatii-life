@@ -297,27 +297,33 @@ function PostModal({
   onCreated: () => void;
 }) {
   const { user } = useAuth();
+  const [mode, setMode] = useState<"feed" | "reel">("feed");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [ctaUrl, setCtaUrl] = useState("");
+  const [ctaText, setCtaText] = useState("");
   const [uploading, setUploading] = useState(false);
   const [tier, setTier] = useState<TierId>("t500");
   const [busy, setBusy] = useState(false);
 
-  const handleFile = async (file: File) => {
+  const handleFile = async (file: File, target: "image" | "video" = "image") => {
     if (!user?.id) return toast.error("Trebuie să fii autentificat");
-    if (file.size > 10 * 1024 * 1024) return toast.error("Fișier prea mare (max 10MB)");
+    const maxMb = target === "video" ? 60 : 10;
+    if (file.size > maxMb * 1024 * 1024) return toast.error(`Fișier prea mare (max ${maxMb}MB)`);
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const ext = file.name.split(".").pop()?.toLowerCase() || (target === "video" ? "mp4" : "jpg");
       const path = `${user.id}/campaigns/${businessId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("venue-photos")
         .upload(path, file, { contentType: file.type, upsert: false });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
-      setImageUrl(pub.publicUrl);
-      toast.success("Imagine încărcată");
+      if (target === "video") setVideoUrl(pub.publicUrl);
+      else setImageUrl(pub.publicUrl);
+      toast.success(target === "video" ? "Video încărcat" : "Imagine încărcată");
     } catch (e: any) {
       toast.error(e?.message || "Eroare la încărcare");
     } finally {
@@ -327,7 +333,9 @@ function PostModal({
 
   const submit = async () => {
     if (!title.trim()) return toast.error("Adaugă un titlu");
-    if (!imageUrl.trim()) return toast.error("Adaugă o imagine");
+    if (mode === "feed" && !imageUrl.trim()) return toast.error("Adaugă o imagine");
+    if (mode === "reel" && !videoUrl.trim() && !imageUrl.trim())
+      return toast.error("Adaugă un video sau o imagine pentru reel");
     const cfg = TIERS.find((t) => t.id === tier)!;
     setBusy(true);
     const now = new Date();
@@ -336,19 +344,23 @@ function PostModal({
       business_id: businessId,
       title: title.trim(),
       body: body.trim() || null,
-      kind: "boost_feed",
+      kind: mode === "reel" ? "boost_reel" : "boost_feed",
       status: "active",
       bid_cents: 0,
       budget_cents: cfg.priceRon * 100,
-      image_urls: [imageUrl.trim()],
+      image_urls: imageUrl.trim() ? [imageUrl.trim()] : [],
+      video_url: mode === "reel" && videoUrl.trim() ? videoUrl.trim() : null,
+      cta_url: ctaUrl.trim() || null,
+      cta_text: ctaText.trim() || null,
       starts_at: now.toISOString(),
       ends_at: endsAt.toISOString(),
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success(`Postare publicată · ${cfg.label}`);
+    toast.success(`${mode === "reel" ? "Sponsored Reel" : "Postare"} publicat · ${cfg.label}`);
     onCreated();
   };
+
 
   const inputClass =
     "w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none";
