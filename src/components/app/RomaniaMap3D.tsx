@@ -1565,7 +1565,12 @@ export function RomaniaMap3D({
       <div ref={containerRef} className="absolute inset-0" />
 
       {/* Loading skeleton — hides the black flash while tiles fetch on first entry. */}
-      {!firstPaintDone && !mapFailed && (
+      <div
+        aria-hidden={firstPaintDone}
+        className={`absolute inset-0 z-10 pointer-events-none grid place-items-center overflow-hidden transition-opacity duration-500 ${firstPaintDone || mapFailed ? "opacity-0" : "opacity-100"}`}
+      >
+      {false && (
+
         <div
           className="absolute inset-0 z-10 pointer-events-none grid place-items-center overflow-hidden"
           style={{
