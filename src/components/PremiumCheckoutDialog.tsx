@@ -52,7 +52,7 @@ export function PremiumCheckoutDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, priceId, returnUrl, extra?.target_id, extra?.ping_id, extra?.date]);
+  }, [open, priceId, returnUrl, extra?.target_id, extra?.ping_id, extra?.date, extra?.campaign_id]);
 
   if (!open) return null;
 
