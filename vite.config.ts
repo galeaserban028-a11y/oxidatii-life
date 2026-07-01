@@ -13,6 +13,15 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    resolve: {
+      alias: [
+        // Use the CSP build at runtime so MapLibre does NOT create a generated
+        // blob worker. On mobile/PWA that generated worker was intermittently
+        // crashing/minifying into `ReferenceError: g is not defined`, leaving
+        // the map black or without neon/vector lines.
+        { find: /^maplibre-gl$/, replacement: "maplibre-gl/dist/maplibre-gl-csp.js" },
+      ],
+    },
     // MapLibre runs part of its code in a Web Worker blob. If Vite/esbuild
     // transpiles that dependency below ES2022, helper functions can be stripped
     // out of the worker scope and the map crashes with errors like
