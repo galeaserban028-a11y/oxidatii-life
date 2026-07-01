@@ -538,6 +538,8 @@ function ReelsPage() {
                   liked={myLikes.has(item.reel.id)}
                   onToggleLike={() => toggleLike(item.reel)}
                   onOpenComments={() => setCommentsFor(item.reel)}
+                  muted={muted}
+                  onToggleMute={() => setMuted((m) => !m)}
                 />
               </div>
             ) : (
