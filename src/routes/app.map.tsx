@@ -307,7 +307,7 @@ function MapPage() {
   // filter state
   const [query, setQuery] = useState("");
   const [type, setType] = useState<VenueTypeFilter>("all");
-  const [country, setCountry] = useState<string | "all">("RO");
+  const [country, setCountry] = useState<string | "all">("all");
   const [cityId, setCityId] = useState<string | "all">("all");
   const [maxKm, setMaxKm] = useState(0);
   const [heatNowCells, setHeatNowCells] = useState<HeatNowCell[]>([]);
