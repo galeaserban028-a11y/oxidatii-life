@@ -318,6 +318,8 @@ function PostModal({
   const [uploading, setUploading] = useState(false);
   const [tier, setTier] = useState<TierId>("t500");
   const [busy, setBusy] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [pendingCampaignId, setPendingCampaignId] = useState<string | null>(null);
 
   const handleFile = async (file: File, target: "image" | "video" = "image") => {
     if (!user?.id) return toast.error("Trebuie să fii autentificat");
@@ -349,28 +351,34 @@ function PostModal({
       return toast.error("Adaugă un video sau o imagine pentru reel");
     const cfg = TIERS.find((t) => t.id === tier)!;
     setBusy(true);
-    const now = new Date();
-    const endsAt = new Date(now.getTime() + cfg.days * 24 * 60 * 60 * 1000);
-    const { error } = await supabase.from("campaigns").insert({
-      business_id: businessId,
-      title: title.trim(),
-      body: body.trim() || null,
-      kind: mode === "reel" ? "boost_reel" : "boost_feed",
-      status: "active",
-      bid_cents: 0,
-      budget_cents: cfg.priceRon * 100,
-      image_urls: imageUrl.trim() ? [imageUrl.trim()] : [],
-      video_url: mode === "reel" && videoUrl.trim() ? videoUrl.trim() : null,
-      cta_url: ctaUrl.trim() || null,
-      cta_text: ctaText.trim() || null,
-      starts_at: now.toISOString(),
-      ends_at: endsAt.toISOString(),
-    });
+    // Insert as DRAFT — activated after Stripe payment via syncCheckoutToProfile
+    const { data: inserted, error } = await supabase
+      .from("campaigns")
+      .insert({
+        business_id: businessId,
+        title: title.trim(),
+        body: body.trim() || null,
+        kind: mode === "reel" ? "boost_reel" : "boost_feed",
+        status: "draft",
+        bid_cents: 0,
+        budget_cents: cfg.priceRon * 100,
+        image_urls: imageUrl.trim() ? [imageUrl.trim()] : [],
+        video_url: mode === "reel" && videoUrl.trim() ? videoUrl.trim() : null,
+        cta_url: ctaUrl.trim() || null,
+        cta_text: ctaText.trim() || null,
+        starts_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
     setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success(`${mode === "reel" ? "Sponsored Reel" : "Postare"} publicat · ${cfg.label}`);
-    onCreated();
+    if (error || !inserted) return toast.error(error?.message || "Eroare la salvare");
+    setPendingCampaignId(inserted.id as string);
+    setCheckoutOpen(true);
   };
+
+  const currentTier = TIERS.find((t) => t.id === tier)!;
+
+
 
 
   const inputClass =
