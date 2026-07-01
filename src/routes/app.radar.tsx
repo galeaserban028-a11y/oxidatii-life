@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { ArrowLeft, Compass, Loader2, MapPin, Sparkles, X, Zap } from "lucide-react";
@@ -83,6 +83,7 @@ function RadarPage() {
   const [needsOrient, setNeedsOrient] = useState(false);
   const [camReady, setCamReady] = useState(false);
   const [camError, setCamError] = useState<string | null>(null);
+  const [geoBlocked, setGeoBlocked] = useState(false);
   const [started, setStarted] = useState(false);
   const [starting, setStarting] = useState(false);
   const [compassLimited, setCompassLimited] = useState(false);
@@ -113,14 +114,34 @@ function RadarPage() {
     };
   }, [started, needsOrient]);
 
-  // Geolocation watch after start
+  const requestLocationOnce = useCallback(() => {
+    if (!("geolocation" in navigator)) {
+      setGeoBlocked(true);
+      return;
+    }
+    setGeoBlocked(false);
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        setGeoBlocked(false);
+        setPos({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy });
+      },
+      () => setGeoBlocked(true),
+      { enableHighAccuracy: true, maximumAge: 10_000, timeout: 10_000 },
+    );
+  }, []);
+
+  // Geolocation watch after start. Do NOT request it at the same time as the
+  // camera prompt on iOS Safari; queued native prompts can silently stall.
   useEffect(() => {
     if (!started) return;
     if (!("geolocation" in navigator)) return;
     const id = navigator.geolocation.watchPosition(
-      (p) => setPos({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy }),
-      () => toast.error("Activează locația pentru radar"),
-      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
+      (p) => {
+        setGeoBlocked(false);
+        setPos({ lat: p.coords.latitude, lng: p.coords.longitude, acc: p.coords.accuracy });
+      },
+      () => setGeoBlocked(true),
+      { enableHighAccuracy: true, maximumAge: 10_000, timeout: 10_000 },
     );
     return () => navigator.geolocation.clearWatch(id);
   }, [started]);
@@ -143,6 +164,7 @@ function RadarPage() {
     setStarting(true);
     setCamError(null);
     setCompassLimited(false);
+    setGeoBlocked(false);
 
     if (!navigator.mediaDevices?.getUserMedia) {
       setCamError("Safari nu oferă acces la cameră aici. Deschide aplicația pe HTTPS/Safari și încearcă din nou.");
@@ -160,22 +182,6 @@ function RadarPage() {
       audio: false,
     });
 
-    // Kick off geolocation prompt inside the gesture too (helps on iOS PWA)
-    if ("geolocation" in navigator) {
-      try {
-        navigator.geolocation.getCurrentPosition(
-          (p) =>
-            setPos({
-              lat: p.coords.latitude,
-              lng: p.coords.longitude,
-              acc: p.coords.accuracy,
-            }),
-          () => {},
-          { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
-        );
-      } catch {}
-    }
-
     (async () => {
       try {
         const stream = await Promise.race([
@@ -187,7 +193,7 @@ function RadarPage() {
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play().catch(() => {});
+          await videoRef.current.play().catch(() => {});
           setCamReady(true);
         }
 
@@ -200,6 +206,8 @@ function RadarPage() {
         if (typeof iosPerm === "function") {
           setNeedsOrient(true);
         }
+
+        window.setTimeout(requestLocationOnce, 350);
       } catch (e: any) {
         const name = e?.name;
         if (name === "NotAllowedError") {
@@ -254,6 +262,12 @@ function RadarPage() {
     }, 4500);
     return () => window.clearTimeout(id);
   }, [started, needsOrient, heading]);
+
+  useEffect(() => {
+    if (!camReady || pos || geoBlocked) return;
+    const id = window.setTimeout(() => setGeoBlocked(true), 12_000);
+    return () => window.clearTimeout(id);
+  }, [camReady, pos, geoBlocked]);
 
 
   // 4. Load venues + friends around user
@@ -591,12 +605,23 @@ function RadarPage() {
       {/* Waiting for GPS/heading */}
       {!camError && (!pos || !hasHeading) && camReady && !needsOrient && (
         <div className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-black/70 px-4 py-3 text-center text-sm backdrop-blur-md">
-          <Loader2 className="mx-auto mb-1 h-4 w-4 animate-spin text-cyan-300" />
-          {!pos
-            ? "Caut locația ta…"
-            : compassLimited
-              ? "Radar pornit fără busolă"
-              : "Calibrez busola… mișcă telefonul în opt"}
+          {!pos && geoBlocked ? (
+            <>
+              <div className="mb-2 font-semibold text-white">Locația nu a pornit</div>
+              <Button size="sm" onClick={requestLocationOnce} className="bg-cyan-400 text-black hover:bg-cyan-300">
+                Pornește GPS
+              </Button>
+            </>
+          ) : (
+            <>
+              <Loader2 className="mx-auto mb-1 h-4 w-4 animate-spin text-cyan-300" />
+              {!pos
+                ? "Caut locația ta…"
+                : compassLimited
+                  ? "Radar pornit fără busolă"
+                  : "Calibrez busola… mișcă telefonul în opt"}
+            </>
+          )}
         </div>
       )}
 
