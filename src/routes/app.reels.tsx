@@ -128,29 +128,45 @@ function ReelTile({
   liked,
   onToggleLike,
   onOpenComments,
+  muted,
+  onToggleMute,
 }: {
   reel: Reel;
   active: boolean;
   liked: boolean;
   onToggleLike: () => void;
   onOpenComments: () => void;
+  muted: boolean;
+  onToggleMute: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
   const [paused, setPaused] = useState(false);
   const { user } = useAuth();
   const isOwn = user?.id === reel.user_id;
   const pill = reel.reason ? REASON_PILL[reel.reason] : null;
 
+  // Apply global mute pref to this video element imperatively (avoids iOS pause on prop change)
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = muted;
+    if (!muted) v.volume = 1;
+  }, [muted, active]);
+
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     if (active && !paused) {
-      v.play().catch(() => {});
+      v.muted = muted;
+      v.play().catch(() => {
+        // If unmuted autoplay is blocked, fall back to muted playback
+        v.muted = true;
+        v.play().catch(() => {});
+      });
     } else {
       v.pause();
     }
-  }, [active, paused]);
+  }, [active, paused, muted]);
 
   return (
     <section className="relative h-[100svh] w-full snap-start snap-always overflow-hidden bg-black">
@@ -159,7 +175,9 @@ function ReelTile({
           ref={videoRef}
           src={reel.url}
           loop
-          muted={muted}
+          muted
+
+
           playsInline
           preload="metadata"
           className="absolute inset-0 h-full w-full object-cover"
@@ -264,18 +282,13 @@ function ReelTile({
               e.stopPropagation();
               const v = videoRef.current;
               const next = !muted;
-              setMuted(next);
+              // Optimistically set element state inside the user gesture (iOS req)
               if (v) {
                 v.muted = next;
                 v.volume = 1;
-                if (!next) {
-                  // iOS Safari: must call play() inside the user gesture
-                  v.play().catch(() => {
-                    v.muted = true;
-                    setMuted(true);
-                  });
-                }
+                v.play().catch(() => {});
               }
+              onToggleMute();
             }}
             className="size-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center active:scale-90 transition"
             aria-label="mute"
@@ -451,6 +464,7 @@ function ReelsPage() {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [muted, setMuted] = useState(true);
   const [commentsFor, setCommentsFor] = useState<Reel | null>(null);
   const seenAds = useRef(new Set<string>());
 
@@ -537,6 +551,8 @@ function ReelsPage() {
                   liked={myLikes.has(item.reel.id)}
                   onToggleLike={() => toggleLike(item.reel)}
                   onOpenComments={() => setCommentsFor(item.reel)}
+                  muted={muted}
+                  onToggleMute={() => setMuted((m) => !m)}
                 />
               </div>
             ) : (
