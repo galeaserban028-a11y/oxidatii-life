@@ -388,7 +388,6 @@ function UserPage() {
                         </DropdownMenu>
                       )}
                     </div>
-                  </div>
 
                     <div className="grid grid-cols-4 gap-2 mt-5">
                       <Stat label="șprițuri" value={profile.lifetime_sprits ?? 0} highlight />
