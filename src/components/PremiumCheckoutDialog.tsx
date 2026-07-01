@@ -16,7 +16,7 @@ export function PremiumCheckoutDialog({
   title: string;
   open: boolean;
   onClose: () => void;
-  extra?: { target_id?: string; ping_id?: string; date?: string };
+  extra?: { target_id?: string; ping_id?: string; date?: string; campaign_id?: string };
   returnUrl?: string;
 }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
