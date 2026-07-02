@@ -56,7 +56,7 @@ function SignupPage() {
       email,
       password: pwd,
       options: {
-        emailRedirectTo: window.location.origin + "/onboarding",
+        emailRedirectTo: window.location.origin,
         data: { birthdate: dob },
       },
     });
