@@ -83,17 +83,17 @@ function SignupPage() {
     // Leave busy=true; the effect above will navigate once profile loads.
   }
 
-  async function handleGoogle() {
-    if (!dob) return toast.error("Pune data nașterii înainte de Google");
+  async function handleOAuth(provider: "google" | "apple") {
+    if (!dob) return toast.error(`Pune data nașterii înainte de ${provider === "apple" ? "Apple" : "Google"}`);
     const age = ageFromDOB(dob);
     if (age < 18) return toast.error("Trebuie să ai cel puțin 18 ani.");
     try {
       sessionStorage.setItem("pending_birthdate", dob);
     } catch {}
-    const r = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/onboarding",
+    const r = await lovable.auth.signInWithOAuth(provider, {
+      redirect_uri: window.location.origin,
     });
-    if (r.error) toast.error(r.error.message ?? "Google a picat");
+    if (r.error) toast.error(r.error.message ?? `${provider} a picat`);
   }
 
   return (
