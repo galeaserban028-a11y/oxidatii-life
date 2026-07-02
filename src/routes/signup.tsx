@@ -14,8 +14,11 @@ export const Route = createFileRoute("/signup")({
 function ageFromDOB(dob: string): number {
   const d = new Date(dob);
   if (isNaN(d.getTime())) return -1;
-  const diff = Date.now() - d.getTime();
-  return Math.floor(diff / (365.25 * 24 * 3600 * 1000));
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age;
 }
 
 function SignupPage() {
