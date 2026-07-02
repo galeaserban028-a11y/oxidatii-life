@@ -47,10 +47,12 @@ const CRITICAL_STYLE_LAYERS = ["oxi-backbone-core"];
 function configureMapLibreRuntime() {
   if (typeof window === "undefined") return;
   try {
-    // Use MapLibre's bundled worker (inlined via blob URL). The external
-    // /maplibre-gl-csp-worker.js file is not reliably served on all
-    // preview/edge hosts and produced "Failed to fetch" errors that broke
-    // the map on mobile. The bundled worker requires no extra fetch.
+    // vite.config aliases MapLibre to the CSP build. That build MUST get an
+    // explicit same-origin worker URL; without it vector tiles silently fail
+    // and the user only sees our DOM bottle markers. Keep it same-origin and
+    // cache-busted so old PWA/service-worker caches cannot serve a stale file.
+    const workerUrl = new URL("/maplibre-gl-csp-worker.js?v=5.24.0", window.location.origin).toString();
+    (maplibregl as any).setWorkerUrl?.(workerUrl);
     maplibregl.setWorkerCount(1);
   } catch {
     // no-op: MapLibre still boots with its default worker setup.
@@ -110,6 +112,37 @@ const NEON_BACKBONE_GEOJSON = {
             [21.23, 45.75],
             [21.93, 47.05],
             [23.59, 46.77],
+          ],
+        ],
+      },
+    },
+    {
+      type: "Feature",
+      properties: { kind: "route" },
+      geometry: {
+        type: "MultiLineString",
+        coordinates: [
+          [
+            [21.23, 45.75],
+            [22.9, 46.18],
+            [23.59, 46.77],
+            [24.57, 46.77],
+            [26.1, 44.43],
+            [28.63, 44.18],
+          ],
+          [
+            [20.63, 45.75],
+            [21.31, 46.18],
+            [21.93, 47.05],
+            [23.59, 46.77],
+            [26.92, 47.16],
+          ],
+          [
+            [23.79, 44.32],
+            [24.87, 44.86],
+            [26.1, 44.43],
+            [27.59, 47.16],
+            [27.6, 44.18],
           ],
         ],
       },
@@ -185,6 +218,21 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
   const adminGlowBlur = lowEnd ? 3 : 6;
   const layers: any[] = [
     { id: "background", type: "background", paint: { "background-color": "#0d0b1e" } },
+    {
+      id: "dark-raster-base",
+      type: "raster",
+      source: "carto-dark",
+      minzoom: 0,
+      maxzoom: 19,
+      paint: {
+        "raster-opacity": lowEnd ? 0.62 : 0.54,
+        "raster-brightness-min": 0,
+        "raster-brightness-max": 0.58,
+        "raster-saturation": -0.45,
+        "raster-contrast": 0.25,
+        "raster-fade-duration": lowEnd ? 0 : 120,
+      },
+    },
   ];
   if (!lowEnd) {
     layers.push(
@@ -321,6 +369,16 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
     version: 8,
     glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
     sources: {
+      "carto-dark": {
+        type: "raster",
+        tiles: [
+          "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        ],
+        tileSize: 256,
+        attribution: "© OpenStreetMap © CARTO",
+      },
       openmaptiles: {
         type: "vector",
         url: "https://tiles.openfreemap.org/planet",
