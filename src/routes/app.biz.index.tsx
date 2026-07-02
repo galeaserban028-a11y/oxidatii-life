@@ -136,45 +136,44 @@ function BizPage() {
   // === EMPTY STATE — sales pitch page ===
   if (!isLoading && list.length === 0) {
     return (
-      <div className="min-h-screen bg-[#03130d] text-[#f5f0e0] pb-24">
+      <div className="min-h-screen bg-background text-foreground pb-24">
         {/* HERO */}
-        <section className="relative overflow-hidden border-b border-[#c9a84c]/20">
+        <section className="relative overflow-hidden border-b border-primary/20">
           <div
             aria-hidden
             className="absolute inset-0 opacity-60"
             style={{
               background:
-                "radial-gradient(1200px 500px at 20% 0%, rgba(13,122,95,0.35), transparent 60%), radial-gradient(800px 400px at 90% 100%, rgba(201,168,76,0.18), transparent 60%)",
+                "radial-gradient(1200px 500px at 20% 0%, hsl(var(--accent)/0.28), transparent 60%), radial-gradient(800px 400px at 90% 100%, hsl(var(--primary)/0.22), transparent 60%)",
             }}
           />
           <div className="relative max-w-5xl mx-auto px-6 pt-14 pb-16">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#c9a84c]/40 bg-[#c9a84c]/5 px-3 py-1.5 mb-8">
-              <span className="size-1.5 rounded-full bg-[#c9a84c] animate-pulse" />
-              <span className="font-[Hind] text-[10px] uppercase tracking-[0.28em] text-[#c9a84c]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-3 py-1.5 mb-8">
+              <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="text-[10px] uppercase tracking-[0.28em] text-primary">
                 Business · România
               </span>
             </div>
             <h1
-              className="text-[13vw] sm:text-[80px] lg:text-[104px] leading-[0.88] uppercase text-[#f5f0e0]"
-              style={{ fontFamily: "'Archivo Black', sans-serif", letterSpacing: "-0.02em" }}
+              className="text-[13vw] sm:text-[80px] lg:text-[104px] leading-[0.88] uppercase text-foreground" style={{ letterSpacing: "-0.02em" }}
             >
               Fii văzut.
               <br />
-              <span className="text-[#c9a84c]">Fii ales.</span>
+              <span className="text-primary">Fii ales.</span>
             </h1>
-            <p className="mt-6 max-w-xl font-[Hind] text-base sm:text-lg text-[#f5f0e0]/70 leading-relaxed">
+            <p className="mt-6 max-w-xl text-base sm:text-lg text-foreground/70 leading-relaxed">
               Ajungi în fața a mii de tineri care ies în oraș astă-seară. Fără agenție, fără
               contract lunar. Plătești o singură dată, apari instant.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <button
                 onClick={() => setCreateOpen(true)}
-                className="group inline-flex items-center gap-2 rounded-2xl bg-[#c9a84c] px-6 py-4 text-[#03130d] font-[Hind] font-bold uppercase tracking-[0.14em] text-sm shadow-[0_16px_40px_-12px_rgba(201,168,76,0.6)] transition hover:scale-[1.02]"
+                className="group inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-4 text-primary-foreground font-bold uppercase tracking-[0.14em] text-sm shadow-[0_16px_40px_-12px_hsl(var(--primary)/0.55)] transition hover:scale-[1.02]"
               >
                 Începe promovarea
                 <span className="transition group-hover:translate-x-1">→</span>
               </button>
-              <div className="flex items-center gap-2 text-[11px] font-[Hind] text-[#f5f0e0]/50 uppercase tracking-widest">
+              <div className="flex items-center gap-2 text-[11px] text-foreground/50 uppercase tracking-widest">
                 <span className="size-1 rounded-full bg-emerald-400" />
                 setup 60 sec
               </div>
@@ -183,7 +182,7 @@ function BizPage() {
         </section>
 
         {/* PROOF BAND */}
-        <section className="border-b border-[#c9a84c]/10 bg-[#052419]/50">
+        <section className="border-b border-primary/10 bg-card/50">
           <div className="max-w-5xl mx-auto px-6 py-8 grid grid-cols-3 gap-6 text-center">
             {[
               { n: "12k+", l: "utilizatori activi" },
@@ -192,12 +191,11 @@ function BizPage() {
             ].map((s) => (
               <div key={s.l}>
                 <div
-                  className="text-3xl sm:text-4xl text-[#c9a84c]"
-                  style={{ fontFamily: "'Archivo Black', sans-serif" }}
+                  className="text-3xl sm:text-4xl text-primary"
                 >
                   {s.n}
                 </div>
-                <div className="mt-1 font-[Hind] text-[10px] uppercase tracking-[0.24em] text-[#f5f0e0]/50">
+                <div className="mt-1 text-[10px] uppercase tracking-[0.24em] text-foreground/50">
                   {s.l}
                 </div>
               </div>
@@ -206,19 +204,18 @@ function BizPage() {
         </section>
 
         {/* PRICING */}
-        <section className="border-b border-[#c9a84c]/10">
+        <section className="border-b border-primary/10">
           <div className="max-w-5xl mx-auto px-6 py-14">
             <div className="mb-10">
-              <div className="font-[Hind] text-[10px] uppercase tracking-[0.28em] text-[#c9a84c]/80 mb-3">
+              <div className="text-[10px] uppercase tracking-[0.28em] text-primary/80 mb-3">
                 Pachete · plată per postare
               </div>
               <h2
-                className="text-4xl sm:text-5xl uppercase text-[#f5f0e0] leading-none"
-                style={{ fontFamily: "'Archivo Black', sans-serif", letterSpacing: "-0.01em" }}
+                className="text-4xl sm:text-5xl uppercase text-foreground leading-none" style={{ letterSpacing: "-0.01em" }}
               >
                 Alege durata.
                 <br />
-                <span className="text-[#0d7a5f]">Restul îl facem noi.</span>
+                <span className="text-accent">Restul îl facem noi.</span>
               </h2>
             </div>
             <div className="grid sm:grid-cols-3 gap-4">
@@ -227,38 +224,37 @@ function BizPage() {
                   key={t.id}
                   className={`relative rounded-3xl border p-6 transition ${
                     i === 1
-                      ? "border-[#c9a84c] bg-gradient-to-b from-[#c9a84c]/10 to-transparent"
-                      : "border-[#c9a84c]/15 bg-[#052419]/40 hover:border-[#c9a84c]/40"
+                      ? "border-primary bg-gradient-to-b from-primary/10 to-transparent"
+                      : "border-primary/15 bg-card/40 hover:border-primary/40"
                   }`}
                 >
                   {i === 1 && (
-                    <div className="absolute -top-3 left-6 rounded-full bg-[#c9a84c] px-3 py-1 font-[Hind] text-[9px] uppercase tracking-widest text-[#03130d] font-bold">
+                    <div className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-[9px] uppercase tracking-widest text-primary-foreground font-bold">
                       Recomandat
                     </div>
                   )}
-                  <div className="font-[Hind] text-[10px] uppercase tracking-[0.24em] text-[#f5f0e0]/50">
+                  <div className="text-[10px] uppercase tracking-[0.24em] text-foreground/50">
                     {t.label}
                   </div>
                   <div className="mt-3 flex items-baseline gap-1.5">
                     <span
-                      className="text-5xl text-[#f5f0e0]"
-                      style={{ fontFamily: "'Archivo Black', sans-serif" }}
+                      className="text-5xl text-foreground"
                     >
                       {t.priceRon}
                     </span>
-                    <span className="font-[Hind] text-sm uppercase tracking-widest text-[#c9a84c]">
+                    <span className="text-sm uppercase tracking-widest text-primary">
                       RON
                     </span>
                   </div>
-                  <ul className="mt-5 space-y-2 font-[Hind] text-sm text-[#f5f0e0]/70">
+                  <ul className="mt-5 space-y-2 text-sm text-foreground/70">
                     <li className="flex gap-2">
-                      <span className="text-[#c9a84c]">✓</span> Feed principal
+                      <span className="text-primary">✓</span> Feed principal
                     </li>
                     <li className="flex gap-2">
-                      <span className="text-[#c9a84c]">✓</span> Analytics live
+                      <span className="text-primary">✓</span> Analytics live
                     </li>
                     <li className="flex gap-2">
-                      <span className="text-[#c9a84c]">✓</span> Fără comision
+                      <span className="text-primary">✓</span> Fără comision
                     </li>
                   </ul>
                 </div>
@@ -272,11 +268,11 @@ function BizPage() {
           <div className="max-w-5xl mx-auto px-6 py-14 text-center">
             <button
               onClick={() => setCreateOpen(true)}
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#c9a84c] px-8 py-5 text-[#03130d] font-[Hind] font-bold uppercase tracking-[0.16em] text-sm shadow-[0_20px_50px_-12px_rgba(201,168,76,0.7)] transition hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 rounded-2xl bg-primary px-8 py-5 text-primary-foreground font-bold uppercase tracking-[0.16em] text-sm shadow-[0_20px_50px_-12px_hsl(var(--primary)/0.55)] transition hover:scale-[1.02]"
             >
               <Plus size={16} /> Creează brandul tău
             </button>
-            <p className="mt-4 font-[Hind] text-[11px] uppercase tracking-widest text-[#f5f0e0]/40">
+            <p className="mt-4 text-[11px] uppercase tracking-widest text-foreground/40">
               Plată securizată · Stripe · Fără abonament
             </p>
           </div>
@@ -297,39 +293,38 @@ function BizPage() {
   if (isLoading || !activeBiz) {
     return (
       <div className="px-4 pt-10">
-        <div className="h-32 rounded-2xl bg-[#052419]/40 border border-[#c9a84c]/10 animate-pulse" />
+        <div className="h-32 rounded-2xl bg-card/40 border border-primary/10 animate-pulse" />
       </div>
     );
   }
 
   // === ACTIVE BIZ — cockpit ===
   return (
-    <div className="min-h-screen bg-[#03130d] text-[#f5f0e0] pb-28">
+    <div className="min-h-screen bg-background text-foreground pb-28">
       {/* HERO cockpit */}
-      <section className="relative overflow-hidden border-b border-[#c9a84c]/20">
+      <section className="relative overflow-hidden border-b border-primary/20">
         <div
           aria-hidden
           className="absolute inset-0 opacity-70"
           style={{
             background:
-              "radial-gradient(900px 400px at 10% 0%, rgba(13,122,95,0.4), transparent 60%), radial-gradient(700px 350px at 100% 100%, rgba(201,168,76,0.14), transparent 60%)",
+              "radial-gradient(900px 400px at 10% 0%, hsl(var(--accent)/0.3), transparent 60%), radial-gradient(700px 350px at 100% 100%, hsl(var(--primary)/0.18), transparent 60%)",
           }}
         />
         <div className="relative max-w-5xl mx-auto px-6 pt-10 pb-8">
-          <div className="flex items-center gap-2 font-[Hind] text-[10px] uppercase tracking-[0.28em] text-[#c9a84c]/80 mb-4">
+          <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.28em] text-primary/80 mb-4">
             <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
             Brand activ
           </div>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <h1
-              className="text-4xl sm:text-6xl uppercase text-[#f5f0e0] leading-[0.9]"
-              style={{ fontFamily: "'Archivo Black', sans-serif", letterSpacing: "-0.01em" }}
+              className="text-4xl sm:text-6xl uppercase text-foreground leading-[0.9]" style={{ letterSpacing: "-0.01em" }}
             >
               {activeBiz.brand_name}
             </h1>
             <button
               onClick={() => setPostOpen(true)}
-              className="inline-flex items-center gap-2 rounded-2xl bg-[#c9a84c] px-5 py-3.5 text-[#03130d] font-[Hind] font-bold uppercase tracking-[0.14em] text-xs shadow-[0_12px_30px_-10px_rgba(201,168,76,0.6)] transition hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-primary-foreground font-bold uppercase tracking-[0.14em] text-xs shadow-[0_12px_30px_-10px_hsl(var(--primary)/0.55)] transition hover:scale-[1.02]"
             >
               <Plus size={13} /> Postare nouă
             </button>
@@ -338,35 +333,34 @@ function BizPage() {
       </section>
 
       {/* DASHBOARD BANNER */}
-      <section className="border-b border-[#c9a84c]/10">
+      <section className="border-b border-primary/10">
         <div className="max-w-5xl mx-auto px-6 py-6">
           <Link
             to="/app/biz/dashboard"
-            className="group flex items-center gap-4 rounded-2xl border border-[#0d7a5f]/40 bg-gradient-to-r from-[#0d7a5f]/25 via-[#064e3b]/15 to-transparent p-5 hover:border-[#c9a84c]/50 transition"
+            className="group flex items-center gap-4 rounded-2xl border border-accent/40 bg-gradient-to-r from-accent/25 via-accent/15 to-transparent p-5 hover:border-primary/50 transition"
           >
-            <div className="size-12 rounded-xl bg-[#c9a84c] flex items-center justify-center text-[#03130d]">
+            <div className="size-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground">
               <BarChart3 size={22} />
             </div>
             <div className="flex-1 min-w-0">
               <div
-                className="uppercase text-base text-[#f5f0e0]"
-                style={{ fontFamily: "'Archivo Black', sans-serif" }}
+                className="uppercase text-base text-foreground"
               >
                 Business Dashboard
               </div>
-              <div className="font-[Hind] text-[11px] text-[#f5f0e0]/60 mt-0.5">
+              <div className="text-[11px] text-foreground/60 mt-0.5">
                 Heatmap · vizitatori unici · reels sponsorizate · 99 RON/lună
               </div>
             </div>
-            <div className="text-[#c9a84c] transition group-hover:translate-x-1">→</div>
+            <div className="text-primary transition group-hover:translate-x-1">→</div>
           </Link>
         </div>
       </section>
 
       {/* PRICING QUICK */}
-      <section className="border-b border-[#c9a84c]/10">
+      <section className="border-b border-primary/10">
         <div className="max-w-5xl mx-auto px-6 py-8">
-          <div className="font-[Hind] text-[10px] uppercase tracking-[0.28em] text-[#c9a84c]/80 mb-4">
+          <div className="text-[10px] uppercase tracking-[0.28em] text-primary/80 mb-4">
             Pachete disponibile
           </div>
           <div className="grid grid-cols-3 gap-3">
@@ -375,20 +369,19 @@ function BizPage() {
                 key={t.id}
                 className={`rounded-2xl border p-4 text-center ${
                   i === 1
-                    ? "border-[#c9a84c]/60 bg-[#c9a84c]/5"
-                    : "border-[#c9a84c]/15 bg-[#052419]/40"
+                    ? "border-primary/60 bg-primary/5"
+                    : "border-primary/15 bg-card/40"
                 }`}
               >
                 <div
-                  className="text-3xl text-[#f5f0e0]"
-                  style={{ fontFamily: "'Archivo Black', sans-serif" }}
+                  className="text-3xl text-foreground"
                 >
                   {t.priceRon}
                 </div>
-                <div className="font-[Hind] text-[9px] uppercase tracking-[0.24em] text-[#c9a84c]">
+                <div className="text-[9px] uppercase tracking-[0.24em] text-primary">
                   RON
                 </div>
-                <div className="font-[Hind] text-[11px] text-[#f5f0e0]/60 mt-1.5">{t.label}</div>
+                <div className="text-[11px] text-foreground/60 mt-1.5">{t.label}</div>
               </div>
             ))}
           </div>
@@ -400,12 +393,11 @@ function BizPage() {
         <div className="max-w-5xl mx-auto px-6 py-8">
           <div className="flex items-baseline justify-between mb-5">
             <h2
-              className="text-2xl uppercase text-[#f5f0e0]"
-              style={{ fontFamily: "'Archivo Black', sans-serif" }}
+              className="text-2xl uppercase text-foreground"
             >
               Postările tale
             </h2>
-            <span className="font-[Hind] text-[10px] uppercase tracking-[0.24em] text-[#f5f0e0]/40">
+            <span className="text-[10px] uppercase tracking-[0.24em] text-foreground/40">
               live · draft · expirat
             </span>
           </div>
