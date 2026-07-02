@@ -167,7 +167,7 @@ async function resolveCustomer(
 ) {
   if (!/^[a-zA-Z0-9_-]+$/.test(userId)) throw new Error("Invalid userId");
   const found = await stripe.customers.search({
-    query: `metadata['userId']:'${userId}']`,
+    query: `metadata['userId']:'${userId}'`,
     limit: 1,
   });
   const foundCustomers = Array.isArray(found.data) ? found.data : [];
