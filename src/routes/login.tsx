@@ -42,13 +42,13 @@ function LoginPage() {
     // Leave busy=true; the effect above will navigate once profile is loaded.
   }
 
-  async function handleGoogle() {
+  async function handleOAuth(provider: "google" | "apple") {
     setBusy(true);
-    const r = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/login",
+    const r = await lovable.auth.signInWithOAuth(provider, {
+      redirect_uri: window.location.origin,
     });
     if (r.error) {
-      toast.error(r.error.message ?? "Google login a picat");
+      toast.error(r.error.message ?? `${provider} login a picat`);
       setBusy(false);
     }
   }
