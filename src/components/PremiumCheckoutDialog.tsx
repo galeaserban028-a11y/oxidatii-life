@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { createPremiumCheckout } from "@/lib/premium.functions";
@@ -55,10 +56,11 @@ export function PremiumCheckoutDialog({
   }, [open, priceId, returnUrl, extra?.target_id, extra?.ping_id, extra?.date, extra?.campaign_id]);
 
   if (!open) return null;
+  if (typeof document === "undefined") return null;
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="bg-background w-full sm:max-w-lg rounded-2xl border border-foreground/10 max-h-[92vh] overflow-y-auto shadow-2xl">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto pt-[max(env(safe-area-inset-top),1rem)]">
+      <div className="bg-background w-full sm:max-w-lg rounded-2xl border border-foreground/10 max-h-[92vh] overflow-y-auto shadow-2xl my-auto">
         <div className="sticky top-0 bg-background z-10 flex items-center justify-between px-4 py-3 border-b border-foreground/10">
           <div className="flex items-center gap-2">
             <Crown size={16} />
@@ -80,6 +82,7 @@ export function PremiumCheckoutDialog({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
