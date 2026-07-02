@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { createPremiumCheckout } from "@/lib/premium.functions";
