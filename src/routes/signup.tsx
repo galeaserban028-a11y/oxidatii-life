@@ -14,8 +14,11 @@ export const Route = createFileRoute("/signup")({
 function ageFromDOB(dob: string): number {
   const d = new Date(dob);
   if (isNaN(d.getTime())) return -1;
-  const diff = Date.now() - d.getTime();
-  return Math.floor(diff / (365.25 * 24 * 3600 * 1000));
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age;
 }
 
 function SignupPage() {
@@ -53,7 +56,7 @@ function SignupPage() {
       email,
       password: pwd,
       options: {
-        emailRedirectTo: window.location.origin + "/onboarding",
+        emailRedirectTo: window.location.origin,
         data: { birthdate: dob },
       },
     });
@@ -80,17 +83,17 @@ function SignupPage() {
     // Leave busy=true; the effect above will navigate once profile loads.
   }
 
-  async function handleGoogle() {
-    if (!dob) return toast.error("Pune data nașterii înainte de Google");
+  async function handleOAuth(provider: "google" | "apple") {
+    if (!dob) return toast.error(`Pune data nașterii înainte de ${provider === "apple" ? "Apple" : "Google"}`);
     const age = ageFromDOB(dob);
     if (age < 18) return toast.error("Trebuie să ai cel puțin 18 ani.");
     try {
       sessionStorage.setItem("pending_birthdate", dob);
     } catch {}
-    const r = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/onboarding",
+    const r = await lovable.auth.signInWithOAuth(provider, {
+      redirect_uri: window.location.origin,
     });
-    if (r.error) toast.error(r.error.message ?? "Google a picat");
+    if (r.error) toast.error(r.error.message ?? `${provider} a picat`);
   }
 
   return (
@@ -136,10 +139,19 @@ function SignupPage() {
           </div>
 
           <button
-            onClick={handleGoogle}
+            onClick={() => handleOAuth("google")}
             className="w-full rounded-xl border border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition py-3 font-medium"
           >
             Continuă cu Google
+          </button>
+          <button
+            onClick={() => handleOAuth("apple")}
+            className="w-full rounded-xl bg-foreground text-background hover:opacity-90 transition py-3 font-medium flex items-center justify-center gap-2"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+            </svg>
+            Continuă cu Apple
           </button>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <div className="flex-1 h-px bg-foreground/10" /> sau email{" "}
