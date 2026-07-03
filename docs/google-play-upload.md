@@ -4,6 +4,10 @@ Workflow: `.github/workflows/android-release.yml`
 
 ## Cum se rulează
 
+- **Pe Windows, local:** dublu-click pe `BUILD_ANDROID_AAB.bat`. Scriptul
+  generează singur un keystore dacă nu există, face build + sync Capacitor și
+  produce `android/app/build/outputs/bundle/release/app-release.aab`.
+- **Din terminal, local:** `bun run android:release`.
 - **Manual:** GitHub → Actions → "Android Release → Google Play" → Run workflow.
   Alegi `track` (internal / alpha / beta / production) și `status`
   (draft / inProgress / completed / halted).
@@ -43,6 +47,13 @@ Google Play nu acceptă upload prin API pentru un `applicationId` nou. Prima
 versiune (`com.oxidatii.app`) TREBUIE urcată manual din Play Console (draft în
 Internal testing e suficient). După prima urcare acceptată, workflow-ul preia
 totul.
+
+## Dacă „nu merge”
+
+Rulează `BUILD_ANDROID_AAB.bat` și trimite exact textul roșu de la final. Cele
+mai comune cauze sunt: Bun lipsă, Android SDK neluat încă de Android Studio,
+proiectul pus într-o cale cu spații/paranteze sau lipsa primului upload manual
+în Play Console pentru `com.oxidatii.app`.
 
 ## Track-uri
 

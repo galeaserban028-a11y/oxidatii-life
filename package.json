@@ -13,8 +13,9 @@
     "cap:sync": "cap sync",
     "cap:android": "cap open android",
     "cap:ios": "cap open ios",
-    "android:setup": "bun run build && cap sync android && cap open android",
-    "android:release": "bun run build && cap sync android && cd android && ./gradlew bundleRelease"
+    "android:setup": "powershell -ExecutionPolicy Bypass -File scripts/android-setup.ps1",
+    "android:release": "powershell -ExecutionPolicy Bypass -File scripts/android-play-release.ps1",
+    "android:release:mac": "bash scripts/android-play-release.sh"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.48",
