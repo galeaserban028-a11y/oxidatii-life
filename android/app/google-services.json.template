@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:PLACEHOLDER:android:PLACEHOLDER",
         "android_client_info": {
-          "package_name": "life.oxidatii.app"
+          "package_name": "com.oxidatii.app"
         }
       },
       "oauth_client": [],

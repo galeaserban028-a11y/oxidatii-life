@@ -8,10 +8,9 @@ Write-Host "=== Oxidatii Android setup ===" -ForegroundColor Cyan
 # 1. Verifică path
 $here = (Get-Location).Path
 if ($here -match '[\s\(\)]') {
-    Write-Host "EROARE: path-ul proiectului conține spații sau paranteze:" -ForegroundColor Red
+    Write-Host "ATENȚIE: path-ul proiectului conține spații/paranteze:" -ForegroundColor Yellow
     Write-Host "  $here" -ForegroundColor Red
-    Write-Host "Mută proiectul într-o cale simplă, ex: D:\oxidatii  și rerulează." -ForegroundColor Yellow
-    exit 1
+    Write-Host "Dacă Gradle crapă, mută proiectul într-o cale simplă, ex: D:\oxidatii" -ForegroundColor Yellow
 }
 
 # 2. Verifică bun
@@ -54,4 +53,5 @@ Write-Host ""
 Write-Host "GATA. In Android Studio:" -ForegroundColor Green
 Write-Host "  - asteapta Gradle sync (bara de jos)" -ForegroundColor Green
 Write-Host "  - Build -> Generate Signed App Bundle -> AAB" -ForegroundColor Green
-Write-Host "  - sau in terminal:  cd android; .\gradlew bundleRelease" -ForegroundColor Green
+Write-Host "  - sau automat:  bun run android:release" -ForegroundColor Green
+
