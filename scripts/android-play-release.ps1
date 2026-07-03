@@ -31,6 +31,52 @@ function New-Password {
   return (([guid]::NewGuid().ToString("N")) + ([guid]::NewGuid().ToString("N"))).Substring(0, 40)
 }
 
+function Write-GoogleServicesJson {
+  $dest = Join-Path $root "android\app\google-services.json"
+  New-Item -ItemType Directory -Force -Path (Split-Path $dest) | Out-Null
+
+  if ($env:GOOGLE_SERVICES_JSON_BASE64) {
+    Info "Injectez android\app\google-services.json din GOOGLE_SERVICES_JSON_BASE64"
+    try {
+      [IO.File]::WriteAllBytes($dest, [Convert]::FromBase64String($env:GOOGLE_SERVICES_JSON_BASE64))
+      Ok "google-services.json injectat automat"
+    } catch {
+      Fail "GOOGLE_SERVICES_JSON_BASE64 nu este base64 valid."
+    }
+  } elseif ($env:GOOGLE_SERVICES_JSON) {
+    Info "Injectez android\app\google-services.json din GOOGLE_SERVICES_JSON"
+    [IO.File]::WriteAllText($dest, $env:GOOGLE_SERVICES_JSON)
+    Ok "google-services.json injectat automat"
+  } elseif (-not (Test-Path $dest)) {
+    Warn "android\app\google-services.json lipsește. Dacă setezi GOOGLE_SERVICES_JSON_BASE64, scriptul îl pune singur."
+  }
+}
+
+function Get-GooglePlayCredentialsFile {
+  $tempFile = Join-Path ([IO.Path]::GetTempPath()) "oxidatii-google-play-service-account.json"
+
+  if ($env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64) {
+    Info "Pregătesc service account-ul Google Play din GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64"
+    try {
+      [IO.File]::WriteAllBytes($tempFile, [Convert]::FromBase64String($env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64))
+      return $tempFile
+    } catch {
+      Fail "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64 nu este base64 valid."
+    }
+  }
+
+  if ($env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON) {
+    Info "Pregătesc service account-ul Google Play din GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"
+    [IO.File]::WriteAllText($tempFile, $env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON)
+    return $tempFile
+  }
+
+  $localFile = Join-Path $root "android\google-play-service-account.json"
+  if (Test-Path $localFile) { return $localFile }
+
+  return $null
+}
+
 Write-Host "=== Oxidatii Android Release AAB ===" -ForegroundColor Cyan
 
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
@@ -77,9 +123,7 @@ keyPassword=$keyPass
   Ok "Keystore release generat. Fă backup la android\oxidatii-release.jks și android\keystore.properties."
 }
 
-if (-not (Test-Path "android\app\google-services.json")) {
-  Warn "android\app\google-services.json lipsește. AAB-ul se poate construi, dar push notifications native nu vor funcționa până îl adaugi."
-}
+Write-GoogleServicesJson
 
 Info "Curăț build cache Android vechi"
 Remove-Item -Recurse -Force android\build, android\.gradle, android\app\build -ErrorAction SilentlyContinue
@@ -108,5 +152,23 @@ $aab = Join-Path $root "android\app\build\outputs\bundle\release\app-release.aab
 if (-not (Test-Path $aab)) { Fail "Build-ul a terminat, dar nu găsesc AAB-ul la $aab" }
 
 Ok "AAB gata: $aab"
+
+$playCredentials = Get-GooglePlayCredentialsFile
+if ($playCredentials) {
+  if (-not $env:GOOGLE_PLAY_PACKAGE_NAME) { $env:GOOGLE_PLAY_PACKAGE_NAME = "com.oxidatii.app" }
+  if (-not $env:GOOGLE_PLAY_TRACK) { $env:GOOGLE_PLAY_TRACK = "internal" }
+  if (-not $env:GOOGLE_PLAY_STATUS) { $env:GOOGLE_PLAY_STATUS = "draft" }
+  $env:GOOGLE_PLAY_SERVICE_ACCOUNT_FILE = $playCredentials
+  $env:GOOGLE_PLAY_AAB_PATH = $aab
+
+  Info "Urc AAB-ul automat în Google Play: track=$env:GOOGLE_PLAY_TRACK, status=$env:GOOGLE_PLAY_STATUS"
+  bun .\scripts\google-play-upload.mjs
+  if ($LASTEXITCODE -ne 0) { Fail "Upload-ul către Google Play a eșuat. Textul de mai sus spune exact de ce." }
+  Ok "AAB urcat în Google Play"
+} else {
+  Warn "Nu am găsit secretul Google Play, deci am făcut doar AAB local."
+  Warn "Pentru upload automat setează GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64 sau GOOGLE_PLAY_SERVICE_ACCOUNT_JSON."
+}
+
 Warn "Pentru update-uri Google Play, păstrează același keystore. Dacă îl pierzi, nu mai poți publica update-uri normale."
-explorer.exe /select,"$aab"
+if (Get-Command explorer.exe -ErrorAction SilentlyContinue) { explorer.exe /select,"$aab" }

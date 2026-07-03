@@ -5,8 +5,10 @@ Workflow: `.github/workflows/android-release.yml`
 ## Cum se rulează
 
 - **Pe Windows, local:** dublu-click pe `BUILD_ANDROID_AAB.bat`. Scriptul
-  generează singur un keystore dacă nu există, face build + sync Capacitor și
-  produce `android/app/build/outputs/bundle/release/app-release.aab`.
+  injectează `google-services.json` din secret dacă există, generează singur un
+  keystore dacă nu există, face build + sync Capacitor, produce AAB semnat și îl
+  urcă automat în Google Play dacă există service account-ul.
+- **Cel mai simplu:** dublu-click pe `PORNESTE_TOT_ANDROID.bat`.
 - **Din terminal, local:** `bun run android:release`.
 - **Manual:** GitHub → Actions → "Android Release → Google Play" → Run workflow.
   Alegi `track` (internal / alpha / beta / production) și `status`
@@ -27,7 +29,28 @@ când vrei să crești numărul de versiune vizibil.
 | `ANDROID_KEY_ALIAS` | Ex: `oxidatii` |
 | `ANDROID_KEY_PASSWORD` | Parola cheii |
 | `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | JSON-ul complet al service account-ului (vezi mai jos) |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64` *(local recomandat)* | Același JSON, dar codat base64 pentru scripturile locale |
 | `GOOGLE_SERVICES_JSON_BASE64` *(opțional)* | Firebase `google-services.json` codat base64, pentru push notifications |
+
+## Upload local complet, fără Android Studio
+
+Scriptul local urcă automat AAB-ul dacă găsește una dintre variabilele:
+
+- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64` – recomandat
+- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` – JSON raw
+- `android/google-play-service-account.json` – fișier local git-ignored
+
+Opțional poți seta:
+
+- `GOOGLE_PLAY_TRACK` – implicit `internal`
+- `GOOGLE_PLAY_STATUS` – implicit `draft`
+- `GOOGLE_PLAY_PACKAGE_NAME` – implicit `com.oxidatii.app`
+
+Pe Windows, după ce variabilele există, rulezi doar:
+
+```powershell
+.\PORNESTE_TOT_ANDROID.bat
+```
 
 ## Service Account pentru Google Play
 
