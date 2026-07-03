@@ -12,7 +12,9 @@
     "format": "prettier --write .",
     "cap:sync": "cap sync",
     "cap:android": "cap open android",
-    "cap:ios": "cap open ios"
+    "cap:ios": "cap open ios",
+    "android:setup": "bun run build && cap sync android && cap open android",
+    "android:release": "bun run build && cap sync android && cd android && ./gradlew bundleRelease"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.48",
