@@ -1,0 +1,91 @@
+name: Android Release → Google Play
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Play track: internal | alpha | beta | production"
+        required: true
+        default: "internal"
+        type: choice
+        options: [internal, alpha, beta, production]
+      status:
+        description: "Release status"
+        required: true
+        default: "draft"
+        type: choice
+        options: [draft, inProgress, completed, halted]
+  push:
+    tags:
+      - "android-v*"
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install web deps
+        run: bun install --frozen-lockfile
+
+      - name: Build web bundle
+        run: bun run build
+
+      - name: Capacitor sync android
+        run: bunx cap sync android
+
+      - name: Decode google-services.json
+        if: ${{ env.GOOGLE_SERVICES_JSON_BASE64 != '' }}
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > android/app/google-services.json
+
+      - name: Decode release keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > $RUNNER_TEMP/release.jks
+          echo "OXIDATII_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> $GITHUB_ENV
+
+      - name: Bump versionCode from run number
+        run: |
+          sed -i "s/versionCode [0-9]\+/versionCode ${{ github.run_number }}/" android/app/build.gradle
+
+      - name: Build signed AAB
+        working-directory: android
+        env:
+          OXIDATII_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          OXIDATII_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          OXIDATII_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease --no-daemon
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      - name: Publish to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.oxidatii.app
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          track: ${{ github.event.inputs.track || 'internal' }}
+          status: ${{ github.event.inputs.status || 'draft' }}
+          whatsNewDirectory: android/whatsnew
+          mappingFile: android/app/build/outputs/mapping/release/mapping.txt
+          changesNotSentForReview: false
