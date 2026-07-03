@@ -33,9 +33,21 @@ bun run build
 echo "-> bunx cap sync android..."
 bunx cap sync android
 
-# 6. Warning google-services.json
-if [[ ! -f "android/app/google-services.json" ]]; then
-  echo "WARN: android/app/google-services.json lipsește (push notifications nu vor merge)."
+# 6. Injectează google-services.json din env dacă e disponibil
+GS_DEST="android/app/google-services.json"
+if [[ -n "${GOOGLE_SERVICES_JSON_BASE64:-}" ]]; then
+  echo "-> scriu $GS_DEST din GOOGLE_SERVICES_JSON_BASE64..."
+  if ! echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > "$GS_DEST" 2>/dev/null; then
+    echo "EROARE: GOOGLE_SERVICES_JSON_BASE64 nu e base64 valid."
+    exit 1
+  fi
+elif [[ -n "${GOOGLE_SERVICES_JSON:-}" ]]; then
+  echo "-> scriu $GS_DEST din GOOGLE_SERVICES_JSON (raw)..."
+  printf '%s' "$GOOGLE_SERVICES_JSON" > "$GS_DEST"
+elif [[ ! -f "$GS_DEST" ]]; then
+  echo "WARN: $GS_DEST lipsește (push notifications nu vor merge)."
+  echo "     Setează GOOGLE_SERVICES_JSON_BASE64 sau GOOGLE_SERVICES_JSON ca env var. Exemplu:"
+  echo "       export GOOGLE_SERVICES_JSON_BASE64=\$(base64 -w0 ~/google-services.json)"
 fi
 
 # 7. Deschide Android Studio
