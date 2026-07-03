@@ -16,13 +16,54 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Signing config for release AAB/APK.
+    // Values are read from (in order of priority):
+    //   1. Environment variables: OXIDATII_KEYSTORE_PATH, OXIDATII_KEYSTORE_PASSWORD,
+    //      OXIDATII_KEY_ALIAS, OXIDATII_KEY_PASSWORD
+    //   2. android/keystore.properties (git-ignored) with keys:
+    //      storeFile=..., storePassword=..., keyAlias=..., keyPassword=...
+    // If neither is present, release builds fall back to debug signing (dev only).
+    signingConfigs {
+        release {
+            def keystorePath = System.getenv("OXIDATII_KEYSTORE_PATH")
+            def keystorePassword = System.getenv("OXIDATII_KEYSTORE_PASSWORD")
+            def keyAliasEnv = System.getenv("OXIDATII_KEY_ALIAS")
+            def keyPasswordEnv = System.getenv("OXIDATII_KEY_PASSWORD")
+
+            def propsFile = rootProject.file("keystore.properties")
+            if ((!keystorePath || !keystorePassword || !keyAliasEnv || !keyPasswordEnv) && propsFile.exists()) {
+                def props = new Properties()
+                propsFile.withInputStream { props.load(it) }
+                keystorePath = keystorePath ?: props.getProperty("storeFile")
+                keystorePassword = keystorePassword ?: props.getProperty("storePassword")
+                keyAliasEnv = keyAliasEnv ?: props.getProperty("keyAlias")
+                keyPasswordEnv = keyPasswordEnv ?: props.getProperty("keyPassword")
+            }
+
+            if (keystorePath && keystorePassword && keyAliasEnv && keyPasswordEnv) {
+                storeFile file(keystorePath)
+                storePassword keystorePassword
+                keyAlias keyAliasEnv
+                keyPassword keyPasswordEnv
+            } else {
+                logger.warn("[oxidatii] Release signing not configured. Set OXIDATII_KEYSTORE_* env vars or android/keystore.properties. Release build will use debug signing.")
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            def releaseSigning = signingConfigs.release
+            if (releaseSigning.storeFile != null) {
+                signingConfig releaseSigning
+            } else {
+                signingConfig signingConfigs.debug
+            }
         }
     }
 }
+
 
 repositories {
     flatDir{
