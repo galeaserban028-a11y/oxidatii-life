@@ -11,6 +11,52 @@ fail() { printf '\033[31mEROARE: %s\033[0m\n' "$1"; exit 1; }
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+write_google_services_json() {
+  local dest="android/app/google-services.json"
+  mkdir -p "$(dirname "$dest")"
+
+  if [[ -n "${GOOGLE_SERVICES_JSON_BASE64:-}" ]]; then
+    info "Injectez $dest din GOOGLE_SERVICES_JSON_BASE64"
+    if ! printf '%s' "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > "$dest" 2>/dev/null; then
+      fail "GOOGLE_SERVICES_JSON_BASE64 nu este base64 valid."
+    fi
+    ok "google-services.json injectat automat"
+  elif [[ -n "${GOOGLE_SERVICES_JSON:-}" ]]; then
+    info "Injectez $dest din GOOGLE_SERVICES_JSON"
+    printf '%s' "$GOOGLE_SERVICES_JSON" > "$dest"
+    ok "google-services.json injectat automat"
+  elif [[ ! -f "$dest" ]]; then
+    warn "$dest lipsește. Dacă setezi GOOGLE_SERVICES_JSON_BASE64, scriptul îl pune singur."
+  fi
+}
+
+get_google_play_credentials_file() {
+  local temp_file="${TMPDIR:-/tmp}/oxidatii-google-play-service-account.json"
+
+  if [[ -n "${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64:-}" ]]; then
+    info "Pregătesc service account-ul Google Play din GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64" >&2
+    if ! printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64" | base64 -d > "$temp_file" 2>/dev/null; then
+      fail "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64 nu este base64 valid."
+    fi
+    printf '%s' "$temp_file"
+    return 0
+  fi
+
+  if [[ -n "${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:-}" ]]; then
+    info "Pregătesc service account-ul Google Play din GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" >&2
+    printf '%s' "$GOOGLE_PLAY_SERVICE_ACCOUNT_JSON" > "$temp_file"
+    printf '%s' "$temp_file"
+    return 0
+  fi
+
+  if [[ -f "$ROOT/android/google-play-service-account.json" ]]; then
+    printf '%s' "$ROOT/android/google-play-service-account.json"
+    return 0
+  fi
+
+  return 1
+}
+
 echo "=== Oxidatii Android Release AAB ==="
 
 if [[ "$ROOT" =~ [[:space:]\(\)] ]]; then
@@ -47,9 +93,7 @@ EOF
   ok "Keystore release generat. Fă backup la android/oxidatii-release.jks și android/keystore.properties."
 fi
 
-if [[ ! -f android/app/google-services.json ]]; then
-  warn "android/app/google-services.json lipsește. AAB-ul se poate construi, dar push notifications native nu vor funcționa până îl adaugi."
-fi
+write_google_services_json
 
 info "Curăț build cache Android vechi"
 rm -rf android/build android/.gradle android/app/build android/capacitor-cordova-android-plugins
@@ -70,4 +114,20 @@ AAB="$ROOT/android/app/build/outputs/bundle/release/app-release.aab"
 [[ -f "$AAB" ]] || fail "Build-ul a terminat, dar nu găsesc AAB-ul la $AAB"
 
 ok "AAB gata: $AAB"
+
+if PLAY_CREDENTIALS="$(get_google_play_credentials_file)"; then
+  export GOOGLE_PLAY_PACKAGE_NAME="${GOOGLE_PLAY_PACKAGE_NAME:-com.oxidatii.app}"
+  export GOOGLE_PLAY_TRACK="${GOOGLE_PLAY_TRACK:-internal}"
+  export GOOGLE_PLAY_STATUS="${GOOGLE_PLAY_STATUS:-draft}"
+  export GOOGLE_PLAY_SERVICE_ACCOUNT_FILE="$PLAY_CREDENTIALS"
+  export GOOGLE_PLAY_AAB_PATH="$AAB"
+
+  info "Urc AAB-ul automat în Google Play: track=$GOOGLE_PLAY_TRACK, status=$GOOGLE_PLAY_STATUS"
+  bun ./scripts/google-play-upload.mjs
+  ok "AAB urcat în Google Play"
+else
+  warn "Nu am găsit secretul Google Play, deci am făcut doar AAB local."
+  warn "Pentru upload automat setează GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64 sau GOOGLE_PLAY_SERVICE_ACCOUNT_JSON."
+fi
+
 warn "Pentru update-uri Google Play, păstrează același keystore. Dacă îl pierzi, nu mai poți publica update-uri normale."
