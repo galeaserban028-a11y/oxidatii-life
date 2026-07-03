@@ -75,8 +75,24 @@ try {
 } finally { Pop-Location }
 
 $aab = "android/app/build/outputs/bundle/release/app-release.aab"
-if (Test-Path $aab) {
-  Ok "AAB gata: $aab"
+if (-not (Test-Path $aab)) { Die "AAB nu a fost generat" }
+Ok "AAB gata: $aab"
+
+# 6. Upload automat Google Play (optional)
+$track  = if ($env:GOOGLE_PLAY_TRACK)  { $env:GOOGLE_PLAY_TRACK }  elseif ($env:PLAY_TRACK)  { $env:PLAY_TRACK }  else { "" }
+$status = if ($env:GOOGLE_PLAY_STATUS) { $env:GOOGLE_PLAY_STATUS } elseif ($env:PLAY_STATUS) { $env:PLAY_STATUS } else { "draft" }
+$hasSA  = $env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64 -or $env:GOOGLE_PLAY_SERVICE_ACCOUNT_JSON -or $env:GOOGLE_PLAY_SERVICE_ACCOUNT_FILE
+
+if ($track -and $hasSA) {
+  $allowed = @("internal","alpha","beta","production")
+  if ($allowed -notcontains $track) { Die "GOOGLE_PLAY_TRACK invalid: $track (internal|alpha|beta|production)" }
+  Info "Urc AAB in Google Play (track=$track, status=$status)"
+  $env:GOOGLE_PLAY_TRACK   = $track
+  $env:GOOGLE_PLAY_STATUS  = $status
+  $env:GOOGLE_PLAY_AAB_PATH = (Resolve-Path $aab).Path
+  bun scripts/google-play-upload.mjs
+  if ($LASTEXITCODE -ne 0) { Die "Upload Google Play esuat" }
+  Ok "AAB urcat in Google Play ($track / $status)"
 } else {
-  Die "AAB nu a fost generat"
+  Warn "Skip upload Google Play. Seteaza GOOGLE_PLAY_TRACK (internal|alpha|beta|production) si GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64 ca sa urc automat."
 }
