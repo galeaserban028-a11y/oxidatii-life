@@ -69,4 +69,24 @@ info "gradlew :app:bundleRelease"
 ( cd android && ./gradlew :app:bundleRelease --no-daemon )
 
 AAB="android/app/build/outputs/bundle/release/app-release.aab"
-[ -f "$AAB" ] && ok "AAB gata: $AAB" || die "AAB nu a fost generat"
+[ -f "$AAB" ] || die "AAB nu a fost generat"
+ok "AAB gata: $AAB"
+
+# 6. Upload automat Google Play (opțional)
+TRACK="${GOOGLE_PLAY_TRACK:-${PLAY_TRACK:-}}"
+STATUS="${GOOGLE_PLAY_STATUS:-${PLAY_STATUS:-draft}}"
+HAS_SA=0
+[ -n "${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64:-}" ] && HAS_SA=1
+[ -n "${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:-}" ] && HAS_SA=1
+[ -n "${GOOGLE_PLAY_SERVICE_ACCOUNT_FILE:-}" ] && HAS_SA=1
+
+if [ -n "$TRACK" ] && [ "$HAS_SA" = "1" ]; then
+  info "Urc AAB în Google Play (track=$TRACK, status=$STATUS)"
+  export GOOGLE_PLAY_TRACK="$TRACK"
+  export GOOGLE_PLAY_STATUS="$STATUS"
+  export GOOGLE_PLAY_AAB_PATH="$AAB"
+  bun scripts/google-play-upload.mjs || die "Upload Google Play eșuat"
+  ok "AAB urcat în Google Play ($TRACK / $STATUS)"
+else
+  warn "Skip upload Google Play. Setează GOOGLE_PLAY_TRACK (internal|alpha|beta|production) și GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_BASE64 ca să urc automat."
+fi
