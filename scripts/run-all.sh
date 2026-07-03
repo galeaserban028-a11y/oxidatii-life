@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Oxidatii - Run All pipeline (bash)
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+C='\033[0;36m'; G='\033[0;32m'; Y='\033[1;33m'; R='\033[0;31m'; N='\033[0m'
+info(){ echo -e "${C}[INFO]${N} $*"; }
+ok(){   echo -e "${G}[OK]${N}   $*"; }
+warn(){ echo -e "${Y}[WARN]${N} $*"; }
+die(){  echo -e "${R}[FAIL]${N} $*"; exit 1; }
+
+# 1. google-services.json
+GS="android/app/google-services.json"
+if [ -n "${GOOGLE_SERVICES_JSON_BASE64:-}" ]; then
+  info "Scriu $GS din GOOGLE_SERVICES_JSON_BASE64"
+  printf '%s' "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > "$GS"
+elif [ -n "${GOOGLE_SERVICES_JSON:-}" ]; then
+  info "Scriu $GS din GOOGLE_SERVICES_JSON"
+  printf '%s' "$GOOGLE_SERVICES_JSON" > "$GS"
+elif [ ! -f "$GS" ]; then
+  warn "$GS lipseste (opțional dacă nu folosești Firebase)"
+fi
+
+# 2. keystore
+KS="android/oxidatii-release.jks"
+KP="android/keystore.properties"
+
+if [ -n "${ANDROID_KEYSTORE_BASE64:-}" ]; then
+  info "Scriu keystore din ANDROID_KEYSTORE_BASE64"
+  printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$KS"
+fi
+
+if [ -n "${KEYSTORE_PASSWORD:-}" ] && [ -n "${KEY_ALIAS:-}" ] && [ -n "${KEY_PASSWORD:-}" ]; then
+  info "Scriu keystore.properties din env"
+  cat > "$KP" <<EOF
+storeFile=oxidatii-release.jks
+storePassword=${KEYSTORE_PASSWORD}
+keyAlias=${KEY_ALIAS}
+keyPassword=${KEY_PASSWORD}
+EOF
+fi
+
+if [ ! -f "$KS" ]; then
+  info "Generez keystore nou"
+  PW="$(head -c 24 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 24)"
+  "$JAVA_HOME/bin/keytool" -genkeypair -v -keystore "$KS" -alias oxidatii \
+    -keyalg RSA -keysize 2048 -validity 10000 \
+    -storepass "$PW" -keypass "$PW" \
+    -dname "CN=Oxidatii, OU=App, O=Oxidatii, L=City, ST=RO, C=RO" >/dev/null
+  cat > "$KP" <<EOF
+storeFile=oxidatii-release.jks
+storePassword=${PW}
+keyAlias=oxidatii
+keyPassword=${PW}
+EOF
+  ok "Keystore generat -> $KP (nu commit-a!)"
+fi
+
+# 3. deps + web
+[ -d node_modules ] || { info "bun install"; bun install; }
+info "bun run build"; bun run build
+
+# 4. cap sync
+info "npx cap sync android"; npx cap sync android
+
+# 5. bundle release
+info "gradlew :app:bundleRelease"
+( cd android && ./gradlew :app:bundleRelease --no-daemon )
+
+AAB="android/app/build/outputs/bundle/release/app-release.aab"
+[ -f "$AAB" ] && ok "AAB gata: $AAB" || die "AAB nu a fost generat"
