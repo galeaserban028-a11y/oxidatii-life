@@ -64,8 +64,13 @@ info "bun run build"; bun run build
 # 4. cap sync
 info "npx cap sync android"; npx cap sync android
 
-# 5. bundle release
-info "gradlew :app:bundleRelease"
+# 5. bundle release (auto-bump versionCode based on epoch minutes, fits Play limit 2.1e9)
+if [ -z "${ANDROID_VERSION_CODE:-}" ]; then
+  export ANDROID_VERSION_CODE="$(( $(date -u +%s) / 60 ))"
+  info "ANDROID_VERSION_CODE auto = $ANDROID_VERSION_CODE"
+fi
+export ANDROID_VERSION_NAME="${ANDROID_VERSION_NAME:-1.0.$(date -u +%Y%m%d)}"
+info "gradlew :app:bundleRelease (versionCode=$ANDROID_VERSION_CODE name=$ANDROID_VERSION_NAME)"
 ( cd android && ./gradlew :app:bundleRelease --no-daemon )
 
 AAB="android/app/build/outputs/bundle/release/app-release.aab"
