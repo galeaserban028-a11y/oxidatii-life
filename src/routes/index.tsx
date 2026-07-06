@@ -55,16 +55,28 @@ export const Route = createFileRoute("/")({
 
 
 function Index() {
+  const [lang, setLang] = useState<"ro" | "en">("ro");
   useEffect(() => {
     try {
       const ref = new URLSearchParams(window.location.search).get("ref");
       if (ref && /^[A-Z0-9]{4,12}$/i.test(ref)) {
         localStorage.setItem("pending_referral_code", ref.toUpperCase());
       }
+      const stored = window.localStorage.getItem("oxi-lang");
+      if (stored === "en" || stored === "ro") setLang(stored);
     } catch {}
   }, []);
+  const pickLang = (next: "ro" | "en") => {
+    setLang(next);
+    try {
+      window.localStorage.setItem("oxi-lang", next);
+    } catch {}
+    void i18n.changeLanguage(next);
+    if (typeof window !== "undefined") window.location.reload();
+  };
   return (
     <main className="relative min-h-[100svh] mx-auto max-w-md flex flex-col overflow-hidden bg-[#050510] text-white">
+
       {/* ambient glows */}
       <div className="absolute top-[10%] right-0 w-[60vmin] h-[60vmin] rounded-full pointer-events-none blur-[100px] bg-orange-600/20" />
       <div className="absolute bottom-[20%] -left-20 w-[50vmin] h-[50vmin] rounded-full pointer-events-none blur-[100px] bg-pink-600/15" />
