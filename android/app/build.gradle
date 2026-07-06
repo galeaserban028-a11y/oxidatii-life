@@ -7,8 +7,12 @@ android {
         applicationId "com.oxidatii.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // versionCode / versionName can be overridden via env for CI / re-uploads.
+        // Google Play requires versionCode to strictly increase between uploads.
+        def envVersionCode = System.getenv("ANDROID_VERSION_CODE")
+        def envVersionName = System.getenv("ANDROID_VERSION_NAME")
+        versionCode envVersionCode ? envVersionCode.toInteger() : 1
+        versionName envVersionName ?: "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
