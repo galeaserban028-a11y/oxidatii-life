@@ -66,8 +66,13 @@ Info "npx cap sync android"
 npx cap sync android
 if ($LASTEXITCODE -ne 0) { Die "cap sync esuat" }
 
-# --- 5. Bundle release ---
-Info "gradlew :app:bundleRelease"
+# --- 5. Bundle release (auto-bump versionCode based on epoch minutes, fits Play 2.1e9) ---
+if (-not $env:ANDROID_VERSION_CODE) {
+  $env:ANDROID_VERSION_CODE = [string][int64](([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() / 60))
+  Info "ANDROID_VERSION_CODE auto = $($env:ANDROID_VERSION_CODE)"
+}
+if (-not $env:ANDROID_VERSION_NAME) { $env:ANDROID_VERSION_NAME = "1.0.$(Get-Date -Format yyyyMMdd)" }
+Info "gradlew :app:bundleRelease (versionCode=$($env:ANDROID_VERSION_CODE) name=$($env:ANDROID_VERSION_NAME))"
 Push-Location android
 try {
   .\gradlew.bat :app:bundleRelease --no-daemon
