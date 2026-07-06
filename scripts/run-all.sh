@@ -34,7 +34,7 @@ fi
 if [ -n "${KEYSTORE_PASSWORD:-}" ] && [ -n "${KEY_ALIAS:-}" ] && [ -n "${KEY_PASSWORD:-}" ]; then
   info "Scriu keystore.properties din env"
   cat > "$KP" <<EOF
-storeFile=oxidatii-release.jks
+storeFile=../oxidatii-release.jks
 storePassword=${KEYSTORE_PASSWORD}
 keyAlias=${KEY_ALIAS}
 keyPassword=${KEY_PASSWORD}
@@ -49,7 +49,7 @@ if [ ! -f "$KS" ]; then
     -storepass "$PW" -keypass "$PW" \
     -dname "CN=Oxidatii, OU=App, O=Oxidatii, L=City, ST=RO, C=RO" >/dev/null
   cat > "$KP" <<EOF
-storeFile=oxidatii-release.jks
+storeFile=../oxidatii-release.jks
 storePassword=${PW}
 keyAlias=oxidatii
 keyPassword=${PW}
