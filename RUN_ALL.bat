@@ -32,8 +32,15 @@ REM --- 2. Incarca .env.local daca exista (pentru secrete locale) ---
 if exist ".env.local" (
   echo [INFO] Incarc .env.local ...
   for /f "usebackq tokens=1,* delims==" %%A in (".env.local") do (
-    set "line=%%A"
-    if not "!line:~0,1!"=="#" if not "%%A"=="" set "%%A=%%B"
+    set "k=%%A"
+    set "v=%%B"
+    if not "!k:~0,1!"=="#" if not "%%A"=="" (
+      if defined v (
+        if "!v:~0,1!"=="\"" if "!v:~-1!"=="\"" set "v=!v:~1,-1!"
+        if "!v:~0,1!"=="'"  if "!v:~-1!"=="'"  set "v=!v:~1,-1!"
+      )
+      set "!k!=!v!"
+    )
   )
 )
 
