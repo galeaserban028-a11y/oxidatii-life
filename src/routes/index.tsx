@@ -113,8 +113,44 @@ function Index() {
         </div>
       </header>
 
+      {/* Language picker — șpriț style */}
+      <section className="relative z-10 px-4 mb-5">
+        <div className="relative p-4 rounded-2xl border border-orange-500/20 bg-gradient-to-r from-orange-500/10 via-pink-500/5 to-transparent overflow-hidden">
+          <div className="absolute -top-6 -right-6 w-24 h-24 bg-orange-500/20 blur-3xl pointer-events-none" />
+          <div className="flex items-center gap-2 mb-3">
+            <Languages className="w-3.5 h-3.5 text-orange-400" />
+            <span className="font-mono text-[10px] font-black tracking-[0.2em] text-orange-400 uppercase">
+              {lang === "en" ? "Pick your language" : "Alege limba"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => pickLang("ro")}
+              className={`py-3 rounded-xl font-extrabold text-xs uppercase tracking-widest transition active:scale-[0.97] ${
+                lang === "ro"
+                  ? "bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg shadow-orange-500/30"
+                  : "bg-white/5 border border-white/10 text-white/60"
+              }`}
+            >
+              🇷🇴 Română
+            </button>
+            <button
+              onClick={() => pickLang("en")}
+              className={`py-3 rounded-xl font-extrabold text-xs uppercase tracking-widest transition active:scale-[0.97] ${
+                lang === "en"
+                  ? "bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg shadow-orange-500/30"
+                  : "bg-white/5 border border-white/10 text-white/60"
+              }`}
+            >
+              🇬🇧 English
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Hero */}
       <section className="relative z-10 px-4 mb-6">
+
         <div className="relative p-7 rounded-[32px] overflow-hidden border border-white/10 bg-gradient-to-b from-white/[0.08] to-transparent backdrop-blur-sm">
           <div className="absolute top-0 right-0 w-40 h-40 bg-orange-600/30 blur-3xl pointer-events-none" />
           <div className="inline-block px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 mb-4">
