@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import i18n from "@/lib/i18n";
 import { AlcoholWarning } from "@/components/AlcoholWarning";
 import { SpritzIndexDial } from "@/components/app/SpritzIndexDial";
 import logoLight from "@/assets/logo-oxidatii-light.png";
-import { MapPin, Flame, Trophy, Users, Beer, Bell, Search, Plus, ChevronRight } from "lucide-react";
+import { MapPin, Flame, Trophy, Users, Beer, Bell, Search, Plus, ChevronRight, Languages } from "lucide-react";
 import { OG_COVER_URL, SITE_URL } from "@/lib/og";
 
 export const Route = createFileRoute("/")({
