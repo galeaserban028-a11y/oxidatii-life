@@ -387,7 +387,7 @@ async function handleInvoicePaymentSucceeded(invoice: any, _env: StripeEnv) {
     .eq("id", userId);
   await supabaseAdmin.from("coin_spends").insert({
     user_id: userId,
-    amount: -monthlyCoins,
+    amount: monthlyCoins,
     kind: "premium_monthly_grant",
     ref_id: noteTag,
   });
