@@ -33,7 +33,7 @@ if ($env:ANDROID_KEYSTORE_BASE64) {
 if ($env:KEYSTORE_PASSWORD -and $env:KEY_ALIAS -and $env:KEY_PASSWORD) {
   Info "Scriu keystore.properties din env"
   @(
-    "storeFile=$((Resolve-Path $ksFile -ErrorAction SilentlyContinue) ?? 'oxidatii-release.jks')",
+    "storeFile=$((Resolve-Path $ksFile -ErrorAction SilentlyContinue) ?? '../oxidatii-release.jks')",
     "storePassword=$env:KEYSTORE_PASSWORD",
     "keyAlias=$env:KEY_ALIAS",
     "keyPassword=$env:KEY_PASSWORD"
