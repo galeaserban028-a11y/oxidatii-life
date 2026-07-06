@@ -48,7 +48,7 @@ if (-not (Test-Path $ksFile)) {
     -storepass $pw -keypass $pw `
     -dname "CN=Oxidatii, OU=App, O=Oxidatii, L=City, ST=RO, C=RO" | Out-Null
   @(
-    "storeFile=oxidatii-release.jks",
+    "storeFile=../oxidatii-release.jks",
     "storePassword=$pw",
     "keyAlias=oxidatii",
     "keyPassword=$pw"
