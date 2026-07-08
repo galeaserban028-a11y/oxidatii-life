@@ -5,19 +5,19 @@
 # Rulezi: ./scripts/ios-publish.sh   (sau dublu-click pe PUBLISH_IOS.command)
 # Face TOT: preflight → build web → cap sync → archive → export → upload.
 #
-# CE TREBUIE TU (o singură dată, ~10 min):
+# CE TREBUIE TU (o singură dată, ~5 min):
 #   1. Mac cu Xcode (deschide-l o dată, acceptă licența, adaugă Apple ID)
-#   2. Cont Apple Developer ($99/an)
+#   2. Cont Apple Developer ($99/an) — https://developer.apple.com/programs/
 #   3. Cheie App Store Connect API:
 #        https://appstoreconnect.apple.com/access/integrations/api
-#        → "+" → Access: "App Manager" → Generate
+#        → "+" → Access: "Admin" → Generate
 #        → descarci AuthKey_XXXXXXXXXX.p8 (o singură dată!)
 #        → notezi Key ID + Issuer ID
 #   4. Copiezi ios/fastlane.env.example → ios/fastlane.env și completezi.
 #   5. Pui AuthKey_*.p8 în ios/private_keys/
-#   6. (Prima dată) Creezi app-ul în App Store Connect cu bundle ID com.oxidatii.app
 #
-# Apoi rulezi scriptul de câte ori vrei să publici o versiune nouă.
+# Apoi rulezi scriptul. TOT restul (inclusiv crearea app-ului în
+# App Store Connect prima dată) e automat.
 # ============================================================
 
 set -euo pipefail
