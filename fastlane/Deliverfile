@@ -1,0 +1,21 @@
+app_identifier(ENV["APP_BUNDLE_ID"] || "com.oxidatii.app")
+team_id(ENV["APPLE_TEAM_ID"])
+
+# Locations for text metadata & screenshots
+metadata_path("./fastlane/metadata")
+screenshots_path("./fastlane/screenshots")
+
+# Copyright & primary category
+copyright("© #{Time.now.year} OXIDAȚII")
+primary_category("SOCIAL_NETWORKING")
+secondary_category("LIFESTYLE")
+
+# Age rating — 17+ (alcohol-related content)
+app_rating_config_path("./fastlane/metadata/app_rating.json")
+
+# Don't reset ratings & reviews between releases
+reset_ratings(false)
+
+# Auto-release after Apple approves? (false = manual button in ASC)
+automatic_release(false)
+phased_release(true)

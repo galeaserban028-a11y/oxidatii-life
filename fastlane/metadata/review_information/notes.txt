@@ -1,0 +1,1 @@
+Aplicația necesită cont. Recenzentul poate crea unul rapid din ecranul de sign-up cu email + parolă. Locația și camera sunt opționale; toate feature-urile principale (feed, hartă, top, mesaje) sunt accesibile după login. Conținutul e generat de utilizatori și moderat; există raportare in-app și blocare per user.

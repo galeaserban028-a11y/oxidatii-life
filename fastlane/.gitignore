@@ -1,0 +1,7 @@
+report.xml
+Preview.html
+screenshots/**/*.png
+screenshots/**/*.jpg
+screenshots/**/*.jpeg
+!screenshots/README.md
+test_output

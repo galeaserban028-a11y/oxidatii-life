@@ -1,0 +1,4 @@
+app_identifier(ENV["APP_BUNDLE_ID"] || "com.oxidatii.app")
+team_id(ENV["APPLE_TEAM_ID"])
+
+# App Store Connect API key JSON path is passed per-lane via --api_key_path

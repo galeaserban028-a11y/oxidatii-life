@@ -175,11 +175,14 @@ function deferredStart() {
 export function DomTranslator() {
   useEffect(() => {
     applyStoredLanguage();
-    // Only start translating dynamic content when in EN mode.
-    // Switching languages triggers a full page reload (see LanguageSwitcher),
-    // so we don't need a runtime languageChanged listener that fights React.
-    if (i18n.language === "en") deferredStart();
+    // Only translate dynamic content in EN mode. Delay past initial hydration
+    // so React's reconciliation is complete before we mutate any text nodes.
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    if (i18n.language === "en") {
+      timer = setTimeout(deferredStart, 250);
+    }
     return () => {
+      if (timer) clearTimeout(timer);
       if (active) stop();
     };
   }, []);

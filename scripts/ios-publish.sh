@@ -204,22 +204,54 @@ IPA_PATH=$(find "$EXPORT_PATH" -name "*.ipa" 2>/dev/null | head -1)
 [[ -n "$IPA_PATH" && -f "$IPA_PATH" ]] || { warn "Log export: $XC_EXPORT_LOG"; fail "Nu s-a generat IPA."; }
 ok "IPA: $IPA_PATH"
 
-# ---------- 8/8 Upload ----------
-info "8/8  Upload la App Store Connect..."
+# ---------- 8/10 Upload IPA (TestFlight) ----------
+info "8/10 Upload IPA la TestFlight (via fastlane pilot)..."
 cd "$ROOT"
 
-xcrun altool --upload-app \
-  --type ios \
-  --file "$IPA_PATH" \
-  --apiKey "$APP_STORE_KEY_ID" \
-  --apiIssuer "$APP_STORE_ISSUER_ID" \
-  --verbose 2>&1 | tail -30
+export FASTLANE_API_KEY_PATH="$FASTLANE_KEY_JSON"
+export IPA_PATH="$IPA_PATH"
+
+# pilot = upload rapid pentru TestFlight, fără să aștepte procesarea
+if ! IPA_PATH="$IPA_PATH" fastlane ios beta 2>&1 | tail -40; then
+  warn "fastlane pilot a eșuat — încerc altool ca fallback..."
+  xcrun altool --upload-app \
+    --type ios \
+    --file "$IPA_PATH" \
+    --apiKey "$APP_STORE_KEY_ID" \
+    --apiIssuer "$APP_STORE_ISSUER_ID" \
+    --verbose 2>&1 | tail -30
+fi
+ok "IPA trimis. TestFlight îl procesează în 10-30 min."
+
+# ---------- 9/10 Metadata + Screenshots ----------
+info "9/10 Sync metadata & screenshots la App Store Connect..."
+
+# Verifică că măcar un screenshot există (altfel deliver eșuează)
+SHOT_COUNT=$(find fastlane/screenshots -type f \( -name "*.png" -o -name "*.jpg" \) 2>/dev/null | wc -l | tr -d ' ')
+if [[ "$SHOT_COUNT" == "0" ]]; then
+  warn "Nu am găsit screenshot-uri în fastlane/screenshots/. Trimit doar textul."
+  fastlane ios metadata --skip_screenshots 2>&1 | tail -30 || warn "Metadata deliver a raportat erori (vezi mai sus)."
+else
+  info "Găsit $SHOT_COUNT screenshot-uri — le trimit împreună cu textul."
+  fastlane ios metadata 2>&1 | tail -30 || warn "Metadata deliver a raportat erori (vezi mai sus)."
+fi
+
+# ---------- 10/10 Submit for review (opțional) ----------
+if [[ "${SUBMIT_FOR_REVIEW:-false}" == "true" ]]; then
+  info "10/10 Submit for App Store review..."
+  fastlane ios release 2>&1 | tail -20 || warn "Submit a eșuat — verifică manual în ASC."
+else
+  info "10/10 Skip submit (setează SUBMIT_FOR_REVIEW=true în env ca să trimit automat pentru review)."
+fi
 
 echo ""
 echo "════════════════════════════════════════════════════════"
-ok "GATA! Build $BUILD_NUMBER trimis la App Store Connect."
+ok "GATA! Build $BUILD_NUMBER + metadata trimise la App Store Connect."
 echo ""
 echo "  → https://appstoreconnect.apple.com"
 echo "  → TestFlight: build-ul apare după ~10-30 min de procesare"
-echo "  → Prima dată: completează listing (screenshots, descriere) și Submit for Review"
+echo "  → Metadata & screenshots: deja actualizate"
+if [[ "${SUBMIT_FOR_REVIEW:-false}" != "true" ]]; then
+  echo "  → Pentru submit automat la review: rulează cu SUBMIT_FOR_REVIEW=true ./scripts/ios-publish.sh"
+fi
 echo "════════════════════════════════════════════════════════"
