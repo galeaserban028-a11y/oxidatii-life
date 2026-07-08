@@ -162,7 +162,6 @@ function stop() {
   active = false;
   observer?.disconnect();
   observer = null;
-  if (typeof window !== "undefined") window.location.replace(window.location.href);
 }
 
 function deferredStart() {
@@ -176,14 +175,12 @@ function deferredStart() {
 export function DomTranslator() {
   useEffect(() => {
     applyStoredLanguage();
-    const apply = (lng: string) => {
-      if (lng === "en") deferredStart();
-      else if (active) stop();
-    };
-    apply(i18n.language);
-    i18n.on("languageChanged", apply);
+    // Only start translating dynamic content when in EN mode.
+    // Switching languages triggers a full page reload (see LanguageSwitcher),
+    // so we don't need a runtime languageChanged listener that fights React.
+    if (i18n.language === "en") deferredStart();
     return () => {
-      i18n.off("languageChanged", apply);
+      if (active) stop();
     };
   }, []);
   return null;

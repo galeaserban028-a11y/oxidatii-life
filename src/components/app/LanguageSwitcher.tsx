@@ -6,11 +6,14 @@ export function LanguageSwitcher() {
   const current = (i18n.resolvedLanguage ?? i18n.language ?? "ro").startsWith("en") ? "en" : "ro";
 
   function setLang(lng: "ro" | "en") {
-    void i18n.changeLanguage(lng);
+    if (current === lng) return;
     try {
       localStorage.setItem("oxi-lang", lng);
     } catch {}
     if (typeof document !== "undefined") document.documentElement.lang = lng;
+    // Full reload keeps SSR/client in sync and avoids observer-vs-React races.
+    if (typeof window !== "undefined") window.location.reload();
+    else void i18n.changeLanguage(lng);
   }
 
   return (
