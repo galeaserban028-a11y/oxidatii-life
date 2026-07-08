@@ -5,19 +5,19 @@
 # Rulezi: ./scripts/ios-publish.sh   (sau dublu-click pe PUBLISH_IOS.command)
 # Face TOT: preflight → build web → cap sync → archive → export → upload.
 #
-# CE TREBUIE TU (o singură dată, ~10 min):
+# CE TREBUIE TU (o singură dată, ~5 min):
 #   1. Mac cu Xcode (deschide-l o dată, acceptă licența, adaugă Apple ID)
-#   2. Cont Apple Developer ($99/an)
+#   2. Cont Apple Developer ($99/an) — https://developer.apple.com/programs/
 #   3. Cheie App Store Connect API:
 #        https://appstoreconnect.apple.com/access/integrations/api
-#        → "+" → Access: "App Manager" → Generate
+#        → "+" → Access: "Admin" → Generate
 #        → descarci AuthKey_XXXXXXXXXX.p8 (o singură dată!)
 #        → notezi Key ID + Issuer ID
 #   4. Copiezi ios/fastlane.env.example → ios/fastlane.env și completezi.
 #   5. Pui AuthKey_*.p8 în ios/private_keys/
-#   6. (Prima dată) Creezi app-ul în App Store Connect cu bundle ID com.oxidatii.app
 #
-# Apoi rulezi scriptul de câte ori vrei să publici o versiune nouă.
+# Apoi rulezi scriptul. TOT restul (inclusiv crearea app-ului în
+# App Store Connect prima dată) e automat.
 # ============================================================
 
 set -euo pipefail
@@ -71,7 +71,49 @@ if [[ ! -f "$KEY_TARGET" ]]; then
   chmod 600 "$KEY_TARGET"
 fi
 
+: "${APP_NAME:=OXIDAȚII}"
+: "${APP_SKU:=oxidatii-ios}"
+: "${APP_PRIMARY_LANGUAGE:=en-US}"
+
 ok "Preflight OK  (Team=$APPLE_TEAM_ID, Bundle=$APP_BUNDLE_ID)"
+
+# ---------- 0.5/8 Auto-create app in App Store Connect ----------
+info "0.5/8  Verific dacă app-ul există în App Store Connect..."
+
+# Build fastlane API key JSON (folosit atât de produce cât și de altele)
+FASTLANE_KEY_JSON="$ROOT/ios/build/asc_api_key.json"
+mkdir -p "$ROOT/ios/build"
+KEY_CONTENT=$(cat "$APP_STORE_KEY_PATH")
+cat > "$FASTLANE_KEY_JSON" <<EOF
+{
+  "key_id": "$APP_STORE_KEY_ID",
+  "issuer_id": "$APP_STORE_ISSUER_ID",
+  "key": $(printf '%s' "$KEY_CONTENT" | python3 -c 'import json,sys;print(json.dumps(sys.stdin.read()))'),
+  "in_house": false
+}
+EOF
+chmod 600 "$FASTLANE_KEY_JSON"
+
+if ! command -v fastlane >/dev/null; then
+  warn "fastlane lipsește — îl instalez (o singură dată, ~2 min)..."
+  if command -v brew >/dev/null; then
+    brew install fastlane || sudo gem install fastlane -NV
+  else
+    sudo gem install fastlane -NV
+  fi
+fi
+
+# produce creează app-ul dacă nu există; dacă există, iese cu 0 fără să facă nimic
+fastlane produce \
+  --skip_itc false \
+  --skip_devcenter true \
+  --app_identifier "$APP_BUNDLE_ID" \
+  --app_name "$APP_NAME" \
+  --language "$APP_PRIMARY_LANGUAGE" \
+  --sku "$APP_SKU" \
+  --team_id "$APPLE_TEAM_ID" \
+  --api_key_path "$FASTLANE_KEY_JSON" \
+  2>&1 | grep -v "^\[" | tail -20 || warn "produce a raportat ceva — dacă app-ul deja există, e ok."
 
 # ---------- 1/8 Deps ----------
 info "1/8  Instalez dependințe npm..."
