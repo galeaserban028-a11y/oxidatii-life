@@ -1,93 +1,139 @@
 #!/usr/bin/env bash
 # ============================================================
-# OXIDAȚII — Publicare automată pe App Store
+# OXIDAȚII — Publicare 100% automată pe App Store
 # ============================================================
-# Rulezi: ./scripts/ios-publish.sh
-# Face TOT: build web → cap sync → archive → export → upload la App Store Connect.
+# Rulezi: ./scripts/ios-publish.sh   (sau dublu-click pe PUBLISH_IOS.command)
+# Face TOT: preflight → build web → cap sync → archive → export → upload.
 #
 # CE TREBUIE TU (o singură dată, ~10 min):
-#   1. Mac cu Xcode instalat (Xcode → Preferences → Accounts: adaugă Apple ID-ul tău)
-#   2. Cont Apple Developer activ ($99/an)
-#   3. Creezi o cheie App Store Connect API:
+#   1. Mac cu Xcode (deschide-l o dată, acceptă licența, adaugă Apple ID)
+#   2. Cont Apple Developer ($99/an)
+#   3. Cheie App Store Connect API:
 #        https://appstoreconnect.apple.com/access/integrations/api
-#        → "+" → Name: "Oxidatii CI" → Access: "App Manager" → Generate
-#        → descarci AuthKey_XXXXXXXXXX.p8 (poți doar o dată!)
-#        → notezi Key ID (10 caractere) și Issuer ID (UUID)
+#        → "+" → Access: "App Manager" → Generate
+#        → descarci AuthKey_XXXXXXXXXX.p8 (o singură dată!)
+#        → notezi Key ID + Issuer ID
 #   4. Copiezi ios/fastlane.env.example → ios/fastlane.env și completezi.
 #   5. Pui AuthKey_*.p8 în ios/private_keys/
+#   6. (Prima dată) Creezi app-ul în App Store Connect cu bundle ID com.oxidatii.app
 #
-# Apoi rulezi ./scripts/ios-publish.sh de câte ori vrei să publici o versiune nouă.
+# Apoi rulezi scriptul de câte ori vrei să publici o versiune nouă.
 # ============================================================
 
 set -euo pipefail
 
+# Colors
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
+info()  { echo -e "${BLUE}▶${NC} $*"; }
+ok()    { echo -e "${GREEN}✓${NC} $*"; }
+warn()  { echo -e "${YELLOW}⚠${NC} $*"; }
+fail()  { echo -e "${RED}✗${NC} $*" >&2; exit 1; }
+
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-ENV_FILE="ios/fastlane.env"
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo ""
-  echo "❌ Lipsește $ENV_FILE"
-  echo "→ Copiază ios/fastlane.env.example în ios/fastlane.env și completează valorile."
-  exit 1
+# ---------- 0/8 Preflight ----------
+info "0/8  Preflight checks..."
+
+[[ "$(uname)" == "Darwin" ]] || fail "Publicarea pe App Store se poate face doar de pe macOS."
+
+command -v xcodebuild >/dev/null || fail "Xcode nu e instalat. Instalează din App Store, apoi rulează: sudo xcode-select --install"
+
+if ! xcode-select -p >/dev/null 2>&1; then
+  fail "Xcode command line tools nu sunt configurate. Rulează: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer"
 fi
+
+command -v bun >/dev/null || fail "bun nu e instalat. Rulează: curl -fsSL https://bun.sh/install | bash"
+
+ENV_FILE="ios/fastlane.env"
+[[ -f "$ENV_FILE" ]] || fail "Lipsește $ENV_FILE. Copiază ios/fastlane.env.example → ios/fastlane.env și completează."
 
 # shellcheck disable=SC1090
 set -a; source "$ENV_FILE"; set +a
 
 : "${APPLE_TEAM_ID:?Setează APPLE_TEAM_ID în ios/fastlane.env}"
 : "${APP_BUNDLE_ID:=com.oxidatii.app}"
-: "${APP_STORE_KEY_ID:?Setează APP_STORE_KEY_ID}"
-: "${APP_STORE_ISSUER_ID:?Setează APP_STORE_ISSUER_ID}"
-: "${APP_STORE_KEY_PATH:=ios/private_keys/AuthKey_${APP_STORE_KEY_ID}.p8}"
+: "${APP_STORE_KEY_ID:?Setează APP_STORE_KEY_ID în ios/fastlane.env}"
+: "${APP_STORE_ISSUER_ID:?Setează APP_STORE_ISSUER_ID în ios/fastlane.env}"
+: "${APP_STORE_KEY_PATH:=$ROOT/ios/private_keys/AuthKey_${APP_STORE_KEY_ID}.p8}"
 
-if [[ ! -f "$APP_STORE_KEY_PATH" ]]; then
-  echo "❌ Nu găsesc cheia $APP_STORE_KEY_PATH"
-  echo "→ Pune fișierul AuthKey_*.p8 în ios/private_keys/"
-  exit 1
+[[ "$APPLE_TEAM_ID" != "XXXXXXXXXX" ]] || fail "APPLE_TEAM_ID e încă placeholder. Completează în $ENV_FILE."
+[[ "$APP_STORE_KEY_ID" != "XXXXXXXXXX" ]] || fail "APP_STORE_KEY_ID e încă placeholder. Completează în $ENV_FILE."
+
+[[ -f "$APP_STORE_KEY_PATH" ]] || fail "Nu găsesc cheia $APP_STORE_KEY_PATH. Pune AuthKey_*.p8 în ios/private_keys/"
+
+# altool caută cheia în locații fixe — copiem/symlink acolo ca să meargă orice ai pus în env
+APPLE_PRIVATE_KEYS_DIR="$HOME/.appstoreconnect/private_keys"
+mkdir -p "$APPLE_PRIVATE_KEYS_DIR"
+KEY_TARGET="$APPLE_PRIVATE_KEYS_DIR/AuthKey_${APP_STORE_KEY_ID}.p8"
+if [[ ! -f "$KEY_TARGET" ]]; then
+  cp "$APP_STORE_KEY_PATH" "$KEY_TARGET"
+  chmod 600 "$KEY_TARGET"
 fi
 
-if [[ "$(uname)" != "Darwin" ]]; then
-  echo "❌ Publicarea pe App Store se poate face doar de pe macOS (Xcode necesar)."
-  exit 1
-fi
+ok "Preflight OK  (Team=$APPLE_TEAM_ID, Bundle=$APP_BUNDLE_ID)"
 
-echo ""
-echo "▶  1/6  Instalez dependințe..."
-bun install --frozen-lockfile 2>/dev/null || bun install
+# ---------- 1/8 Deps ----------
+info "1/8  Instalez dependințe npm..."
+bun install
 
-echo ""
-echo "▶  2/6  Build web (dist/client)..."
+# ---------- 2/8 Build web ----------
+info "2/8  Build web (dist/client)..."
 bun run build
+[[ -d "dist/client" ]] || fail "dist/client nu a fost generat. Verifică output-ul build-ului."
 
-echo ""
-echo "▶  3/6  Sync Capacitor iOS..."
+# ---------- 3/8 Capacitor iOS ----------
+info "3/8  Sync Capacitor iOS..."
+if [[ ! -d "ios/App" ]]; then
+  warn "Platformă iOS lipsește — o adaug."
+  bunx cap add ios
+fi
 bunx cap sync ios
 
-echo ""
-echo "▶  4/6  Incrementez build number..."
+# ---------- 4/8 CocoaPods ----------
+info "4/8  Instalez CocoaPods (dacă lipsesc)..."
+if [[ -f "ios/App/Podfile" ]]; then
+  ( cd ios/App && pod install --repo-update 2>/dev/null || pod install )
+fi
+
+# ---------- 5/8 Build number ----------
+info "5/8  Setez build number..."
 cd ios/App
 BUILD_NUMBER=$(date +%Y%m%d%H%M)
 xcrun agvtool new-version -all "$BUILD_NUMBER" >/dev/null
-echo "   Build number: $BUILD_NUMBER"
+ok "Build number: $BUILD_NUMBER"
 
-echo ""
-echo "▶  5/6  Archive + Export IPA (poate dura 5-10 min)..."
+# ---------- 6/8 Archive ----------
+info "6/8  Archive (5-10 min)..."
 ARCHIVE_PATH="$ROOT/ios/build/Oxidatii.xcarchive"
 EXPORT_PATH="$ROOT/ios/build/export"
+mkdir -p "$ROOT/ios/build"
 rm -rf "$ARCHIVE_PATH" "$EXPORT_PATH"
 
+# Detectăm dacă e workspace (după pod install) sau doar project
+BUILD_TARGET_FLAG="-project App.xcodeproj"
+[[ -d "App.xcworkspace" ]] && BUILD_TARGET_FLAG="-workspace App.xcworkspace"
+
+XC_LOG="$ROOT/ios/build/xcodebuild.log"
+
+# shellcheck disable=SC2086
 xcodebuild \
-  -workspace App.xcworkspace \
+  $BUILD_TARGET_FLAG \
   -scheme App \
   -configuration Release \
   -destination "generic/platform=iOS" \
   -archivePath "$ARCHIVE_PATH" \
   -allowProvisioningUpdates \
+  -skipPackagePluginValidation \
   DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-  archive | xcpretty || true
+  PRODUCT_BUNDLE_IDENTIFIER="$APP_BUNDLE_ID" \
+  archive 2>&1 | tee "$XC_LOG" | grep -E "^(===|CompileC|Ld|CodeSign|ProcessProductPackaging|error:|warning:|\*\*)" || true
 
-# ExportOptions.plist generat automat
+[[ -d "$ARCHIVE_PATH" ]] || { warn "Log complet: $XC_LOG"; fail "Archive a eșuat. Deschide log-ul de mai sus pentru detalii."; }
+ok "Archive gata: $ARCHIVE_PATH"
+
+# ---------- 7/8 Export IPA ----------
+info "7/8  Export IPA..."
 cat > "$ROOT/ios/build/ExportOptions.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -99,39 +145,39 @@ cat > "$ROOT/ios/build/ExportOptions.plist" <<EOF
   <key>uploadSymbols</key><true/>
   <key>signingStyle</key><string>automatic</string>
   <key>destination</key><string>export</string>
+  <key>generateAppStoreInformation</key><true/>
 </dict>
 </plist>
 EOF
 
+XC_EXPORT_LOG="$ROOT/ios/build/xcodebuild-export.log"
 xcodebuild \
   -exportArchive \
   -archivePath "$ARCHIVE_PATH" \
   -exportPath "$EXPORT_PATH" \
   -exportOptionsPlist "$ROOT/ios/build/ExportOptions.plist" \
-  -allowProvisioningUpdates | xcpretty || true
+  -allowProvisioningUpdates 2>&1 | tee "$XC_EXPORT_LOG" | grep -E "(error:|warning:|Exported|\*\*)" || true
 
-IPA_PATH=$(find "$EXPORT_PATH" -name "*.ipa" | head -1)
-if [[ -z "$IPA_PATH" ]]; then
-  echo "❌ Nu s-a generat IPA. Verifică log-ul Xcode de mai sus."
-  exit 1
-fi
-echo "   IPA: $IPA_PATH"
+IPA_PATH=$(find "$EXPORT_PATH" -name "*.ipa" 2>/dev/null | head -1)
+[[ -n "$IPA_PATH" && -f "$IPA_PATH" ]] || { warn "Log export: $XC_EXPORT_LOG"; fail "Nu s-a generat IPA."; }
+ok "IPA: $IPA_PATH"
 
-echo ""
-echo "▶  6/6  Upload la App Store Connect..."
+# ---------- 8/8 Upload ----------
+info "8/8  Upload la App Store Connect..."
 cd "$ROOT"
 
 xcrun altool --upload-app \
   --type ios \
   --file "$IPA_PATH" \
   --apiKey "$APP_STORE_KEY_ID" \
-  --apiIssuer "$APP_STORE_ISSUER_ID"
+  --apiIssuer "$APP_STORE_ISSUER_ID" \
+  --verbose 2>&1 | tail -30
 
 echo ""
 echo "════════════════════════════════════════════════════════"
-echo "✅ GATA! Build $BUILD_NUMBER trimis la App Store Connect."
+ok "GATA! Build $BUILD_NUMBER trimis la App Store Connect."
 echo ""
-echo "→ Deschide https://appstoreconnect.apple.com"
-echo "→ TestFlight: build-ul apare în ~10-30 min după procesare"
-echo "→ Prima dată: completează listing + Submit for Review"
+echo "  → https://appstoreconnect.apple.com"
+echo "  → TestFlight: build-ul apare după ~10-30 min de procesare"
+echo "  → Prima dată: completează listing (screenshots, descriere) și Submit for Review"
 echo "════════════════════════════════════════════════════════"
