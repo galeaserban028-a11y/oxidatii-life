@@ -141,7 +141,12 @@ Info "Sincronizez Capacitor Android"
 bunx cap sync android
 if ($LASTEXITCODE -ne 0) { Fail "cap sync android a eșuat." }
 
-Info "Construiesc AAB release semnat"
+if (-not $env:ANDROID_VERSION_CODE) {
+  $env:ANDROID_VERSION_CODE = [string][int64](([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() / 60))
+  Info "ANDROID_VERSION_CODE auto = $($env:ANDROID_VERSION_CODE)"
+}
+if (-not $env:ANDROID_VERSION_NAME) { $env:ANDROID_VERSION_NAME = "1.0.$(Get-Date -Format yyyyMMdd)" }
+Info "Construiesc AAB release semnat (versionCode=$($env:ANDROID_VERSION_CODE) name=$($env:ANDROID_VERSION_NAME))"
 Push-Location android
 .\gradlew.bat bundleRelease --no-daemon
 $gradleExit = $LASTEXITCODE
