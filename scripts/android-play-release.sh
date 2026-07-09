@@ -107,7 +107,12 @@ bun run build
 info "Sincronizez Capacitor Android"
 bunx cap sync android
 
-info "Construiesc AAB release semnat"
+if [[ -z "${ANDROID_VERSION_CODE:-}" ]]; then
+  export ANDROID_VERSION_CODE="$(( $(date -u +%s) / 60 ))"
+  info "ANDROID_VERSION_CODE auto = $ANDROID_VERSION_CODE"
+fi
+export ANDROID_VERSION_NAME="${ANDROID_VERSION_NAME:-1.0.$(date -u +%Y%m%d)}"
+info "Construiesc AAB release semnat (versionCode=$ANDROID_VERSION_CODE name=$ANDROID_VERSION_NAME)"
 (cd android && ./gradlew bundleRelease --no-daemon)
 
 AAB="$ROOT/android/app/build/outputs/bundle/release/app-release.aab"
