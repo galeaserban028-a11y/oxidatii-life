@@ -653,7 +653,9 @@ function MapPage() {
         supabase.rpc("get_my_account_state"),
         supabase.from("private_locations").select("lat, lng, radius_m").eq("user_id", user!.id),
       ]);
-      const stateRow = Array.isArray(stateRes.data) ? (stateRes.data[0] as any) : null;
+      const stateRow = Array.isArray(stateRes.data)
+        ? ((stateRes.data[0] ?? null) as RawMapSettings | null)
+        : null;
       const merged = { ...(pRes.data ?? {}), ...(stateRow ?? {}) };
       let cityCenter: { lat: number; lng: number } | null = null;
       if (pRes.data?.city_id) {
