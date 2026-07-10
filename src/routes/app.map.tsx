@@ -392,7 +392,7 @@ function MapPage() {
         lat: Number(c.lat),
         lng: Number(c.lng),
         chaos_level: Number(c.chaos_level),
-        country: (c as any).country ?? "RO",
+        country: (c as { country?: string | null }).country ?? "RO",
       }));
     },
   });
