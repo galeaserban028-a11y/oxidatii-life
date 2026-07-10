@@ -183,6 +183,20 @@ function Onboarding() {
           </select>
         </div>
 
+        {!hasDob && (
+          <div>
+            <label className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
+              Data nașterii <span className="text-foreground/40 normal-case tracking-normal">(18+)</span>
+            </label>
+            <div className="mt-2">
+              <BirthdatePicker value={dob} onChange={setDob} />
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Aplicația e doar pentru +18. Vârsta e verificată.
+            </p>
+          </div>
+        )}
+
         <div className="rounded-xl border border-foreground/10 p-4 space-y-3">
           <div className="flex items-center justify-between">
             <div>
