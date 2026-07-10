@@ -236,7 +236,7 @@ function InboxPage() {
         />
       ) : (
         <div className="space-y-1 -mx-5">
-          {filtered.map((c: any) => {
+          {filtered.map((c) => {
             const isDM = c.kind === "dm";
             const title = isDM
               ? c.others[0]?.handle
