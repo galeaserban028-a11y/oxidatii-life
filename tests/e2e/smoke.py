@@ -102,9 +102,13 @@ async def test_protected_redirects(context):
     for route in ("/app", "/app/feed", "/app/map", "/app/inbox", "/app/me", "/app/chat"):
         page = await context.new_page()
         await page.goto(f"{BASE}{route}", wait_until="domcontentloaded", timeout=20000)
-        await page.wait_for_timeout(1200)
+        # Auth state resolves async in useAuth; wait for the client-side redirect.
+        try:
+            await page.wait_for_url(lambda u: any(k in u for k in ("/signup", "/login", "/auth")), timeout=6000)
+        except Exception:
+            pass
         final = page.url
-        redirected = "/signup" in final or "/login" in final or "/auth" in final
+        redirected = any(k in final for k in ("/signup", "/login", "/auth"))
         record(f"protected redirect: {route}", redirected, f"→ {final}")
         await page.close()
 
