@@ -72,8 +72,58 @@ function Index() {
       window.localStorage.setItem("oxi-lang", next);
     } catch {}
     void i18n.changeLanguage(next);
-    if (typeof window !== "undefined") window.location.reload();
   };
+  const t = lang === "en"
+    ? {
+        onlineNow: "1.2k Online Now",
+        pickLang: "Pick your language",
+        season: "Spritz Season • 2026",
+        heroLine1: "Come for a",
+        heroWord: "Spritz",
+        heroDesc1: "Where people are drinking spritz ",
+        heroDescNow: "now",
+        heroDesc2: ". Who with. And who's ",
+        heroDescKing: "king of the table",
+        heroDesc3: ".",
+        ctaJoin: "Enter the chaos",
+        ctaHave: "I have an account",
+        featuresLabel: "What you'll find inside",
+        zones: "4 ZONES",
+        tMap: "Map", tMapSub: "Live places",
+        tFaze: "Moments", tFazeSub: "Post your night",
+        tTop: "Top", tTopSub: "God ranking",
+        tSquad: "Squad", tSquadSub: "Your oxidații",
+        liveTitle: "Drinking right now",
+        seeAll: "See all",
+        dockMap: "Map", dockFaze: "Moments", dockTop: "Top", dockMe: "Me",
+        addSpot: "Add spot",
+        legal: "Alcohol seriously harms health. Please drink responsibly.",
+      }
+    : {
+        onlineNow: "1.2k Online Acum",
+        pickLang: "Alege limba",
+        season: "Sezonul Șprițului • 2026",
+        heroLine1: "Hai la",
+        heroWord: "Șpriț",
+        heroDesc1: "Unde se bea șpriț ",
+        heroDescNow: "acum",
+        heroDesc2: ". Cu cine. Și cine-i ",
+        heroDescKing: "rege la masă",
+        heroDesc3: ".",
+        ctaJoin: "Intră în haos",
+        ctaHave: "Am cont",
+        featuresLabel: "Ce găsești în app",
+        zones: "4 ZONE",
+        tMap: "Hartă", tMapSub: "Locuri Live",
+        tFaze: "Faze", tFazeSub: "Postează seara",
+        tTop: "Top", tTopSub: "Clasament zeu",
+        tSquad: "Haita", tSquadSub: "Oxidații tăi",
+        liveTitle: "Se bea acum",
+        seeAll: "Vezi tot",
+        dockMap: "Hartă", dockFaze: "Faze", dockTop: "Top", dockMe: "Eu",
+        addSpot: "Adaugă spot",
+        legal: "Alcoolul dăunează grav sănătății. Consumați responsabil.",
+      };
   return (
     <main className="relative min-h-[100svh] mx-auto max-w-md flex flex-col overflow-hidden bg-[#050510] text-white">
 
@@ -92,7 +142,7 @@ function Index() {
           <div>
             <h1 className="text-sm font-extrabold tracking-widest uppercase">Oxidații</h1>
             <p className="font-mono text-[10px] text-orange-500/80 font-medium uppercase tracking-tight">
-              1.2k Online Now
+              {t.onlineNow}
             </p>
           </div>
         </div>
@@ -120,7 +170,7 @@ function Index() {
           <div className="flex items-center gap-2 mb-3">
             <Languages className="w-3.5 h-3.5 text-orange-400" />
             <span className="font-mono text-[10px] font-black tracking-[0.2em] text-orange-400 uppercase">
-              {lang === "en" ? "Pick your language" : "Alege limba"}
+              {t.pickLang}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -155,33 +205,33 @@ function Index() {
           <div className="absolute top-0 right-0 w-40 h-40 bg-orange-600/30 blur-3xl pointer-events-none" />
           <div className="inline-block px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 mb-4">
             <span className="font-mono text-[10px] font-bold tracking-widest text-orange-400 uppercase">
-              Sezonul Șprițului • 2026
+              {t.season}
             </span>
           </div>
           <h2 className="font-display text-[clamp(2.6rem,12vw,3.5rem)] font-extrabold leading-[0.85] tracking-tighter mb-4 uppercase">
-            Hai la
+            {t.heroLine1}
             <br />
             <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">
-              Șpriț
+              {t.heroWord}
             </span>
           </h2>
           <p className="text-sm text-white/60 leading-relaxed mb-7 max-w-[260px]">
-            Unde se bea șpriț <span className="text-white font-bold">acum</span>. Cu cine. Și cine-i{" "}
-            <span className="text-orange-400">rege la masă</span>.
+            {t.heroDesc1}<span className="text-white font-bold">{t.heroDescNow}</span>{t.heroDesc2}
+            <span className="text-orange-400">{t.heroDescKing}</span>{t.heroDesc3}
           </p>
           <div className="space-y-3">
             <Link
               to="/signup"
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 font-extrabold text-sm uppercase tracking-widest shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 group active:scale-[0.98] transition text-white"
             >
-              Intră în haos
+              {t.ctaJoin}
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
               to="/login"
               className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 font-bold text-xs uppercase tracking-widest text-white/70 flex items-center justify-center active:scale-[0.98] transition"
             >
-              Am cont
+              {t.ctaHave}
             </Link>
           </div>
         </div>
@@ -191,37 +241,37 @@ function Index() {
       <section className="relative z-10 px-4 mb-8">
         <div className="flex justify-between items-center mb-4 px-2">
           <span className="font-mono text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase">
-            Ce găsești în app
+            {t.featuresLabel}
           </span>
-          <span className="font-mono text-[10px] text-orange-500/60">4 ZONE</span>
+          <span className="font-mono text-[10px] text-orange-500/60">{t.zones}</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Tile
             to="/app/map"
             icon={<MapPin className="w-5 h-5" />}
-            label="Hartă"
-            sub="Locuri Live"
+            label={t.tMap}
+            sub={t.tMapSub}
             tone="orange"
           />
           <Tile
             to="/app/faze"
             icon={<Flame className="w-5 h-5" />}
-            label="Faze"
-            sub="Postează seara"
+            label={t.tFaze}
+            sub={t.tFazeSub}
             tone="pink"
           />
           <Tile
             to="/app/top"
             icon={<Trophy className="w-5 h-5" />}
-            label="Top"
-            sub="Clasament zeu"
+            label={t.tTop}
+            sub={t.tTopSub}
             tone="amber"
           />
           <Tile
             to="/app/squad"
             icon={<Users className="w-5 h-5" />}
-            label="Haita"
-            sub="Oxidații tăi"
+            label={t.tSquad}
+            sub={t.tSquadSub}
             tone="purple"
           />
         </div>
@@ -239,14 +289,14 @@ function Index() {
             <div className="flex items-center gap-2">
               <Beer className="w-4 h-4 text-orange-400" />
               <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em]">
-                Se bea acum
+                {t.liveTitle}
               </span>
             </div>
             <Link
               to="/app"
               className="font-mono text-[10px] font-bold text-orange-400 uppercase tracking-widest flex items-center gap-1"
             >
-              Vezi tot <ChevronRight className="w-3 h-3" />
+              {t.seeAll} <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
           <ul className="space-y-4 font-mono">
@@ -274,22 +324,22 @@ function Index() {
       {/* Bottom Dock */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-30 w-full max-w-md p-4 bg-gradient-to-t from-[#050510] via-[#050510]/90 to-transparent pointer-events-none">
         <nav className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-between px-5 py-2.5 pointer-events-auto">
-          <DockItem to="/app" icon={<MapPin className="w-5 h-5" />} label="Hartă" />
-          <DockItem to="/app/faze" icon={<Flame className="w-5 h-5" />} label="Faze" />
+          <DockItem to="/app" icon={<MapPin className="w-5 h-5" />} label={t.dockMap} />
+          <DockItem to="/app/faze" icon={<Flame className="w-5 h-5" />} label={t.dockFaze} />
           <div className="-mt-10">
             <Link
               to="/signup"
-              aria-label="Adaugă spot"
+              aria-label={t.addSpot}
               className="w-14 h-14 rounded-full bg-gradient-to-tr from-orange-500 to-pink-600 flex items-center justify-center shadow-xl shadow-orange-500/40 border-4 border-[#050510] active:scale-95 transition"
             >
               <Plus className="w-7 h-7 text-white" />
             </Link>
           </div>
-          <DockItem to="/app/top" icon={<Trophy className="w-5 h-5" />} label="Top" />
-          <DockItem to="/login" icon={<Users className="w-5 h-5" />} label="Eu" />
+          <DockItem to="/app/top" icon={<Trophy className="w-5 h-5" />} label={t.dockTop} />
+          <DockItem to="/login" icon={<Users className="w-5 h-5" />} label={t.dockMe} />
         </nav>
         <p className="text-center font-mono text-[8px] text-white/20 uppercase tracking-[0.2em] mt-3">
-          Alcoolul dăunează grav sănătății. Consumați responsabil.
+          {t.legal}
         </p>
       </div>
 
