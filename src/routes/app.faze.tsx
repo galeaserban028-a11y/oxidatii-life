@@ -208,7 +208,8 @@ function FazePage() {
         .select("requester_id,addressee_id,status")
         .eq("status", "accepted")
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
-      return (rows ?? []).map((r: any) =>
+      type FR = { requester_id: string; addressee_id: string; status: string };
+      return ((rows ?? []) as FR[]).map((r) =>
         r.requester_id === user.id ? r.addressee_id : r.requester_id,
       );
     },
