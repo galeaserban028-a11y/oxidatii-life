@@ -9,6 +9,7 @@ import { ReportDialog } from "@/components/app/ReportDialog";
 import { CheckInShareSheet } from "@/components/app/CheckInShareSheet";
 import { toast } from "sonner";
 import { evalOpenNow, normalizeHours, formatSlot, DAY_KEYS, DAY_LABELS } from "@/lib/openingHours";
+import { errorMessage } from "@/lib/errors";
 
 
 export const Route = createFileRoute("/app/venue/$id")({
@@ -139,8 +140,8 @@ function VenuePage() {
       if (insErr) throw insErr;
       await qc.invalidateQueries({ queryKey: ["venue", id] });
       toast.success(isVideo ? "Clip adăugat" : "Poză adăugată");
-    } catch (e: any) {
-      toast.error(e.message ?? "Nu s-a putut încărca");
+    } catch (e) {
+      toast.error(errorMessage(e, "Nu s-a putut încărca"));
     } finally {
       setUploading(false);
     }

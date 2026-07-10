@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Rocket, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { errorMessage } from "@/lib/errors";
 
 /**
  * Profile Boost claim card — Pro/Elite get a 24h Discover boost once per 7 days.
@@ -37,8 +38,8 @@ export function ProfileBoostCard() {
       }
       toast.success("Boost activ 24h — ești featured pe Discover.");
       await refreshProfile();
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare"));
     } finally {
       setLoading(false);
     }

@@ -53,6 +53,7 @@ import { AvatarFrame } from "@/components/app/AvatarFrame";
 import { StreakHero } from "@/components/app/StreakHero";
 import { StreakFlexSheet, streakMilestoneReached, readSeenMilestone, writeSeenMilestone } from "@/components/app/StreakFlexSheet";
 import { repairInstalledPwa } from "@/lib/pwa";
+import { errorMessage } from "@/lib/errors";
 
 export const Route = createFileRoute("/app/me")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -118,8 +119,8 @@ function MePage() {
       toast.success("Șters");
       queryClient.invalidateQueries({ queryKey: ["my-moments", user.id] });
       queryClient.invalidateQueries({ queryKey: ["my-reposts", user.id] });
-    } catch (e: any) {
-      toast.error(e.message ?? "Nu s-a putut șterge");
+    } catch (e) {
+      toast.error(errorMessage(e, "Nu s-a putut șterge"));
     } finally {
       setDeleting(null);
     }
@@ -159,7 +160,7 @@ function MePage() {
       try {
         await navigator.share({ title, text, url });
         return;
-      } catch (e: any) {
+      } catch (e) {
         // AbortError = user cancelled; anything else falls through to clipboard
         if (e?.name === "AbortError") return;
       }
@@ -213,8 +214,8 @@ function MePage() {
       await refreshProfile();
       toast.success("Profil actualizat");
       setEditOpen(false);
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare"));
     } finally {
       setSavingProfile(false);
     }
@@ -238,8 +239,8 @@ function MePage() {
       if (profErr) throw profErr;
       await refreshProfile();
       toast.success("Poză actualizată");
-    } catch (e: any) {
-      toast.error(e.message ?? "Nu s-a putut încărca");
+    } catch (e) {
+      toast.error(errorMessage(e, "Nu s-a putut încărca"));
     } finally {
       setUploading(false);
     }
@@ -257,8 +258,8 @@ function MePage() {
       if (error) throw error;
       await refreshProfile();
       toast.success(next ? "Cont public" : "Cont privat");
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare"));
     } finally {
       setSavingPrivacy(false);
     }

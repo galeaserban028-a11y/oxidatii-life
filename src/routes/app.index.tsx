@@ -471,7 +471,7 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
       toast.success("Postare ștearsă");
       queryClient.invalidateQueries({ queryKey: ["app-feed"] });
       queryClient.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
-    } catch (e: any) {
+    } catch (e) {
       toast.error(e?.message ?? "Nu s-a putut șterge");
     } finally {
       setDeleting(false);

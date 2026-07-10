@@ -173,7 +173,7 @@ export function TipCreatorButton({
       qc.invalidateQueries({ queryKey: ["my-coin-balance"] });
       qc.invalidateQueries({ queryKey: ["creator-earnings", recipientId] });
       qc.invalidateQueries({ queryKey: ["wallet-ledger"] });
-    } catch (e: any) {
+    } catch (e) {
       const m = mapError(e?.message || "");
       setErrorMsg(m);
       toast.error(m);

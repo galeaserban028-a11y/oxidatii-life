@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { moderateMedia, moderateText } from "@/lib/moderation.functions";
 import { archivo, hind, SHEET_BOTTOM } from "./shared";
+import { errorMessage } from "@/lib/errors";
 
 export function UploadSheet({ onClose }: { onClose: () => void }) {
   const { user } = useAuth();
@@ -92,8 +93,8 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
       qc.invalidateQueries({ queryKey: ["faze"] });
       qc.invalidateQueries({ queryKey: ["app-feed"] });
       onClose();
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare la upload");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare la upload"));
     } finally {
       setUploading(false);
     }

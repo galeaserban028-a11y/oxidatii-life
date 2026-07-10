@@ -112,7 +112,7 @@ export function NotificationSettings() {
       const res = await runTest({});
       if (res.sent > 0) setTestMsg("Trimis! Verifică notificarea.");
       else setTestMsg("Niciun dispozitiv abonat. Activează push mai întâi.");
-    } catch (e: any) {
+    } catch (e) {
       setTestMsg(e?.message ?? "Eroare la trimitere.");
     } finally {
       setBusy(false);

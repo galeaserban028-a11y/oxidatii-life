@@ -609,7 +609,7 @@ function StoryUploadSheet({
       if (insErr) throw insErr;
       toast.success("Story-ul tău e live 24h.");
       onUploaded();
-    } catch (e: any) {
+    } catch (e) {
       toast.error(e?.message ?? "Eroare la upload");
     } finally {
       setUploading(false);

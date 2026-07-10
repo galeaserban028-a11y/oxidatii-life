@@ -6,6 +6,7 @@ import { Lock } from "lucide-react";
 import { Music, Image as ImageIcon, Palette, Trash2, Loader2, Check } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
+import { errorMessage } from "@/lib/errors";
 
 /**
  * Premium customization: profile theme (VIP+), music clip (Pro+), animated bg (Pro+).
@@ -75,8 +76,8 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
       if (error) throw error;
       toast.success(`${kind} actualizat`);
       refreshProfile();
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare"));
     } finally {
       setBusy(null);
     }

@@ -544,7 +544,7 @@ function PostModal({
       if (target === "video") setVideoUrl(pub.publicUrl);
       else setImageUrl(pub.publicUrl);
       toast.success(target === "video" ? "Video încărcat" : "Imagine încărcată");
-    } catch (e: any) {
+    } catch (e) {
       toast.error(e?.message || "Eroare la încărcare");
     } finally {
       setUploading(false);

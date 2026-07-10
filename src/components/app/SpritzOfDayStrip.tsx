@@ -160,7 +160,7 @@ function SpritzViewer({
       queryClient.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
       queryClient.invalidateQueries({ queryKey: ["app-feed"] });
       onClose();
-    } catch (e: any) {
+    } catch (e) {
       toast.error(e?.message ?? "Nu s-a putut șterge");
     } finally {
       setDeleting(false);

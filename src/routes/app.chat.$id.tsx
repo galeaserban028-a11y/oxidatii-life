@@ -373,7 +373,7 @@ function ChatPage() {
       notifyChatMessage({ data: { conversationId: id, preview: body.slice(0, 80) } }).catch(
         () => {},
       );
-    } catch (e: any) {
+    } catch (e) {
       const { prettifyAntiSpamError } = await import("@/lib/antispam");
       alert(prettifyAntiSpamError(e) || "nu am putut trimite");
     } finally {
@@ -903,7 +903,7 @@ function Composer({
       setRecording(true);
       setRecMs(0);
       tickRef.current = window.setInterval(() => setRecMs(Date.now() - startRef.current), 100);
-    } catch (e: any) {
+    } catch (e) {
       alert("Nu pot accesa microfonul: " + (e?.message ?? "permisiune refuzată"));
     }
   };

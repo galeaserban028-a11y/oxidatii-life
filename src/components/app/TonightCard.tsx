@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { MapPin, X, Users, Plus, Heart, MessageCircle } from "lucide-react";
 import VenueNightChat from "./VenueNightChat";
+import { errorMessage } from "@/lib/errors";
 
 function localDateBuc(): string {
   // YYYY-MM-DD in Bucharest tz
@@ -228,8 +229,8 @@ export default function TonightCard() {
         .select("user_id", { count: "exact", head: true })
         .eq("intent_date", today);
       setCount(c ?? 0);
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare"));
     } finally {
       setJoining(null);
     }
@@ -279,8 +280,8 @@ export default function TonightCard() {
         .eq("intent_date", today);
       setCount(c ?? 0);
       await refreshHotVenues();
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare"));
     } finally {
       setSaving(false);
     }
