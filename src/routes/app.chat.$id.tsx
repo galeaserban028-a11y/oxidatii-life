@@ -195,7 +195,9 @@ function ChatPage() {
       .update({ last_read_at: new Date().toISOString() })
       .eq("conversation_id", id)
       .eq("user_id", user.id)
-      .then(() => {});
+      .then(({ error }) => {
+        if (error) console.error("mark-as-read failed", error);
+      });
   }, [id, user, data?.messages.length]);
 
   // Realtime new messages
