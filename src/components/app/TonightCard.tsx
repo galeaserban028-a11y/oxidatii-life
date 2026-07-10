@@ -83,15 +83,19 @@ export default function TonightCard() {
         supabase.rpc("count_intents_for_date", { _date: today }),
       ]);
       if (cancel) return;
-      setMyIntent((mineRes.data as any) ?? null);
+      type IntentRow = {
+        id: string;
+        venue_id: string | null;
+        note: string | null;
+        venue?: { name: string } | null;
+      };
+      const mine = (mineRes.data as IntentRow | null) ?? null;
+      setMyIntent(mine);
       setCount(((countRes.data as number | null) ?? 0) as number);
-      if (mineRes.data) {
-        setNote((mineRes.data as any).note ?? "");
-        if ((mineRes.data as any).venue?.name) {
-          setPickedVenue({
-            id: (mineRes.data as any).venue_id,
-            name: (mineRes.data as any).venue.name,
-          });
+      if (mine) {
+        setNote(mine.note ?? "");
+        if (mine.venue?.name && mine.venue_id) {
+          setPickedVenue({ id: mine.venue_id, name: mine.venue.name });
         }
       }
     })();
