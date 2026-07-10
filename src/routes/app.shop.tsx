@@ -25,6 +25,24 @@ export const Route = createFileRoute("/app/shop")({
 
 type Tab = "boost" | "frames" | "gifts" | "party";
 
+type Frame = {
+  id: string;
+  name: string;
+  price_coins: number | null;
+  emoji?: string | null;
+};
+
+type Gift = {
+  id: string;
+  name: string;
+  emoji: string | null;
+  price_coins: number;
+};
+
+type Party = { id: string; title: string; expires_at: string };
+
+type RpcBalance = { balance?: number } | null;
+
 const drink = (n: number) => `${n} ${n === 1 ? "șpriț" : "șprițuri"}`;
 
 type Confirm = {
