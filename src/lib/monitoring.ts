@@ -83,6 +83,7 @@ export function initMonitoring() {
   // Both must be present or this block is a no-op.
   const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
   if (dsn) {
+    // @ts-expect-error — optional peer dep; install with `bun add @sentry/browser` to enable.
     import("@sentry/browser")
       .then((Sentry) => {
         Sentry.init({
