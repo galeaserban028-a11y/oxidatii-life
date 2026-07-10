@@ -125,7 +125,7 @@ export default function TonightCard() {
       const { data } = await supabase
         .from("venues")
         .select("id, name")
-        .eq("city_id", profile.city_id)
+        .eq("city_id", cityId)
         .order("created_at", { ascending: false })
         .limit(8);
       if (!cancel)
