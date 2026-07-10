@@ -707,19 +707,22 @@ function NewMessageSheet({
           .eq("follower_id", user!.id)
           .eq("status", "accepted"),
       ]);
+      type FR = { requester_id: string; addressee_id: string; status: string };
+      type FollowR = { following_id: string };
+      type Prof = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
       const friendIds = new Set(
-        (friendRows ?? []).map((r: any) =>
+        ((friendRows ?? []) as FR[]).map((r) =>
           r.requester_id === user!.id ? r.addressee_id : r.requester_id,
         ),
       );
-      const followIds = new Set((followRows ?? []).map((r: any) => r.following_id));
+      const followIds = new Set(((followRows ?? []) as FollowR[]).map((r) => r.following_id));
       const allIds = Array.from(new Set([...friendIds, ...followIds]));
       if (!allIds.length) return [];
       const { data: profs } = await supabase
         .from("profiles")
         .select("id,handle,display_name,avatar_url")
         .in("id", allIds);
-      return (profs ?? []).map((p: any) => ({
+      return ((profs ?? []) as Prof[]).map((p) => ({
         ...p,
         isFriend: friendIds.has(p.id),
         isFollowing: followIds.has(p.id),
