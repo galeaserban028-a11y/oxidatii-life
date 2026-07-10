@@ -1221,7 +1221,7 @@ function MenuItem({
 }) {
   return (
     <Link
-      to={to as any}
+      to={to as never}
       onClick={onSelect}
       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition"
     >
