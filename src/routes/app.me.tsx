@@ -1040,8 +1040,9 @@ function MePage() {
                 _kind: "photo" | "proof";
                 photo_url?: string | null;
                 media_type?: string | null;
+                caption?: string | null;
                 venue?: { id?: string; name?: string } | null;
-              } & Record<string, unknown>>).map((m) => {
+              }>).map((m) => {
                 const isProof = m._kind === "proof";
                 const key = `${m._kind}-${m.id}`;
                 const url: string = m.photo_url ?? "";
