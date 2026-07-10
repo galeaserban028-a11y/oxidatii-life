@@ -94,15 +94,21 @@ function Onboarding() {
     if (!user) return;
     if (!/^[a-z0-9_\.]{3,24}$/.test(handle)) return toast.error("Handle: 3-24 chars, a-z 0-9 _ .");
     if (!cityId) return toast.error("Alege orașul");
+    if (!hasDob) {
+      if (!dob) return toast.error("Pune data nașterii");
+      if (ageFromDOB(dob) < 18) return toast.error("Trebuie să ai cel puțin 18 ani.");
+    }
     setBusy(true);
+    const update: Record<string, unknown> = {
+      handle,
+      city_id: cityId,
+      location_consent: locOk,
+      onboarded: true,
+    };
+    if (!hasDob && dob) update.birthdate = dob;
     const { error } = await supabase
       .from("profiles")
-      .update({
-        handle,
-        city_id: cityId,
-        location_consent: locOk,
-        onboarded: true,
-      })
+      .update(update as any)
       .eq("id", user.id);
     setBusy(false);
     if (error) return toast.error(error.message);
