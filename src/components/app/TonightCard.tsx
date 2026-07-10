@@ -205,11 +205,11 @@ export default function TonightCard() {
     if (pickedVenue) return pickedVenue;
     const name = venueQuery.trim();
     if (!name) return null;
-    const cityId = (profile as any)?.city_id;
+    const cityId = profile?.city_id;
     if (!cityId) throw new Error("Alege orașul din profil înainte să adaugi locul");
     const { data, error } = await supabase
       .from("venues")
-      .insert({ city_id: cityId, name, slug: slugifyVenueName(name) } as any)
+      .insert({ city_id: cityId, name, slug: slugifyVenueName(name) })
       .select("id, name")
       .single();
     if (error) throw error;
