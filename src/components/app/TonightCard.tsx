@@ -118,7 +118,8 @@ export default function TonightCard() {
   }, [user?.id, today]);
 
   useEffect(() => {
-    if (!user || !profile?.city_id) return;
+    const cityId = profile?.city_id;
+    if (!user || !cityId) return;
     let cancel = false;
     (async () => {
       const { data } = await supabase
