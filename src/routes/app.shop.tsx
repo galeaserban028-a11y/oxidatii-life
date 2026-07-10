@@ -87,7 +87,7 @@ function ShopPage() {
         .from("user_frames")
         .select("frame_id")
         .eq("user_id", user!.id);
-      return new Set((data ?? []).map((r: any) => r.frame_id));
+      return new Set((data ?? []).map((r: { frame_id: string }) => r.frame_id));
     },
   });
 
@@ -121,7 +121,7 @@ function ShopPage() {
     try {
       const { data, error } = await supabase.rpc("buy_boost", { _kind: "profile" });
       if (error) throw error;
-      const newBal = (data as any)?.balance ?? 0;
+      const newBal = (data as RpcBalance)?.balance ?? 0;
       toast.success(`Profil boostat 24h! Mai ai ${drink(newBal)}`);
       await refreshProfile();
       qc.invalidateQueries({ queryKey: ["discover-suggestions"] });
@@ -141,7 +141,7 @@ function ShopPage() {
         _target_id: partyId,
       });
       if (error) throw error;
-      const newBal = (data as any)?.balance ?? 0;
+      const newBal = (data as RpcBalance)?.balance ?? 0;
       toast.success(`Petrecere boostată 12h! Mai ai ${drink(newBal)}`);
       await refreshProfile();
     } catch (e) {
@@ -151,13 +151,13 @@ function ShopPage() {
     }
   }
 
-  async function doBuyFrame(frame: any) {
+  async function doBuyFrame(frame: Frame) {
     if (!user) return;
     setBusy(`frame-${frame.id}`);
     try {
       const { data, error } = await supabase.rpc("buy_frame", { _frame_id: frame.id });
       if (error) throw error;
-      const newBal = (data as any)?.balance ?? 0;
+      const newBal = (data as RpcBalance)?.balance ?? 0;
       toast.success(`Ai luat „${frame.name}" și e activă pe profil! Mai ai ${drink(newBal)}`);
       await refreshProfile();
       qc.invalidateQueries({ queryKey: ["owned-frames", user.id] });
@@ -169,7 +169,7 @@ function ShopPage() {
     }
   }
 
-  async function activateFrame(frame: any) {
+  async function activateFrame(frame: Frame) {
     if (!user) return;
     const { error } = await supabase
       .from("profiles")
@@ -199,7 +199,7 @@ function ShopPage() {
       onConfirm: doBuyProfileBoost,
     });
   }
-  function askPartyBoost(p: any) {
+  function askPartyBoost(p: Party) {
     if (balance < 15) return notEnough(15);
     ask({
       title: `Boost petrecere · ${p.title}`,
@@ -209,7 +209,7 @@ function ShopPage() {
       onConfirm: () => doBuyPartyBoost(p.id),
     });
   }
-  function askFrame(frame: any) {
+  function askFrame(frame: Frame) {
     if (ownedFrames?.has(frame.id)) {
       activateFrame(frame);
       return;
@@ -319,7 +319,7 @@ function ShopPage() {
 
       {tab === "frames" && (
         <div className="grid grid-cols-2 gap-3">
-          {(frames ?? []).map((f: any) => {
+          {(frames ?? []).map((f: Frame) => {
             const owned = ownedFrames?.has(f.id);
             const active = profile?.active_frame_id === f.id;
             const meta = FRAME_STYLES[f.id];
@@ -412,7 +412,7 @@ function ShopPage() {
             Trimite un cadou într-o conversație din butonul 🎁. Catalog & prețuri:
           </p>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-            {(gifts ?? []).map((g: any) => (
+            {(gifts ?? []).map((g: Gift) => (
               <div
                 key={g.id}
                 className="rounded-xl border border-white/10 bg-white/5 p-3 text-center"
