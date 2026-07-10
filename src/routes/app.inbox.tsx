@@ -651,7 +651,7 @@ function ConversationRow({
             <span
               className={`text-[10px] font-bold shrink-0 tabular-nums uppercase ${conv.unread ? "text-lime-400" : "text-zinc-600"}`}
             >
-              {timeAgo(conv.last?.created_at ?? conv.last_message_at)}
+              {timeAgo(conv.last?.created_at ?? conv.last_message_at ?? undefined)}
             </span>
           </div>
           <p
