@@ -170,7 +170,7 @@ function Index() {
           <div className="flex items-center gap-2 mb-3">
             <Languages className="w-3.5 h-3.5 text-orange-400" />
             <span className="font-mono text-[10px] font-black tracking-[0.2em] text-orange-400 uppercase">
-              {lang === "en" ? "Pick your language" : "Alege limba"}
+              {t.pickLang}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2">
