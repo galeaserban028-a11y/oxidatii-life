@@ -299,6 +299,35 @@ function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+function cleanVenueName(name: unknown) {
+  const cleaned = String(name ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (cleaned.length < 2) return null;
+  if (/^(?::\/\/|about:?\s*blank|undefined|null)/i.test(cleaned)) return null;
+  return cleaned;
+}
+
+function normalizeMapVenues(rows: Venue[]) {
+  const normalized: Venue[] = [];
+  for (const v of rows) {
+    const name = cleanVenueName(v.name);
+    const lat = v.lat === null ? null : Number(v.lat);
+    const lng = v.lng === null ? null : Number(v.lng);
+    if (!name || lat === null || lng === null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+      continue;
+    }
+    normalized.push({
+      ...v,
+      name,
+      lat,
+      lng,
+      address: v.address?.replace(/\s+/g, " ").trim() || null,
+    });
+  }
+  return normalized;
+}
+
 function MapPage() {
   const { user, profile, refreshProfile } = useAuth();
   const search = Route.useSearch();
@@ -366,11 +395,7 @@ function MapPage() {
         if (batch.length < step) break;
         from += step;
       }
-      return all.map((v) => ({
-        ...v,
-        lat: v.lat === null ? null : Number(v.lat),
-        lng: v.lng === null ? null : Number(v.lng),
-      }));
+      return normalizeMapVenues(all);
     },
   });
 

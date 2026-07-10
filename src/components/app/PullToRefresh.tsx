@@ -73,6 +73,12 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
   useEffect(() => {
     const onTouchStart = (e: TouchEvent) => {
       if (refreshingRef.current) return;
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('[data-no-pull-refresh], .maplibregl-map, .maplibregl-control-container')) {
+        startY.current = null;
+        active.current = false;
+        return;
+      }
       if (window.scrollY > 2) {
         startY.current = null;
         return;
