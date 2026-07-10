@@ -1585,7 +1585,11 @@ export function RomaniaMap3D({
   }, [mePin]);
 
   return (
-    <div className="relative w-full h-[54vh] min-h-[400px] max-h-[560px] overflow-hidden bg-[#0d0b1e]">
+    <div
+      data-no-pull-refresh
+      data-no-swipe
+      className="relative w-full h-[54vh] min-h-[400px] max-h-[560px] overflow-hidden bg-[#0d0b1e]"
+    >
       <style>{`
         @keyframes oxi-pulse-strong { 0% { transform: translateX(-50%) scale(0.6); opacity: 0.7; } 80% { transform: translateX(-50%) scale(1.5); opacity: 0; } 100% { opacity: 0; } }
         @keyframes oxi-scan { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }

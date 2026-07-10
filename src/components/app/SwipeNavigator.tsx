@@ -26,6 +26,7 @@ export function SwipeNavigator({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const ref = useRef<HTMLDivElement | null>(null);
+  const swipeDisabled = DISABLED_PREFIXES.some((d) => pathname === d || pathname.startsWith(d));
 
   // Re-read latest pathname inside listeners without rebinding them.
   const pathRef = useRef(pathname);
@@ -108,7 +109,7 @@ export function SwipeNavigator({ children }: { children: ReactNode }) {
   }, [navigate]);
 
   return (
-    <div ref={ref} style={{ touchAction: "pan-y" }}>
+    <div ref={ref} style={{ touchAction: swipeDisabled ? "auto" : "pan-y" }}>
       {children}
     </div>
   );
