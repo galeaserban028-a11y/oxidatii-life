@@ -6,8 +6,8 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Rocket, Crown, Gift, PartyPopper, ArrowLeft, Check, Loader2, Beer, Sparkles } from "lucide-react";
 import { AvatarFrame, FRAME_STYLES, TIER_LABEL } from "@/components/app/AvatarFrame";
-import {
 import { errorMessage } from "@/lib/errors";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
