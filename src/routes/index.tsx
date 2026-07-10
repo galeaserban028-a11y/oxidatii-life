@@ -324,22 +324,22 @@ function Index() {
       {/* Bottom Dock */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-30 w-full max-w-md p-4 bg-gradient-to-t from-[#050510] via-[#050510]/90 to-transparent pointer-events-none">
         <nav className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-between px-5 py-2.5 pointer-events-auto">
-          <DockItem to="/app" icon={<MapPin className="w-5 h-5" />} label="Hartă" />
-          <DockItem to="/app/faze" icon={<Flame className="w-5 h-5" />} label="Faze" />
+          <DockItem to="/app" icon={<MapPin className="w-5 h-5" />} label={t.dockMap} />
+          <DockItem to="/app/faze" icon={<Flame className="w-5 h-5" />} label={t.dockFaze} />
           <div className="-mt-10">
             <Link
               to="/signup"
-              aria-label="Adaugă spot"
+              aria-label={t.addSpot}
               className="w-14 h-14 rounded-full bg-gradient-to-tr from-orange-500 to-pink-600 flex items-center justify-center shadow-xl shadow-orange-500/40 border-4 border-[#050510] active:scale-95 transition"
             >
               <Plus className="w-7 h-7 text-white" />
             </Link>
           </div>
-          <DockItem to="/app/top" icon={<Trophy className="w-5 h-5" />} label="Top" />
-          <DockItem to="/login" icon={<Users className="w-5 h-5" />} label="Eu" />
+          <DockItem to="/app/top" icon={<Trophy className="w-5 h-5" />} label={t.dockTop} />
+          <DockItem to="/login" icon={<Users className="w-5 h-5" />} label={t.dockMe} />
         </nav>
         <p className="text-center font-mono text-[8px] text-white/20 uppercase tracking-[0.2em] mt-3">
-          Alcoolul dăunează grav sănătății. Consumați responsabil.
+          {t.legal}
         </p>
       </div>
 
