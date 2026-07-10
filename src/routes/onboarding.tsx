@@ -4,6 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
+import { BirthdatePicker } from "@/components/BirthdatePicker";
+
+function ageFromDOB(dob: string): number {
+  const d = new Date(dob);
+  if (isNaN(d.getTime())) return -1;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age;
+}
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Onboarding · OXIDAȚII" }] }),
@@ -19,6 +30,8 @@ function Onboarding() {
   const [cityId, setCityId] = useState("");
   const [locOk, setLocOk] = useState(false);
   const [refCode, setRefCode] = useState("");
+  const [dob, setDob] = useState("");
+  const [hasDob, setHasDob] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -42,17 +55,26 @@ function Onboarding() {
       .then(({ data }) => {
         if (data) setCities(data);
       });
-    // Persist birthdate captured at Google signup (sessionStorage)
+    // Check if birthdate is already set (from prior signup) or pending in sessionStorage.
     (async () => {
+      if (!user) return;
       try {
-        const dob = sessionStorage.getItem("pending_birthdate");
-        if (dob && user) {
+        const pending = sessionStorage.getItem("pending_birthdate");
+        if (pending) {
           await supabase
             .from("profiles")
-            .update({ birthdate: dob } as any)
+            .update({ birthdate: pending } as any)
             .eq("id", user.id);
           sessionStorage.removeItem("pending_birthdate");
+          setHasDob(true);
+          return;
         }
+        const { data } = await supabase
+          .from("profiles")
+          .select("birthdate")
+          .eq("id", user.id)
+          .maybeSingle();
+        setHasDob(!!(data as any)?.birthdate);
       } catch {}
     })();
   }, [user]);
@@ -72,15 +94,21 @@ function Onboarding() {
     if (!user) return;
     if (!/^[a-z0-9_\.]{3,24}$/.test(handle)) return toast.error("Handle: 3-24 chars, a-z 0-9 _ .");
     if (!cityId) return toast.error("Alege orașul");
+    if (!hasDob) {
+      if (!dob) return toast.error("Pune data nașterii");
+      if (ageFromDOB(dob) < 18) return toast.error("Trebuie să ai cel puțin 18 ani.");
+    }
     setBusy(true);
+    const update: Record<string, unknown> = {
+      handle,
+      city_id: cityId,
+      location_consent: locOk,
+      onboarded: true,
+    };
+    if (!hasDob && dob) update.birthdate = dob;
     const { error } = await supabase
       .from("profiles")
-      .update({
-        handle,
-        city_id: cityId,
-        location_consent: locOk,
-        onboarded: true,
-      })
+      .update(update as any)
       .eq("id", user.id);
     setBusy(false);
     if (error) return toast.error(error.message);
@@ -105,7 +133,7 @@ function Onboarding() {
     <main className="min-h-screen bg-background text-foreground px-6 py-10">
       <div className="flex items-center justify-between mb-4">
         <Link
-          to="/login"
+          to="/signup"
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
         >
           <ChevronLeft size={16} /> înapoi
@@ -154,6 +182,20 @@ function Onboarding() {
             ))}
           </select>
         </div>
+
+        {!hasDob && (
+          <div>
+            <label className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
+              Data nașterii <span className="text-foreground/40 normal-case tracking-normal">(18+)</span>
+            </label>
+            <div className="mt-2">
+              <BirthdatePicker value={dob} onChange={setDob} />
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Aplicația e doar pentru +18. Vârsta e verificată.
+            </p>
+          </div>
+        )}
 
         <div className="rounded-xl border border-foreground/10 p-4 space-y-3">
           <div className="flex items-center justify-between">
