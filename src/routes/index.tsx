@@ -7,6 +7,12 @@ import logoLight from "@/assets/logo-oxidatii-light.png";
 import { MapPin, Flame, Trophy, Users, Beer, Bell, Search, Plus, ChevronRight, Languages } from "lucide-react";
 import { OG_COVER_URL, SITE_URL } from "@/lib/og";
 
+const HERO_HOT_SPOTS = [
+  { city: "PITEȘTI", spot: "Terasa Trivale", n: 23 },
+  { city: "BUCUREȘTI", spot: "Energiei", n: 41 },
+  { city: "CLUJ", spot: "Strada Piezișă", n: 17 },
+] as const;
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
