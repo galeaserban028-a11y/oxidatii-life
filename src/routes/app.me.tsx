@@ -253,7 +253,7 @@ function MePage() {
       const next = !profile.is_public;
       const { error } = await supabase
         .from("profiles")
-        .update({ is_public: next } as any)
+        .update({ is_public: next })
         .eq("id", user.id);
       if (error) throw error;
       await refreshProfile();
