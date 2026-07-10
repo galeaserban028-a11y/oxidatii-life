@@ -47,6 +47,40 @@ import { AvatarFrame } from "@/components/app/AvatarFrame";
 import { TipCreatorButton, CreatorEarningsBadge } from "@/components/app/TipCreatorDialog";
 import { errorMessage } from "@/lib/errors";
 
+
+type ProfilePartial = {
+  id?: string;
+  handle?: string | null;
+  username?: string | null;
+  display_name?: string | null;
+  avatar_url?: string | null;
+  bio?: string | null;
+  is_public?: boolean | null;
+  active_frame_id?: string | null;
+  profile_theme_id?: string | null;
+  theme_intensity?: number | null;
+  music_clip_url?: string | null;
+  profile_bg_url?: string | null;
+  rank?: string | number | null;
+  aura?: number | null;
+  lifetime_sprits?: number | null;
+  current_streak?: number | null;
+  longest_streak?: number | null;
+  city?: { name?: string; slug?: string } | null;
+};
+
+type VenueLite = { id: string; name: string; city?: { name?: string } | null };
+type PhotoRow = {
+  id: string;
+  photo_url: string;
+  media_type?: string | null;
+  caption?: string | null;
+  taken_at?: string | null;
+  user_id?: string;
+  venue?: VenueLite | null;
+};
+type PremiumBadgeRow = Record<string, unknown>;
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const VIDEO_URL_RE = /\.(mp4|webm|mov|m4v)(\?.*)?$/i;
 
@@ -64,7 +98,7 @@ export const Route = createFileRoute("/app/user/$id")({
     return { profile: data };
   },
   head: ({ params, loaderData }) => {
-    const p: any = loaderData?.profile;
+    const p = (loaderData?.profile ?? {}) as ProfilePartial;
     const handle = p?.username ? `@${p.username}` : (p?.display_name ?? "Profil");
     const display = p?.display_name ?? p?.username ?? "Profil";
     const title = `${display} (${handle}) — OXIDAȚII`;
@@ -121,7 +155,7 @@ function UserPage() {
     },
   });
 
-  const profile = data?.profile as any;
+  const profile = data?.profile as ProfilePartial | null | undefined;
   const id = profile?.id ?? (isUuid ? slug : "");
   const isMe = !!user && !!id && user.id === id;
 
@@ -130,7 +164,7 @@ function UserPage() {
     enabled: !!id,
     queryFn: async () => {
       const { data } = await supabase.rpc("get_user_premium_badge", { _user_id: id });
-      const row = Array.isArray(data) ? (data[0] as any) : null;
+      const row = Array.isArray(data) ? ((data as PremiumBadgeRow[])[0] ?? null) : (data as PremiumBadgeRow | null);
       return row ?? null;
     },
   });
@@ -202,7 +236,7 @@ function UserPage() {
           "id, photo_url, media_type, caption, user_id, venue:venues(id, name, city:cities(name))",
         )
         .in("id", ids);
-      const map = new Map((pics ?? []).map((p: any) => [p.id, p]));
+      const map = new Map((pics as PhotoRow[] | null ?? []).map((p) => [p.id, p] as const));
       return (rep ?? [])
         .map((r) => ({ repostedAt: r.created_at, photo: map.get(r.photo_id) }))
         .filter((x) => x.photo);
@@ -211,7 +245,7 @@ function UserPage() {
 
   // Venue tally
   const venueCounts = new Map<string, { name: string; city?: string; count: number }>();
-  for (const p of photos as any[]) {
+  for (const p of photos as PhotoRow[]) {
     if (!p.venue) continue;
     const v = venueCounts.get(p.venue.id) ?? {
       name: p.venue.name,
@@ -230,7 +264,7 @@ function UserPage() {
   return (
     <div className="relative min-h-screen">
       {pageTheme && (
-        <ThemeAtmosphere theme={pageTheme} intensity={(profile as any)?.theme_intensity} />
+        <ThemeAtmosphere theme={pageTheme} intensity={profile?.theme_intensity ?? undefined} />
       )}
       {pageTheme && profile?.handle && (
         <SignatureReveal
@@ -568,7 +602,7 @@ function UserPage() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-3 gap-1.5">
-                      {(photos as any[]).map((p) => {
+                      {(photos as PhotoRow[]).map((p) => {
                         const isVideo = p.media_type === "video" || isVideoUrl(p.photo_url);
                         return (
                           <div
@@ -642,7 +676,7 @@ function UserPage() {
                       </span>
                     </h2>
                     <div className="grid grid-cols-3 gap-1.5">
-                      {reposts.map((r: any) => {
+                      {(reposts as { repostedAt: string; photo: PhotoRow }[]).map((r) => {
                         const isVideo =
                           r.photo.media_type === "video" || isVideoUrl(r.photo.photo_url);
                         return (
@@ -732,12 +766,12 @@ function UserPage() {
                   if (confirmBlock === "block") {
                     block.mutate(undefined, {
                       onSuccess: () => toast.success(`@${handle} a fost blocat`),
-                      onError: (e: any) => toast.error(errorMessage(e, "Eroare")),
+                      onError: (e: unknown) => toast.error(errorMessage(e, "Eroare")),
                     });
                   } else if (confirmBlock === "unblock") {
                     unblock.mutate(undefined, {
                       onSuccess: () => toast.success(`@${handle} a fost deblocat`),
-                      onError: (e: any) => toast.error(errorMessage(e, "Eroare")),
+                      onError: (e: unknown) => toast.error(errorMessage(e, "Eroare")),
                     });
                   }
                   setConfirmBlock(null);
