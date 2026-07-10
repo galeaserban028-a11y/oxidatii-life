@@ -55,10 +55,19 @@ async function loadFeed() {
 
   // De-dupe: a Șpriț post writes to both tables with same photo_url.
   // Prefer the sprit_proofs row (kind="proof") so it keeps its Live badge.
-  const proofUrls = new Set((proofs ?? []).map((p: any) => p.photo_url));
+  type PhotoRow = {
+    id: string;
+    photo_url: string;
+    media_type: string | null;
+    caption?: string | null;
+    created_at: string;
+    user_id: string;
+    venue_id: string | null;
+  };
+  const proofUrls = new Set(((proofs ?? []) as PhotoRow[]).map((p) => p.photo_url));
 
   const items: FeedItem[] = [
-    ...(proofs ?? []).map((p) => ({
+    ...((proofs ?? []) as PhotoRow[]).map((p) => ({
       id: `sp-${p.id}`,
       kind: "proof" as const,
       created_at: p.created_at,
@@ -68,9 +77,9 @@ async function loadFeed() {
       user_id: p.user_id,
       venue_id: p.venue_id,
     })),
-    ...(photos ?? [])
-      .filter((p: any) => !proofUrls.has(p.photo_url))
-      .map((p: any) => ({
+    ...((photos ?? []) as PhotoRow[])
+      .filter((p) => !proofUrls.has(p.photo_url))
+      .map((p) => ({
         id: `vp-${p.id}`,
         kind: "photo" as const,
         created_at: p.created_at,
@@ -87,23 +96,30 @@ async function loadFeed() {
     new Set(items.map((i) => i.venue_id).filter((v): v is string => !!v)),
   );
 
+  type ProfileLite = { id: string; handle: string | null; display_name: string | null; rank: string | null; avatar_url: string | null };
+  type VenueLite = { id: string; name: string; slug: string; address: string | null; city: { name: string; slug: string } | null };
+
   const [{ data: profilesData }, { data: venuesData }] = await Promise.all([
     userIds.length
       ? supabase
           .from("profiles")
           .select("id, handle, display_name, rank, avatar_url")
           .in("id", userIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as ProfileLite[] }),
     venueIds.length
       ? supabase
           .from("venues")
           .select("id, name, slug, address, city:cities(name, slug)")
           .in("id", venueIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as VenueLite[] }),
   ]);
 
-  const profilesMap = new Map((profilesData ?? []).map((p: any) => [p.id, p]));
-  const venuesMap = new Map((venuesData ?? []).map((v: any) => [v.id, v]));
+  const profilesMap = new Map<string, ProfileLite>(
+    ((profilesData ?? []) as ProfileLite[]).map((p) => [p.id, p]),
+  );
+  const venuesMap = new Map<string, VenueLite>(
+    ((venuesData ?? []) as VenueLite[]).map((v) => [v.id, v]),
+  );
 
   return { items, profilesMap, venuesMap };
 }
