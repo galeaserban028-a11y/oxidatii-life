@@ -310,7 +310,7 @@ function FriendsRow({ onPick }: { onPick: (id: string) => void }) {
   return (
     <div className="-mx-5 px-5 overflow-x-auto scrollbar-none">
       <div className="flex gap-4 pb-1">
-        {friends.slice(0, 20).map((f: any) => (
+        {friends.slice(0, 20).map((f) => (
           <button
             key={f.id}
             onClick={() => onPick(f.id)}
