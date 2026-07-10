@@ -78,6 +78,12 @@ async function loadReels(): Promise<Reel[]> {
     items = photos ?? [];
   }
   if (!items.length) return [];
+  // Reels = doar video. Filtrează pozele.
+  items = items.filter(
+    (p: any) =>
+      p.media_type === "video" || /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(p.photo_url ?? ""),
+  );
+  if (!items.length) return [];
   const userIds = Array.from(new Set(items.map((p) => p.user_id)));
   const venueIds = Array.from(new Set(items.map((p) => p.venue_id)));
   const [{ data: profiles }, { data: venues }] = await Promise.all([
