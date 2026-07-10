@@ -1,14 +1,17 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
-// Native build (App Store / Google Play): use local bundled assets from dist/client.
-// To dev against the live preview, set CAP_SERVER_URL env before running `cap sync`.
-const devServerUrl = process.env.CAP_SERVER_URL;
+// Capacitor wraps the LIVE published Lovable site — the app is TanStack Start SSR
+// on Cloudflare, so there is no static `index.html` to bundle offline. `webDir`
+// points to a tiny stub folder that only exists to satisfy `cap sync`; the real
+// UI is served from `server.url`. Override with CAP_SERVER_URL for local dev.
+const PUBLISHED_URL = "https://oxidatii.lovable.app";
+const devServerUrl = process.env.CAP_SERVER_URL ?? PUBLISHED_URL;
 
 const config: CapacitorConfig = {
   appId: "com.oxidatii.app",
   appName: "OXIDAȚII",
-  webDir: "dist/client",
-  ...(devServerUrl ? { server: { url: devServerUrl, cleartext: true } } : {}),
+  webDir: "capacitor-www",
+  server: { url: devServerUrl, cleartext: true },
   ios: {
     contentInset: "always",
     allowsLinkPreview: false,
