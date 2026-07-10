@@ -461,7 +461,18 @@ function MapPage() {
           tier: string;
         }
       > = {};
-      for (const c of (data ?? []) as any[]) {
+      type CampaignRow = {
+        id: string;
+        venue_id: string | null;
+        theme_color?: string | null;
+        image_urls?: string[] | null;
+        business_logo_url?: string | null;
+        business_cover_url?: string | null;
+        title?: string | null;
+        venue_name?: string | null;
+        business_brand_name?: string | null;
+      };
+      for (const c of (data ?? []) as CampaignRow[]) {
         const vid = c.venue_id;
         if (!vid) continue;
         if (map[vid]) continue;
