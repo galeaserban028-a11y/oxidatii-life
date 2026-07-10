@@ -87,7 +87,7 @@ function MePage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [editingPremium, setEditingPremium] = useState(false);
 
-  async function handleDelete(m: any) {
+  async function handleDelete(m: { id: string; _kind: "photo" | "proof" }) {
     if (!user) return;
     const label =
       tab === "reposts" ? "acest repost" : m._kind === "proof" ? "acest șpriț" : "această poză";
@@ -95,7 +95,7 @@ function MePage() {
     const key = `${m._kind}-${m.id}`;
     setDeleting(key);
     try {
-      let err: any = null;
+      let err: { message: string } | null = null;
       if (tab === "reposts") {
         ({ error: err } = await supabase
           .from("photo_reposts")
@@ -208,7 +208,7 @@ function MePage() {
           handle: h || null,
           display_name: editName.trim() || null,
           bio: editBio.trim() || null,
-        } as any)
+        })
         .eq("id", user.id);
       if (error) throw error;
       await refreshProfile();
@@ -253,7 +253,7 @@ function MePage() {
       const next = !profile.is_public;
       const { error } = await supabase
         .from("profiles")
-        .update({ is_public: next } as any)
+        .update({ is_public: next })
         .eq("id", user.id);
       if (error) throw error;
       await refreshProfile();
@@ -314,14 +314,15 @@ function MePage() {
         .from("venue_photos")
         .select("id, photo_url, caption, taken_at, venue:venues(id, name, city:cities(name))")
         .in("id", ids);
-      const map = new Map((pics ?? []).map((p: any) => [p.id, p]));
-      return (rep ?? [])
-        .map((r: any) => {
+      type PhotoRow = { id: string; photo_url: string; caption: string | null; taken_at: string; venue: unknown };
+      const map = new Map<string, PhotoRow>(((pics ?? []) as PhotoRow[]).map((p) => [p.id, p]));
+      return ((rep ?? []) as { photo_id: string; created_at: string }[])
+        .map((r) => {
           const photo = map.get(r.photo_id);
           if (!photo) return null;
           return { ...photo, _kind: "photo" as const, _date: r.created_at };
         })
-        .filter(Boolean) as any[];
+        .filter((v): v is PhotoRow & { _kind: "photo"; _date: string } => !!v);
     },
   });
 
@@ -355,12 +356,14 @@ function MePage() {
     );
   }
 
-  const verifiedProofs = (moments?.proofs ?? []).filter((p: any) => p.ai_verified);
-  const postsOnly = (moments?.photos ?? [])
-    .map((p: any) => ({ ...p, _kind: "photo" as const, _date: p.taken_at }))
+  type ProofRow = { id: string; photo_url: string; created_at: string; ai_verified: boolean | null; venue: unknown };
+  type PhotoRow2 = { id: string; photo_url: string; caption: string | null; taken_at: string; venue: unknown };
+  const verifiedProofs = ((moments?.proofs ?? []) as ProofRow[]).filter((p) => p.ai_verified);
+  const postsOnly = ((moments?.photos ?? []) as PhotoRow2[])
+    .map((p) => ({ ...p, _kind: "photo" as const, _date: p.taken_at }))
     .sort((a, b) => +new Date(b._date) - +new Date(a._date));
   const spritzOnly = verifiedProofs
-    .map((p: any) => ({ ...p, _kind: "proof" as const, _date: p.created_at }))
+    .map((p) => ({ ...p, _kind: "proof" as const, _date: p.created_at }))
     .sort((a, b) => +new Date(b._date) - +new Date(a._date));
 
   const tabMoments = tab === "reposts" ? reposts : tab === "spritz" ? spritzOnly : postsOnly;
@@ -418,10 +421,10 @@ function MePage() {
         className="relative z-10"
         style={
           theme
-            ? {
-                ["--theme-accent" as any]: theme.accent,
-                ["--theme-border" as any]: theme.cardBorder,
-              }
+            ? ({
+                "--theme-accent": theme.accent,
+                "--theme-border": theme.cardBorder,
+              } as React.CSSProperties)
             : undefined
         }
       >
@@ -1032,7 +1035,14 @@ function MePage() {
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-0.5">
-              {tabMoments.map((m: any) => {
+              {(tabMoments as Array<{
+                id: string;
+                _kind: "photo" | "proof";
+                photo_url?: string | null;
+                media_type?: string | null;
+                caption?: string | null;
+                venue?: { id?: string; name?: string } | null;
+              }>).map((m) => {
                 const isProof = m._kind === "proof";
                 const key = `${m._kind}-${m.id}`;
                 const url: string = m.photo_url ?? "";
@@ -1045,7 +1055,7 @@ function MePage() {
                         isProof
                           ? m.venue?.id
                             ? { id: m.venue.id }
-                            : (undefined as any)
+                            : ({} as { id: string })
                           : { id: m.id }
                       }
                       className="absolute inset-0"
@@ -1147,7 +1157,7 @@ function MePage() {
       {streakFlex !== null && (
         <StreakFlexSheet
           current={currentStreak}
-          milestone={streakFlex as any}
+          milestone={streakFlex as 3 | 7 | 14 | 30 | 100}
           handle={profile?.handle ?? null}
           onClose={() => {
             writeSeenMilestone(streakFlex);
@@ -1211,7 +1221,7 @@ function MenuItem({
 }) {
   return (
     <Link
-      to={to as any}
+      to={to as never}
       onClick={onSelect}
       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-foreground/5 transition"
     >

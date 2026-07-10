@@ -83,15 +83,19 @@ export default function TonightCard() {
         supabase.rpc("count_intents_for_date", { _date: today }),
       ]);
       if (cancel) return;
-      setMyIntent((mineRes.data as any) ?? null);
+      type IntentRow = {
+        id: string;
+        venue_id: string | null;
+        note: string | null;
+        venue?: { name: string } | null;
+      };
+      const mine = (mineRes.data as IntentRow | null) ?? null;
+      setMyIntent(mine);
       setCount(((countRes.data as number | null) ?? 0) as number);
-      if (mineRes.data) {
-        setNote((mineRes.data as any).note ?? "");
-        if ((mineRes.data as any).venue?.name) {
-          setPickedVenue({
-            id: (mineRes.data as any).venue_id,
-            name: (mineRes.data as any).venue.name,
-          });
+      if (mine) {
+        setNote(mine.note ?? "");
+        if (mine.venue?.name && mine.venue_id) {
+          setPickedVenue({ id: mine.venue_id, name: mine.venue.name });
         }
       }
     })();
@@ -114,21 +118,25 @@ export default function TonightCard() {
   }, [user?.id, today]);
 
   useEffect(() => {
-    if (!user || !(profile as any)?.city_id) return;
+    const cityId = profile?.city_id;
+    if (!user || !cityId) return;
     let cancel = false;
     (async () => {
       const { data } = await supabase
         .from("venues")
         .select("id, name")
-        .eq("city_id", (profile as any).city_id)
+        .eq("city_id", cityId)
         .order("created_at", { ascending: false })
         .limit(8);
-      if (!cancel) setSuggestedVenues(((data ?? []) as any[]).map((v) => ({ ...v, count: 0 })));
+      if (!cancel)
+        setSuggestedVenues(
+          ((data ?? []) as { id: string; name: string }[]).map((v) => ({ ...v, count: 0 })),
+        );
     })();
     return () => {
       cancel = true;
     };
-  }, [user?.id, (profile as any)?.city_id]);
+  }, [user?.id, profile?.city_id]);
 
   // Load followed venues
   useEffect(() => {
@@ -138,9 +146,11 @@ export default function TonightCard() {
         .from("venue_follows")
         .select("venue_id, venue:venues(id, name)")
         .eq("user_id", user.id);
-      setFollows(new Set((data ?? []).map((r: any) => r.venue_id)));
+      type VF = { venue_id: string; venue?: { id: string; name: string } | null };
+      const rows = (data ?? []) as VF[];
+      setFollows(new Set(rows.map((r) => r.venue_id)));
       setFollowedVenues(
-        (data ?? []).map((r: any) => ({ id: r.venue_id, name: r.venue?.name ?? "Loc", count: 0 })),
+        rows.map((r) => ({ id: r.venue_id, name: r.venue?.name ?? "Loc", count: 0 })),
       );
     })();
   }, [user?.id]);
@@ -179,7 +189,7 @@ export default function TonightCard() {
       );
       const { error } = await supabase
         .from("venue_follows")
-        .insert({ user_id: user.id, venue_id: v.id } as any);
+        .insert({ user_id: user.id, venue_id: v.id });
       if (error) {
         next.delete(v.id);
         setFollows(new Set(next));
@@ -195,11 +205,11 @@ export default function TonightCard() {
     if (pickedVenue) return pickedVenue;
     const name = venueQuery.trim();
     if (!name) return null;
-    const cityId = (profile as any)?.city_id;
+    const cityId = profile?.city_id;
     if (!cityId) throw new Error("Alege orașul din profil înainte să adaugi locul");
     const { data, error } = await supabase
       .from("venues")
-      .insert({ city_id: cityId, name, slug: slugifyVenueName(name) } as any)
+      .insert({ city_id: cityId, name, slug: slugifyVenueName(name) })
       .select("id, name")
       .single();
     if (error) throw error;
@@ -216,7 +226,7 @@ export default function TonightCard() {
           intent_date: today,
           venue_id: v.id,
           note: note.trim() || null,
-        } as any,
+        },
         { onConflict: "user_id,intent_date" },
       );
       if (error) throw error;
@@ -241,14 +251,15 @@ export default function TonightCard() {
       setVenues([]);
       return;
     }
+    const cityIdForSearch = profile?.city_id;
     const t = setTimeout(async () => {
       let q = supabase.from("venues").select("id, name").ilike("name", `%${venueQuery}%`).limit(6);
-      if ((profile as any)?.city_id) q = q.eq("city_id", (profile as any).city_id);
+      if (cityIdForSearch) q = q.eq("city_id", cityIdForSearch);
       const { data } = await q;
       setVenues(data ?? []);
     }, 200);
     return () => clearTimeout(t);
-  }, [venueQuery, (profile as any)?.city_id]);
+  }, [venueQuery, profile?.city_id]);
 
   async function save() {
     if (!user) return;
@@ -261,7 +272,7 @@ export default function TonightCard() {
           intent_date: today,
           venue_id: venue?.id ?? null,
           note: note.trim() || null,
-        } as any,
+        },
         { onConflict: "user_id,intent_date" },
       );
       if (error) throw error;
