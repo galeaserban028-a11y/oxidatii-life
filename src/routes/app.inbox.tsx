@@ -451,7 +451,16 @@ function ConversationRow({
   meId,
   onDeleted,
 }: {
-  conv: any;
+  conv: {
+    id: string;
+    kind: string;
+    title: string | null;
+    last_message_at: string | null;
+    last_read_at: string | null;
+    others: { id: string; handle: string | null; display_name: string | null; avatar_url: string | null }[];
+    last: { body: string | null; sender_id: string; created_at: string } | null;
+    unread: boolean;
+  };
   title: string;
   initial: string;
   isDM: boolean;
