@@ -388,7 +388,7 @@ function FriendsList({ onMessage }: { onMessage: (id: string) => void }) {
 
   return (
     <div className="space-y-1 -mx-5">
-      {friends.map((f: any) => (
+      {friends.map((f) => (
         <button
           key={f.id}
           onClick={() => onMessage(f.id)}
