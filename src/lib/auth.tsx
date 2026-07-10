@@ -41,6 +41,10 @@ type Profile = {
     vignette?: number;
   } | null;
   bio?: string | null;
+  current_streak?: number | null;
+  longest_streak?: number | null;
+  last_streak_week?: string | null;
+  created_at?: string | null;
 };
 
 type Ctx = {
