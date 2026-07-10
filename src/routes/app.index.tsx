@@ -365,8 +365,8 @@ function LiveSpritzStrip() {
       </div>
 
       <div className="flex gap-2 overflow-x-auto -mx-4 px-4 no-scrollbar pb-1">
-        {visibleParties.map((p: any) => {
-          const taken = joins.filter((j: any) => j.party_id === p.id).length;
+        {visibleParties.map((p) => {
+          const taken = joins.filter((j) => j.party_id === p.id).length;
           const free = Math.max(0, p.spots_total - taken);
           return (
             <Link
