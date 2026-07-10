@@ -30,6 +30,8 @@ function Onboarding() {
   const [cityId, setCityId] = useState("");
   const [locOk, setLocOk] = useState(false);
   const [refCode, setRefCode] = useState("");
+  const [dob, setDob] = useState("");
+  const [hasDob, setHasDob] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
   const [busy, setBusy] = useState(false);
 
