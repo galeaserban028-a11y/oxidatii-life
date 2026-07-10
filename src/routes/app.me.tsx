@@ -1157,7 +1157,7 @@ function MePage() {
       {streakFlex !== null && (
         <StreakFlexSheet
           current={currentStreak}
-          milestone={streakFlex as any}
+          milestone={streakFlex as 3 | 7 | 14 | 30 | 100}
           handle={profile?.handle ?? null}
           onClose={() => {
             writeSeenMilestone(streakFlex);
