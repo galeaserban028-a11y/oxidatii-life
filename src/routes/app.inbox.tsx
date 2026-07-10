@@ -735,7 +735,7 @@ function NewMessageSheet({
     const needle = q.trim().toLowerCase();
     if (!needle) return friends;
     return friends.filter(
-      (f: any) =>
+      (f) =>
         (f.handle ?? "").toLowerCase().includes(needle) ||
         (f.display_name ?? "").toLowerCase().includes(needle),
     );
