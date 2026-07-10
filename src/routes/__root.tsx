@@ -196,6 +196,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   useEffect(() => {
+    import("@/lib/monitoring").then((m) => m.initMonitoring());
     import("@/hooks/useTheme").then((m) => m.initThemeEarly());
     import("@/lib/pwa").then((m) => m.registerAppServiceWorker());
   }, []);
