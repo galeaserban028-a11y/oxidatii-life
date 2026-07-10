@@ -824,7 +824,7 @@ function NewMessageSheet({
             nimeni nu se potrivește
           </div>
         ) : (
-          filtered.map((f: any) => {
+          filtered.map((f) => {
             const isSel = selected.has(f.id);
             return (
               <button
