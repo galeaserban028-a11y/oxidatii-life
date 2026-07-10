@@ -116,8 +116,8 @@ function InboxPage() {
     };
   }, [user?.id, qc]);
 
-  const dms = useMemo(() => conversations.filter((c: any) => c.kind === "dm"), [conversations]);
-  const groups = useMemo(() => conversations.filter((c: any) => c.kind !== "dm"), [conversations]);
+  const dms = useMemo(() => conversations.filter((c) => c.kind === "dm"), [conversations]);
+  const groups = useMemo(() => conversations.filter((c) => c.kind !== "dm"), [conversations]);
 
   const filtered = tab === "prieteni" ? [] : tab === "grupuri" ? groups : dms;
 
