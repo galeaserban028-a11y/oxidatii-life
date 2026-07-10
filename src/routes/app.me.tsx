@@ -356,12 +356,14 @@ function MePage() {
     );
   }
 
-  const verifiedProofs = (moments?.proofs ?? []).filter((p: any) => p.ai_verified);
-  const postsOnly = (moments?.photos ?? [])
-    .map((p: any) => ({ ...p, _kind: "photo" as const, _date: p.taken_at }))
+  type ProofRow = { id: string; photo_url: string; created_at: string; ai_verified: boolean | null; venue: unknown };
+  type PhotoRow2 = { id: string; photo_url: string; caption: string | null; taken_at: string; venue: unknown };
+  const verifiedProofs = ((moments?.proofs ?? []) as ProofRow[]).filter((p) => p.ai_verified);
+  const postsOnly = ((moments?.photos ?? []) as PhotoRow2[])
+    .map((p) => ({ ...p, _kind: "photo" as const, _date: p.taken_at }))
     .sort((a, b) => +new Date(b._date) - +new Date(a._date));
   const spritzOnly = verifiedProofs
-    .map((p: any) => ({ ...p, _kind: "proof" as const, _date: p.created_at }))
+    .map((p) => ({ ...p, _kind: "proof" as const, _date: p.created_at }))
     .sort((a, b) => +new Date(b._date) - +new Date(a._date));
 
   const tabMoments = tab === "reposts" ? reposts : tab === "spritz" ? spritzOnly : postsOnly;
