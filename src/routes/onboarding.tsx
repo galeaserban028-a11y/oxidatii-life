@@ -4,6 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
+import { BirthdatePicker } from "@/components/BirthdatePicker";
+
+function ageFromDOB(dob: string): number {
+  const d = new Date(dob);
+  if (isNaN(d.getTime())) return -1;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age;
+}
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Onboarding · OXIDAȚII" }] }),
