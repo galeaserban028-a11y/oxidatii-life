@@ -142,7 +142,7 @@ function Index() {
           <div>
             <h1 className="text-sm font-extrabold tracking-widest uppercase">Oxidații</h1>
             <p className="font-mono text-[10px] text-orange-500/80 font-medium uppercase tracking-tight">
-              1.2k Online Now
+              {t.onlineNow}
             </p>
           </div>
         </div>
