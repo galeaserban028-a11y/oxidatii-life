@@ -129,12 +129,12 @@ function MePage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editHandle, setEditHandle] = useState(profile?.handle ?? "");
   const [editName, setEditName] = useState(profile?.display_name ?? "");
-  const [editBio, setEditBio] = useState((profile as any)?.bio ?? "");
+  const [editBio, setEditBio] = useState(profile?.bio ?? "");
   const [savingProfile, setSavingProfile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Streak Flex auto-prompt at new milestones (3/7/14/30/100 weeks).
-  const currentStreak = (profile as any)?.current_streak ?? 0;
+  const currentStreak = profile?.current_streak ?? 0;
   const [streakFlex, setStreakFlex] = useState<number | null>(null);
   useEffect(() => {
     const m = streakMilestoneReached(currentStreak);
@@ -374,11 +374,11 @@ function MePage() {
   };
 
   const instrument = { fontFamily: '"Instrument Serif", "Work Sans", serif' };
-  const theme = getTheme((profile as any)?.profile_theme_id);
+  const theme = getTheme(profile?.profile_theme_id);
   const activeFrameId = profile.active_frame_id ?? null;
-  const bgUrl = (profile as any)?.profile_bg_url as string | undefined;
+  const bgUrl = profile?.profile_bg_url as string | undefined;
   const isVideoBg = bgUrl ? /\.(mp4|webm|mov)$/i.test(bgUrl) : false;
-  const ti = (profile as any)?.theme_intensity ?? {};
+  const ti = profile?.theme_intensity ?? {};
   const iGradient = Math.max(0, Math.min(1.5, ti.gradient ?? 1));
   const iAurora = Math.max(0, Math.min(1.5, ti.aurora ?? 1));
   const iSheen = Math.max(0, Math.min(1.5, ti.sheen ?? 1));
@@ -405,7 +405,7 @@ function MePage() {
           />
         ))}
       {/* Premium themed atmosphere — WOW edition (shared) */}
-      {theme && <ThemeAtmosphere theme={theme} intensity={(profile as any)?.theme_intensity} />}
+      {theme && <ThemeAtmosphere theme={theme} intensity={profile?.theme_intensity} />}
       {theme && profile?.handle && (
         <SignatureReveal
           theme={theme}
@@ -685,9 +685,9 @@ function MePage() {
             {profile.display_name && profile.handle && (
               <div className="text-[12px] font-mono text-white/40 break-words">@{profile.handle}</div>
             )}
-            {(profile as any).bio && (
+            {profile.bio && (
               <p className="text-[13px] text-white/80 pt-2 whitespace-pre-line leading-relaxed">
-                {(profile as any).bio}
+                {profile.bio}
               </p>
             )}
             {moments?.city && (
@@ -753,9 +753,9 @@ function MePage() {
 
           <div className="mt-8">
             <StreakHero
-              current={(profile as any).current_streak ?? 0}
-              longest={(profile as any).longest_streak ?? 0}
-              lastStreakWeek={(profile as any).last_streak_week ?? null}
+              current={profile.current_streak ?? 0}
+              longest={profile.longest_streak ?? 0}
+              lastStreakWeek={profile.last_streak_week ?? null}
             />
           </div>
 
@@ -763,14 +763,14 @@ function MePage() {
             <ReputationCard
               userId={user.id}
               sprits={profile.lifetime_sprits ?? 0}
-              streak={(profile as any).current_streak ?? 0}
-              longestStreak={(profile as any).longest_streak ?? 0}
+              streak={profile.current_streak ?? 0}
+              longestStreak={profile.longest_streak ?? 0}
               followers={followStats?.followers ?? 0}
               following={followStats?.following ?? 0}
               aura={profile.aura ?? 0}
               hasAvatar={!!profile.avatar_url}
-              hasBio={!!(profile as any).bio}
-              createdAt={(profile as any).created_at}
+              hasBio={!!profile.bio}
+              createdAt={profile.created_at}
             />
           </div>
 
@@ -831,7 +831,7 @@ function MePage() {
                 if (o) {
                   setEditHandle(profile.handle ?? "");
                   setEditName(profile.display_name ?? "");
-                  setEditBio((profile as any).bio ?? "");
+                  setEditBio(profile.bio ?? "");
                 }
               }}
             >
