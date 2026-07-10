@@ -58,6 +58,22 @@ type Profile = {
   avatar_url?: string | null;
 };
 type Gift = { id: string; emoji: string; name: string; price_coins: number };
+type ChatConv = {
+  id: string;
+  kind: string;
+  title: string | null;
+  party_id: string | null;
+  created_by: string | null;
+};
+type ChatMember = { user_id: string };
+type ChatQueryData = {
+  conv: ChatConv;
+  members: ChatMember[];
+  messages: Msg[];
+  profMap: Map<string, Profile>;
+};
+type AccountStateRow = { coin_balance?: number };
+
 
 const QUICK_EMOJIS = [
   "😂",
@@ -178,7 +194,7 @@ function ChatPage() {
             .select("id,handle,display_name,avatar_url")
             .in("id", otherIds)
         : { data: [] };
-      const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+      const profMap = new Map((profs ?? []).map((p: Profile) => [p.id, p]));
       return {
         conv: conv ?? { id, kind: "dm", title: null, party_id: null, created_by: null },
         members: members ?? [],
@@ -217,7 +233,7 @@ function ChatPage() {
           filter: `conversation_id=eq.${id}`,
         },
         (payload) => {
-          qc.setQueryData(["chat", id, userId], (old: any) => {
+          qc.setQueryData<ChatQueryData | undefined>(["chat", id, userId], (old) => {
             if (!old) return old;
             const m = payload.new as Msg;
             if (old.messages.some((x: Msg) => x.id === m.id)) return old;
@@ -234,9 +250,9 @@ function ChatPage() {
           filter: `conversation_id=eq.${id}`,
         },
         (payload) => {
-          qc.setQueryData(["chat", id, userId], (old: any) => {
+          qc.setQueryData<ChatQueryData | undefined>(["chat", id, userId], (old) => {
             if (!old) return old;
-            const oldId = (payload.old as any)?.id;
+            const oldId = (payload.old as { id?: string } | null)?.id;
             if (!oldId) return old;
             return { ...old, messages: old.messages.filter((x: Msg) => x.id !== oldId) };
           });
@@ -306,7 +322,7 @@ function ChatPage() {
     if (!msgId || !user) return;
     setDeleteTarget(null);
     // optimistic
-    qc.setQueryData(["chat", id, user.id], (old: any) => {
+    qc.setQueryData<ChatQueryData | undefined>(["chat", id, user.id], (old) => {
       if (!old) return old;
       return { ...old, messages: old.messages.filter((x: Msg) => x.id !== msgId) };
     });
@@ -334,7 +350,7 @@ function ChatPage() {
     const ok = confirm(`Trimiți ${g.emoji} ${g.name} pentru ${g.price_coins} șprițuri?`);
     if (!ok) return;
     setShowGifts(false);
-    const { error } = await supabase.rpc("send_chat_gift" as any, {
+    const { error } = await (supabase.rpc as unknown as (name: string, args: unknown) => Promise<{ error: { message: string } | null }>)("send_chat_gift", {
       _conversation_id: id,
       _gift_id: g.id,
     });
@@ -814,9 +830,9 @@ function ChatPage() {
           onClose={() => setShowGroupSettings(false)}
           conversationId={id}
           title={data.conv.title ?? null}
-          createdBy={(data.conv as any).created_by ?? null}
+          createdBy={data.conv.created_by ?? null}
           members={data.members}
-          profMap={data.profMap as Map<string, any>}
+          profMap={data.profMap}
         />
       )}
     </div>
@@ -1326,7 +1342,7 @@ function GiftSheet({ onClose, onSend }: { onClose: () => void; onSend: (g: Gift)
     queryKey: ["chat-gift-catalog"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("chat_gift_catalog" as any)
+        .from("chat_gift_catalog")
         .select("id,emoji,name,price_coins")
         .order("price_coins");
       return (data ?? []) as unknown as Gift[];
@@ -1338,8 +1354,8 @@ function GiftSheet({ onClose, onSend }: { onClose: () => void; onSend: (g: Gift)
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase.rpc("get_my_account_state");
-      const row = Array.isArray(data) ? (data[0] as any) : null;
-      return (row?.coin_balance as number | undefined) ?? 0;
+      const row = Array.isArray(data) ? ((data as AccountStateRow[])[0] ?? null) : (data as AccountStateRow | null);
+      return row?.coin_balance ?? 0;
     },
   });
 
