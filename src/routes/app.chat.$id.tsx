@@ -350,7 +350,7 @@ function ChatPage() {
     const ok = confirm(`Trimiți ${g.emoji} ${g.name} pentru ${g.price_coins} șprițuri?`);
     if (!ok) return;
     setShowGifts(false);
-    const { error } = await supabase.rpc("send_chat_gift" as never, {
+    const { error } = await (supabase.rpc as unknown as (name: string, args: unknown) => Promise<{ error: { message: string } | null }>)("send_chat_gift", {
       _conversation_id: id,
       _gift_id: g.id,
     });
