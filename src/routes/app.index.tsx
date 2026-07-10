@@ -17,6 +17,7 @@ import VideoTile from "@/components/app/VideoTile";
 import PhotoZoom from "@/components/app/PhotoZoom";
 import PinchImage from "@/components/app/PinchImage";
 import TonightCard from "@/components/app/TonightCard";
+import { errorMessage } from "@/lib/errors";
 
 type FeedItem = {
   id: string;
@@ -472,7 +473,7 @@ function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venu
       queryClient.invalidateQueries({ queryKey: ["app-feed"] });
       queryClient.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
     } catch (e) {
-      toast.error(e?.message ?? "Nu s-a putut șterge");
+      toast.error(errorMessage(e, "Nu s-a putut șterge"));
     } finally {
       setDeleting(false);
       setMenuOpen(false);

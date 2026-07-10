@@ -27,6 +27,7 @@ import { notifyChatMessage } from "@/lib/notifications-extra.functions";
 import { ReportDialog } from "@/components/app/ReportDialog";
 import { MessageReactions } from "@/components/app/MessageReactions";
 import { GroupSettingsSheet } from "@/components/app/GroupSettingsSheet";
+import { errorMessage } from "@/lib/errors";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -904,7 +905,7 @@ function Composer({
       setRecMs(0);
       tickRef.current = window.setInterval(() => setRecMs(Date.now() - startRef.current), 100);
     } catch (e) {
-      alert("Nu pot accesa microfonul: " + (e?.message ?? "permisiune refuzată"));
+      alert("Nu pot accesa microfonul: " + (errorMessage(e, "permisiune refuzată")));
     }
   };
   const stopRec = (cancel = false) => {

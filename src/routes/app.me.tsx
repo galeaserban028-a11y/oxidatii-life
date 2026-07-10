@@ -162,7 +162,7 @@ function MePage() {
         return;
       } catch (e) {
         // AbortError = user cancelled; anything else falls through to clipboard
-        if (e?.name === "AbortError") return;
+        if ((e instanceof Error && e.name === "AbortError")) return;
       }
     }
 

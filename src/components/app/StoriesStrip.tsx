@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { errorMessage } from "@/lib/errors";
 
 type PromoTile = {
   campaignId: string;
@@ -610,7 +611,7 @@ function StoryUploadSheet({
       toast.success("Story-ul tău e live 24h.");
       onUploaded();
     } catch (e) {
-      toast.error(e?.message ?? "Eroare la upload");
+      toast.error(errorMessage(e, "Eroare la upload"));
     } finally {
       setUploading(false);
     }

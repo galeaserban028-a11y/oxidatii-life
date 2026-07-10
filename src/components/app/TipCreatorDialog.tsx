@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { errorMessage } from "@/lib/errors";
 import {
   Dialog,
   DialogContent,
@@ -174,7 +175,7 @@ export function TipCreatorButton({
       qc.invalidateQueries({ queryKey: ["creator-earnings", recipientId] });
       qc.invalidateQueries({ queryKey: ["wallet-ledger"] });
     } catch (e) {
-      const m = mapError(e?.message || "");
+      const m = mapError(errorMessage(e, ""));
       setErrorMsg(m);
       toast.error(m);
     } finally {
