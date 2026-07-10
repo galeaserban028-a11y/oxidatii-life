@@ -55,10 +55,19 @@ async function loadFeed() {
 
   // De-dupe: a Șpriț post writes to both tables with same photo_url.
   // Prefer the sprit_proofs row (kind="proof") so it keeps its Live badge.
-  const proofUrls = new Set((proofs ?? []).map((p: any) => p.photo_url));
+  type PhotoRow = {
+    id: string;
+    photo_url: string;
+    media_type: string | null;
+    caption?: string | null;
+    created_at: string;
+    user_id: string;
+    venue_id: string | null;
+  };
+  const proofUrls = new Set(((proofs ?? []) as PhotoRow[]).map((p) => p.photo_url));
 
   const items: FeedItem[] = [
-    ...(proofs ?? []).map((p) => ({
+    ...((proofs ?? []) as PhotoRow[]).map((p) => ({
       id: `sp-${p.id}`,
       kind: "proof" as const,
       created_at: p.created_at,
@@ -68,9 +77,9 @@ async function loadFeed() {
       user_id: p.user_id,
       venue_id: p.venue_id,
     })),
-    ...(photos ?? [])
-      .filter((p: any) => !proofUrls.has(p.photo_url))
-      .map((p: any) => ({
+    ...((photos ?? []) as PhotoRow[])
+      .filter((p) => !proofUrls.has(p.photo_url))
+      .map((p) => ({
         id: `vp-${p.id}`,
         kind: "photo" as const,
         created_at: p.created_at,
@@ -87,23 +96,30 @@ async function loadFeed() {
     new Set(items.map((i) => i.venue_id).filter((v): v is string => !!v)),
   );
 
+  type ProfileLite = { id: string; handle: string | null; display_name: string | null; rank: string | null; avatar_url: string | null };
+  type VenueLite = { id: string; name: string; slug: string; address: string | null; city: { name: string; slug: string } | null };
+
   const [{ data: profilesData }, { data: venuesData }] = await Promise.all([
     userIds.length
       ? supabase
           .from("profiles")
           .select("id, handle, display_name, rank, avatar_url")
           .in("id", userIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as ProfileLite[] }),
     venueIds.length
       ? supabase
           .from("venues")
           .select("id, name, slug, address, city:cities(name, slug)")
           .in("id", venueIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as VenueLite[] }),
   ]);
 
-  const profilesMap = new Map((profilesData ?? []).map((p: any) => [p.id, p]));
-  const venuesMap = new Map((venuesData ?? []).map((v: any) => [v.id, v]));
+  const profilesMap = new Map<string, ProfileLite>(
+    ((profilesData ?? []) as ProfileLite[]).map((p) => [p.id, p]),
+  );
+  const venuesMap = new Map<string, VenueLite>(
+    ((venuesData ?? []) as VenueLite[]).map((v) => [v.id, v]),
+  );
 
   return { items, profilesMap, venuesMap };
 }
@@ -245,7 +261,7 @@ function AppFeed() {
         <div className="space-y-4">
           {data.items.map((it) => {
             const profile = data.profilesMap.get(it.user_id);
-            const venue = it.venue_id ? data.venuesMap.get(it.venue_id) : null;
+            const venue = it.venue_id ? data.venuesMap.get(it.venue_id) : undefined;
             return (
               <FadeIn key={it.id} y={10}>
                 <FeedCard item={it} profile={profile} venue={venue} />
@@ -278,7 +294,18 @@ function NightWrapSection() {
 }
 
 function LiveSpritzStrip() {
-  const { data: parties = [] } = useQuery({
+  type PartyRow = {
+    id: string;
+    host_id: string;
+    title: string;
+    location_text: string | null;
+    spots_total: number;
+    starts_at: string;
+    vibe: string | null;
+  };
+  type JoinRow = { party_id: string; user_id: string };
+
+  const { data: parties = [] as PartyRow[] } = useQuery<PartyRow[]>({
     queryKey: ["home-live-spritz"],
     queryFn: async () => {
       const { data } = await supabase
@@ -287,13 +314,13 @@ function LiveSpritzStrip() {
         .gt("expires_at", new Date().toISOString())
         .order("starts_at", { ascending: true })
         .limit(6);
-      return data ?? [];
+      return (data ?? []) as PartyRow[];
     },
     refetchInterval: 30_000,
   });
 
-  const ids = parties.map((p: any) => p.id);
-  const { data: joins = [] } = useQuery({
+  const ids = parties.map((p) => p.id);
+  const { data: joins = [] as JoinRow[] } = useQuery<JoinRow[]>({
     queryKey: ["home-live-spritz-joins", ids.sort().join(",")],
     queryFn: async () => {
       if (!ids.length) return [];
@@ -301,7 +328,7 @@ function LiveSpritzStrip() {
         .from("party_joins")
         .select("party_id,user_id")
         .in("party_id", ids);
-      return data ?? [];
+      return (data ?? []) as JoinRow[];
     },
     enabled: ids.length > 0,
     refetchInterval: 30_000,
@@ -309,10 +336,10 @@ function LiveSpritzStrip() {
 
   // hide full parties unless user is already in
   const { user } = useAuth();
-  const visibleParties = parties.filter((p: any) => {
-    const taken = joins.filter((j: any) => j.party_id === p.id).length;
+  const visibleParties = parties.filter((p) => {
+    const taken = joins.filter((j) => j.party_id === p.id).length;
     const free = p.spots_total - taken;
-    const inParty = !!user && joins.some((j: any) => j.party_id === p.id && j.user_id === user.id);
+    const inParty = !!user && joins.some((j) => j.party_id === p.id && j.user_id === user.id);
     const isHost = user?.id === p.host_id;
     return free > 0 || inParty || isHost;
   });
@@ -338,8 +365,8 @@ function LiveSpritzStrip() {
       </div>
 
       <div className="flex gap-2 overflow-x-auto -mx-4 px-4 no-scrollbar pb-1">
-        {visibleParties.map((p: any) => {
-          const taken = joins.filter((j: any) => j.party_id === p.id).length;
+        {visibleParties.map((p) => {
+          const taken = joins.filter((j) => j.party_id === p.id).length;
           const free = Math.max(0, p.spots_total - taken);
           return (
             <Link
@@ -432,7 +459,10 @@ function formatCount(n: number) {
   return String(n);
 }
 
-function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venue: any }) {
+type FeedProfile = { id: string; handle: string | null; display_name: string | null; rank: string | null; avatar_url: string | null };
+type FeedVenue = { id: string; name: string; slug: string; address: string | null; city: { name: string; slug: string } | null };
+
+function FeedCard({ item, profile, venue }: { item: FeedItem; profile: FeedProfile | undefined; venue: FeedVenue | undefined }) {
   const handle = profile?.display_name ?? profile?.handle ?? "Anonim";
   const badge = pickFeedBadge(item.id, item.kind === "proof");
   const { user } = useAuth();

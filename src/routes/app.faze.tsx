@@ -37,8 +37,9 @@ async function loadMoments(currentUserId: string | null) {
   let startsAt: string | null = null;
   let endsAt: string | null = null;
   try {
-    const { data: win } = await supabase.rpc("current_weekend_window" as any);
-    const row: any = Array.isArray(win) ? win[0] : win;
+    const { data: win } = await supabase.rpc("current_weekend_window");
+    type WeekendWindow = { starts_at?: string | null; ends_at?: string | null };
+    const row = (Array.isArray(win) ? win[0] : win) as WeekendWindow | null;
     if (row?.starts_at) startsAt = row.starts_at;
     if (row?.ends_at) endsAt = row.ends_at;
   } catch {
@@ -54,19 +55,32 @@ async function loadMoments(currentUserId: string | null) {
   if (endsAt) q = q.lt("taken_at", endsAt);
   const { data: photos } = await q;
 
-  const items: Moment[] = (photos ?? []).map((p) => ({
+  type PhotoRow = {
+    id: string;
+    photo_url: string;
+    caption: string | null;
+    taken_at: string;
+    user_id: string;
+    venue_id: string;
+    media_type: string | null;
+  };
+  const items: Moment[] = ((photos ?? []) as PhotoRow[]).map((p) => ({
     id: p.id,
     photo_url: p.photo_url,
     caption: p.caption,
     created_at: p.taken_at,
     user_id: p.user_id,
     venue_id: p.venue_id,
-    media_type: (p as any).media_type ?? null,
+    media_type: p.media_type ?? null,
   }));
   const photoIds = items.map((i) => i.id);
 
   const userIds = Array.from(new Set(items.map((i) => i.user_id)));
   const venueIds = Array.from(new Set(items.map((i) => i.venue_id)));
+  type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+  type VenueLite = { id: string; name: string; slug: string; city: { name: string } | null };
+  type PhotoIdRow = { photo_id: string };
+  const emptyArr = <T,>() => Promise.resolve({ data: [] as T[] });
   const [
     { data: profilesData },
     { data: venuesData },
@@ -78,47 +92,51 @@ async function loadMoments(currentUserId: string | null) {
   ] = await Promise.all([
     userIds.length
       ? supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", userIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : emptyArr<ProfileLite>(),
     venueIds.length
       ? supabase.from("venues").select("id, name, slug, city:cities(name)").in("id", venueIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : emptyArr<VenueLite>(),
     photoIds.length
       ? supabase.from("photo_likes").select("photo_id").in("photo_id", photoIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : emptyArr<PhotoIdRow>(),
     photoIds.length
       ? supabase.from("photo_comments").select("photo_id").in("photo_id", photoIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : emptyArr<PhotoIdRow>(),
     photoIds.length
       ? supabase.from("photo_reposts").select("photo_id").in("photo_id", photoIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : emptyArr<PhotoIdRow>(),
     currentUserId && photoIds.length
       ? supabase
           .from("photo_likes")
           .select("photo_id")
           .eq("user_id", currentUserId)
           .in("photo_id", photoIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : emptyArr<PhotoIdRow>(),
     currentUserId && photoIds.length
       ? supabase
           .from("photo_reposts")
           .select("photo_id")
           .eq("user_id", currentUserId)
           .in("photo_id", photoIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : emptyArr<PhotoIdRow>(),
   ]);
-  const profilesMap = new Map((profilesData ?? []).map((p: any) => [p.id, p]));
-  const venuesMap = new Map((venuesData ?? []).map((v: any) => [v.id, v]));
+  const profilesMap = new Map<string, ProfileLite>(
+    ((profilesData ?? []) as ProfileLite[]).map((p) => [p.id, p]),
+  );
+  const venuesMap = new Map<string, VenueLite>(
+    ((venuesData ?? []) as VenueLite[]).map((v) => [v.id, v]),
+  );
 
-  const tally = (rows: any[] | null) => {
+  const tally = (rows: PhotoIdRow[] | null) => {
     const m = new Map<string, number>();
     (rows ?? []).forEach((r) => m.set(r.photo_id, (m.get(r.photo_id) ?? 0) + 1));
     return m;
   };
-  const likesMap = tally(likesData);
-  const commentsMap = tally(commentsData);
-  const repostsMap = tally(repostsData);
-  const likedSet = new Set((myLikes ?? []).map((r: any) => r.photo_id));
-  const repostedSet = new Set((myReposts ?? []).map((r: any) => r.photo_id));
+  const likesMap = tally(likesData as PhotoIdRow[] | null);
+  const commentsMap = tally(commentsData as PhotoIdRow[] | null);
+  const repostsMap = tally(repostsData as PhotoIdRow[] | null);
+  const likedSet = new Set(((myLikes ?? []) as PhotoIdRow[]).map((r) => r.photo_id));
+  const repostedSet = new Set(((myReposts ?? []) as PhotoIdRow[]).map((r) => r.photo_id));
 
   return {
     items,
@@ -190,7 +208,8 @@ function FazePage() {
         .select("requester_id,addressee_id,status")
         .eq("status", "accepted")
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
-      return (rows ?? []).map((r: any) =>
+      type FR = { requester_id: string; addressee_id: string; status: string };
+      return ((rows ?? []) as FR[]).map((r) =>
         r.requester_id === user.id ? r.addressee_id : r.requester_id,
       );
     },

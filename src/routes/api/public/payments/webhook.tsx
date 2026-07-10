@@ -2,6 +2,44 @@ import { createFileRoute } from "@tanstack/react-router";
 import { type StripeEnv, verifyWebhook, createStripeClient } from "@/lib/stripe.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+// Minimal Stripe shapes used in this webhook (avoid full stripe types dependency).
+type StripeMeta = Record<string, string | undefined>;
+type StripePrice = {
+  id?: string;
+  lookup_key?: string | null;
+  metadata?: StripeMeta;
+  product?: string | { id?: string } | null;
+};
+type StripeItem = {
+  price?: StripePrice | null;
+  current_period_start?: number | null;
+  current_period_end?: number | null;
+};
+type StripeSession = {
+  id: string;
+  metadata?: StripeMeta;
+  payment_status?: string;
+  amount_total?: number | null;
+  currency?: string | null;
+  subscription?: string | { id: string } | null;
+};
+type StripeSubscription = {
+  id: string;
+  status: string;
+  customer: string;
+  metadata?: StripeMeta;
+  cancel_at_period_end?: boolean;
+  current_period_start?: number | null;
+  current_period_end?: number | null;
+  items?: { data?: StripeItem[] };
+};
+type StripeInvoice = {
+  id: string;
+  billing_reason?: string;
+  subscription?: string | null;
+  lines?: { data?: { price?: StripePrice | null }[] };
+};
+
 // price_id → premium tier + monthly coin grant
 // IMPORTANT: amounts MUST match the perks shown on /app/premium (src/routes/app.premium.tsx TIERS)
 const TIER_MAP: Record<string, { tier: "vip" | "vip_plus" | "pro" | "elite"; coins: number }> = {
@@ -24,13 +62,13 @@ const COIN_PACKS: Record<string, number> = {
   coins_legenda: 300,
 };
 
-function resolvePriceLookup(item: any): string | null {
+function resolvePriceLookup(item: StripeItem | undefined | null): string | null {
   return (
     item?.price?.lookup_key || item?.price?.metadata?.lovable_external_id || item?.price?.id || null
   );
 }
 
-async function handleWalletTopup(session: any) {
+async function handleWalletTopup(session: StripeSession) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "wallet_topup") return;
   const businessId = meta.business_id;
@@ -65,7 +103,7 @@ async function handleWalletTopup(session: any) {
     .eq("id", businessId);
 }
 
-async function handleCrystalBallPurchase(session: any) {
+async function handleCrystalBallPurchase(session: StripeSession) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "crystal_ball" && meta.price_id !== "crystal_ball_7d") return;
   const userId = meta.user_id ?? meta.userId;
@@ -74,7 +112,7 @@ async function handleCrystalBallPurchase(session: any) {
   await supabaseAdmin.rpc("grant_crystal_ball_unlock", { _user_id: userId, _days: days });
 }
 
-async function handleReplayNightPurchase(session: any) {
+async function handleReplayNightPurchase(session: StripeSession) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "replay_night" && meta.price_id !== "replay_night") return;
   const userId = meta.user_id ?? meta.userId;
@@ -88,7 +126,7 @@ async function handleReplayNightPurchase(session: any) {
   });
 }
 
-async function handleLastCallSendPurchase(session: any) {
+async function handleLastCallSendPurchase(session: StripeSession) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "last_call_send" && meta.price_id !== "last_call_send") return;
   const userId = meta.user_id ?? meta.userId;
@@ -114,7 +152,7 @@ async function handleLastCallSendPurchase(session: any) {
   });
 }
 
-async function handleLastCallRevealPurchase(session: any) {
+async function handleLastCallRevealPurchase(session: StripeSession) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "last_call_reveal" && meta.price_id !== "last_call_reveal") return;
   const userId = meta.user_id ?? meta.userId;
@@ -132,7 +170,7 @@ async function handleLastCallRevealPurchase(session: any) {
     .eq("id", pingId);
 }
 
-async function handleCheckoutSessionCompleted(session: any, env: StripeEnv) {
+async function handleCheckoutSessionCompleted(session: StripeSession, env: StripeEnv) {
   if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
 
   // Wallet top-ups / coin packs / à la carte (metadata-driven)
@@ -161,16 +199,17 @@ async function handleCheckoutSessionCompleted(session: any, env: StripeEnv) {
   const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
     expand: ["items.data.price.product"],
   });
-  await upsertSubscription(subscription, env);
+  await upsertSubscription(subscription as unknown as StripeSubscription, env);
 }
 
-async function handleCoinPackPurchase(session: any, env: StripeEnv) {
+async function handleCoinPackPurchase(session: StripeSession, env: StripeEnv) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "coin_pack") return;
   const userId = meta.user_id;
   const priceId = meta.price_id;
+  if (!userId || !priceId) return;
   const coins = COIN_PACKS[priceId] ?? parseInt(meta.coins || "0", 10);
-  if (!userId || !coins) return;
+  if (!coins) return;
 
   // Idempotency
   const { data: existing } = await supabaseAdmin
@@ -210,7 +249,7 @@ const BIZ_PLAN_BY_LOOKUP: Record<string, "basic" | "pro" | "elite"> = {
 };
 
 async function upsertBizPlanSubscription(
-  subscription: any,
+  subscription: StripeSubscription,
   _env: StripeEnv,
   periodEndIso: string | null,
   priceLookup: string | null,
@@ -253,7 +292,7 @@ async function upsertBizPlanSubscription(
     .eq("id", businessId);
 }
 
-async function upsertSubscription(subscription: any, env: StripeEnv) {
+async function upsertSubscription(subscription: StripeSubscription, env: StripeEnv) {
   const userId = subscription.metadata?.userId;
   if (!userId) return;
 
@@ -338,7 +377,7 @@ async function upsertSubscription(subscription: any, env: StripeEnv) {
 }
 
 // Grant monthly coins on each subscription renewal payment
-async function handleInvoicePaymentSucceeded(invoice: any, _env: StripeEnv) {
+async function handleInvoicePaymentSucceeded(invoice: StripeInvoice, _env: StripeEnv) {
   if (invoice.billing_reason !== "subscription_cycle") return;
   const subId = invoice.subscription;
   if (!subId) return;
@@ -393,7 +432,7 @@ async function handleInvoicePaymentSucceeded(invoice: any, _env: StripeEnv) {
   });
 }
 
-async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
+async function handleSubscriptionDeleted(subscription: StripeSubscription, env: StripeEnv) {
   const userId = subscription.metadata?.userId;
   await supabaseAdmin
     .from("subscriptions")
