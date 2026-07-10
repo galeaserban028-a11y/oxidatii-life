@@ -32,8 +32,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { triageBugReport } from "@/lib/bug-triage.functions";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
 import { LanguageSwitcher } from "@/components/app/LanguageSwitcher";
-import {
 import { errorMessage } from "@/lib/errors";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
