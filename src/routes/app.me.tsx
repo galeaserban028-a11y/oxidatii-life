@@ -87,7 +87,7 @@ function MePage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [editingPremium, setEditingPremium] = useState(false);
 
-  async function handleDelete(m: any) {
+  async function handleDelete(m: { id: string; _kind: "photo" | "proof" }) {
     if (!user) return;
     const label =
       tab === "reposts" ? "acest repost" : m._kind === "proof" ? "acest șpriț" : "această poză";
@@ -95,7 +95,7 @@ function MePage() {
     const key = `${m._kind}-${m.id}`;
     setDeleting(key);
     try {
-      let err: any = null;
+      let err: { message: string } | null = null;
       if (tab === "reposts") {
         ({ error: err } = await supabase
           .from("photo_reposts")
