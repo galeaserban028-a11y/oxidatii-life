@@ -459,7 +459,10 @@ function formatCount(n: number) {
   return String(n);
 }
 
-function FeedCard({ item, profile, venue }: { item: FeedItem; profile: any; venue: any }) {
+type FeedProfile = { id: string; handle: string | null; display_name: string | null; rank: string | null; avatar_url: string | null };
+type FeedVenue = { id: string; name: string; slug: string; address: string | null; city: { name: string; slug: string } | null };
+
+function FeedCard({ item, profile, venue }: { item: FeedItem; profile: FeedProfile | undefined; venue: FeedVenue | undefined }) {
   const handle = profile?.display_name ?? profile?.handle ?? "Anonim";
   const badge = pickFeedBadge(item.id, item.kind === "proof");
   const { user } = useAuth();
