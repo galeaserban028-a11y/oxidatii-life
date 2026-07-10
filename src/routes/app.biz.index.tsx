@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
 import { syncCheckoutToProfile } from "@/lib/premium.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
+import { errorMessage } from "@/lib/errors";
 
 
 export const Route = createFileRoute("/app/biz/")({
@@ -544,8 +545,8 @@ function PostModal({
       if (target === "video") setVideoUrl(pub.publicUrl);
       else setImageUrl(pub.publicUrl);
       toast.success(target === "video" ? "Video încărcat" : "Imagine încărcată");
-    } catch (e: any) {
-      toast.error(e?.message || "Eroare la încărcare");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare la încărcare"));
     } finally {
       setUploading(false);
     }

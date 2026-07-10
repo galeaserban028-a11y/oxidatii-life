@@ -83,9 +83,11 @@ export function initMonitoring() {
   // Both must be present or this block is a no-op.
   const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
   if (dsn) {
-    // @ts-expect-error — optional peer dep; install with `bun add @sentry/browser` to enable.
-    import("@sentry/browser")
-      .then((Sentry) => {
+    // Sentry is an optional peer dep. Use a variable module id so Rollup does
+    // not try to resolve it at build time. To enable: `bun add @sentry/browser`.
+    const mod = "@sentry/browser";
+    import(/* @vite-ignore */ mod)
+      .then((Sentry: { init: (opts: Record<string, unknown>) => void }) => {
         Sentry.init({
           dsn,
           environment: import.meta.env.MODE,

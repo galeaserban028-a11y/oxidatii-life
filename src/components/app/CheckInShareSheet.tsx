@@ -196,8 +196,8 @@ export function CheckInShareSheet({
         a.click();
         toast.success("Poza a fost descărcată — pune-o pe Story");
       }
-    } catch (e: any) {
-      if (e?.name !== "AbortError") {
+    } catch (e) {
+      if (!(e instanceof Error && e.name === "AbortError")) {
         toast.error("Nu s-a putut deschide share-ul");
       }
     } finally {

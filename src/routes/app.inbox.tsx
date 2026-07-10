@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { openOrCreateDM, createGroupChat } from "@/lib/chat";
 import { ArrowLeft, PenSquare, Users, Loader2, Search, X, Check, Trash2, ImageIcon, Video, Mic, Paperclip } from "lucide-react";
 import { toast } from "sonner";
+import { errorMessage } from "@/lib/errors";
 
 export const Route = createFileRoute("/app/inbox")({
   head: () => ({ meta: [{ title: "Mesaje · OXIDAȚII" }] }),
@@ -735,8 +736,8 @@ function NewMessageSheet({
         const id = await createGroupChat(user.id, finalTitle, ids);
         onOpen(id);
       }
-    } catch (e: any) {
-      alert(e.message ?? "ceva nu a mers");
+    } catch (e) {
+      alert(errorMessage(e, "ceva nu a mers"));
       setSaving(false);
     }
   };

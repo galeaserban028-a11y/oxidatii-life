@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { X, Send } from "lucide-react";
+import { errorMessage } from "@/lib/errors";
 
 type Msg = {
   id: string;
@@ -122,8 +123,8 @@ export default function VenueNightChat({
         );
       }
       setBody("");
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare la trimitere");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare la trimitere"));
     } finally {
       setSending(false);
     }

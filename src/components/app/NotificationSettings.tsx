@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { sendTestPush } from "@/lib/push-test.functions";
+import { errorMessage } from "@/lib/errors";
 import {
   enablePush,
   disablePush,
@@ -112,8 +113,8 @@ export function NotificationSettings() {
       const res = await runTest({});
       if (res.sent > 0) setTestMsg("Trimis! Verifică notificarea.");
       else setTestMsg("Niciun dispozitiv abonat. Activează push mai întâi.");
-    } catch (e: any) {
-      setTestMsg(e?.message ?? "Eroare la trimitere.");
+    } catch (e) {
+      setTestMsg(errorMessage(e, "Eroare la trimitere."));
     } finally {
       setBusy(false);
     }

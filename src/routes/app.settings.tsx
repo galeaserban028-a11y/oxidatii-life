@@ -32,6 +32,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { triageBugReport } from "@/lib/bug-triage.functions";
 import { NotificationSettings } from "@/components/app/NotificationSettings";
 import { LanguageSwitcher } from "@/components/app/LanguageSwitcher";
+import { errorMessage } from "@/lib/errors";
 import {
   Dialog,
   DialogContent,
@@ -91,8 +92,8 @@ function SettingsPage() {
       setMsgKind(null);
       setMsgSubject("");
       setMsgBody("");
-    } catch (e: any) {
-      toast.error(e.message ?? "Nu s-a putut trimite");
+    } catch (e) {
+      toast.error(errorMessage(e, "Nu s-a putut trimite"));
     } finally {
       setMsgSending(false);
     }
@@ -139,8 +140,8 @@ function SettingsPage() {
       setBugOpen(false);
       setBugReason("");
       setBugDetails("");
-    } catch (e: any) {
-      toast.error(e.message ?? "Nu s-a putut trimite");
+    } catch (e) {
+      toast.error(errorMessage(e, "Nu s-a putut trimite"));
     } finally {
       setBugSending(false);
     }
@@ -169,8 +170,8 @@ function SettingsPage() {
       if (error) throw error;
       await refreshProfile();
       toast.success(next ? "Cont public" : "Cont privat");
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare"));
     } finally {
       setSavingPrivacy(false);
     }
@@ -189,8 +190,8 @@ function SettingsPage() {
       if (!next) await supabase.from("live_locations").delete().eq("user_id", user!.id);
       await refreshProfile();
       toast.success(next ? "Locație live activată" : "Locație live oprită");
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare"));
     } finally {
       setSavingConsent(false);
     }
@@ -207,8 +208,8 @@ function SettingsPage() {
       await refreshProfile();
       toast.success("Oraș actualizat");
       setCityOpen(false);
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e, "Eroare"));
     } finally {
       setSavingCity(false);
     }
@@ -233,8 +234,8 @@ function SettingsPage() {
       await supabase.auth.signOut();
       toast.success("Cont șters");
       nav({ to: "/", replace: true });
-    } catch (e: any) {
-      toast.error(e.message ?? "Nu s-a putut șterge");
+    } catch (e) {
+      toast.error(errorMessage(e, "Nu s-a putut șterge"));
     } finally {
       setDeleting(false);
       setConfirmDelete(false);

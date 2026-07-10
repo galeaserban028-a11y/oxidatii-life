@@ -27,6 +27,7 @@ import { notifyChatMessage } from "@/lib/notifications-extra.functions";
 import { ReportDialog } from "@/components/app/ReportDialog";
 import { MessageReactions } from "@/components/app/MessageReactions";
 import { GroupSettingsSheet } from "@/components/app/GroupSettingsSheet";
+import { errorMessage } from "@/lib/errors";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -373,7 +374,7 @@ function ChatPage() {
       notifyChatMessage({ data: { conversationId: id, preview: body.slice(0, 80) } }).catch(
         () => {},
       );
-    } catch (e: any) {
+    } catch (e) {
       const { prettifyAntiSpamError } = await import("@/lib/antispam");
       alert(prettifyAntiSpamError(e) || "nu am putut trimite");
     } finally {
@@ -903,8 +904,8 @@ function Composer({
       setRecording(true);
       setRecMs(0);
       tickRef.current = window.setInterval(() => setRecMs(Date.now() - startRef.current), 100);
-    } catch (e: any) {
-      alert("Nu pot accesa microfonul: " + (e?.message ?? "permisiune refuzată"));
+    } catch (e) {
+      alert("Nu pot accesa microfonul: " + (errorMessage(e, "permisiune refuzată")));
     }
   };
   const stopRec = (cancel = false) => {

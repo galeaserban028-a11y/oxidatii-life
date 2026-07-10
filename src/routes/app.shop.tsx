@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Rocket, Crown, Gift, PartyPopper, ArrowLeft, Check, Loader2, Beer, Sparkles } from "lucide-react";
 import { AvatarFrame, FRAME_STYLES, TIER_LABEL } from "@/components/app/AvatarFrame";
+import { errorMessage } from "@/lib/errors";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -106,8 +107,8 @@ function ShopPage() {
       toast.success(`Profil boostat 24h! Mai ai ${drink(newBal)}`);
       await refreshProfile();
       qc.invalidateQueries({ queryKey: ["discover-suggestions"] });
-    } catch (e: any) {
-      toast.error(e.message || "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e) || "Eroare");
     } finally {
       setBusy(null);
     }
@@ -125,8 +126,8 @@ function ShopPage() {
       const newBal = (data as any)?.balance ?? 0;
       toast.success(`Petrecere boostată 12h! Mai ai ${drink(newBal)}`);
       await refreshProfile();
-    } catch (e: any) {
-      toast.error(e.message || "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e) || "Eroare");
     } finally {
       setBusy(null);
     }
@@ -143,8 +144,8 @@ function ShopPage() {
       await refreshProfile();
       qc.invalidateQueries({ queryKey: ["owned-frames", user.id] });
       qc.invalidateQueries({ queryKey: ["active-frame"] });
-    } catch (e: any) {
-      toast.error(e.message || "Eroare");
+    } catch (e) {
+      toast.error(errorMessage(e) || "Eroare");
     } finally {
       setBusy(null);
     }

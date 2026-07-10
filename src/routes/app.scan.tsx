@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { errorMessage } from "@/lib/errors";
 
 export const Route = createFileRoute("/app/scan")({
   head: () => ({ meta: [{ title: "Pune un șpriț · OXIDAȚII" }] }),
@@ -119,8 +120,8 @@ function ScanPage() {
       qc.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
       qc.invalidateQueries({ queryKey: ["venue", selectedVenue.id] });
       nav({ to: postType === "spritz" ? "/app/top" : "/app/me" });
-    } catch (e: any) {
-      toast.error(e.message ?? "Nu s-a putut încărca");
+    } catch (e) {
+      toast.error(errorMessage(e, "Nu s-a putut încărca"));
     } finally {
       setUploading(false);
     }
@@ -157,8 +158,8 @@ function ScanPage() {
       setAddOpen(false);
       setNewVenueName("");
       toast.success("Locație adăugată.");
-    } catch (e: any) {
-      toast.error(e.message ?? "Nu s-a putut adăuga");
+    } catch (e) {
+      toast.error(errorMessage(e, "Nu s-a putut adăuga"));
     } finally {
       setCreating(false);
     }

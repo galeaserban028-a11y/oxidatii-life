@@ -45,6 +45,7 @@ import { AvatarAura } from "@/components/app/AvatarAura";
 import { SignatureReveal } from "@/components/app/SignatureReveal";
 import { AvatarFrame } from "@/components/app/AvatarFrame";
 import { TipCreatorButton, CreatorEarningsBadge } from "@/components/app/TipCreatorDialog";
+import { errorMessage } from "@/lib/errors";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const VIDEO_URL_RE = /\.(mp4|webm|mov|m4v)(\?.*)?$/i;
@@ -149,8 +150,8 @@ function UserPage() {
     try {
       const cid = await openOrCreateDM(user.id, id);
       nav({ to: "/app/chat/$id", params: { id: cid } });
-    } catch (e: any) {
-      alert(e.message ?? "Eroare");
+    } catch (e) {
+      alert(errorMessage(e, "Eroare"));
       setOpening(false);
     }
   };
@@ -731,12 +732,12 @@ function UserPage() {
                   if (confirmBlock === "block") {
                     block.mutate(undefined, {
                       onSuccess: () => toast.success(`@${handle} a fost blocat`),
-                      onError: (e: any) => toast.error(e.message ?? "Eroare"),
+                      onError: (e: any) => toast.error(errorMessage(e, "Eroare")),
                     });
                   } else if (confirmBlock === "unblock") {
                     unblock.mutate(undefined, {
                       onSuccess: () => toast.success(`@${handle} a fost deblocat`),
-                      onError: (e: any) => toast.error(e.message ?? "Eroare"),
+                      onError: (e: any) => toast.error(errorMessage(e, "Eroare")),
                     });
                   }
                   setConfirmBlock(null);

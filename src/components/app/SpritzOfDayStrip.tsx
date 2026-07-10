@@ -6,6 +6,7 @@ import { X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { errorMessage } from "@/lib/errors";
 
 type SpritzTile = {
   id: string;
@@ -160,8 +161,8 @@ function SpritzViewer({
       queryClient.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
       queryClient.invalidateQueries({ queryKey: ["app-feed"] });
       onClose();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Nu s-a putut șterge");
+    } catch (e) {
+      toast.error(errorMessage(e, "Nu s-a putut șterge"));
     } finally {
       setDeleting(false);
     }
