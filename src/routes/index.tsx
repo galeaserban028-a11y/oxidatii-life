@@ -241,37 +241,37 @@ function Index() {
       <section className="relative z-10 px-4 mb-8">
         <div className="flex justify-between items-center mb-4 px-2">
           <span className="font-mono text-[10px] font-bold tracking-[0.2em] text-white/40 uppercase">
-            Ce găsești în app
+            {t.featuresLabel}
           </span>
-          <span className="font-mono text-[10px] text-orange-500/60">4 ZONE</span>
+          <span className="font-mono text-[10px] text-orange-500/60">{t.zones}</span>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Tile
             to="/app/map"
             icon={<MapPin className="w-5 h-5" />}
-            label="Hartă"
-            sub="Locuri Live"
+            label={t.tMap}
+            sub={t.tMapSub}
             tone="orange"
           />
           <Tile
             to="/app/faze"
             icon={<Flame className="w-5 h-5" />}
-            label="Faze"
-            sub="Postează seara"
+            label={t.tFaze}
+            sub={t.tFazeSub}
             tone="pink"
           />
           <Tile
             to="/app/top"
             icon={<Trophy className="w-5 h-5" />}
-            label="Top"
-            sub="Clasament zeu"
+            label={t.tTop}
+            sub={t.tTopSub}
             tone="amber"
           />
           <Tile
             to="/app/squad"
             icon={<Users className="w-5 h-5" />}
-            label="Haita"
-            sub="Oxidații tăi"
+            label={t.tSquad}
+            sub={t.tSquadSub}
             tone="purple"
           />
         </div>
