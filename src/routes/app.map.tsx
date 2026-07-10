@@ -99,13 +99,30 @@ function applyLocationPrivacy(
   return { lat, lng, exact: true };
 }
 
+type FriendshipRow = { requester_id: string; addressee_id: string; status: string };
+type LiveLocRow = { user_id: string; lat: number | string; lng: number | string };
+type CheckinRow = {
+  user_id: string;
+  venue_id: string | null;
+  lat: number | string | null;
+  lng: number | string | null;
+  created_at: string;
+};
+type ProfileRow = {
+  id: string;
+  handle: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+type VenueLite = { id: string; name: string; lat: number | string | null; lng: number | string | null };
+
 async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   const { data: rows } = await supabase
     .from("friendships")
     .select("requester_id, addressee_id, status")
     .eq("status", "accepted")
     .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
-  const friendIds = (rows ?? []).map((r: any) =>
+  const friendIds = ((rows ?? []) as FriendshipRow[]).map((r) =>
     r.requester_id === userId ? r.addressee_id : r.requester_id,
   );
 
@@ -128,27 +145,33 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   ]);
 
   const liveMap = new Map<string, { lat: number; lng: number }>();
-  for (const l of lives ?? []) {
-    liveMap.set((l as any).user_id, { lat: Number((l as any).lat), lng: Number((l as any).lng) });
+  for (const l of (lives ?? []) as LiveLocRow[]) {
+    liveMap.set(l.user_id, { lat: Number(l.lat), lng: Number(l.lng) });
   }
 
   const seen = new Set<string>();
-  const latestCheckin = (checkins ?? []).filter((c: any) => {
+  const latestCheckin = ((checkins ?? []) as CheckinRow[]).filter((c) => {
     if (seen.has(c.user_id)) return false;
     seen.add(c.user_id);
     return true;
   });
-  const checkinMap = new Map(latestCheckin.map((c: any) => [c.user_id, c]));
+  const checkinMap = new Map<string, CheckinRow>(latestCheckin.map((c) => [c.user_id, c]));
 
-  const venueIds = Array.from(new Set(latestCheckin.map((c: any) => c.venue_id))).filter(Boolean);
+  const venueIds = Array.from(
+    new Set(latestCheckin.map((c) => c.venue_id).filter((v): v is string => Boolean(v))),
+  );
   const [{ data: profiles }, { data: venues }] = await Promise.all([
     supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", allIds),
     venueIds.length
       ? supabase.from("venues").select("id, name, lat, lng").in("id", venueIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as VenueLite[] }),
   ]);
-  const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
-  const venueMap = new Map((venues ?? []).map((v: any) => [v.id, v]));
+  const profMap = new Map<string, ProfileRow>(
+    ((profiles ?? []) as ProfileRow[]).map((p) => [p.id, p]),
+  );
+  const venueMap = new Map<string, VenueLite>(
+    ((venues ?? []) as VenueLite[]).map((v) => [v.id, v]),
+  );
 
   const userIds = new Set<string>([...liveMap.keys(), ...checkinMap.keys()]);
   const pins: FriendPin[] = [];
@@ -175,10 +198,15 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
     let lat: number | null = null,
       lng: number | null = null;
     if (lastLive) {
-      lat = Number((lastLive as any).lat);
-      lng = Number((lastLive as any).lng);
+      const ll = lastLive as { lat: number | string; lng: number | string };
+      lat = Number(ll.lat);
+      lng = Number(ll.lng);
     } else if (lastCheckin) {
-      const ck: any = lastCheckin;
+      const ck = lastCheckin as {
+        lat: number | string | null;
+        lng: number | string | null;
+        venue_id: string | null;
+      };
       if (ck.lat != null && ck.lng != null) {
         lat = Number(ck.lat);
         lng = Number(ck.lng);
@@ -195,7 +223,7 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
       }
     }
     if (lat != null && lng != null && isFinite(lat) && isFinite(lng)) {
-      const me: any = profMap.get(userId);
+      const me = profMap.get(userId);
       pins.push({
         user_id: userId,
         handle: me?.handle ?? null,
@@ -211,12 +239,12 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
 
   for (const uid of userIds) {
     const live = liveMap.get(uid);
-    const c: any = checkinMap.get(uid);
-    const venue = c ? venueMap.get(c.venue_id) : null;
+    const c = checkinMap.get(uid);
+    const venue = c && c.venue_id ? venueMap.get(c.venue_id) : null;
     const lat = Number(live?.lat ?? c?.lat ?? venue?.lat);
     const lng = Number(live?.lng ?? c?.lng ?? venue?.lng);
     if (!isFinite(lat) || !isFinite(lng)) continue;
-    const p: any = profMap.get(uid);
+    const p = profMap.get(uid);
     const isMe = uid === userId;
     pins.push({
       user_id: uid,
