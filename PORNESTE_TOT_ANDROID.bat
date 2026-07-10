@@ -64,7 +64,7 @@ exit /b %RC%
 
 :DetectJavaMajor
 set "JAVA_MAJOR="
-for /f "tokens=2 delims==" %%V in ('%~1 -XshowSettings:properties -version 2^>^&1 ^| findstr /C:"java.specification.version"') do (
+for /f "tokens=2 delims==" %%V in ('"%~1" -XshowSettings:properties -version 2^>^&1 ^| findstr /C:"java.specification.version"') do (
   set "JAVA_MAJOR=%%V"
 )
 set "JAVA_MAJOR=!JAVA_MAJOR: =!"
