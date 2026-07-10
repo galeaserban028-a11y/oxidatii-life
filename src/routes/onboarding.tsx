@@ -55,17 +55,26 @@ function Onboarding() {
       .then(({ data }) => {
         if (data) setCities(data);
       });
-    // Persist birthdate captured at Google signup (sessionStorage)
+    // Check if birthdate is already set (from prior signup) or pending in sessionStorage.
     (async () => {
+      if (!user) return;
       try {
-        const dob = sessionStorage.getItem("pending_birthdate");
-        if (dob && user) {
+        const pending = sessionStorage.getItem("pending_birthdate");
+        if (pending) {
           await supabase
             .from("profiles")
-            .update({ birthdate: dob } as any)
+            .update({ birthdate: pending } as any)
             .eq("id", user.id);
           sessionStorage.removeItem("pending_birthdate");
+          setHasDob(true);
+          return;
         }
+        const { data } = await supabase
+          .from("profiles")
+          .select("birthdate")
+          .eq("id", user.id)
+          .maybeSingle();
+        setHasDob(!!(data as any)?.birthdate);
       } catch {}
     })();
   }, [user]);
