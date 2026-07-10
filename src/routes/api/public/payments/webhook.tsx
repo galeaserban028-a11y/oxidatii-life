@@ -199,7 +199,7 @@ async function handleCheckoutSessionCompleted(session: StripeSession, env: Strip
   const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
     expand: ["items.data.price.product"],
   });
-  await upsertSubscription(subscription, env);
+  await upsertSubscription(subscription as unknown as StripeSubscription, env);
 }
 
 async function handleCoinPackPurchase(session: StripeSession, env: StripeEnv) {
