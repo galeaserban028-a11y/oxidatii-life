@@ -72,8 +72,58 @@ function Index() {
       window.localStorage.setItem("oxi-lang", next);
     } catch {}
     void i18n.changeLanguage(next);
-    if (typeof window !== "undefined") window.location.reload();
   };
+  const t = lang === "en"
+    ? {
+        onlineNow: "1.2k Online Now",
+        pickLang: "Pick your language",
+        season: "Spritz Season • 2026",
+        heroLine1: "Come for a",
+        heroWord: "Spritz",
+        heroDesc1: "Where people are drinking spritz ",
+        heroDescNow: "now",
+        heroDesc2: ". Who with. And who's ",
+        heroDescKing: "king of the table",
+        heroDesc3: ".",
+        ctaJoin: "Enter the chaos",
+        ctaHave: "I have an account",
+        featuresLabel: "What you'll find inside",
+        zones: "4 ZONES",
+        tMap: "Map", tMapSub: "Live places",
+        tFaze: "Moments", tFazeSub: "Post your night",
+        tTop: "Top", tTopSub: "God ranking",
+        tSquad: "Squad", tSquadSub: "Your oxidații",
+        liveTitle: "Drinking right now",
+        seeAll: "See all",
+        dockMap: "Map", dockFaze: "Moments", dockTop: "Top", dockMe: "Me",
+        addSpot: "Add spot",
+        legal: "Alcohol seriously harms health. Please drink responsibly.",
+      }
+    : {
+        onlineNow: "1.2k Online Acum",
+        pickLang: "Alege limba",
+        season: "Sezonul Șprițului • 2026",
+        heroLine1: "Hai la",
+        heroWord: "Șpriț",
+        heroDesc1: "Unde se bea șpriț ",
+        heroDescNow: "acum",
+        heroDesc2: ". Cu cine. Și cine-i ",
+        heroDescKing: "rege la masă",
+        heroDesc3: ".",
+        ctaJoin: "Intră în haos",
+        ctaHave: "Am cont",
+        featuresLabel: "Ce găsești în app",
+        zones: "4 ZONE",
+        tMap: "Hartă", tMapSub: "Locuri Live",
+        tFaze: "Faze", tFazeSub: "Postează seara",
+        tTop: "Top", tTopSub: "Clasament zeu",
+        tSquad: "Haita", tSquadSub: "Oxidații tăi",
+        liveTitle: "Se bea acum",
+        seeAll: "Vezi tot",
+        dockMap: "Hartă", dockFaze: "Faze", dockTop: "Top", dockMe: "Eu",
+        addSpot: "Adaugă spot",
+        legal: "Alcoolul dăunează grav sănătății. Consumați responsabil.",
+      };
   return (
     <main className="relative min-h-[100svh] mx-auto max-w-md flex flex-col overflow-hidden bg-[#050510] text-white">
 
