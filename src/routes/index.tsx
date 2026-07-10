@@ -300,11 +300,7 @@ function Index() {
             </Link>
           </div>
           <ul className="space-y-4 font-mono">
-            {[
-              { city: "PITEȘTI", spot: "Terasa Trivale", n: 23 },
-              { city: "BUCUREȘTI", spot: "Energiei", n: 41 },
-              { city: "CLUJ", spot: "Strada Piezișă", n: 17 },
-            ].map((r) => (
+            {HERO_HOT_SPOTS.map((r) => (
               <li key={r.city} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
