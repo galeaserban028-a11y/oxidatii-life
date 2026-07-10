@@ -208,7 +208,7 @@ function MePage() {
           handle: h || null,
           display_name: editName.trim() || null,
           bio: editBio.trim() || null,
-        } as any)
+        })
         .eq("id", user.id);
       if (error) throw error;
       await refreshProfile();
