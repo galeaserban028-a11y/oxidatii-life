@@ -24,21 +24,21 @@ allprojects {
     }
 }
 
-// Force every subproject (including Capacitor plugins) to compile against
-// Java 17, so Android Studio builds work on the supported JDK 17 setup.
+// Capacitor 8 compiles its Android runtime with Java 21. Keep every Android
+// module on the same Java level so local CLI and Android Studio builds agree.
 subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
             project.android {
                 compileOptions {
-                    sourceCompatibility JavaVersion.VERSION_17
-                    targetCompatibility JavaVersion.VERSION_17
+                    sourceCompatibility JavaVersion.VERSION_21
+                    targetCompatibility JavaVersion.VERSION_21
                 }
             }
         }
         project.tasks.withType(JavaCompile).configureEach {
-            sourceCompatibility = "17"
-            targetCompatibility = "17"
+            sourceCompatibility = "21"
+            targetCompatibility = "21"
         }
 
         // Do not reference KotlinCompile directly here: not every Capacitor
@@ -47,7 +47,7 @@ subprojects {
         project.tasks.configureEach { task ->
             if (task.hasProperty('kotlinOptions')) {
                 task.kotlinOptions {
-                    jvmTarget = "17"
+                    jvmTarget = "21"
                 }
             }
         }

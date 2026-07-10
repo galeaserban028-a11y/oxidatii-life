@@ -102,7 +102,7 @@ $hasEnvSigning = $env:OXIDATII_KEYSTORE_PATH -and $env:OXIDATII_KEYSTORE_PASSWOR
 if (-not $hasEnvSigning -and -not (Test-Path $keystoreProps)) {
   Info "Nu există semnare release. Generez automat android\oxidatii-release.jks + android\keystore.properties"
   $keytool = Find-Keytool
-  if (-not $keytool) { Fail "Nu găsesc keytool. Instalează JDK 17 sau setează JAVA_HOME către JDK 17." }
+  if (-not $keytool) { Fail "Nu găsesc keytool. Instalează JDK 21 sau setează JAVA_HOME către JDK 21 / Android Studio jbr." }
 
   $storePass = New-Password
   $keyPass = New-Password

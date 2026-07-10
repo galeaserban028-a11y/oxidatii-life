@@ -22,7 +22,7 @@ if not errorlevel 1 (
 REM --- 1. Verifica tool-uri necesare ---
 where node >nul 2>&1 || (echo [EROARE] Node.js lipseste. Instaleaza de la https://nodejs.org & pause & exit /b 1)
 where bun >nul 2>&1 || (echo [EROARE] Bun lipseste. Ruleaza: npm i -g bun & pause & exit /b 1)
-if not defined JAVA_HOME (echo [EROARE] JAVA_HOME nu e setat. Instaleaza JDK 17 si seteaza JAVA_HOME. & pause & exit /b 1)
+if not defined JAVA_HOME (echo [EROARE] JAVA_HOME nu e setat. Instaleaza JDK 21 sau seteaza JAVA_HOME la Android Studio\jbr. & pause & exit /b 1)
 if not defined ANDROID_HOME if not defined ANDROID_SDK_ROOT (
   echo [EROARE] ANDROID_HOME / ANDROID_SDK_ROOT nu e setat.
   pause & exit /b 1

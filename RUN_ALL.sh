@@ -20,7 +20,7 @@ fi
 # Preflight
 command -v node >/dev/null || { echo "${RED}Node lipseste${NC}"; exit 1; }
 command -v bun  >/dev/null || { echo "${RED}Bun lipseste (npm i -g bun)${NC}"; exit 1; }
-[ -n "${JAVA_HOME:-}" ]     || { echo "${RED}JAVA_HOME nu e setat (JDK 17)${NC}"; exit 1; }
+[ -n "${JAVA_HOME:-}" ]     || { echo "${RED}JAVA_HOME nu e setat (JDK 21)${NC}"; exit 1; }
 [ -n "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}" ] || { echo "${RED}ANDROID_HOME / ANDROID_SDK_ROOT nu e setat${NC}"; exit 1; }
 
 bash "$ROOT/scripts/run-all.sh"
