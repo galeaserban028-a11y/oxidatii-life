@@ -207,8 +207,9 @@ async function handleCoinPackPurchase(session: StripeSession, env: StripeEnv) {
   if (meta.kind !== "coin_pack") return;
   const userId = meta.user_id;
   const priceId = meta.price_id;
+  if (!userId || !priceId) return;
   const coins = COIN_PACKS[priceId] ?? parseInt(meta.coins || "0", 10);
-  if (!userId || !coins) return;
+  if (!coins) return;
 
   // Idempotency
   const { data: existing } = await supabaseAdmin
