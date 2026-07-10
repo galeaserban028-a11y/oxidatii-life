@@ -77,7 +77,7 @@ fi
 
 if [[ "$HAS_ENV_SIGNING" -eq 0 && ! -f android/keystore.properties ]]; then
   info "Nu există semnare release. Generez automat android/oxidatii-release.jks + android/keystore.properties"
-  command -v keytool >/dev/null 2>&1 || fail "Nu găsesc keytool. Instalează Android Studio/JDK 21 sau setează JAVA_HOME."
+  command -v keytool >/dev/null 2>&1 || fail "Nu găsesc keytool. Instalează JDK 21 sau setează JAVA_HOME către JDK 21 / Android Studio jbr."
   STORE_PASS="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 40)"
   KEY_PASS="$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 40)"
   JKS="$ROOT/android/oxidatii-release.jks"
