@@ -7,26 +7,15 @@ import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
 
 export const Route = createFileRoute("/signup")({
-  head: () => ({ meta: [{ title: "Cont nou · OXIDAȚII" }] }),
+  head: () => ({ meta: [{ title: "Intră · OXIDAȚII" }] }),
   component: SignupPage,
 });
-
-function ageFromDOB(dob: string): number {
-  const d = new Date(dob);
-  if (isNaN(d.getTime())) return -1;
-  const now = new Date();
-  let age = now.getFullYear() - d.getFullYear();
-  const m = now.getMonth() - d.getMonth();
-  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
-  return age;
-}
 
 function SignupPage() {
   const nav = useNavigate();
   const { user, profile, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
-  const [dob, setDob] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -38,62 +27,61 @@ function SignupPage() {
     }
   }, [user, profile, loading, nav]);
 
-  // Max date = 18 years ago today
-  const maxDob = (() => {
-    const d = new Date();
-    d.setFullYear(d.getFullYear() - 18);
-    return d.toISOString().slice(0, 10);
-  })();
-
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
-    if (!dob) return toast.error("Pune data nașterii");
-    const age = ageFromDOB(dob);
-    if (age < 18) return toast.error("Trebuie să ai cel puțin 18 ani.");
-
+    if (!email || !pwd) return;
     setBusy(true);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password: pwd,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { birthdate: dob },
-      },
-    });
-    if (error) {
-      setBusy(false);
-      return toast.error(error.message);
-    }
 
-    // Email-confirmation ON → no session is returned; show feedback instead of leaving the user stuck.
-    if (!data.session) {
-      setBusy(false);
-      toast.success("Ți-am trimis un email de confirmare. Verifică inbox-ul (și spam-ul).");
+    // Try login first — if account exists, just sign the user in.
+    const signIn = await supabase.auth.signInWithPassword({ email, password: pwd });
+    if (!signIn.error) {
+      // Effect will navigate once profile loads.
       return;
     }
 
-    // Session exists → safe to write to RLS-protected tables.
-    if (data.user) {
-      const { error: pErr } = await supabase
-        .from("profiles")
-        .update({ birthdate: dob } as any)
-        .eq("id", data.user.id);
-      if (pErr) console.warn("birthdate write failed:", pErr.message);
+    const msg = (signIn.error.message || "").toLowerCase();
+    const looksLikeNoAccount =
+      msg.includes("invalid") || msg.includes("not found") || msg.includes("user");
+
+    if (!looksLikeNoAccount) {
+      setBusy(false);
+      return toast.error(signIn.error.message);
     }
-    // Leave busy=true; the effect above will navigate once profile loads.
+
+    // No account yet → create one. Birthdate is captured in onboarding.
+    const { error } = await supabase.auth.signUp({
+      email,
+      password: pwd,
+      options: { emailRedirectTo: window.location.origin },
+    });
+    if (error) {
+      setBusy(false);
+      // If the email exists but password was wrong, be explicit.
+      if ((error.message || "").toLowerCase().includes("registered")) {
+        return toast.error("Emailul e folosit deja. Verifică parola.");
+      }
+      return toast.error(error.message);
+    }
+
+    toast.success("Cont creat. Te logăm...");
+    // Try to sign in immediately (works if email confirmations are off).
+    const after = await supabase.auth.signInWithPassword({ email, password: pwd });
+    if (after.error) {
+      setBusy(false);
+      toast.success("Ți-am trimis un email de confirmare. Verifică inbox-ul.");
+    }
+    // Otherwise the effect navigates once session lands.
   }
 
   async function handleOAuth(provider: "google" | "apple") {
-    if (!dob) return toast.error(`Pune data nașterii înainte de ${provider === "apple" ? "Apple" : "Google"}`);
-    const age = ageFromDOB(dob);
-    if (age < 18) return toast.error("Trebuie să ai cel puțin 18 ani.");
-    try {
-      sessionStorage.setItem("pending_birthdate", dob);
-    } catch {}
+    setBusy(true);
     const r = await lovable.auth.signInWithOAuth(provider, {
       redirect_uri: window.location.origin,
     });
-    if (r.error) toast.error(r.error.message ?? `${provider} a picat`);
+    if (r.error) {
+      toast.error(r.error.message ?? `${provider} a picat`);
+      setBusy(false);
+    }
   }
 
   return (
@@ -115,36 +103,27 @@ function SignupPage() {
       <div className="flex-1 flex items-center">
         <div className="w-full max-w-sm mx-auto space-y-6">
           <div>
-            <h1 className="font-display font-black text-3xl">Fă-ți cont.</h1>
+            <h1 className="font-display font-black text-3xl">Intră în haos.</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Și intri în topul nopții. Doar 18+.
-            </p>
-          </div>
-
-          <div>
-            <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              data nașterii
-            </label>
-            <input
-              type="date"
-              required
-              max={maxDob}
-              value={dob}
-              onChange={(e) => setDob(e.target.value)}
-              className="mt-1 w-full rounded-xl bg-foreground/5 border border-foreground/10 px-4 py-3 text-sm focus:outline-none focus:border-neon-purple"
-            />
-            <p className="text-[10px] text-muted-foreground mt-1">
-              Aplicația e doar pentru +18. Vârsta e verificată.
+              Cont nou sau vechi — un singur pas. 18+.
             </p>
           </div>
 
           <button
+            disabled={busy}
             onClick={() => handleOAuth("google")}
-            className="w-full rounded-xl border border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition py-3 font-medium"
+            className="w-full rounded-xl border border-foreground/20 bg-foreground/5 hover:bg-foreground/10 transition py-3 font-medium flex items-center justify-center gap-2"
           >
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.83z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/>
+            </svg>
             Continuă cu Google
           </button>
           <button
+            disabled={busy}
             onClick={() => handleOAuth("apple")}
             className="w-full rounded-xl bg-foreground text-background hover:opacity-90 transition py-3 font-medium flex items-center justify-center gap-2"
           >
@@ -179,13 +158,15 @@ function SignupPage() {
               disabled={busy}
               className="w-full rounded-xl bg-neon-crimson/20 border border-neon-crimson/40 text-neon-crimson font-display font-bold tracking-widest uppercase py-3"
             >
-              {busy ? "..." : "Fă cont"}
+              {busy ? "..." : "Continuă"}
             </button>
+            <p className="text-center text-[11px] text-muted-foreground">
+              Dacă ai deja cont, te logăm. Dacă nu, îți creăm unul.
+            </p>
           </form>
-          <p className="text-center text-sm text-muted-foreground">
-            Ai deja?{" "}
-            <Link to="/login" className="text-neon-purple font-medium">
-              Login
+          <p className="text-center text-xs">
+            <Link to="/forgot-password" className="text-muted-foreground hover:text-foreground">
+              Ți-ai uitat parola?
             </Link>
           </p>
         </div>
