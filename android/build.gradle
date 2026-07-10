@@ -24,9 +24,8 @@ allprojects {
     }
 }
 
-// Force every subproject (including Capacitor plugins that ship with Java 21
-// targets) to compile against Java 17, so it builds on machines that still
-// run JDK 17. Remove this block if you upgrade the host JDK to 21+.
+// Force every subproject (including Capacitor plugins) to compile against
+// Java 17, so Android Studio builds work on the supported JDK 17 setup.
 subprojects {
     afterEvaluate { project ->
         if (project.hasProperty('android')) {
@@ -41,9 +40,15 @@ subprojects {
             sourceCompatibility = "17"
             targetCompatibility = "17"
         }
-        project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-            kotlinOptions {
-                jvmTarget = "17"
+
+        // Do not reference KotlinCompile directly here: not every Capacitor
+        // project has the Kotlin Gradle plugin on the buildscript classpath,
+        // and Android Studio would fail while evaluating the project.
+        project.tasks.configureEach { task ->
+            if (task.hasProperty('kotlinOptions')) {
+                task.kotlinOptions {
+                    jvmTarget = "17"
+                }
             }
         }
     }
