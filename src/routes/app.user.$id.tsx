@@ -49,7 +49,7 @@ import { errorMessage } from "@/lib/errors";
 
 
 type ProfilePartial = {
-  id?: string;
+  id: string;
   handle?: string | null;
   username?: string | null;
   display_name?: string | null;
@@ -58,7 +58,7 @@ type ProfilePartial = {
   is_public?: boolean | null;
   active_frame_id?: string | null;
   profile_theme_id?: string | null;
-  theme_intensity?: number | null;
+  theme_intensity?: unknown;
   music_clip_url?: string | null;
   profile_bg_url?: string | null;
   rank?: string | number | null;
@@ -66,8 +66,15 @@ type ProfilePartial = {
   lifetime_sprits?: number | null;
   current_streak?: number | null;
   longest_streak?: number | null;
+  created_at?: string | null;
   city?: { name?: string; slug?: string } | null;
-};
+} & Record<string, unknown>;
+
+type PremiumBadgeInfo = {
+  has_active_premium?: boolean;
+  premium_tier?: unknown;
+} & Record<string, unknown>;
+
 
 type VenueLite = { id: string; name: string; city?: { name?: string } | null };
 type PhotoRow = {
@@ -79,7 +86,7 @@ type PhotoRow = {
   user_id?: string;
   venue?: VenueLite | null;
 };
-type PremiumBadgeRow = Record<string, unknown>;
+
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const VIDEO_URL_RE = /\.(mp4|webm|mov|m4v)(\?.*)?$/i;
@@ -164,7 +171,7 @@ function UserPage() {
     enabled: !!id,
     queryFn: async () => {
       const { data } = await supabase.rpc("get_user_premium_badge", { _user_id: id });
-      const row = Array.isArray(data) ? ((data as PremiumBadgeRow[])[0] ?? null) : (data as PremiumBadgeRow | null);
+      const row = Array.isArray(data) ? ((data as PremiumBadgeInfo[])[0] ?? null) : (data as PremiumBadgeInfo | null);
       return row ?? null;
     },
   });
@@ -264,7 +271,7 @@ function UserPage() {
   return (
     <div className="relative min-h-screen">
       {pageTheme && (
-        <ThemeAtmosphere theme={pageTheme} intensity={profile?.theme_intensity ?? undefined} />
+        <ThemeAtmosphere theme={pageTheme} intensity={(profile?.theme_intensity ?? undefined) as never} />
       )}
       {pageTheme && profile?.handle && (
         <SignatureReveal
@@ -376,7 +383,7 @@ function UserPage() {
                             <Lock size={14} className="text-neon-crimson shrink-0" />
                           )}
                           <PremiumBadge
-                            tier={badge?.premium_tier ?? null}
+                            tier={(badge?.premium_tier ?? null) as never}
                             size="sm"
                             asLink={false}
                           />
@@ -487,13 +494,13 @@ function UserPage() {
                         {!isBlocking && !isBlockedBy && (
                           <LastCallButton
                             targetId={profile.id}
-                            targetName={profile.display_name ?? profile.handle}
+                            targetName={profile.display_name ?? profile.handle ?? handle}
                           />
                         )}
                         {!isBlocking && !isBlockedBy && (
                           <TipCreatorButton
                             recipientId={profile.id}
-                            recipientName={profile.display_name ?? profile.handle}
+                            recipientName={profile.display_name ?? profile.handle ?? handle}
                           />
                         )}
                       </div>
