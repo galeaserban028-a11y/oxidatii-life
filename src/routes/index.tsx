@@ -205,33 +205,33 @@ function Index() {
           <div className="absolute top-0 right-0 w-40 h-40 bg-orange-600/30 blur-3xl pointer-events-none" />
           <div className="inline-block px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 mb-4">
             <span className="font-mono text-[10px] font-bold tracking-widest text-orange-400 uppercase">
-              Sezonul Șprițului • 2026
+              {t.season}
             </span>
           </div>
           <h2 className="font-display text-[clamp(2.6rem,12vw,3.5rem)] font-extrabold leading-[0.85] tracking-tighter mb-4 uppercase">
-            Hai la
+            {t.heroLine1}
             <br />
             <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-pink-500">
-              Șpriț
+              {t.heroWord}
             </span>
           </h2>
           <p className="text-sm text-white/60 leading-relaxed mb-7 max-w-[260px]">
-            Unde se bea șpriț <span className="text-white font-bold">acum</span>. Cu cine. Și cine-i{" "}
-            <span className="text-orange-400">rege la masă</span>.
+            {t.heroDesc1}<span className="text-white font-bold">{t.heroDescNow}</span>{t.heroDesc2}
+            <span className="text-orange-400">{t.heroDescKing}</span>{t.heroDesc3}
           </p>
           <div className="space-y-3">
             <Link
               to="/signup"
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 font-extrabold text-sm uppercase tracking-widest shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 group active:scale-[0.98] transition text-white"
             >
-              Intră în haos
+              {t.ctaJoin}
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
               to="/login"
               className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 font-bold text-xs uppercase tracking-widest text-white/70 flex items-center justify-center active:scale-[0.98] transition"
             >
-              Am cont
+              {t.ctaHave}
             </Link>
           </div>
         </div>
