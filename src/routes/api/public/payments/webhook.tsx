@@ -103,7 +103,7 @@ async function handleWalletTopup(session: StripeSession) {
     .eq("id", businessId);
 }
 
-async function handleCrystalBallPurchase(session: any) {
+async function handleCrystalBallPurchase(session: StripeSession) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "crystal_ball" && meta.price_id !== "crystal_ball_7d") return;
   const userId = meta.user_id ?? meta.userId;
@@ -112,7 +112,7 @@ async function handleCrystalBallPurchase(session: any) {
   await supabaseAdmin.rpc("grant_crystal_ball_unlock", { _user_id: userId, _days: days });
 }
 
-async function handleReplayNightPurchase(session: any) {
+async function handleReplayNightPurchase(session: StripeSession) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "replay_night" && meta.price_id !== "replay_night") return;
   const userId = meta.user_id ?? meta.userId;
@@ -126,7 +126,7 @@ async function handleReplayNightPurchase(session: any) {
   });
 }
 
-async function handleLastCallSendPurchase(session: any) {
+async function handleLastCallSendPurchase(session: StripeSession) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "last_call_send" && meta.price_id !== "last_call_send") return;
   const userId = meta.user_id ?? meta.userId;
@@ -152,7 +152,7 @@ async function handleLastCallSendPurchase(session: any) {
   });
 }
 
-async function handleLastCallRevealPurchase(session: any) {
+async function handleLastCallRevealPurchase(session: StripeSession) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "last_call_reveal" && meta.price_id !== "last_call_reveal") return;
   const userId = meta.user_id ?? meta.userId;
@@ -170,7 +170,7 @@ async function handleLastCallRevealPurchase(session: any) {
     .eq("id", pingId);
 }
 
-async function handleCheckoutSessionCompleted(session: any, env: StripeEnv) {
+async function handleCheckoutSessionCompleted(session: StripeSession, env: StripeEnv) {
   if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
 
   // Wallet top-ups / coin packs / à la carte (metadata-driven)
@@ -202,7 +202,7 @@ async function handleCheckoutSessionCompleted(session: any, env: StripeEnv) {
   await upsertSubscription(subscription, env);
 }
 
-async function handleCoinPackPurchase(session: any, env: StripeEnv) {
+async function handleCoinPackPurchase(session: StripeSession, env: StripeEnv) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "coin_pack") return;
   const userId = meta.user_id;
@@ -248,7 +248,7 @@ const BIZ_PLAN_BY_LOOKUP: Record<string, "basic" | "pro" | "elite"> = {
 };
 
 async function upsertBizPlanSubscription(
-  subscription: any,
+  subscription: StripeSubscription,
   _env: StripeEnv,
   periodEndIso: string | null,
   priceLookup: string | null,
@@ -291,7 +291,7 @@ async function upsertBizPlanSubscription(
     .eq("id", businessId);
 }
 
-async function upsertSubscription(subscription: any, env: StripeEnv) {
+async function upsertSubscription(subscription: StripeSubscription, env: StripeEnv) {
   const userId = subscription.metadata?.userId;
   if (!userId) return;
 
@@ -376,7 +376,7 @@ async function upsertSubscription(subscription: any, env: StripeEnv) {
 }
 
 // Grant monthly coins on each subscription renewal payment
-async function handleInvoicePaymentSucceeded(invoice: any, _env: StripeEnv) {
+async function handleInvoicePaymentSucceeded(invoice: StripeInvoice, _env: StripeEnv) {
   if (invoice.billing_reason !== "subscription_cycle") return;
   const subId = invoice.subscription;
   if (!subId) return;
@@ -431,7 +431,7 @@ async function handleInvoicePaymentSucceeded(invoice: any, _env: StripeEnv) {
   });
 }
 
-async function handleSubscriptionDeleted(subscription: any, env: StripeEnv) {
+async function handleSubscriptionDeleted(subscription: StripeSubscription, env: StripeEnv) {
   const userId = subscription.metadata?.userId;
   await supabaseAdmin
     .from("subscriptions")
