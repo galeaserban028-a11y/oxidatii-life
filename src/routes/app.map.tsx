@@ -722,7 +722,7 @@ function MapPage() {
       if (ensureLive) {
         await supabase
           .from("profiles")
-          .update({ location_consent: true, map_ghost: false, map_precision: "exact" } as any)
+          .update({ location_consent: true, map_ghost: false, map_precision: "exact" })
           .eq("id", user.id);
         await refreshProfile();
         qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
