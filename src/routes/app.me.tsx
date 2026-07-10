@@ -421,10 +421,10 @@ function MePage() {
         className="relative z-10"
         style={
           theme
-            ? {
-                ["--theme-accent" as any]: theme.accent,
-                ["--theme-border" as any]: theme.cardBorder,
-              }
+            ? ({
+                "--theme-accent": theme.accent,
+                "--theme-border": theme.cardBorder,
+              } as React.CSSProperties)
             : undefined
         }
       >
