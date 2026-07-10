@@ -133,7 +133,7 @@ function Onboarding() {
     <main className="min-h-screen bg-background text-foreground px-6 py-10">
       <div className="flex items-center justify-between mb-4">
         <Link
-          to="/login"
+          to="/signup"
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
         >
           <ChevronLeft size={16} /> înapoi
