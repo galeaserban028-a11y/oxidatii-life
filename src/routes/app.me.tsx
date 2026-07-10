@@ -314,14 +314,15 @@ function MePage() {
         .from("venue_photos")
         .select("id, photo_url, caption, taken_at, venue:venues(id, name, city:cities(name))")
         .in("id", ids);
-      const map = new Map((pics ?? []).map((p: any) => [p.id, p]));
-      return (rep ?? [])
-        .map((r: any) => {
+      type PhotoRow = { id: string; photo_url: string; caption: string | null; taken_at: string; venue: unknown };
+      const map = new Map<string, PhotoRow>(((pics ?? []) as PhotoRow[]).map((p) => [p.id, p]));
+      return ((rep ?? []) as { photo_id: string; created_at: string }[])
+        .map((r) => {
           const photo = map.get(r.photo_id);
           if (!photo) return null;
           return { ...photo, _kind: "photo" as const, _date: r.created_at };
         })
-        .filter(Boolean) as any[];
+        .filter((v): v is PhotoRow & { _kind: "photo"; _date: string } => !!v);
     },
   });
 
