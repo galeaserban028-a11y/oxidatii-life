@@ -2,6 +2,44 @@ import { createFileRoute } from "@tanstack/react-router";
 import { type StripeEnv, verifyWebhook, createStripeClient } from "@/lib/stripe.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
+// Minimal Stripe shapes used in this webhook (avoid full stripe types dependency).
+type StripeMeta = Record<string, string | undefined>;
+type StripePrice = {
+  id?: string;
+  lookup_key?: string | null;
+  metadata?: StripeMeta;
+  product?: string | { id?: string } | null;
+};
+type StripeItem = {
+  price?: StripePrice | null;
+  current_period_start?: number | null;
+  current_period_end?: number | null;
+};
+type StripeSession = {
+  id: string;
+  metadata?: StripeMeta;
+  payment_status?: string;
+  amount_total?: number | null;
+  currency?: string | null;
+  subscription?: string | { id: string } | null;
+};
+type StripeSubscription = {
+  id: string;
+  status: string;
+  customer: string;
+  metadata?: StripeMeta;
+  cancel_at_period_end?: boolean;
+  current_period_start?: number | null;
+  current_period_end?: number | null;
+  items?: { data?: StripeItem[] };
+};
+type StripeInvoice = {
+  id: string;
+  billing_reason?: string;
+  subscription?: string | null;
+  lines?: { data?: { price?: StripePrice | null }[] };
+};
+
 // price_id → premium tier + monthly coin grant
 // IMPORTANT: amounts MUST match the perks shown on /app/premium (src/routes/app.premium.tsx TIERS)
 const TIER_MAP: Record<string, { tier: "vip" | "vip_plus" | "pro" | "elite"; coins: number }> = {
@@ -24,13 +62,13 @@ const COIN_PACKS: Record<string, number> = {
   coins_legenda: 300,
 };
 
-function resolvePriceLookup(item: any): string | null {
+function resolvePriceLookup(item: StripeItem | undefined | null): string | null {
   return (
     item?.price?.lookup_key || item?.price?.metadata?.lovable_external_id || item?.price?.id || null
   );
 }
 
-async function handleWalletTopup(session: any) {
+async function handleWalletTopup(session: StripeSession) {
   const meta = session.metadata ?? {};
   if (meta.kind !== "wallet_topup") return;
   const businessId = meta.business_id;
