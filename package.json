@@ -17,7 +17,9 @@
     "android:release": "powershell -ExecutionPolicy Bypass -File scripts/android-play-release.ps1",
     "android:play": "powershell -ExecutionPolicy Bypass -File scripts/android-play-release.ps1",
     "android:release:mac": "bash scripts/android-play-release.sh",
-    "android:play:mac": "bash scripts/android-play-release.sh"
+    "android:play:mac": "bash scripts/android-play-release.sh",
+    "test:e2e": "python3 tests/e2e/smoke.py",
+    "test:e2e:reels": "python3 tests/e2e/reels_discover.py"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.48",
