@@ -796,7 +796,7 @@ function MapPage() {
     // we wait for an explicit tap on the live-OFF banner / consent button.
     const start = async () => {
       try {
-        const perms: any = (navigator as any).permissions;
+        const perms = (navigator as Navigator & { permissions?: { query?: (d: PermissionDescriptor) => Promise<PermissionStatus> } }).permissions;
         const status = perms?.query
           ? await perms.query({ name: "geolocation" as PermissionName }).catch(() => null)
           : null;
