@@ -118,21 +118,24 @@ export default function TonightCard() {
   }, [user?.id, today]);
 
   useEffect(() => {
-    if (!user || !(profile as any)?.city_id) return;
+    if (!user || !profile?.city_id) return;
     let cancel = false;
     (async () => {
       const { data } = await supabase
         .from("venues")
         .select("id, name")
-        .eq("city_id", (profile as any).city_id)
+        .eq("city_id", profile.city_id)
         .order("created_at", { ascending: false })
         .limit(8);
-      if (!cancel) setSuggestedVenues(((data ?? []) as any[]).map((v) => ({ ...v, count: 0 })));
+      if (!cancel)
+        setSuggestedVenues(
+          ((data ?? []) as { id: string; name: string }[]).map((v) => ({ ...v, count: 0 })),
+        );
     })();
     return () => {
       cancel = true;
     };
-  }, [user?.id, (profile as any)?.city_id]);
+  }, [user?.id, profile?.city_id]);
 
   // Load followed venues
   useEffect(() => {
