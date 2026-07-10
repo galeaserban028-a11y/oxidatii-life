@@ -854,8 +854,10 @@ function MapPage() {
         .gt("expires_at", nowIso)
         .not("venue_id", "is", null)
         .limit(400);
-      const counts = new Map<string, { venue: any; count: number }>();
-      for (const c of (data ?? []) as any[]) {
+      type HotspotVenue = { id: string; name: string; lat: number | string | null; lng: number | string | null; city_id: string };
+      type HotspotRow = { venue_id: string; venues: HotspotVenue | null };
+      const counts = new Map<string, { venue: HotspotVenue; count: number }>();
+      for (const c of (data ?? []) as HotspotRow[]) {
         if (!c.venues) continue;
         const cur = counts.get(c.venue_id);
         if (cur) cur.count += 1;
