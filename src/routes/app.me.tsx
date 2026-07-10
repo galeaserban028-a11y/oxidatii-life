@@ -1035,7 +1035,13 @@ function MePage() {
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-0.5">
-              {tabMoments.map((m: any) => {
+              {(tabMoments as Array<{
+                id: string;
+                _kind: "photo" | "proof";
+                photo_url?: string | null;
+                media_type?: string | null;
+                venue?: { id?: string; name?: string } | null;
+              } & Record<string, unknown>>).map((m) => {
                 const isProof = m._kind === "proof";
                 const key = `${m._kind}-${m.id}`;
                 const url: string = m.photo_url ?? "";
@@ -1048,7 +1054,7 @@ function MePage() {
                         isProof
                           ? m.venue?.id
                             ? { id: m.venue.id }
-                            : (undefined as any)
+                            : ({} as { id: string })
                           : { id: m.id }
                       }
                       className="absolute inset-0"
