@@ -146,9 +146,11 @@ export default function TonightCard() {
         .from("venue_follows")
         .select("venue_id, venue:venues(id, name)")
         .eq("user_id", user.id);
-      setFollows(new Set((data ?? []).map((r: any) => r.venue_id)));
+      type VF = { venue_id: string; venue?: { id: string; name: string } | null };
+      const rows = (data ?? []) as VF[];
+      setFollows(new Set(rows.map((r) => r.venue_id)));
       setFollowedVenues(
-        (data ?? []).map((r: any) => ({ id: r.venue_id, name: r.venue?.name ?? "Loc", count: 0 })),
+        rows.map((r) => ({ id: r.venue_id, name: r.venue?.name ?? "Loc", count: 0 })),
       );
     })();
   }, [user?.id]);
