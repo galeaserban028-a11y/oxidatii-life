@@ -251,14 +251,15 @@ export default function TonightCard() {
       setVenues([]);
       return;
     }
+    const cityIdForSearch = profile?.city_id;
     const t = setTimeout(async () => {
       let q = supabase.from("venues").select("id, name").ilike("name", `%${venueQuery}%`).limit(6);
-      if ((profile as any)?.city_id) q = q.eq("city_id", (profile as any).city_id);
+      if (cityIdForSearch) q = q.eq("city_id", cityIdForSearch);
       const { data } = await q;
       setVenues(data ?? []);
     }, 200);
     return () => clearTimeout(t);
-  }, [venueQuery, (profile as any)?.city_id]);
+  }, [venueQuery, profile?.city_id]);
 
   async function save() {
     if (!user) return;
