@@ -189,7 +189,7 @@ export default function TonightCard() {
       );
       const { error } = await supabase
         .from("venue_follows")
-        .insert({ user_id: user.id, venue_id: v.id } as any);
+        .insert({ user_id: user.id, venue_id: v.id });
       if (error) {
         next.delete(v.id);
         setFollows(new Set(next));
