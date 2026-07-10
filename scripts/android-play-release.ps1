@@ -14,17 +14,44 @@ function Find-Exe($name) {
 }
 
 function Find-Keytool {
-  $direct = Find-Exe "keytool.exe"
-  if ($direct) { return $direct }
-
   $candidates = @()
   if ($env:JAVA_HOME) { $candidates += (Join-Path $env:JAVA_HOME "bin\keytool.exe") }
   $candidates += "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe"
   $candidates += "C:\Program Files\Android\Android Studio\jre\bin\keytool.exe"
+  $direct = Find-Exe "keytool.exe"
+  if ($direct) { $candidates += $direct }
+
   foreach ($candidate in $candidates) {
     if (Test-Path $candidate) { return $candidate }
   }
   return $null
+}
+
+function Get-JavaMajor($javaExe) {
+  if (-not $javaExe -or -not (Test-Path $javaExe)) { return $null }
+  $output = & $javaExe -XshowSettings:properties -version 2>&1 | Out-String
+  if ($output -match 'java\.specification\.version\s*=\s*(\d+)') { return $Matches[1] }
+  return $null
+}
+
+function Use-Jdk21 {
+  $candidates = @()
+  if ($env:JAVA_HOME) { $candidates += (Join-Path $env:JAVA_HOME "bin\java.exe") }
+  $candidates += "C:\Program Files\Android\Android Studio\jbr\bin\java.exe"
+  $candidates += "C:\Program Files\Eclipse Adoptium\jdk-21\bin\java.exe"
+  $candidates += "C:\Program Files\Java\jdk-21\bin\java.exe"
+
+  foreach ($java in $candidates) {
+    if ((Get-JavaMajor $java) -eq "21") {
+      $jdkHome = Split-Path (Split-Path $java -Parent) -Parent
+      $env:JAVA_HOME = $jdkHome
+      $env:PATH = "$jdkHome\bin;$env:PATH"
+      Ok "JDK 21 activ: $jdkHome"
+      return
+    }
+  }
+
+  Fail "Este necesar JDK 21 pentru Capacitor 8. Instalează JDK 21 sau setează JAVA_HOME la C:\Program Files\Android\Android Studio\jbr."
 }
 
 function New-Password {
@@ -86,6 +113,8 @@ if ($root -match '[\s\(\)]') {
   Warn "Calea proiectului are spații/paranteze: $root"
   Warn "Dacă Gradle dă erori ciudate, mută folderul în D:\oxidatii și rulează din nou. Scriptul continuă totuși."
 }
+
+Use-Jdk21
 
 if (-not (Find-Exe "bun.exe")) { Fail "bun nu este instalat. Instalează Bun de la https://bun.sh, apoi redeschide terminalul." }
 
