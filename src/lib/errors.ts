@@ -1,9 +1,8 @@
 /**
-import { errorMessage } from "@/lib/errors";
  * Normalize an unknown thrown value (from `catch`, promises, fetch, Supabase)
  * into a user-facing message string.
  *
- * Use in place of `catch (e) { toast.error(errorMessage(e, "...")); }`:
+ * Use in place of `catch (e: any) { toast.error(e.message ?? "..."); }`:
  *
  *   } catch (e) {
  *     toast.error(errorMessage(e, "Nu s-a putut salva"));
