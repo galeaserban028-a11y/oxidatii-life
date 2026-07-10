@@ -294,7 +294,18 @@ function NightWrapSection() {
 }
 
 function LiveSpritzStrip() {
-  const { data: parties = [] } = useQuery({
+  type PartyRow = {
+    id: string;
+    host_id: string;
+    title: string;
+    location_text: string | null;
+    spots_total: number;
+    starts_at: string;
+    vibe: string | null;
+  };
+  type JoinRow = { party_id: string; user_id: string };
+
+  const { data: parties = [] as PartyRow[] } = useQuery<PartyRow[]>({
     queryKey: ["home-live-spritz"],
     queryFn: async () => {
       const { data } = await supabase
@@ -303,13 +314,13 @@ function LiveSpritzStrip() {
         .gt("expires_at", new Date().toISOString())
         .order("starts_at", { ascending: true })
         .limit(6);
-      return data ?? [];
+      return (data ?? []) as PartyRow[];
     },
     refetchInterval: 30_000,
   });
 
-  const ids = parties.map((p: any) => p.id);
-  const { data: joins = [] } = useQuery({
+  const ids = parties.map((p) => p.id);
+  const { data: joins = [] as JoinRow[] } = useQuery<JoinRow[]>({
     queryKey: ["home-live-spritz-joins", ids.sort().join(",")],
     queryFn: async () => {
       if (!ids.length) return [];
@@ -317,7 +328,7 @@ function LiveSpritzStrip() {
         .from("party_joins")
         .select("party_id,user_id")
         .in("party_id", ids);
-      return data ?? [];
+      return (data ?? []) as JoinRow[];
     },
     enabled: ids.length > 0,
     refetchInterval: 30_000,
@@ -325,10 +336,10 @@ function LiveSpritzStrip() {
 
   // hide full parties unless user is already in
   const { user } = useAuth();
-  const visibleParties = parties.filter((p: any) => {
-    const taken = joins.filter((j: any) => j.party_id === p.id).length;
+  const visibleParties = parties.filter((p) => {
+    const taken = joins.filter((j) => j.party_id === p.id).length;
     const free = p.spots_total - taken;
-    const inParty = !!user && joins.some((j: any) => j.party_id === p.id && j.user_id === user.id);
+    const inParty = !!user && joins.some((j) => j.party_id === p.id && j.user_id === user.id);
     const isHost = user?.id === p.host_id;
     return free > 0 || inParty || isHost;
   });
