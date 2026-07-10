@@ -23,7 +23,13 @@ function InboxPage() {
   const [showNew, setShowNew] = useState(false);
   const [tab, setTab] = useState<Tab>("mesaje");
 
-  const { data: conversations = [], isLoading } = useQuery({
+  type ConvBase = { id: string; kind: string; title: string | null; last_message_at: string | null };
+  type ConvWithRead = ConvBase & { last_read_at: string | null };
+  type LastMsg = { conversation_id: string; body: string | null; sender_id: string; created_at: string };
+  type ProfLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+  type ConvItem = ConvWithRead & { others: ProfLite[]; last: LastMsg | null; unread: boolean };
+
+  const { data: conversations = [] as ConvItem[], isLoading } = useQuery<ConvItem[]>({
     queryKey: ["inbox", user?.id],
     enabled: !!user,
     queryFn: async () => {
@@ -34,12 +40,13 @@ function InboxPage() {
         )
         .eq("user_id", user!.id);
       if (!members) return [];
-      const convs = members
-        .map((m: any) => ({ ...m.conversations, last_read_at: m.last_read_at }))
-        .filter(Boolean)
-        .sort((a: any, b: any) => (b.last_message_at ?? "").localeCompare(a.last_message_at ?? ""));
+      type MemberRow = { conversation_id: string; last_read_at: string | null; conversations: ConvBase | null };
+      const convs = (members as MemberRow[])
+        .map((m) => (m.conversations ? { ...m.conversations, last_read_at: m.last_read_at } : null))
+        .filter((c): c is ConvWithRead => !!c)
+        .sort((a, b) => (b.last_message_at ?? "").localeCompare(a.last_message_at ?? ""));
 
-      const ids = convs.map((c: any) => c.id);
+      const ids = convs.map((c) => c.id);
       if (!ids.length) return [];
       const [{ data: lastMsgs }, { data: allMems }] = await Promise.all([
         supabase
@@ -52,27 +59,31 @@ function InboxPage() {
           .select("conversation_id,user_id")
           .in("conversation_id", ids),
       ]);
-      const lastByConv = new Map<string, any>();
-      for (const m of lastMsgs ?? [])
+      const lastByConv = new Map<string, LastMsg>();
+      for (const m of (lastMsgs ?? []) as LastMsg[])
         if (!lastByConv.has(m.conversation_id)) lastByConv.set(m.conversation_id, m);
 
       const otherIds = new Set<string>();
-      for (const m of allMems ?? []) if (m.user_id !== user!.id) otherIds.add(m.user_id);
+      type MemLite = { conversation_id: string; user_id: string };
+      const memRows = (allMems ?? []) as MemLite[];
+      for (const m of memRows) if (m.user_id !== user!.id) otherIds.add(m.user_id);
       const { data: profs } = otherIds.size
         ? await supabase
             .from("profiles")
             .select("id,handle,display_name,avatar_url")
             .in("id", Array.from(otherIds))
-        : { data: [] as any[] };
-      const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+        : { data: [] as ProfLite[] };
+      const profMap = new Map<string, ProfLite>(
+        ((profs ?? []) as ProfLite[]).map((p) => [p.id, p]),
+      );
 
-      return convs.map((c: any) => {
-        const others = (allMems ?? [])
+      return convs.map((c) => {
+        const others = memRows
           .filter((m) => m.conversation_id === c.id && m.user_id !== user!.id)
           .map((m) => profMap.get(m.user_id))
-          .filter(Boolean);
-        const last = lastByConv.get(c.id);
-        const unread = last && last.sender_id !== user!.id && last.created_at > c.last_read_at;
+          .filter((p): p is ProfLite => !!p);
+        const last = lastByConv.get(c.id) ?? null;
+        const unread = !!last && last.sender_id !== user!.id && !!c.last_read_at && last.created_at > c.last_read_at;
         return { ...c, others, last, unread };
       });
     },
