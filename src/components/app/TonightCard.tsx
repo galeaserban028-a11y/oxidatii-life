@@ -272,7 +272,7 @@ export default function TonightCard() {
           intent_date: today,
           venue_id: venue?.id ?? null,
           note: note.trim() || null,
-        } as any,
+        },
         { onConflict: "user_id,intent_date" },
       );
       if (error) throw error;
