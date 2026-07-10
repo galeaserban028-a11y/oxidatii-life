@@ -309,23 +309,23 @@ function cleanVenueName(name: unknown) {
 }
 
 function normalizeMapVenues(rows: Venue[]) {
-  return rows
-    .map((v) => {
-      const name = cleanVenueName(v.name);
-      const lat = v.lat === null ? null : Number(v.lat);
-      const lng = v.lng === null ? null : Number(v.lng);
-      if (!name || lat === null || lng === null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
-        return null;
-      }
-      return {
-        ...v,
-        name,
-        lat,
-        lng,
-        address: v.address?.replace(/\s+/g, " ").trim() || null,
-      } satisfies Venue;
-    })
-    .filter((v): v is Venue => Boolean(v));
+  const normalized: Venue[] = [];
+  for (const v of rows) {
+    const name = cleanVenueName(v.name);
+    const lat = v.lat === null ? null : Number(v.lat);
+    const lng = v.lng === null ? null : Number(v.lng);
+    if (!name || lat === null || lng === null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+      continue;
+    }
+    normalized.push({
+      ...v,
+      name,
+      lat,
+      lng,
+      address: v.address?.replace(/\s+/g, " ").trim() || null,
+    });
+  }
+  return normalized;
 }
 
 function MapPage() {
