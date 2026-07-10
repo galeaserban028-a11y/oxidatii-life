@@ -289,14 +289,14 @@ function Index() {
             <div className="flex items-center gap-2">
               <Beer className="w-4 h-4 text-orange-400" />
               <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em]">
-                Se bea acum
+                {t.liveTitle}
               </span>
             </div>
             <Link
               to="/app"
               className="font-mono text-[10px] font-bold text-orange-400 uppercase tracking-widest flex items-center gap-1"
             >
-              Vezi tot <ChevronRight className="w-3 h-3" />
+              {t.seeAll} <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
           <ul className="space-y-4 font-mono">
