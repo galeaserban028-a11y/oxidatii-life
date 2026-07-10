@@ -348,7 +348,8 @@ function FriendsList({ onMessage }: { onMessage: (id: string) => void }) {
         .select("requester_id,addressee_id,status")
         .eq("status", "accepted")
         .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`);
-      const ids = (rows ?? []).map((r: any) =>
+      type FR = { requester_id: string; addressee_id: string; status: string };
+      const ids = ((rows ?? []) as FR[]).map((r) =>
         r.requester_id === user!.id ? r.addressee_id : r.requester_id,
       );
       if (!ids.length) return [];
