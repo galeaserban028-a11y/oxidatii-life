@@ -2,7 +2,22 @@ import { useEffect, useState } from "react";
 import { Sparkles, ChevronRight } from "lucide-react";
 import { NightWrapSheet } from "./NightWrapSheet";
 
-export function NightWrapCard({ wrap }: { wrap: any }) {
+type Wrap = {
+  night_date: string;
+  title: string;
+  tagline?: string | null;
+  vibe_emoji: string;
+  photo_urls?: string[] | null;
+  stats?: {
+    check_ins?: number;
+    photos?: number;
+    likes_received?: number;
+    friends_present?: number;
+    peak_hour?: number | null;
+  } | null;
+};
+
+export function NightWrapCard({ wrap }: { wrap: Wrap }) {
   const [open, setOpen] = useState(false);
   const stats = wrap.stats ?? {};
   const previewPhoto = wrap.photo_urls?.[0];
