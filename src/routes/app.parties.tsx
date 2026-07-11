@@ -703,7 +703,7 @@ function HostJoinsPanel({
 const PARTY_COST = 2;
 
 function CreatePartySheet({ onClose }: { onClose: () => void }) {
-  const { user, profile, refreshProfile } = useAuth() as any;
+  const { user, profile, refreshProfile } = useAuth();
   const qc = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
@@ -769,7 +769,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
       toast.success(`Șpriț deschis. -${PARTY_COST} coins 🍺`);
       onClose();
     },
-    onError: (error: any) => toast.error(error?.message ?? "Nu s-a putut deschide șprițul."),
+    onError: (error: Error) => toast.error(error?.message ?? "Nu s-a putut deschide șprițul."),
   });
 
   const valid = title.trim().length >= 2 && loc.trim().length >= 2 && spots >= 1;
