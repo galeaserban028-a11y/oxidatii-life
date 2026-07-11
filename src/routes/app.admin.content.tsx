@@ -11,6 +11,43 @@ export const Route = createFileRoute("/app/admin/content")({
 
 type Tab = "parties" | "checkins" | "proofs" | "photos";
 
+type PartyRow = {
+  id: string;
+  title: string;
+  location_text: string | null;
+  vibe: string | null;
+  starts_at: string;
+  expires_at: string;
+  host_id: string;
+  profiles?: { handle?: string | null; display_name?: string | null } | null;
+};
+type CheckinRow = {
+  id: string;
+  created_at: string;
+  expires_at: string;
+  user_id: string;
+  venues?: { name?: string | null } | null;
+  profiles?: { handle?: string | null } | null;
+};
+type ProofRow = {
+  id: string;
+  photo_url: string | null;
+  created_at: string;
+  ai_verified: boolean | null;
+  ai_confidence: number | null;
+  ai_reason: string | null;
+  profiles?: { handle?: string | null } | null;
+  venues?: { name?: string | null } | null;
+};
+type PhotoRow = {
+  id: string;
+  photo_url: string | null;
+  caption: string | null;
+  taken_at: string | null;
+  profiles?: { handle?: string | null } | null;
+  venues?: { name?: string | null } | null;
+};
+
 function AdminContent() {
   const [tab, setTab] = useState<Tab>("parties");
   const qc = useQueryClient();
