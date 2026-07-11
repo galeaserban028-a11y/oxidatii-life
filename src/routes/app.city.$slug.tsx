@@ -79,7 +79,7 @@ function CityPage() {
           // străzi
         </div>
         <div className="space-y-2">
-          {data.streets.map((s: any) => {
+          {(data.streets as Array<{ id: string; name: string; slug: string; venues?: Array<{ count: number }> }>).map((s) => {
             const count = s.venues?.[0]?.count ?? 0;
             return (
               <Link
