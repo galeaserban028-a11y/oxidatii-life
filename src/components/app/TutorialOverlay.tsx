@@ -41,7 +41,7 @@ export function TutorialOverlay() {
 
   useEffect(() => {
     if (!user || !profile?.onboarded) return;
-    if ((profile as any).tutorial_seen) return;
+    if ((profile as { tutorial_seen?: boolean }).tutorial_seen) return;
     try {
       if (localStorage.getItem(LS_KEY)) return;
     } catch {}
@@ -58,7 +58,7 @@ export function TutorialOverlay() {
     if (user) {
       await supabase
         .from("profiles")
-        .update({ tutorial_seen: true } as any)
+        .update({ tutorial_seen: true } as never)
         .eq("id", user.id);
     }
   }
