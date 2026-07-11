@@ -147,6 +147,9 @@ function SettingsPage() {
     }
   }
 
+  
+type CityLite = { id: string; name: string; slug: string };
+
   const { data: cities = [] } = useQuery({
     queryKey: ["cities-settings"],
     queryFn: async () => {
@@ -155,7 +158,7 @@ function SettingsPage() {
     },
   });
 
-  const currentCity = cities.find((c: any) => c.id === profile?.city_id);
+  const currentCity = (cities as CityLite[]).find((c) => c.id === profile?.city_id);
 
   if (!user || !profile) return null;
 
@@ -165,7 +168,7 @@ function SettingsPage() {
       const next = !profile!.is_public;
       const { error } = await supabase
         .from("profiles")
-        .update({ is_public: next } as any)
+        .update({ is_public: next })
         .eq("id", user!.id);
       if (error) throw error;
       await refreshProfile();
@@ -183,7 +186,7 @@ function SettingsPage() {
       const next = !profile!.location_consent;
       const { error } = await supabase
         .from("profiles")
-        .update({ location_consent: next } as any)
+        .update({ location_consent: next })
         .eq("id", user!.id);
       if (error) throw error;
       // If turning off, also clear any broadcast row immediately
@@ -202,7 +205,7 @@ function SettingsPage() {
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ city_id: cityId } as any)
+        .update({ city_id: cityId })
         .eq("id", user!.id);
       if (error) throw error;
       await refreshProfile();
@@ -443,8 +446,8 @@ function SettingsPage() {
           </div>
           <div className="max-h-[50vh] overflow-y-auto -mx-2">
             {cities
-              .filter((c: any) => c.name.toLowerCase().includes(citySearch.toLowerCase().trim()))
-              .map((c: any) => {
+              .filter((c: CityLite) => c.name.toLowerCase().includes(citySearch.toLowerCase().trim()))
+              .map((c: CityLite) => {
                 const selected = c.id === profile.city_id;
                 return (
                   <button
@@ -459,7 +462,7 @@ function SettingsPage() {
                   </button>
                 );
               })}
-            {cities.filter((c: any) =>
+            {(cities as CityLite[]).filter((c) =>
               c.name.toLowerCase().includes(citySearch.toLowerCase().trim()),
             ).length === 0 && (
               <div className="px-4 py-6 text-center text-sm text-muted-foreground">

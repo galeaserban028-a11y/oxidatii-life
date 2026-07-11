@@ -99,13 +99,13 @@ async function loadFeed(userId: string) {
   const [{ data: profs }, { data: venues }] = await Promise.all([
     userIds.length
       ? supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", userIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as ProfileLite[] }),
     venueIds.length
       ? supabase.from("venues").select("id, name, slug").in("id", venueIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as VenueLite[] }),
   ]);
-  const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
-  const venueMap = new Map((venues ?? []).map((v: any) => [v.id, v]));
+  const profMap = new Map(((profs ?? []) as ProfileLite[]).map((p) => [p.id, p]));
+  const venueMap = new Map(((venues ?? []) as VenueLite[]).map((v) => [v.id, v]));
 
   // Boosted slot: fetch active boost_feed campaigns via safe RPC (no financial cols)
   const { data: campaigns } = await supabase.rpc("get_active_campaigns", {
@@ -113,8 +113,8 @@ async function loadFeed(userId: string) {
     _limit: 20,
   });
 
-  let boosted: any = null;
-  const eligible = (campaigns ?? []).filter((c: any) => c.party_id);
+  let boosted: Boosted = null;
+  const eligible = ((campaigns ?? []) as CampaignRow[]).filter((c) => c.party_id);
   if (eligible.length) {
     const pick = eligible[Math.floor(Math.random() * eligible.length)];
     const [{ data: party }, { data: biz }] = await Promise.all([
@@ -125,15 +125,27 @@ async function loadFeed(userId: string) {
         .gt("expires_at", new Date().toISOString())
         .maybeSingle(),
       supabase
-        .rpc("get_business_account_public", { _id: pick.business_id })
+        .rpc("get_business_account_public", { _id: pick.business_id! })
         .maybeSingle(),
     ]);
-    if (party) boosted = { campaign: pick, party, business: biz };
+    if (party) boosted = { campaign: pick, party: party as PartyFull, business: biz as BusinessLite };
   }
 
 
   return { items, profMap, venueMap, followingCount: (following ?? []).length, boosted };
 }
+
+
+type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+type VenueLite = { id: string; name: string; slug: string | null };
+type CampaignRow = {
+  id: string;
+  party_id: string | null;
+  business_id: string | null;
+};
+type PartyFull = { id: string; title: string; location_text: string | null; vibe: string | null; host_id: string; starts_at: string | null; expires_at: string };
+type BusinessLite = { brand_name?: string | null; verified?: boolean | null } | null;
+type Boosted = { campaign: CampaignRow; party: PartyFull; business: BusinessLite } | null;
 
 function timeAgo(iso: string) {
   const s = Math.floor((Date.now() - +new Date(iso)) / 1000);
@@ -312,7 +324,7 @@ function FeedPage() {
   );
 }
 
-function BoostedCard({ boosted, userId }: { boosted: any; userId: string }) {
+function BoostedCard({ boosted, userId }: { boosted: NonNullable<Boosted>; userId: string }) {
   const logged = useRef(false);
   const campaign = boosted.campaign;
   const party = boosted.party;

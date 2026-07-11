@@ -70,6 +70,10 @@ function TopPage() {
   const [showFormula, setShowFormula] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
+  
+type MyRank = { in_top?: boolean; rank?: number; spritz_score?: number; base_sprits?: number; explorer_score?: number; squad_maker?: number; sunrise_index?: number; trendsetter?: number } | null;
+type CityCountryRow = { country: string | null };
+
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -85,7 +89,7 @@ function TopPage() {
     queryFn: async () => {
       const { data } = await supabase.from("cities").select("country");
       const set = new Set<string>();
-      for (const c of data ?? []) if ((c as any).country) set.add((c as any).country);
+      for (const c of (data ?? []) as CityCountryRow[]) if (c.country) set.add(c.country);
       return Array.from(set).sort();
     },
   });
@@ -119,7 +123,7 @@ function TopPage() {
         _month_start: monthStart,
       });
       if (error) throw error;
-      return data as any;
+      return data as MyRank;
     },
   });
 
@@ -205,7 +209,7 @@ function TopPage() {
                 <button
                   key={opt.k}
                   onClick={() => setScope(opt.k as Scope)}
-                  disabled={(opt as any).disabled}
+                  disabled={"disabled" in opt ? opt.disabled : false}
                   className={`relative py-2.5 rounded-2xl transition flex items-center justify-center gap-1.5 disabled:opacity-30 ${
                     active
                       ? "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white shadow-[0_8px_24px_-8px_rgba(199,36,255,0.6)]"
@@ -278,11 +282,11 @@ function TopPage() {
               </div>
               {myRank.in_top && (
                 <MiniBreakdown
-                  base={myRank.base_sprits}
-                  explorer={myRank.explorer_score}
-                  squad={myRank.squad_maker}
-                  sunrise={myRank.sunrise_index}
-                  trend={myRank.trendsetter}
+                  base={myRank.base_sprits ?? 0}
+                  explorer={myRank.explorer_score ?? 0}
+                  squad={myRank.squad_maker ?? 0}
+                  sunrise={myRank.sunrise_index ?? 0}
+                  trend={myRank.trendsetter ?? 0}
                 />
               )}
             </div>
@@ -439,10 +443,10 @@ function TopPage() {
             spritz_score: r.spritz_score,
           }))}
           me={
-            myRank && (myRank as any).in_top
+            myRank && myRank.in_top
               ? {
-                  rank: (myRank as any).rank,
-                  spritz_score: (myRank as any).spritz_score,
+                  rank: myRank.rank ?? 0,
+                  spritz_score: myRank.spritz_score ?? 0,
                   handle: profile?.handle ?? null,
                 }
               : null
