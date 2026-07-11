@@ -282,11 +282,11 @@ type CityCountryRow = { country: string | null };
               </div>
               {myRank.in_top && (
                 <MiniBreakdown
-                  base={myRank.base_sprits}
-                  explorer={myRank.explorer_score}
-                  squad={myRank.squad_maker}
-                  sunrise={myRank.sunrise_index}
-                  trend={myRank.trendsetter}
+                  base={myRank.base_sprits ?? 0}
+                  explorer={myRank.explorer_score ?? 0}
+                  squad={myRank.squad_maker ?? 0}
+                  sunrise={myRank.sunrise_index ?? 0}
+                  trend={myRank.trendsetter ?? 0}
                 />
               )}
             </div>
