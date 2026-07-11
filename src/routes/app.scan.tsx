@@ -21,11 +21,8 @@ function ScanPage() {
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [venueQuery, setVenueQuery] = useState("");
-  const [selectedVenue, setSelectedVenue] = useState<{
-    id: string;
-    name: string;
-    city?: any;
-  } | null>(null);
+  type VenueLite = { id: string; name: string; city?: { name: string } | null };
+  const [selectedVenue, setSelectedVenue] = useState<VenueLite | null>(null);
   const [uploading, setUploading] = useState(false);
   const [postType, setPostType] = useState<"spritz" | "normal">("spritz");
   const [addOpen, setAddOpen] = useState(false);
@@ -154,7 +151,7 @@ function ScanPage() {
         .select("id, name, city:cities(name)")
         .single();
       if (error) throw error;
-      setSelectedVenue(data as any);
+      setSelectedVenue(data as unknown as VenueLite);
       setAddOpen(false);
       setNewVenueName("");
       toast.success("Locație adăugată.");
@@ -278,7 +275,7 @@ function ScanPage() {
               </div>
               {venues.length > 0 && (
                 <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
-                  {venues.map((v: any) => (
+                  {(venues as unknown as VenueLite[]).map((v) => (
                     <button
                       key={v.id}
                       onClick={() => setSelectedVenue(v)}
@@ -338,7 +335,7 @@ function ScanPage() {
                     className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
                     <option value="">alege orașul...</option>
-                    {(cities as any[]).map((c) => (
+                    {(cities as Array<{ id: string; name: string }>).map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
                       </option>

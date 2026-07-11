@@ -163,7 +163,8 @@ function SquadPage() {
         .select("requester_id,addressee_id,status")
         .eq("status", "accepted")
         .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`);
-      const ids = (f ?? []).map((r: any) =>
+      type FriendshipRow = { requester_id: string; addressee_id: string; status: string };
+      const ids = ((f ?? []) as FriendshipRow[]).map((r) =>
         r.requester_id === user!.id ? r.addressee_id : r.requester_id,
       );
       if (ids.length === 0) return [];
@@ -183,7 +184,7 @@ function SquadPage() {
         .from("conversation_members")
         .select("conversation_id")
         .eq("user_id", user!.id);
-      const ids = (mems ?? []).map((m: any) => m.conversation_id);
+      const ids = ((mems ?? []) as { conversation_id: string }[]).map((m) => m.conversation_id);
       if (ids.length === 0) return [];
       const { data: convs } = await supabase
         .from("conversations")
@@ -525,7 +526,7 @@ function SquadPage() {
             grupuri active
           </h2>
           <div className="space-y-3">
-            {groups.map((g: any) => (
+            {(groups as Array<{ id: string; title: string | null; last_message_at: string | null }>).map((g) => (
               <Link
                 key={g.id}
                 to="/app/chat/$id"
@@ -594,7 +595,7 @@ function SquadPage() {
           </Link>
         ) : (
           <div className="divide-y divide-white/5">
-            {friends.map((p: any) => (
+            {(friends as Array<{ id: string; handle: string | null; display_name: string | null; avatar_url: string | null; city?: { name: string } | null }>).map((p) => (
               <div key={p.id} className="flex items-center justify-between py-3">
                 <Link
                   to="/app/user/$id"
