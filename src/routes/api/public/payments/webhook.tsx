@@ -481,17 +481,17 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           switch (event.type) {
             case "checkout.session.completed":
             case "checkout.session.async_payment_succeeded":
-              await handleCheckoutSessionCompleted(event.data.object, env);
+              await handleCheckoutSessionCompleted(event.data.object as StripeSession, env);
               break;
             case "customer.subscription.created":
             case "customer.subscription.updated":
-              await upsertSubscription(event.data.object, env);
+              await upsertSubscription(event.data.object as StripeSubscription, env);
               break;
             case "customer.subscription.deleted":
-              await handleSubscriptionDeleted(event.data.object, env);
+              await handleSubscriptionDeleted(event.data.object as StripeSubscription, env);
               break;
             case "invoice.payment_succeeded":
-              await handleInvoicePaymentSucceeded(event.data.object, env);
+              await handleInvoicePaymentSucceeded(event.data.object as StripeInvoice, env);
               break;
             default:
               break;
