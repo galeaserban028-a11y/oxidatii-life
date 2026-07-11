@@ -20,7 +20,8 @@ function AdminBusinesses() {
       // column-revoked from authenticated; use the admin-only RPC instead.
       const { data, error } = await supabase.rpc("admin_list_businesses");
       if (error) throw error;
-      const rows = (data ?? []) as any[];
+      type BizRow = { id: string; brand_name: string | null; verified: boolean; type: string | null; tier: string | null; contact_email: string | null; wallet_balance_cents: number; monthly_credits_cents: number };
+      const rows = (data ?? []) as BizRow[];
       const filtered = q.trim()
         ? rows.filter((r) => (r.brand_name ?? "").toLowerCase().includes(q.trim().toLowerCase()))
         : rows;
