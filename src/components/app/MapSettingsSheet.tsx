@@ -44,6 +44,12 @@ const DEFAULTS: MapSettings = {
   map_require_reciprocity: false,
 };
 
+
+type AccountStateRow = Partial<MapSettings> & Record<string, unknown>;
+type FriendshipRow = { requester_id: string; addressee_id: string };
+type FriendProfile = { id: string; display_name: string | null; handle: string | null; avatar_url: string | null };
+type PrivateLocation = { id: string; label: string; lat: number; lng: number; radius_m: number };
+
 export function MapSettingsSheet({
   open,
   onOpenChange,
@@ -59,7 +65,7 @@ export function MapSettingsSheet({
     enabled: !!user && open,
     queryFn: async () => {
       const stateRes = await supabase.rpc("get_my_account_state");
-      const stateRow = Array.isArray(stateRes.data) ? (stateRes.data[0] as any) : null;
+      const stateRow = Array.isArray(stateRes.data) ? ((stateRes.data as AccountStateRow[])[0] ?? null) : (stateRes.data as AccountStateRow | null);
       const merged = { ...DEFAULTS, ...(stateRow ?? {}) };
       return merged as MapSettings;
     },
@@ -94,7 +100,7 @@ export function MapSettingsSheet({
       qc.invalidateQueries({ queryKey: ["map-privacy", user?.id] });
       qc.invalidateQueries({ queryKey: ["friend-pins"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Nu am putut salva"),
+    onError: (e: unknown) => toast.error((e as { message?: string } | null)?.message ?? "Nu am putut salva"),
   });
 
   const update = <K extends keyof MapSettings>(key: K, value: MapSettings[K]) => {
@@ -302,7 +308,7 @@ function CloseFriendsList() {
         .select("requester_id, addressee_id")
         .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`)
         .eq("status", "accepted");
-      const ids = (fs ?? []).map((f: any) =>
+      const ids = (fs as FriendshipRow[] | null ?? []).map((f) =>
         f.requester_id === user!.id ? f.addressee_id : f.requester_id,
       );
       if (ids.length === 0) return [];
@@ -322,7 +328,7 @@ function CloseFriendsList() {
         .from("close_friends")
         .select("friend_id")
         .eq("user_id", user!.id);
-      return new Set((data ?? []).map((c: any) => c.friend_id as string));
+      return new Set((data as { friend_id: string }[] | null ?? []).map((c) => c.friend_id));
     },
   });
 
@@ -359,7 +365,7 @@ function CloseFriendsList() {
       <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-muted-foreground">
         <Users size={11} /> close friends
       </div>
-      {friends.map((f: any) => {
+      {(friends as FriendProfile[]).map((f) => {
         const on = closeSet.has(f.id);
         return (
           <button
@@ -390,7 +396,7 @@ function CloseFriendsList() {
   );
 }
 
-function PrivateLocations({ items, onChange }: { items: any[]; onChange: () => void }) {
+function PrivateLocations({ items, onChange }: { items: PrivateLocation[]; onChange: () => void }) {
   const { user } = useAuth();
   const [adding, setAdding] = useState(false);
   const [label, setLabel] = useState("");

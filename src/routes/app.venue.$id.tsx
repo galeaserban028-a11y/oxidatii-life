@@ -12,6 +12,30 @@ import { evalOpenNow, normalizeHours, formatSlot, DAY_KEYS, DAY_LABELS } from "@
 import { errorMessage } from "@/lib/errors";
 
 
+
+type VenueStreet = { id?: string; name?: string | null; city?: { name?: string | null } | null };
+type VenueRow = {
+  id: string;
+  name: string;
+  type?: string | null;
+  description?: string | null;
+  address?: string | null;
+  cover_url?: string | null;
+  ig_handle?: string | null;
+  opening_hours?: unknown;
+  street?: VenueStreet | null;
+  [key: string]: unknown;
+};
+
+type VenuePhotoRow = {
+  id: string;
+  photo_url: string;
+  media_type?: string | null;
+  caption?: string | null;
+};
+
+type StructuredData = Record<string, unknown>;
+
 export const Route = createFileRoute("/app/venue/$id")({
   loader: async ({ params }) => {
     const { data } = await supabase
@@ -22,14 +46,14 @@ export const Route = createFileRoute("/app/venue/$id")({
     return { venue: data };
   },
   head: ({ params, loaderData }) => {
-    const v: any = loaderData?.venue;
+    const v = (loaderData?.venue ?? null) as VenueRow | null;
     const name = v?.name ?? "Venue";
     const title = `${name} — OXIDAȚII`;
     const desc = v?.description
       ? String(v.description).slice(0, 155)
       : `${name}${v?.address ? ` · ${v.address}` : ""} — vezi cine e live, șprițuri și momente din ${name} pe OXIDAȚII.`;
     const url = `https://oxidatii.lovable.app/app/venue/${params.id}`;
-    const ld: any = {
+    const ld: StructuredData = {
       "@context": "https://schema.org",
       "@type": v?.type === "club" ? "NightClub" : "BarOrPub",
       name,
@@ -149,7 +173,7 @@ function VenuePage() {
 
   if (isLoading || !data)
     return <div className="p-6 text-sm text-muted-foreground">Se încarcă...</div>;
-  const v = data.venue as any;
+  const v = data.venue as VenueRow;
   const heroCover = data.photos[0]?.photo_url || v.cover_url;
   const status = evalOpenNow(v.opening_hours);
   const hoursNorm = normalizeHours(v.opening_hours);
@@ -380,7 +404,7 @@ function VenuePage() {
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-1.5">
-              {data.photos.map((p: any) => (
+              {(data.photos as VenuePhotoRow[]).map((p) => (
                 <div
                   key={p.id}
                   className="aspect-square rounded-lg overflow-hidden bg-muted relative"
@@ -418,7 +442,7 @@ function VenuePage() {
           open={shareOpen}
           onClose={() => setShareOpen(false)}
           venueName={data.venue.name ?? "Local"}
-          venueCity={(data.venue as any)?.street?.city?.name ?? null}
+          venueCity={(data.venue as VenueRow | null | undefined)?.street?.city?.name ?? null}
           userName={shareData.userName}
           userAvatar={shareData.userAvatar}
           spritzScore={shareData.spritzScore}

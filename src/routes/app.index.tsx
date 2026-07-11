@@ -284,8 +284,8 @@ function NightWrapSection() {
       const hour = new Date().getHours();
       // only after 6 AM local
       if (hour < 6) return null;
-      const result = await generateWrap({ data: {} });
-      return "wrap" in result ? result.wrap : null;
+      const result = (await generateWrap({ data: {} })) as { wrap?: unknown } | null;
+      return result && "wrap" in result ? result.wrap : null;
     },
     staleTime: 60 * 60 * 1000,
   });

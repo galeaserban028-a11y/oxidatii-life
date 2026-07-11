@@ -7,7 +7,21 @@ import {
   type NightStats,
 } from "@/lib/night-wrap.server";
 
-type WrapResult = { wrap: any; created: boolean } | { wrap: null; reason: string };
+type NightWrapRow = {
+  id: string;
+  user_id: string;
+  night_date: string;
+  title: string | null;
+  tagline: string | null;
+  vibe_emoji: string | null;
+  stats: NightStats | null;
+  photo_urls: string[] | null;
+  crew_user_ids: string[] | null;
+  top_venue_id: string | null;
+  peak_hour: number | null;
+  created_at?: string;
+};
+type WrapResult = { wrap: NightWrapRow; created: boolean } | { wrap: null; reason: string };
 
 // Dedupe concurrent generations per (user, night) so a double-mount or
 // retried request reuses one DB+AI run instead of racing.
@@ -38,7 +52,7 @@ export const getOrCreateNightWrap = createServerFn({ method: "POST" })
         .eq("user_id", userId)
         .eq("night_date", nightDate)
         .maybeSingle();
-      if (existing) return { wrap: existing, created: false };
+      if (existing) return { wrap: existing as unknown as NightWrapRow, created: false };
 
       // 2. gather activity in night window
       const { from, to } = nightWindow(nightDate);
@@ -74,10 +88,10 @@ export const getOrCreateNightWrap = createServerFn({ method: "POST" })
       }
 
       // likes received on these photos
-      const photoIds = photos.map((p: any) => p.id);
+      const photoIds = photos.map((p) => p.id);
       const { data: likesData } = photoIds.length
         ? await supabase.from("photo_likes").select("photo_id").in("photo_id", photoIds)
-        : { data: [] as any[] };
+        : { data: [] as { photo_id: string }[] };
       const likesReceived = likesData?.length ?? 0;
 
       // ratings received in window
@@ -142,7 +156,7 @@ export const getOrCreateNightWrap = createServerFn({ method: "POST" })
             .lt("created_at", to)
             .neq("user_id", userId),
         ]);
-        const candidateIds = Array.from(new Set((friendCheckIns ?? []).map((c: any) => c.user_id)));
+        const candidateIds = Array.from(new Set((friendCheckIns ?? []).map((c) => c.user_id).filter((x): x is string => !!x)));
         if (candidateIds.length) {
           const { data: friendships } = await supabase
             .from("friendships")
@@ -176,7 +190,7 @@ export const getOrCreateNightWrap = createServerFn({ method: "POST" })
 
       const photoUrls = photos
         .slice(0, 4)
-        .map((p: any) => p.photo_url)
+        .map((p) => p.photo_url)
         .filter(Boolean);
 
       const { data: inserted, error: insertErr } = await supabase
@@ -200,7 +214,7 @@ export const getOrCreateNightWrap = createServerFn({ method: "POST" })
         console.error("[night-wrap] insert failed", insertErr);
         return { wrap: null, reason: "insert_failed" };
       }
-      return { wrap: inserted, created: true };
+      return { wrap: inserted as unknown as NightWrapRow, created: true };
     })();
 
     WRAP_INFLIGHT.set(dedupeKey, work);

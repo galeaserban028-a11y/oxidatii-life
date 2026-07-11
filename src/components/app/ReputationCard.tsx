@@ -12,6 +12,7 @@ import {
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import type { LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
@@ -19,7 +20,7 @@ import { toast } from "sonner";
 // ---------- Categorii & metadate ----------
 type CatKey = "respect" | "reliability" | "energy" | "friendliness" | "contribution" | "trust";
 
-const CATS: { key: CatKey; label: string; short: string; icon: any; color: string }[] = [
+const CATS: { key: CatKey; label: string; short: string; icon: LucideIcon; color: string }[] = [
   { key: "respect", label: "Respect", short: "respect", icon: Shield, color: "#c724ff" },
   { key: "reliability", label: "Fiabilitate", short: "fiabil", icon: Clock, color: "#00e5ff" },
   { key: "energy", label: "Energie", short: "energie", icon: Zap, color: "#ffea00" },
@@ -118,7 +119,7 @@ function usePeerAgg(userId?: string | null) {
     enabled: !!userId,
     queryFn: async (): Promise<{ agg: PeerAgg; uniqueRaters: number }> => {
       const { data } = await supabase
-        .from("user_ratings" as any)
+        .from("user_ratings")
         .select("category, value, rater_id")
         .eq("rated_id", userId!);
       const out: PeerAgg = {};
@@ -144,7 +145,7 @@ function useMyRatingsFor(raterId?: string | null, ratedId?: string | null) {
     enabled: !!raterId && !!ratedId && raterId !== ratedId,
     queryFn: async (): Promise<Partial<Record<CatKey, number>>> => {
       const { data } = await supabase
-        .from("user_ratings" as any)
+        .from("user_ratings")
         .select("category, value")
         .eq("rater_id", raterId!)
         .eq("rated_id", ratedId!);
@@ -570,7 +571,7 @@ function RatingEditor({ targetUserId, onSaved }: { targetUserId: string; onSaved
         }));
       if (rows.length === 0) return;
       const { error } = await supabase
-        .from("user_ratings" as any)
+        .from("user_ratings")
         .upsert(rows, { onConflict: "rater_id,rated_id,category" });
       if (error) throw error;
     },
@@ -580,7 +581,7 @@ function RatingEditor({ targetUserId, onSaved }: { targetUserId: string; onSaved
       qc.invalidateQueries({ queryKey: ["my-ratings", user?.id, targetUserId] });
       onSaved();
     },
-    onError: (e: any) => toast.error(e.message ?? "Eroare"),
+    onError: (e: unknown) => toast.error((e as { message?: string } | null)?.message ?? "Eroare"),
   });
 
   const hasChanges = Object.keys(draft).length > 0;
