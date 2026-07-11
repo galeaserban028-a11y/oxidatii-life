@@ -92,7 +92,7 @@ function PartiesList({ onDelete }: { onDelete: (id: string) => void }) {
   });
   return (
     <div className="space-y-1.5">
-      {data?.map((p: any) => (
+      {data?.map((p) => (
         <Row key={p.id} onDelete={() => onDelete(p.id)}>
           <div className="font-display text-sm truncate">{p.title}</div>
           <div className="font-mono text-[10px] text-muted-foreground truncate">
@@ -121,7 +121,7 @@ function CheckinsList({ onDelete }: { onDelete: (id: string) => void }) {
   });
   return (
     <div className="space-y-1.5">
-      {data?.map((c: any) => (
+      {data?.map((c) => (
         <Row key={c.id} onDelete={() => onDelete(c.id)}>
           <div className="font-display text-sm truncate">
             @{c.profiles?.handle ?? "?"} la {c.venues?.name ?? "—"}
@@ -152,7 +152,7 @@ function ProofsList({ onDelete }: { onDelete: (id: string) => void }) {
   });
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-      {data?.map((p: any) => (
+      {data?.map((p) => (
         <div
           key={p.id}
           className="rounded-xl border border-foreground/10 bg-foreground/[0.03] overflow-hidden"
@@ -195,7 +195,7 @@ function PhotosList({ onDelete }: { onDelete: (id: string) => void }) {
   });
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-      {data?.map((p: any) => (
+      {data?.map((p) => (
         <div
           key={p.id}
           className="rounded-xl border border-foreground/10 bg-foreground/[0.03] overflow-hidden"
