@@ -16,11 +16,8 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [venueQuery, setVenueQuery] = useState("");
-  const [selectedVenue, setSelectedVenue] = useState<{
-    id: string;
-    name: string;
-    city?: any;
-  } | null>(null);
+  type VenueLite = { id: string; name: string; slug?: string; city?: { name: string } | null };
+  const [selectedVenue, setSelectedVenue] = useState<VenueLite | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
