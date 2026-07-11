@@ -20,7 +20,7 @@ export function PrizeSheet({ onClose }: { onClose: () => void }) {
         supabase.from("photo_comments").select("photo_id").in("photo_id", ids),
         supabase.from("photo_reposts").select("photo_id").in("photo_id", ids),
       ]);
-      const tally = (rows: any[] | null) => {
+      const tally = (rows: Array<{ photo_id: string }> | null) => {
         const m = new Map<string, number>();
         (rows ?? []).forEach((r) => m.set(r.photo_id, (m.get(r.photo_id) ?? 0) + 1));
         return m;
