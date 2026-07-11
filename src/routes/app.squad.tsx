@@ -595,7 +595,7 @@ function SquadPage() {
           </Link>
         ) : (
           <div className="divide-y divide-white/5">
-            {(friends as Array<{ id: string; handle: string | null; display_name: string | null; avatar_url: string | null }>).map((p) => (
+            {(friends as Array<{ id: string; handle: string | null; display_name: string | null; avatar_url: string | null; city?: { name: string } | null }>).map((p) => (
               <div key={p.id} className="flex items-center justify-between py-3">
                 <Link
                   to="/app/user/$id"
