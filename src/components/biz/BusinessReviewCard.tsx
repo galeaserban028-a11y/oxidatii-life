@@ -39,7 +39,7 @@ export function BusinessReviewCard({
               .eq("business_id", businessId)
               .eq("reviewer_id", user.id)
               .maybeSingle()
-          : Promise.resolve({ data: null as any }),
+          : Promise.resolve({ data: null as { rating: number; comment: string | null } | null }),
       ]);
       return { all: all.data ?? [], mine: mine.data ?? null };
     },
