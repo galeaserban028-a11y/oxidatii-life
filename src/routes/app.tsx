@@ -75,7 +75,10 @@ function AppLayout() {
     });
     const observeRoot = (root: Element | null) => {
       if (!root) return;
-      obs.observe(root, { attributes: true, attributeFilter: ["class", "style", "data-header-bg"] });
+      obs.observe(root, {
+        attributes: true,
+        attributeFilter: ["class", "style", "data-header-bg"],
+      });
     };
     obs.observe(outlet, { childList: true });
     observeRoot(outlet.firstElementChild);
@@ -96,10 +99,12 @@ function AppLayout() {
     <main
       ref={mainRef}
       className={`min-h-screen bg-background text-foreground overflow-x-hidden ${compact ? "oxi-compact" : ""}`}
-      style={{
-        ["--header-bg" as string]: headerColor,
-        paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)",
-      } as React.CSSProperties}
+      style={
+        {
+          ["--header-bg" as string]: headerColor,
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 8.5rem)",
+        } as React.CSSProperties
+      }
     >
       {/* iOS status-bar tint — solid background under the Dynamic Island / notch
           so the area never shows transparent content. Sits behind the sticky header. */}
@@ -131,9 +136,6 @@ function AppLayout() {
       </div>
       {!isReels && <BottomTabBar />}
       <TutorialOverlay />
-
-
     </main>
   );
 }
-

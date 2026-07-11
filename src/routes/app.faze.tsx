@@ -77,7 +77,12 @@ async function loadMoments(currentUserId: string | null) {
 
   const userIds = Array.from(new Set(items.map((i) => i.user_id)));
   const venueIds = Array.from(new Set(items.map((i) => i.venue_id)));
-  type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+  type ProfileLite = {
+    id: string;
+    handle: string | null;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
   type VenueLite = { id: string; name: string; slug: string; city: { name: string } | null };
   type PhotoIdRow = { photo_id: string };
   const emptyArr = <T,>() => Promise.resolve({ data: [] as T[] });

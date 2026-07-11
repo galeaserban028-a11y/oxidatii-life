@@ -23,8 +23,7 @@ function start() {
   started = true;
 
   // Honor user preference & device hints up front
-  const reduce =
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
   const dm = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
   const lowMem = !!dm && dm <= 3;
   const lowCores = (navigator.hardwareConcurrency ?? 8) <= 4;

@@ -5,7 +5,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Globe2, ChevronDown, Compass, Users, Moon, TrendingUp, Sparkles, Info, Share2 } from "lucide-react";
+import {
+  Globe2,
+  ChevronDown,
+  Compass,
+  Users,
+  Moon,
+  TrendingUp,
+  Sparkles,
+  Info,
+  Share2,
+} from "lucide-react";
 import { SpritzOfDayStrip } from "@/components/app/SpritzOfDayStrip";
 import { FadeIn } from "@/components/app/FadeIn";
 import { LeaderboardExportSheet } from "@/components/app/LeaderboardExportSheet";
@@ -70,9 +80,17 @@ function TopPage() {
   const [showFormula, setShowFormula] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
-  
-type MyRank = { in_top?: boolean; rank?: number; spritz_score?: number; base_sprits?: number; explorer_score?: number; squad_maker?: number; sunrise_index?: number; trendsetter?: number } | null;
-type CityCountryRow = { country: string | null };
+  type MyRank = {
+    in_top?: boolean;
+    rank?: number;
+    spritz_score?: number;
+    base_sprits?: number;
+    explorer_score?: number;
+    squad_maker?: number;
+    sunrise_index?: number;
+    trendsetter?: number;
+  } | null;
+  type CityCountryRow = { country: string | null };
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -187,11 +205,8 @@ type CityCountryRow = { country: string | null };
           </div>
 
           <AnimatePresence>
-            {showFormula && (
-              <RulesModal onClose={() => setShowFormula(false)} />
-            )}
+            {showFormula && <RulesModal onClose={() => setShowFormula(false)} />}
           </AnimatePresence>
-
         </div>
 
         {/* Scope tabs */}
@@ -230,7 +245,10 @@ type CityCountryRow = { country: string | null };
                 className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur text-sm font-semibold active:scale-[0.99] transition-all"
               >
                 <span>{COUNTRY_LABEL[country] ?? country}</span>
-                <ChevronDown size={16} className={`transition-transform duration-200 ${countryOpen ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  size={16}
+                  className={`transition-transform duration-200 ${countryOpen ? "rotate-180" : ""}`}
+                />
               </button>
               <AnimatePresence>
                 {countryOpen && (
@@ -274,7 +292,10 @@ type CityCountryRow = { country: string | null };
                 <div className="text-[10px] uppercase tracking-wider text-white/50">Tu</div>
                 <div style={instrument} className="text-2xl leading-none mt-1">
                   {myRank.in_top ? (
-                    <>#{myRank.rank} · <span className="text-[#ffea00]">{myRank.spritz_score}</span> pct</>
+                    <>
+                      #{myRank.rank} · <span className="text-[#ffea00]">{myRank.spritz_score}</span>{" "}
+                      pct
+                    </>
                   ) : (
                     <>Nu ești în top încă</>
                   )}
@@ -315,7 +336,11 @@ type CityCountryRow = { country: string | null };
                       const isKing = realRank === 1;
                       const handle = p?.handle ?? p?.display_name ?? "anonim";
                       const isMe = p.user_id === user?.id;
-                      const podiumH = isKing ? "h-24 sm:h-32" : realRank === 2 ? "h-20 sm:h-24" : "h-16 sm:h-20";
+                      const podiumH = isKing
+                        ? "h-24 sm:h-32"
+                        : realRank === 2
+                          ? "h-20 sm:h-24"
+                          : "h-16 sm:h-20";
                       return (
                         <Link
                           key={p.user_id}
@@ -330,7 +355,11 @@ type CityCountryRow = { country: string | null };
                           >
                             <div className="h-full w-full rounded-full overflow-hidden bg-[#0a0a0a]">
                               {p?.avatar_url ? (
-                                <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
+                                <img
+                                  src={p.avatar_url}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
                               ) : (
                                 <div className="h-full w-full flex items-center justify-center text-xl font-semibold">
                                   {handle[0]?.toUpperCase()}
@@ -338,11 +367,15 @@ type CityCountryRow = { country: string | null };
                               )}
                             </div>
                             {isKing && (
-                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl">👑</div>
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl">
+                                👑
+                              </div>
                             )}
                           </div>
                           <div className="text-center min-w-0 w-full">
-                            <div className={`text-[12px] font-semibold truncate ${isKing ? "text-white" : "text-white/80"}`}>
+                            <div
+                              className={`text-[12px] font-semibold truncate ${isKing ? "text-white" : "text-white/80"}`}
+                            >
                               @{handle}
                               {isMe && <span className="text-[#ffea00]"> ·tu</span>}
                             </div>
@@ -355,10 +388,14 @@ type CityCountryRow = { country: string | null };
                           </div>
                           <div
                             className={`${podiumH} w-full rounded-t-2xl backdrop-blur-xl border-t border-white/10 ${
-                              isKing ? "bg-gradient-to-t from-[#c724ff]/30 to-transparent" : "bg-white/[0.03]"
+                              isKing
+                                ? "bg-gradient-to-t from-[#c724ff]/30 to-transparent"
+                                : "bg-white/[0.03]"
                             } flex items-start justify-center pt-2`}
                           >
-                            <span className={`text-[11px] font-mono font-bold ${isKing ? "text-[#ffea00]" : "text-white/40"}`}>
+                            <span
+                              className={`text-[11px] font-mono font-bold ${isKing ? "text-[#ffea00]" : "text-white/40"}`}
+                            >
                               #{realRank}
                             </span>
                           </div>
@@ -388,7 +425,9 @@ type CityCountryRow = { country: string | null };
                             : "bg-[#0d0d0d] border-white/5 hover:bg-[#111]"
                         }`}
                       >
-                        <div className="font-mono font-bold text-sm text-center text-white/40">{rank}</div>
+                        <div className="font-mono font-bold text-sm text-center text-white/40">
+                          {rank}
+                        </div>
                         <div className="h-11 w-11 rounded-full overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center text-white font-semibold">
                           {p?.avatar_url ? (
                             <img src={p.avatar_url} alt="" className="h-full w-full object-cover" />
@@ -398,7 +437,8 @@ type CityCountryRow = { country: string | null };
                         </div>
                         <div className="min-w-0">
                           <div className="font-semibold text-sm truncate text-white">
-                            @{handle} {isMe && <span className="text-[10px] text-[#ffea00]">· tu</span>}
+                            @{handle}{" "}
+                            {isMe && <span className="text-[10px] text-[#ffea00]">· tu</span>}
                           </div>
                           <div className="text-[11px] text-white/40 truncate flex items-center gap-2">
                             <span>{p?.city_name ?? "—"}</span>
@@ -451,7 +491,13 @@ type CityCountryRow = { country: string | null };
                 }
               : null
           }
-          scopeLabel={scope === "world" ? "lume" : scope === "city" ? "oraș" : (COUNTRY_LABEL[country] ?? country).replace(/^.+?\s/, "")}
+          scopeLabel={
+            scope === "world"
+              ? "lume"
+              : scope === "city"
+                ? "oraș"
+                : (COUNTRY_LABEL[country] ?? country).replace(/^.+?\s/, "")
+          }
           monthLabel={monthLabel}
           onClose={() => setExportOpen(false)}
         />
@@ -460,7 +506,15 @@ type CityCountryRow = { country: string | null };
   );
 }
 
-function FormulaRow({ icon, label, weight }: { icon: React.ReactNode; label: string; weight: string }) {
+function FormulaRow({
+  icon,
+  label,
+  weight,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  weight: string;
+}) {
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="flex items-center gap-2">
@@ -526,16 +580,59 @@ function EmptyHint({ title, sub }: { title: string; sub: string }) {
 
 function RulesModal({ onClose }: { onClose: () => void }) {
   const instrument = { fontFamily: '"Instrument Serif", serif' };
-  const articles: Array<{ n: string; title: string; body: string; tag?: string; weight?: string }> = [
-    { n: "01", title: "Eligibilitate", body: "Doar profilurile publice apar în clasament. Profilurile private participă, dar nu sunt afișate." },
-    { n: "02", title: "Perioadă", body: "Clasamentul se calculează strict pentru luna curentă și se resetează în prima zi a lunii următoare, ora 00:00 (Europe/Bucharest)." },
-    { n: "03", title: "Șprițuri", body: "Fiecare check-in valid la un venue îți aduce punctaj de bază.", tag: "Bază", weight: "×10" },
-    { n: "04", title: "Explorer", body: "Primești bonus pentru fiecare venue nou (×5) și pentru fiecare oraș nou (×15) vizitat în luna curentă.", tag: "Descoperă", weight: "×5 / ×15" },
-    { n: "05", title: "Squad Maker", body: "Oameni cu care NU ești prieten și care s-au check-in la același loc ±2h față de tine. Se numără o singură dată per persoană.", tag: "Conexiuni", weight: "×8" },
-    { n: "06", title: "Sunrise Index", body: "Scor pentru check-in-uri între 00:00 și 05:59. Cu cât e mai târziu (mai aproape de 00:00), cu atât bonusul e mai mare.", tag: "Noctambul", weight: "×4" },
-    { n: "07", title: "Trendsetter", body: "Persoane distincte care se check-in la același venue la cel mult 2h DUPĂ tine. Tu ai setat trendul.", tag: "Influență", weight: "×6" },
-    { n: "08", title: "Fair play", body: "Check-in-urile false, conturile duplicate sau orice formă de fraudă duc la descalificare și pierderea punctajului lunii." },
-  ];
+  const articles: Array<{ n: string; title: string; body: string; tag?: string; weight?: string }> =
+    [
+      {
+        n: "01",
+        title: "Eligibilitate",
+        body: "Doar profilurile publice apar în clasament. Profilurile private participă, dar nu sunt afișate.",
+      },
+      {
+        n: "02",
+        title: "Perioadă",
+        body: "Clasamentul se calculează strict pentru luna curentă și se resetează în prima zi a lunii următoare, ora 00:00 (Europe/Bucharest).",
+      },
+      {
+        n: "03",
+        title: "Șprițuri",
+        body: "Fiecare check-in valid la un venue îți aduce punctaj de bază.",
+        tag: "Bază",
+        weight: "×10",
+      },
+      {
+        n: "04",
+        title: "Explorer",
+        body: "Primești bonus pentru fiecare venue nou (×5) și pentru fiecare oraș nou (×15) vizitat în luna curentă.",
+        tag: "Descoperă",
+        weight: "×5 / ×15",
+      },
+      {
+        n: "05",
+        title: "Squad Maker",
+        body: "Oameni cu care NU ești prieten și care s-au check-in la același loc ±2h față de tine. Se numără o singură dată per persoană.",
+        tag: "Conexiuni",
+        weight: "×8",
+      },
+      {
+        n: "06",
+        title: "Sunrise Index",
+        body: "Scor pentru check-in-uri între 00:00 și 05:59. Cu cât e mai târziu (mai aproape de 00:00), cu atât bonusul e mai mare.",
+        tag: "Noctambul",
+        weight: "×4",
+      },
+      {
+        n: "07",
+        title: "Trendsetter",
+        body: "Persoane distincte care se check-in la același venue la cel mult 2h DUPĂ tine. Tu ai setat trendul.",
+        tag: "Influență",
+        weight: "×6",
+      },
+      {
+        n: "08",
+        title: "Fair play",
+        body: "Check-in-urile false, conturile duplicate sau orice formă de fraudă duc la descalificare și pierderea punctajului lunii.",
+      },
+    ];
   if (typeof document === "undefined") return null;
 
   const topClearance = "calc(env(safe-area-inset-top, 0px) + 96px)";
@@ -556,7 +653,6 @@ function RulesModal({ onClose }: { onClose: () => void }) {
       }}
       onClick={onClose}
     >
-
       <motion.div
         initial={{ y: 20, opacity: 0, scale: 0.98 }}
         animate={{ y: 0, opacity: 1, scale: 1 }}
@@ -590,7 +686,9 @@ function RulesModal({ onClose }: { onClose: () => void }) {
           <div className="mt-2 flex items-center gap-3 text-[11px] text-white/45 font-mono uppercase tracking-wider">
             <span>v1.0</span>
             <span className="h-1 w-1 rounded-full bg-white/30" />
-            <span>{new Date().toLocaleDateString("ro-RO", { month: "long", year: "numeric" })}</span>
+            <span>
+              {new Date().toLocaleDateString("ro-RO", { month: "long", year: "numeric" })}
+            </span>
             <span className="h-1 w-1 rounded-full bg-white/30" />
             <span>8 articole</span>
           </div>
@@ -599,14 +697,18 @@ function RulesModal({ onClose }: { onClose: () => void }) {
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
           <p className="text-sm text-white/75 leading-relaxed border-l-2 border-[#ffea00]/70 pl-3 italic">
-            Spritz Score recompensează șprițuri, descoperire, conexiuni noi și nopți lungi. Punctele se acumulează lunar și se resetează la final de lună.
+            Spritz Score recompensează șprițuri, descoperire, conexiuni noi și nopți lungi. Punctele
+            se acumulează lunar și se resetează la final de lună.
           </p>
 
           <div className="space-y-4">
             {articles.map((a) => (
               <article key={a.n} className="group">
                 <div className="flex items-baseline gap-3">
-                  <span style={instrument} className="text-[#ffea00] text-xl leading-none w-8 shrink-0">
+                  <span
+                    style={instrument}
+                    className="text-[#ffea00] text-xl leading-none w-8 shrink-0"
+                  >
                     {a.n}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -629,8 +731,11 @@ function RulesModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-[11px] text-white/50 leading-relaxed">
-            <span className="text-white/70 font-bold uppercase tracking-wider text-[10px]">Notă · </span>
-            Echipa OXIDAȚII poate ajusta ponderile pentru a păstra echilibrul clasamentului. Modificările se anunță înainte de luna în care intră în vigoare.
+            <span className="text-white/70 font-bold uppercase tracking-wider text-[10px]">
+              Notă ·{" "}
+            </span>
+            Echipa OXIDAȚII poate ajusta ponderile pentru a păstra echilibrul clasamentului.
+            Modificările se anunță înainte de luna în care intră în vigoare.
           </div>
         </div>
 
@@ -648,5 +753,3 @@ function RulesModal({ onClose }: { onClose: () => void }) {
     document.body,
   );
 }
-
-

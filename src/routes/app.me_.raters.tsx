@@ -14,8 +14,19 @@ function RatersPage() {
   const { user } = useAuth();
   const { isVipPlus: allowed } = useEntitlements();
 
-  type RaterProfile = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
-  type RatingRow = { id: string; value: number; category: string; created_at: string; rater_id: string };
+  type RaterProfile = {
+    id: string;
+    handle: string | null;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
+  type RatingRow = {
+    id: string;
+    value: number;
+    category: string;
+    created_at: string;
+    rater_id: string;
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-raters", user?.id],

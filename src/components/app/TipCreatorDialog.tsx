@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, Coins, Gift, Loader2, RefreshCw, Sparkles, TrendingUp, Check } from "lucide-react";
+import {
+  AlertCircle,
+  Coins,
+  Gift,
+  Loader2,
+  RefreshCw,
+  Sparkles,
+  TrendingUp,
+  Check,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -76,7 +85,6 @@ export function TipCreatorButton({
       const row = Array.isArray(data) ? data[0] : data;
       return (row?.coin_balance as number | undefined) ?? 0;
     },
-
   });
 
   const { data: earnings } = useQuery({
@@ -162,7 +170,9 @@ export function TipCreatorButton({
         return;
       }
 
-      try { localStorage.setItem(LAST_AMOUNT_KEY, String(parsed)); } catch {}
+      try {
+        localStorage.setItem(LAST_AMOUNT_KEY, String(parsed));
+      } catch {}
       import("@/lib/native").then(({ haptic }) => haptic?.("medium")).catch(() => {});
       setSuccess(true);
       setTimeout(() => {
@@ -187,7 +197,12 @@ export function TipCreatorButton({
   if (isSelf) return null; // hide button on own profile
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!sending) setOpen(v); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!sending) setOpen(v);
+      }}
+    >
       <DialogTrigger asChild>
         <button
           className="px-4 py-3 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-background font-display font-black flex items-center justify-center gap-1.5 active:scale-[0.97] transition shadow-[0_8px_24px_-8px_rgba(245,158,11,0.6)] hover:shadow-[0_12px_30px_-8px_rgba(245,158,11,0.8)]"
@@ -226,10 +241,17 @@ export function TipCreatorButton({
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/5 border border-amber-400/20">
                   <TrendingUp size={14} className="text-amber-400 shrink-0" />
                   <div className="text-[11px] text-amber-200/90 leading-tight">
-                    <span className="font-bold text-amber-300">{earnings.total}</span> șprițuri primite ·{" "}
-                    <span className="font-bold text-amber-300">{earnings.count}</span> fani
+                    <span className="font-bold text-amber-300">{earnings.total}</span> șprițuri
+                    primite · <span className="font-bold text-amber-300">{earnings.count}</span>{" "}
+                    fani
                     {earnings.last_30d > 0 && (
-                      <> · <span className="text-emerald-300 font-bold">+{earnings.last_30d}</span> luna asta</>
+                      <>
+                        {" "}
+                        · <span className="text-emerald-300 font-bold">
+                          +{earnings.last_30d}
+                        </span>{" "}
+                        luna asta
+                      </>
                     )}
                   </div>
                 </div>
@@ -239,7 +261,10 @@ export function TipCreatorButton({
                 {PRESETS.map((v) => (
                   <button
                     key={v}
-                    onClick={() => { setAmountStr(String(v)); setErrorMsg(null); }}
+                    onClick={() => {
+                      setAmountStr(String(v));
+                      setErrorMsg(null);
+                    }}
                     disabled={sending}
                     className={`py-3 rounded-xl font-display font-bold text-sm border transition relative overflow-hidden disabled:opacity-50 ${
                       parsed === v
@@ -253,7 +278,10 @@ export function TipCreatorButton({
               </div>
 
               <div className="relative">
-                <Coins size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400" />
+                <Coins
+                  size={14}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400"
+                />
                 <input
                   type="number"
                   inputMode="numeric"
@@ -298,7 +326,9 @@ export function TipCreatorButton({
                 >
                   <Coins size={12} className={insufficient ? "text-red-400" : "text-amber-400"} />
                   {balanceLoading ? (
-                    <>Sold: <Loader2 size={10} className="inline animate-spin ml-1" /></>
+                    <>
+                      Sold: <Loader2 size={10} className="inline animate-spin ml-1" />
+                    </>
                   ) : balanceError ? (
                     <>
                       Sold indisponibil
@@ -326,7 +356,10 @@ export function TipCreatorButton({
                   <div className="flex-1">{errorMsg}</div>
                   <button
                     type="button"
-                    onClick={() => { setErrorMsg(null); send(); }}
+                    onClick={() => {
+                      setErrorMsg(null);
+                      send();
+                    }}
                     disabled={sending || amountInvalid || insufficient}
                     className="inline-flex items-center gap-1 text-red-100 underline decoration-dotted disabled:opacity-40"
                   >
@@ -364,7 +397,6 @@ export function TipCreatorButton({
     </Dialog>
   );
 }
-
 
 export function CreatorEarningsBadge({ userId }: { userId: string }) {
   const { data } = useQuery({

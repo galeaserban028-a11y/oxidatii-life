@@ -39,7 +39,12 @@ export function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () =
         .order("created_at", { ascending: true });
       const rows = (data ?? []) as RawComment[];
       const ids = Array.from(new Set(rows.map((c) => c.user_id)));
-      type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+      type ProfileLite = {
+        id: string;
+        handle: string | null;
+        display_name: string | null;
+        avatar_url: string | null;
+      };
       const { data: profs } = ids.length
         ? await supabase
             .from("profiles")
@@ -157,9 +162,7 @@ export function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () =
             >
               Comentarii
             </h2>
-            {total > 0 && (
-              <span className="text-[10px] text-white/40 font-medium">{total}</span>
-            )}
+            {total > 0 && <span className="text-[10px] text-white/40 font-medium">{total}</span>}
           </div>
           <button
             onClick={onClose}

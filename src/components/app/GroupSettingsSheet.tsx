@@ -63,8 +63,8 @@ export function GroupSettingsSheet({
         .select("requester_id,addressee_id")
         .eq("status", "accepted")
         .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`);
-      const ids = ((friendRows ?? []) as Array<{ requester_id: string; addressee_id: string }>).map((r) =>
-        r.requester_id === user!.id ? r.addressee_id : r.requester_id,
+      const ids = ((friendRows ?? []) as Array<{ requester_id: string; addressee_id: string }>).map(
+        (r) => (r.requester_id === user!.id ? r.addressee_id : r.requester_id),
       );
       if (!ids.length) return [];
       const { data: profs } = await supabase

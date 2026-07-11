@@ -16,7 +16,6 @@ const TYPE_META: Record<string, { label: string; icon: LucideIcon; color: string
   bug_report: { label: "Bug", icon: Bug, color: "text-neon-crimson" },
 };
 
-
 type ReporterProfile = { handle: string | null; display_name: string | null };
 type ReportRow = {
   id: string;
@@ -53,11 +52,7 @@ function AdminReports() {
         return [];
       }
       const ids = Array.from(
-        new Set(
-          (rows ?? [])
-            .map((r: ReportRow) => r.reporter_id)
-            .filter((x): x is string => !!x),
-        ),
+        new Set((rows ?? []).map((r: ReportRow) => r.reporter_id).filter((x): x is string => !!x)),
       );
       let profMap: Record<string, { handle: string | null; display_name: string | null }> = {};
       if (ids.length) {
@@ -65,9 +60,17 @@ function AdminReports() {
           .from("profiles")
           .select("id, handle, display_name")
           .in("id", ids);
-        profMap = Object.fromEntries((profs ?? []).map((p: { id: string } & ReporterProfile) => [p.id, p]));
+        profMap = Object.fromEntries(
+          (profs ?? []).map((p: { id: string } & ReporterProfile) => [p.id, p]),
+        );
       }
-      return (rows ?? []).map((r: ReportRow) => ({ ...r, reporter: (r.reporter_id ? profMap[r.reporter_id] : null) ?? null }) as ReportItem);
+      return (rows ?? []).map(
+        (r: ReportRow) =>
+          ({
+            ...r,
+            reporter: (r.reporter_id ? profMap[r.reporter_id] : null) ?? null,
+          }) as ReportItem,
+      );
     },
   });
 

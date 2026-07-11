@@ -34,7 +34,9 @@ export function NightWrapCard({ wrap }: { wrap: Wrap }) {
         }, 900);
         return () => clearTimeout(t);
       }
-    } catch { /* storage blocked */ }
+    } catch {
+      /* storage blocked */
+    }
   }, [wrap?.night_date]);
 
   return (

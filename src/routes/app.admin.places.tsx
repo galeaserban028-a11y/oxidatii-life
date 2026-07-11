@@ -91,7 +91,24 @@ function AdminPlaces() {
       </div>
 
       <div className="space-y-1.5">
-        {(data as Array<Record<string, unknown> & { id: string; name: string; type?: string; address?: string; slug?: string; verified?: boolean; country?: string; region?: string; chaos_level?: number; cities?: { name?: string } | null }> | undefined)?.map((row) => (
+        {(
+          data as
+            | Array<
+                Record<string, unknown> & {
+                  id: string;
+                  name: string;
+                  type?: string;
+                  address?: string;
+                  slug?: string;
+                  verified?: boolean;
+                  country?: string;
+                  region?: string;
+                  chaos_level?: number;
+                  cities?: { name?: string } | null;
+                }
+              >
+            | undefined
+        )?.map((row) => (
           <div
             key={row.id}
             className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 flex items-center gap-3"

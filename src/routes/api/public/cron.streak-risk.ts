@@ -43,10 +43,9 @@ export const Route = createFileRoute("/api/public/cron/streak-risk")({
           { kind: "streak_risk", maxPerWindow: 1, windowMinutes: 60 * 24 },
         );
 
-        return new Response(
-          JSON.stringify({ ok: true, candidates: ids.length, ...res }),
-          { headers: { "Content-Type": "application/json" } },
-        );
+        return new Response(JSON.stringify({ ok: true, candidates: ids.length, ...res }), {
+          headers: { "Content-Type": "application/json" },
+        });
       },
     },
   },

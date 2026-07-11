@@ -44,12 +44,22 @@ export function MessageReactions({
       .channel(`mr-${messageId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "message_reactions", filter: `message_id=eq.${messageId}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "message_reactions",
+          filter: `message_id=eq.${messageId}`,
+        },
         (p) => setRows((r) => [...r, p.new as ReactionRow]),
       )
       .on(
         "postgres_changes",
-        { event: "DELETE", schema: "public", table: "message_reactions", filter: `message_id=eq.${messageId}` },
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "message_reactions",
+          filter: `message_id=eq.${messageId}`,
+        },
         (p) => setRows((r) => r.filter((x) => x.id !== (p.old as ReactionRow).id)),
       )
       .subscribe();

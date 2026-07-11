@@ -4,7 +4,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Rocket, Crown, Gift, PartyPopper, ArrowLeft, Check, Loader2, Beer, Sparkles } from "lucide-react";
+import {
+  Rocket,
+  Crown,
+  Gift,
+  PartyPopper,
+  ArrowLeft,
+  Check,
+  Loader2,
+  Beer,
+  Sparkles,
+} from "lucide-react";
 import { AvatarFrame, FRAME_STYLES, TIER_LABEL } from "@/components/app/AvatarFrame";
 import { errorMessage } from "@/lib/errors";
 import {
@@ -274,16 +284,28 @@ function ShopPage() {
       </p>
 
       <nav className="flex gap-2 overflow-x-auto -mx-4 px-4">
-        <TabBtn active={tab === "boost"} onClick={() => setTab("boost")} icon={<Rocket size={14} />}>
+        <TabBtn
+          active={tab === "boost"}
+          onClick={() => setTab("boost")}
+          icon={<Rocket size={14} />}
+        >
           Boost profil
         </TabBtn>
-        <TabBtn active={tab === "frames"} onClick={() => setTab("frames")} icon={<Crown size={14} />}>
+        <TabBtn
+          active={tab === "frames"}
+          onClick={() => setTab("frames")}
+          icon={<Crown size={14} />}
+        >
           Rame avatar
         </TabBtn>
         <TabBtn active={tab === "gifts"} onClick={() => setTab("gifts")} icon={<Gift size={14} />}>
           Cadouri chat
         </TabBtn>
-        <TabBtn active={tab === "party"} onClick={() => setTab("party")} icon={<PartyPopper size={14} />}>
+        <TabBtn
+          active={tab === "party"}
+          onClick={() => setTab("party")}
+          icon={<PartyPopper size={14} />}
+        >
           Boost petrecere
         </TabBtn>
       </nav>
@@ -490,7 +512,9 @@ function ShopPage() {
             <AlertDialogDescription>{confirm?.description}</AlertDialogDescription>
           </AlertDialogHeader>
           <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 flex items-center justify-between">
-            <span className="text-xs uppercase tracking-wider text-amber-300/80 font-mono">Cost</span>
+            <span className="text-xs uppercase tracking-wider text-amber-300/80 font-mono">
+              Cost
+            </span>
             <span className="flex items-center gap-1.5 text-amber-200 font-display">
               <Beer size={14} />
               {confirm ? (confirm.price === 0 ? "Gratis" : drink(confirm.price)) : ""}
@@ -521,7 +545,8 @@ function ShopPage() {
 function PriceTag({ price, suffix }: { price: number; suffix?: string }) {
   return (
     <div className="mt-1 inline-flex items-center gap-1.5 text-amber-300 text-sm font-semibold">
-      <Beer size={13} /> {drink(price)} {suffix && <span className="text-muted-foreground font-normal text-xs">{suffix}</span>}
+      <Beer size={13} /> {drink(price)}{" "}
+      {suffix && <span className="text-muted-foreground font-normal text-xs">{suffix}</span>}
     </div>
   );
 }

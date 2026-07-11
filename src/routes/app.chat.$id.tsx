@@ -74,7 +74,6 @@ type ChatQueryData = {
 };
 type AccountStateRow = { coin_balance?: number };
 
-
 const QUICK_EMOJIS = [
   "😂",
   "❤️",
@@ -179,7 +178,11 @@ function ChatPage() {
     enabled: !!user,
     queryFn: async () => {
       const [{ data: conv }, { data: members }, { data: messages }] = await Promise.all([
-        supabase.from("conversations").select("id,kind,title,party_id,created_by").eq("id", id).single(),
+        supabase
+          .from("conversations")
+          .select("id,kind,title,party_id,created_by")
+          .eq("id", id)
+          .single(),
         supabase.from("conversation_members").select("user_id").eq("conversation_id", id),
         supabase
           .from("messages")
@@ -350,7 +353,12 @@ function ChatPage() {
     const ok = confirm(`Trimiți ${g.emoji} ${g.name} pentru ${g.price_coins} șprițuri?`);
     if (!ok) return;
     setShowGifts(false);
-    const { error } = await (supabase.rpc as unknown as (name: string, args: unknown) => Promise<{ error: { message: string } | null }>)("send_chat_gift", {
+    const { error } = await (
+      supabase.rpc as unknown as (
+        name: string,
+        args: unknown,
+      ) => Promise<{ error: { message: string } | null }>
+    )("send_chat_gift", {
       _conversation_id: id,
       _gift_id: g.id,
     });
@@ -367,12 +375,10 @@ function ChatPage() {
     setUploading(true);
     try {
       const path = `${user.id}/${id}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("chat-media")
-        .upload(path, file, {
-          contentType: file.type || `${prefix === "🎤" ? "audio" : "image"}/${ext}`,
-          upsert: false,
-        });
+      const { error: upErr } = await supabase.storage.from("chat-media").upload(path, file, {
+        contentType: file.type || `${prefix === "🎤" ? "audio" : "image"}/${ext}`,
+        upsert: false,
+      });
       if (upErr) throw upErr;
       const { data: signed, error: signErr } = await supabase.storage
         .from("chat-media")
@@ -420,7 +426,6 @@ function ChatPage() {
     setPendingImage(null);
     if (fileRef.current) fileRef.current.value = "";
   };
-
 
   const otherProfiles: Profile[] = data
     ? (data.members
@@ -635,7 +640,10 @@ function ChatPage() {
                       </div>
                     )}
                     {g.items.map((m, i) => (
-                      <div key={m.id} className={`relative group flex flex-col ${g.mine ? "items-end" : "items-start"}`}>
+                      <div
+                        key={m.id}
+                        className={`relative group flex flex-col ${g.mine ? "items-end" : "items-start"}`}
+                      >
                         <MessageBubble
                           msgId={m.id}
                           body={m.body}
@@ -788,7 +796,6 @@ function ChatPage() {
           document.body,
         )}
 
-
       <AlertDialog
         open={!!deleteTarget}
         onOpenChange={(open) => {
@@ -873,7 +880,6 @@ function Composer({
   viewOnce: boolean;
   toggleViewOnce: () => void;
 }) {
-
   const [recording, setRecording] = useState(false);
   const [recMs, setRecMs] = useState(0);
   const recRef = useRef<MediaRecorder | null>(null);
@@ -897,11 +903,19 @@ function Composer({
         { mime: "audio/ogg;codecs=opus", ext: "ogg" },
       ];
       const picked = candidates.find((c) => MediaRecorder.isTypeSupported(c.mime));
-      const mr = picked ? new MediaRecorder(stream, { mimeType: picked.mime }) : new MediaRecorder(stream);
+      const mr = picked
+        ? new MediaRecorder(stream, { mimeType: picked.mime })
+        : new MediaRecorder(stream);
       const actualMime = mr.mimeType || picked?.mime || "audio/webm";
       recMimeRef.current = {
         mime: actualMime,
-        ext: actualMime.includes("mp4") ? "m4a" : actualMime.includes("aac") ? "aac" : actualMime.includes("ogg") ? "ogg" : "webm",
+        ext: actualMime.includes("mp4")
+          ? "m4a"
+          : actualMime.includes("aac")
+            ? "aac"
+            : actualMime.includes("ogg")
+              ? "ogg"
+              : "webm",
       };
       chunksRef.current = [];
       mr.ondataavailable = (e) => {
@@ -921,7 +935,7 @@ function Composer({
       setRecMs(0);
       tickRef.current = window.setInterval(() => setRecMs(Date.now() - startRef.current), 100);
     } catch (e) {
-      alert("Nu pot accesa microfonul: " + (errorMessage(e, "permisiune refuzată")));
+      alert("Nu pot accesa microfonul: " + errorMessage(e, "permisiune refuzată"));
     }
   };
   const stopRec = (cancel = false) => {
@@ -1013,7 +1027,11 @@ function Composer({
               type="button"
               onClick={toggleViewOnce}
               aria-label="foto care dispare după vizualizare"
-              title={viewOnce ? "Activ: următoarea poză se vede o singură dată, apoi dispare" : "Activează pentru poză care se vede o singură dată"}
+              title={
+                viewOnce
+                  ? "Activ: următoarea poză se vede o singură dată, apoi dispare"
+                  : "Activează pentru poză care se vede o singură dată"
+              }
               className={`h-9 px-2.5 rounded-full flex items-center gap-1 shrink-0 transition active:bg-foreground/10 ${viewOnce ? "text-neon-purple bg-neon-purple/15 ring-1 ring-neon-purple/40" : "text-muted-foreground"}`}
             >
               {viewOnce ? <Eye size={16} /> : <EyeOff size={16} />}
@@ -1028,7 +1046,6 @@ function Composer({
             >
               {uploading ? <Loader2 size={18} className="animate-spin" /> : <ImageIcon size={18} />}
             </button>
-
           </div>
           {text.trim() ? (
             <button
@@ -1083,7 +1100,6 @@ function MessageBubble({
   const giftMatch = stripMediaPrefix(body, 0x1f381); // 🎁
   const voiceMatch = stripMediaPrefix(body, 0x1f3a4); // 🎤
   const viewOnceMatch = stripMediaPrefix(body, 0x1f441); // 👁
-
 
   // Long-press / right-click handlers for delete on own messages
   const pressTimer = useRef<number | null>(null);
@@ -1230,7 +1246,12 @@ function ImageBubble({ url }: { url: string }) {
       rel="noreferrer"
       className="block rounded-3xl overflow-hidden border border-foreground/10 shadow-lg bg-foreground/[0.04]"
     >
-      <img src={url} alt="poză trimisă" onError={() => setFailed(true)} className="w-full h-auto object-cover" />
+      <img
+        src={url}
+        alt="poză trimisă"
+        onError={() => setFailed(true)}
+        className="w-full h-auto object-cover"
+      />
     </a>
   );
 }
@@ -1354,7 +1375,9 @@ function GiftSheet({ onClose, onSend }: { onClose: () => void; onSend: (g: Gift)
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase.rpc("get_my_account_state");
-      const row = Array.isArray(data) ? ((data as AccountStateRow[])[0] ?? null) : (data as AccountStateRow | null);
+      const row = Array.isArray(data)
+        ? ((data as AccountStateRow[])[0] ?? null)
+        : (data as AccountStateRow | null);
       return row?.coin_balance ?? 0;
     },
   });
@@ -1527,7 +1550,9 @@ function ViewOnceBubble({
             {failed ? (
               <div className="mx-6 rounded-3xl border border-white/15 bg-white/10 p-5 text-center text-white">
                 <div className="font-display font-black mb-1">Poza nu se poate încărca</div>
-                <div className="text-xs text-white/60">Încearcă din nou. Nu am marcat-o ca văzută.</div>
+                <div className="text-xs text-white/60">
+                  Încearcă din nou. Nu am marcat-o ca văzută.
+                </div>
               </div>
             ) : (
               <img
@@ -1559,4 +1584,3 @@ function ViewOnceBubble({
     </>
   );
 }
-

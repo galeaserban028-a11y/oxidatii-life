@@ -124,26 +124,36 @@ async function loadFeed(userId: string) {
         .eq("id", pick.party_id!)
         .gt("expires_at", new Date().toISOString())
         .maybeSingle(),
-      supabase
-        .rpc("get_business_account_public", { _id: pick.business_id! })
-        .maybeSingle(),
+      supabase.rpc("get_business_account_public", { _id: pick.business_id! }).maybeSingle(),
     ]);
-    if (party) boosted = { campaign: pick, party: party as PartyFull, business: biz as BusinessLite };
+    if (party)
+      boosted = { campaign: pick, party: party as PartyFull, business: biz as BusinessLite };
   }
-
 
   return { items, profMap, venueMap, followingCount: (following ?? []).length, boosted };
 }
 
-
-type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+type ProfileLite = {
+  id: string;
+  handle: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
 type VenueLite = { id: string; name: string; slug: string | null };
 type CampaignRow = {
   id: string;
   party_id: string | null;
   business_id: string | null;
 };
-type PartyFull = { id: string; title: string; location_text: string | null; vibe: string | null; host_id: string; starts_at: string | null; expires_at: string };
+type PartyFull = {
+  id: string;
+  title: string;
+  location_text: string | null;
+  vibe: string | null;
+  host_id: string;
+  starts_at: string | null;
+  expires_at: string;
+};
 type BusinessLite = { brand_name?: string | null; verified?: boolean | null } | null;
 type Boosted = { campaign: CampaignRow; party: PartyFull; business: BusinessLite } | null;
 
@@ -340,10 +350,8 @@ function BoostedCard({ boosted, userId }: { boosted: NonNullable<Boosted>; userI
   }, [campaign.id, userId]);
 
   const onClick = async () => {
-    await supabase
-      .rpc("track_campaign_event", { _campaign_id: campaign.id, _event_type: "click" });
+    await supabase.rpc("track_campaign_event", { _campaign_id: campaign.id, _event_type: "click" });
   };
-
 
   return (
     <article className="rounded-2xl overflow-hidden border border-neon-purple/40 bg-gradient-to-br from-neon-purple/10 via-background to-neon-crimson/10 relative">

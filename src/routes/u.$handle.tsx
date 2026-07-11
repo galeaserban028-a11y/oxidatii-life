@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Flame, Sparkles, Trophy, MapPin } from "lucide-react";
 import { OG_COVER_URL } from "@/lib/og";
 
-
 type PublicProfile = {
   id: string;
   handle: string | null;
@@ -84,10 +83,11 @@ export const Route = createFileRoute("/u/$handle")({
     <div className="min-h-dvh flex items-center justify-center p-6 bg-background text-foreground">
       <div className="text-center space-y-3 max-w-sm">
         <h1 className="text-2xl font-display font-black">Profil indisponibil</h1>
-        <p className="text-sm text-muted-foreground">
-          Profilul nu există sau e privat.
-        </p>
-        <Link to="/" className="inline-block mt-4 px-5 py-2 rounded-full bg-foreground text-background text-sm font-bold">
+        <p className="text-sm text-muted-foreground">Profilul nu există sau e privat.</p>
+        <Link
+          to="/"
+          className="inline-block mt-4 px-5 py-2 rounded-full bg-foreground text-background text-sm font-bold"
+        >
           Descoperă OXIDAȚII
         </Link>
       </div>
@@ -152,14 +152,20 @@ function PublicProfilePage() {
             </div>
           </div>
 
-          {p.bio && (
-            <p className="mt-5 text-[15px] leading-relaxed text-foreground/90">{p.bio}</p>
-          )}
+          {p.bio && <p className="mt-5 text-[15px] leading-relaxed text-foreground/90">{p.bio}</p>}
 
           <div className="mt-6 grid grid-cols-3 gap-3">
             <Stat icon={<Sparkles className="h-4 w-4" />} label="Aură" value={p.aura ?? 0} />
-            <Stat icon={<Flame className="h-4 w-4" />} label="Sprițuri" value={p.lifetime_sprits ?? 0} />
-            <Stat icon={<Trophy className="h-4 w-4" />} label="Streak" value={p.current_streak ?? 0} />
+            <Stat
+              icon={<Flame className="h-4 w-4" />}
+              label="Sprițuri"
+              value={p.lifetime_sprits ?? 0}
+            />
+            <Stat
+              icon={<Trophy className="h-4 w-4" />}
+              label="Streak"
+              value={p.current_streak ?? 0}
+            />
           </div>
         </section>
 

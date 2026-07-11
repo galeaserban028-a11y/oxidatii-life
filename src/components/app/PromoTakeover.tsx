@@ -64,7 +64,6 @@ async function loadActive(
     _limit: 20,
   });
 
-
   const dismissed = new Set([...getDismissed(), ...excludeIds]);
   const list = ((data ?? []) as Campaign[]).filter((c) => !dismissed.has(c.id));
   if (!list.length) return null;

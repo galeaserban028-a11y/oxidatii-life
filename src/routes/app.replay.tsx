@@ -1,7 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Sparkles, MapPin, Camera, Wine, Users, Lock, Download, Share2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Sparkles,
+  MapPin,
+  Camera,
+  Wine,
+  Users,
+  Lock,
+  Download,
+  Share2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
@@ -107,7 +117,8 @@ function ReplayPage() {
             Retrăiește noaptea de {formatDateRo(targetDate)}
           </h1>
           <p className="text-sm text-muted-foreground mb-4">
-            Tot ce ai făcut aseară, într-un wrap shareable: venue-urile, traseul, spritz-urile, pozele și prietenii. Tip Spotify Wrapped — dar pentru fiecare seară.
+            Tot ce ai făcut aseară, într-un wrap shareable: venue-urile, traseul, spritz-urile,
+            pozele și prietenii. Tip Spotify Wrapped — dar pentru fiecare seară.
           </p>
           {hasYesterday ? (
             <Link

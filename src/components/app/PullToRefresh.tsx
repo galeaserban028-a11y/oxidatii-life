@@ -10,7 +10,8 @@ import { Loader2 } from "lucide-react";
 // a smaller dead-zone so the gesture catches immediately.
 const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
 const IS_IOS =
-  /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && "ontouchend" in (globalThis as unknown as Record<string, unknown>));
+  /iPad|iPhone|iPod/.test(ua) ||
+  (/Mac/.test(ua) && "ontouchend" in (globalThis as unknown as Record<string, unknown>));
 const TUNING = IS_IOS
   ? { THRESHOLD: 78, MAX: 130, DAMP: 145, DEAD: 8, START_OFFSET: 6 }
   : { THRESHOLD: 64, MAX: 130, DAMP: 95, DEAD: 4, START_OFFSET: 2 };
@@ -74,7 +75,9 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
     const onTouchStart = (e: TouchEvent) => {
       if (refreshingRef.current) return;
       const target = e.target as HTMLElement | null;
-      if (target?.closest('[data-no-pull-refresh], .maplibregl-map, .maplibregl-control-container')) {
+      if (
+        target?.closest("[data-no-pull-refresh], .maplibregl-map, .maplibregl-control-container")
+      ) {
         startY.current = null;
         active.current = false;
         return;

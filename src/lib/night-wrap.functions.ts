@@ -156,7 +156,9 @@ export const getOrCreateNightWrap = createServerFn({ method: "POST" })
             .lt("created_at", to)
             .neq("user_id", userId),
         ]);
-        const candidateIds = Array.from(new Set((friendCheckIns ?? []).map((c) => c.user_id).filter((x): x is string => !!x)));
+        const candidateIds = Array.from(
+          new Set((friendCheckIns ?? []).map((c) => c.user_id).filter((x): x is string => !!x)),
+        );
         if (candidateIds.length) {
           const { data: friendships } = await supabase
             .from("friendships")

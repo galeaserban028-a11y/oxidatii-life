@@ -11,8 +11,6 @@ import { toast } from "sonner";
 import { evalOpenNow, normalizeHours, formatSlot, DAY_KEYS, DAY_LABELS } from "@/lib/openingHours";
 import { errorMessage } from "@/lib/errors";
 
-
-
 type VenueStreet = { id?: string; name?: string | null; city?: { name?: string | null } | null };
 type VenueRow = {
   id: string;
@@ -100,7 +98,6 @@ function VenuePage() {
     streak: number | null;
   } | null>(null);
 
-
   const { data, isLoading } = useQuery({
     queryKey: ["venue", id],
     queryFn: async () => {
@@ -124,9 +121,7 @@ function VenuePage() {
           .select("id", { count: "exact", head: true })
           .eq("venue_id", id)
           .gt("expires_at", new Date().toISOString()),
-        supabase
-          .rpc("get_business_account_public_by_venue", { _venue_id: id })
-          .maybeSingle(),
+        supabase.rpc("get_business_account_public_by_venue", { _venue_id: id }).maybeSingle(),
       ]);
       return { venue, photos: photos ?? [], liveCount: liveCount ?? 0, biz: biz ?? null };
     },
@@ -343,8 +338,7 @@ function VenuePage() {
                   .maybeSingle();
                 setShareData({
                   userName:
-                    prof?.display_name ||
-                    (user.email ? user.email.split("@")[0] : "Oxidat"),
+                    prof?.display_name || (user.email ? user.email.split("@")[0] : "Oxidat"),
                   userAvatar: prof?.avatar_url ?? null,
                   spritzScore: prof?.lifetime_sprits ?? null,
                   streak: prof?.current_streak ?? null,
@@ -355,7 +349,6 @@ function VenuePage() {
               }
             }}
             className="rounded-2xl bg-card border border-border text-foreground py-3.5 text-sm font-semibold active:scale-[0.98] transition"
-
           >
             Sunt aici
           </button>
@@ -363,7 +356,10 @@ function VenuePage() {
 
         {/* Real ratings & reviews */}
         {data.biz?.id && (
-          <BusinessReviewCard businessId={data.biz.id} brandName={data.biz.brand_name ?? undefined} />
+          <BusinessReviewCard
+            businessId={data.biz.id}
+            brandName={data.biz.brand_name ?? undefined}
+          />
         )}
 
         {/* Photo gallery — only user-uploaded */}
@@ -452,4 +448,3 @@ function VenuePage() {
     </div>
   );
 }
-

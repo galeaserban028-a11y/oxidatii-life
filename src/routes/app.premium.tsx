@@ -96,10 +96,22 @@ const COIN_PACKS = [
 ];
 
 const FAQ = [
-  { q: "Pot să anulez oricând?", a: "Da. Un singur click. Beneficiile rămân până la final de perioadă." },
-  { q: "Plătesc, intru pe locul 1?", a: "Nu. Nu vindem locuri în top. Niciodată. Doar cum arăți când ajungi acolo." },
-  { q: "Ce sunt șprițurile?", a: "Sunt pentru lucruri cosmetice — cadouri în chat, boost-uri scurte, rame. Nu cumperi influență." },
-  { q: "Cum funcționează plata?", a: "Plătești o dată, primești instant. Toate plățile sunt finale, fără returnări." },
+  {
+    q: "Pot să anulez oricând?",
+    a: "Da. Un singur click. Beneficiile rămân până la final de perioadă.",
+  },
+  {
+    q: "Plătesc, intru pe locul 1?",
+    a: "Nu. Nu vindem locuri în top. Niciodată. Doar cum arăți când ajungi acolo.",
+  },
+  {
+    q: "Ce sunt șprițurile?",
+    a: "Sunt pentru lucruri cosmetice — cadouri în chat, boost-uri scurte, rame. Nu cumperi influență.",
+  },
+  {
+    q: "Cum funcționează plata?",
+    a: "Plătești o dată, primești instant. Toate plățile sunt finale, fără returnări.",
+  },
 ];
 
 const ACCENT: Record<
@@ -282,7 +294,9 @@ function PremiumPage() {
             if (!active) return null;
             const a = ACCENT[active.accent];
             return (
-              <div className={`rounded-2xl border ${a.border} ${a.glow} p-4 flex items-center gap-3 backdrop-blur-sm`}>
+              <div
+                className={`rounded-2xl border ${a.border} ${a.glow} p-4 flex items-center gap-3 backdrop-blur-sm`}
+              >
                 <span className={`w-2 h-2 rounded-full ${a.dot}`} />
                 <div className="min-w-0 flex-1">
                   <p className={`text-[10px] uppercase tracking-[0.25em] font-semibold ${a.label}`}>
@@ -354,7 +368,9 @@ function PremiumPage() {
 
                 <div className="flex justify-between items-start mb-5">
                   <div className="min-w-0">
-                    <h3 className={`text-[11px] font-semibold uppercase tracking-widest mb-1 ${a.label}`}>
+                    <h3
+                      className={`text-[11px] font-semibold uppercase tracking-widest mb-1 ${a.label}`}
+                    >
                       {tier.name}
                     </h3>
                     <div className="flex items-baseline gap-1">
@@ -437,8 +453,8 @@ function PremiumPage() {
               </div>
             </div>
             <p className="text-[12.5px] text-muted-foreground leading-relaxed mb-4">
-              <b className="text-foreground">Ce primești:</b> lista cu cine ți-a dat like, follow sau
-              ți-a vizitat profilul în ultimele 7 zile. Nume + foto, nu siluetă blur.
+              <b className="text-foreground">Ce primești:</b> lista cu cine ți-a dat like, follow
+              sau ți-a vizitat profilul în ultimele 7 zile. Nume + foto, nu siluetă blur.
             </p>
             <CrystalBallCard />
           </div>
@@ -459,7 +475,9 @@ function PremiumPage() {
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-base font-bold text-[color:var(--neon-yellow)] tabular-nums">9.99</span>
+                <span className="text-base font-bold text-[color:var(--neon-yellow)] tabular-nums">
+                  9.99
+                </span>
                 <span className="text-[10px] text-muted-foreground ml-1">RON</span>
               </div>
             </div>
@@ -596,11 +614,17 @@ function PremiumPage() {
                   >
                     <span className="text-sm font-medium text-foreground/90">{f.q}</span>
                     <span className="w-6 h-6 rounded-full bg-card border border-border flex items-center justify-center shrink-0 text-muted-foreground">
-                      {open ? <Minus size={14} strokeWidth={2.5} /> : <Plus size={14} strokeWidth={2.5} />}
+                      {open ? (
+                        <Minus size={14} strokeWidth={2.5} />
+                      ) : (
+                        <Plus size={14} strokeWidth={2.5} />
+                      )}
                     </span>
                   </button>
                   {open && (
-                    <p className="pb-5 pr-8 text-[12.5px] text-muted-foreground leading-relaxed">{f.a}</p>
+                    <p className="pb-5 pr-8 text-[12.5px] text-muted-foreground leading-relaxed">
+                      {f.a}
+                    </p>
                   )}
                 </div>
               );

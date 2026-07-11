@@ -49,12 +49,16 @@ export const notifyNewPartyInCity = createServerFn({ method: "POST" })
 
     const ids = (targets ?? []).map((t) => t.id);
     const opted = await filterByPref(ids, "new_party_in_city");
-    const res = await smartPushToUsers(opted, {
-      title: "🎉 Petrecere nouă în oraș",
-      body: party.title + (party.location_text ? ` · ${party.location_text}` : ""),
-      url: `/app/party/${party.id}`,
-      tag: `party-${party.id}`,
-    }, { kind: "new_party_in_city", maxPerWindow: 1, windowMinutes: 180 });
+    const res = await smartPushToUsers(
+      opted,
+      {
+        title: "🎉 Petrecere nouă în oraș",
+        body: party.title + (party.location_text ? ` · ${party.location_text}` : ""),
+        url: `/app/party/${party.id}`,
+        tag: `party-${party.id}`,
+      },
+      { kind: "new_party_in_city", maxPerWindow: 1, windowMinutes: 180 },
+    );
     return res;
   });
 
@@ -87,12 +91,16 @@ export const notifyPartyJoin = createServerFn({ method: "POST" })
     const name = joiner?.handle ?? joiner?.display_name ?? "Cineva";
 
     const opted = await filterByPref([party.host_id], "party_join");
-    const res = await smartPushToUsers(opted, {
-      title: "🤝 Spot ocupat",
-      body: `@${name} s-a alăturat la „${party.title}"`,
-      url: `/app/party/${party.id}`,
-      tag: `join-${party.id}`,
-    }, { kind: "party_join", important: true, maxPerWindow: 3, windowMinutes: 60 });
+    const res = await smartPushToUsers(
+      opted,
+      {
+        title: "🤝 Spot ocupat",
+        body: `@${name} s-a alăturat la „${party.title}"`,
+        url: `/app/party/${party.id}`,
+        tag: `join-${party.id}`,
+      },
+      { kind: "party_join", important: true, maxPerWindow: 3, windowMinutes: 60 },
+    );
     return res;
   });
 
@@ -142,12 +150,16 @@ export const notifyFriendsLive = createServerFn({ method: "POST" })
     }
 
     const opted = await filterByPref(ids, "friend_live");
-    const res = await smartPushToUsers(opted, {
-      title: "📍 Prieten live",
-      body: `@${name} e live${venueName}`,
-      url: `/app/map`,
-      tag: `live-${userId}`,
-    }, { kind: `friend_live:${userId}`, maxPerWindow: 1, windowMinutes: 120 });
+    const res = await smartPushToUsers(
+      opted,
+      {
+        title: "📍 Prieten live",
+        body: `@${name} e live${venueName}`,
+        url: `/app/map`,
+        tag: `live-${userId}`,
+      },
+      { kind: `friend_live:${userId}`, maxPerWindow: 1, windowMinutes: 120 },
+    );
     return res;
   });
 
@@ -187,11 +199,15 @@ export const notifyChallenge = createServerFn({ method: "POST" })
     }
 
     const opted = await filterByPref([targetId], "challenge");
-    const res = await smartPushToUsers(opted, {
-      title,
-      body,
-      url: `/app/notifications`,
-      tag: `challenge-${ch.id}`,
-    }, { kind: "challenge", important: true, maxPerWindow: 5, windowMinutes: 60 });
+    const res = await smartPushToUsers(
+      opted,
+      {
+        title,
+        body,
+        url: `/app/notifications`,
+        tag: `challenge-${ch.id}`,
+      },
+      { kind: "challenge", important: true, maxPerWindow: 5, windowMinutes: 60 },
+    );
     return res;
   });

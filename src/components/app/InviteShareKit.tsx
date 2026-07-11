@@ -70,7 +70,9 @@ export function InviteShareKit({ code }: Props) {
     <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-5 mb-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-fuchsia-400">// CREATIVE KIT</div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-fuchsia-400">
+            // CREATIVE KIT
+          </div>
           <h2 className="font-display font-black text-lg">Story-ready în 3 secunde</h2>
         </div>
       </div>
@@ -97,7 +99,9 @@ export function InviteShareKit({ code }: Props) {
         {preview ? (
           <img src={preview} alt="Invite story" className="w-full h-full object-contain" />
         ) : (
-          <div className="absolute inset-0 grid place-items-center text-white/30 text-xs">Se generează…</div>
+          <div className="absolute inset-0 grid place-items-center text-white/30 text-xs">
+            Se generează…
+          </div>
         )}
       </div>
       <canvas ref={canvasRef} width={1080} height={1920} className="hidden" />
@@ -120,36 +124,77 @@ export function InviteShareKit({ code }: Props) {
 
       {/* Captions */}
       <div className="space-y-2">
-        <div className="text-[10px] uppercase tracking-[0.25em] text-white/40 mb-1">Captions gata-făcute</div>
-        <CaptionRow icon={<Music2 className="w-4 h-4" />} label="TikTok" k="tiktok" copied={copied} onCopy={copyCaption} />
-        <CaptionRow icon={<Instagram className="w-4 h-4" />} label="Instagram" k="instagram" copied={copied} onCopy={copyCaption} />
-        <CaptionRow icon={<MessageCircle className="w-4 h-4" />} label="WhatsApp" k="whatsapp" copied={copied} onCopy={copyCaption} />
+        <div className="text-[10px] uppercase tracking-[0.25em] text-white/40 mb-1">
+          Captions gata-făcute
+        </div>
+        <CaptionRow
+          icon={<Music2 className="w-4 h-4" />}
+          label="TikTok"
+          k="tiktok"
+          copied={copied}
+          onCopy={copyCaption}
+        />
+        <CaptionRow
+          icon={<Instagram className="w-4 h-4" />}
+          label="Instagram"
+          k="instagram"
+          copied={copied}
+          onCopy={copyCaption}
+        />
+        <CaptionRow
+          icon={<MessageCircle className="w-4 h-4" />}
+          label="WhatsApp"
+          k="whatsapp"
+          copied={copied}
+          onCopy={copyCaption}
+        />
       </div>
     </div>
   );
 }
 
 function CaptionRow({
-  icon, label, k, copied, onCopy,
-}: { icon: React.ReactNode; label: string; k: string; copied: string; onCopy: (k: string) => void }) {
+  icon,
+  label,
+  k,
+  copied,
+  onCopy,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  k: string;
+  copied: string;
+  onCopy: (k: string) => void;
+}) {
   const isCopied = copied === k;
   return (
     <button
       onClick={() => onCopy(k)}
       className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition"
     >
-      <span className="flex items-center gap-3 text-sm font-medium">{icon} {label}</span>
-      {isCopied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-white/40" />}
+      <span className="flex items-center gap-3 text-sm font-medium">
+        {icon} {label}
+      </span>
+      {isCopied ? (
+        <Check className="w-4 h-4 text-emerald-400" />
+      ) : (
+        <Copy className="w-4 h-4 text-white/40" />
+      )}
     </button>
   );
 }
 
 // ---------- canvas drawing ----------
-async function drawCard(canvas: HTMLCanvasElement | null, design: Design, code: string): Promise<string> {
+async function drawCard(
+  canvas: HTMLCanvasElement | null,
+  design: Design,
+  code: string,
+): Promise<string> {
   if (!canvas) return "";
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
-  const W = canvas.width, H = canvas.height;
+  const W = canvas.width,
+    H = canvas.height;
   ctx.clearRect(0, 0, W, H);
 
   if (design === "neon") drawNeon(ctx, W, H, code);
@@ -159,7 +204,14 @@ async function drawCard(canvas: HTMLCanvasElement | null, design: Design, code: 
   return canvas.toDataURL("image/png");
 }
 
-function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+function roundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -175,7 +227,8 @@ function drawNeon(ctx: CanvasRenderingContext2D, W: number, H: number, code: str
   g.addColorStop(0, "#0a0118");
   g.addColorStop(0.5, "#1a0530");
   g.addColorStop(1, "#050510");
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
   // glows
   radialGlow(ctx, W * 0.2, H * 0.25, 500, "rgba(236,72,153,0.55)");
   radialGlow(ctx, W * 0.85, H * 0.7, 600, "rgba(168,85,247,0.5)");
@@ -201,14 +254,22 @@ function drawNeon(ctx: CanvasRenderingContext2D, W: number, H: number, code: str
   ctx.fillText("Vezi unde-i mișto acum.", W / 2, H * 0.55 + 60);
 
   // code card
-  const cx = W / 2 - 380, cy = H * 0.65, cw = 760, ch = 320;
-  ctx.shadowColor = "rgba(236,72,153,0.7)"; ctx.shadowBlur = 60;
+  const cx = W / 2 - 380,
+    cy = H * 0.65,
+    cw = 760,
+    ch = 320;
+  ctx.shadowColor = "rgba(236,72,153,0.7)";
+  ctx.shadowBlur = 60;
   roundedRect(ctx, cx, cy, cw, ch, 40);
   const cg = ctx.createLinearGradient(cx, cy, cx + cw, cy + ch);
-  cg.addColorStop(0, "rgba(236,72,153,0.25)"); cg.addColorStop(1, "rgba(168,85,247,0.15)");
-  ctx.fillStyle = cg; ctx.fill();
+  cg.addColorStop(0, "rgba(236,72,153,0.25)");
+  cg.addColorStop(1, "rgba(168,85,247,0.15)");
+  ctx.fillStyle = cg;
+  ctx.fill();
   ctx.shadowBlur = 0;
-  ctx.strokeStyle = "rgba(236,72,153,0.6)"; ctx.lineWidth = 3; ctx.stroke();
+  ctx.strokeStyle = "rgba(236,72,153,0.6)";
+  ctx.lineWidth = 3;
+  ctx.stroke();
 
   ctx.fillStyle = "rgba(255,255,255,0.6)";
   ctx.font = "600 32px ui-monospace, monospace";
@@ -225,14 +286,21 @@ function drawNeon(ctx: CanvasRenderingContext2D, W: number, H: number, code: str
 
 function drawSpritz(ctx: CanvasRenderingContext2D, W: number, H: number, code: string) {
   const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, "#ff6b35"); g.addColorStop(0.5, "#f7931e"); g.addColorStop(1, "#c9184a");
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  g.addColorStop(0, "#ff6b35");
+  g.addColorStop(0.5, "#f7931e");
+  g.addColorStop(1, "#c9184a");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
   radialGlow(ctx, W * 0.5, H * 0.3, 700, "rgba(255,255,255,0.15)");
 
   // big circle for code
-  ctx.beginPath(); ctx.arc(W / 2, H * 0.5, 380, 0, Math.PI * 2);
-  ctx.fillStyle = "#0a0118"; ctx.fill();
-  ctx.lineWidth = 8; ctx.strokeStyle = "#fff"; ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(W / 2, H * 0.5, 380, 0, Math.PI * 2);
+  ctx.fillStyle = "#0a0118";
+  ctx.fill();
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = "#fff";
+  ctx.stroke();
 
   ctx.fillStyle = "rgba(255,255,255,0.7)";
   ctx.textAlign = "center";
@@ -260,7 +328,8 @@ function drawSpritz(ctx: CanvasRenderingContext2D, W: number, H: number, code: s
 }
 
 function drawMinimal(ctx: CanvasRenderingContext2D, W: number, H: number, code: string) {
-  ctx.fillStyle = "#f5f5f0"; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = "#f5f5f0";
+  ctx.fillRect(0, 0, W, H);
   // grain dots
   ctx.fillStyle = "rgba(0,0,0,0.04)";
   for (let i = 0; i < 200; i++) {
@@ -284,8 +353,12 @@ function drawMinimal(ctx: CanvasRenderingContext2D, W: number, H: number, code: 
   wrapText(ctx, "Vezi pe hartă unde se bea acum și cu cine.", 100, H * 0.65, W - 200, 56);
 
   // code line
-  ctx.strokeStyle = "#0a0a0a"; ctx.lineWidth = 4;
-  ctx.beginPath(); ctx.moveTo(100, H * 0.82); ctx.lineTo(W - 100, H * 0.82); ctx.stroke();
+  ctx.strokeStyle = "#0a0a0a";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(100, H * 0.82);
+  ctx.lineTo(W - 100, H * 0.82);
+  ctx.stroke();
   ctx.font = "600 32px ui-monospace, monospace";
   ctx.fillText("COD", 100, H * 0.82 + 60);
   ctx.font = "900 140px ui-monospace, monospace";
@@ -300,17 +373,29 @@ function drawMinimal(ctx: CanvasRenderingContext2D, W: number, H: number, code: 
 
 function radialGlow(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string) {
   const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-  g.addColorStop(0, color); g.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = g; ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  g.addColorStop(0, color);
+  g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 }
 
-function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, maxW: number, lh: number) {
+function wrapText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxW: number,
+  lh: number,
+) {
   const words = text.split(" ");
-  let line = ""; let yy = y;
+  let line = "";
+  let yy = y;
   for (const w of words) {
     const test = line + w + " ";
     if (ctx.measureText(test).width > maxW) {
-      ctx.fillText(line, x, yy); line = w + " "; yy += lh;
+      ctx.fillText(line, x, yy);
+      line = w + " ";
+      yy += lh;
     } else line = test;
   }
   ctx.fillText(line, x, yy);

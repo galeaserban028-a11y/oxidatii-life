@@ -147,8 +147,7 @@ function SettingsPage() {
     }
   }
 
-  
-type CityLite = { id: string; name: string; slug: string };
+  type CityLite = { id: string; name: string; slug: string };
 
   const { data: cities = [] } = useQuery({
     queryKey: ["cities-settings"],
@@ -446,7 +445,9 @@ type CityLite = { id: string; name: string; slug: string };
           </div>
           <div className="max-h-[50vh] overflow-y-auto -mx-2">
             {cities
-              .filter((c: CityLite) => c.name.toLowerCase().includes(citySearch.toLowerCase().trim()))
+              .filter((c: CityLite) =>
+                c.name.toLowerCase().includes(citySearch.toLowerCase().trim()),
+              )
               .map((c: CityLite) => {
                 const selected = c.id === profile.city_id;
                 return (

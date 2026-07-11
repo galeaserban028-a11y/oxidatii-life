@@ -51,7 +51,12 @@ import { AvatarAura } from "@/components/app/AvatarAura";
 import { SignatureReveal } from "@/components/app/SignatureReveal";
 import { AvatarFrame } from "@/components/app/AvatarFrame";
 import { StreakHero } from "@/components/app/StreakHero";
-import { StreakFlexSheet, streakMilestoneReached, readSeenMilestone, writeSeenMilestone } from "@/components/app/StreakFlexSheet";
+import {
+  StreakFlexSheet,
+  streakMilestoneReached,
+  readSeenMilestone,
+  writeSeenMilestone,
+} from "@/components/app/StreakFlexSheet";
 import { repairInstalledPwa } from "@/lib/pwa";
 import { errorMessage } from "@/lib/errors";
 
@@ -162,7 +167,7 @@ function MePage() {
         return;
       } catch (e) {
         // AbortError = user cancelled; anything else falls through to clipboard
-        if ((e instanceof Error && e.name === "AbortError")) return;
+        if (e instanceof Error && e.name === "AbortError") return;
       }
     }
 
@@ -314,7 +319,13 @@ function MePage() {
         .from("venue_photos")
         .select("id, photo_url, caption, taken_at, venue:venues(id, name, city:cities(name))")
         .in("id", ids);
-      type PhotoRow = { id: string; photo_url: string; caption: string | null; taken_at: string; venue: unknown };
+      type PhotoRow = {
+        id: string;
+        photo_url: string;
+        caption: string | null;
+        taken_at: string;
+        venue: unknown;
+      };
       const map = new Map<string, PhotoRow>(((pics ?? []) as PhotoRow[]).map((p) => [p.id, p]));
       return ((rep ?? []) as { photo_id: string; created_at: string }[])
         .map((r) => {
@@ -356,8 +367,20 @@ function MePage() {
     );
   }
 
-  type ProofRow = { id: string; photo_url: string; created_at: string; ai_verified: boolean | null; venue: unknown };
-  type PhotoRow2 = { id: string; photo_url: string; caption: string | null; taken_at: string; venue: unknown };
+  type ProofRow = {
+    id: string;
+    photo_url: string;
+    created_at: string;
+    ai_verified: boolean | null;
+    venue: unknown;
+  };
+  type PhotoRow2 = {
+    id: string;
+    photo_url: string;
+    caption: string | null;
+    taken_at: string;
+    venue: unknown;
+  };
   const verifiedProofs = ((moments?.proofs ?? []) as ProofRow[]).filter((p) => p.ai_verified);
   const postsOnly = ((moments?.photos ?? []) as PhotoRow2[])
     .map((p) => ({ ...p, _kind: "photo" as const, _date: p.taken_at }))
@@ -626,7 +649,11 @@ function MePage() {
               ) : theme ? (
                 <AvatarAura theme={theme} size={92}>
                   {profile.avatar_url ? (
-                    <img src={profile.avatar_url} alt="" className="h-full w-full object-cover rounded-full" />
+                    <img
+                      src={profile.avatar_url}
+                      alt=""
+                      className="h-full w-full object-cover rounded-full"
+                    />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-3xl">
                       {(profile.handle ?? "?")[0].toUpperCase()}
@@ -683,11 +710,15 @@ function MePage() {
               style={instrument}
               className="text-2xl leading-tight flex items-start gap-2 flex-wrap tracking-tight"
             >
-              <span className="min-w-0 break-words">{profile.display_name || `@${profile.handle ?? "—"}`}</span>
+              <span className="min-w-0 break-words">
+                {profile.display_name || `@${profile.handle ?? "—"}`}
+              </span>
               <PremiumBadge tier={ent.tier} size="sm" />
             </div>
             {profile.display_name && profile.handle && (
-              <div className="text-[12px] font-mono text-white/40 break-words">@{profile.handle}</div>
+              <div className="text-[12px] font-mono text-white/40 break-words">
+                @{profile.handle}
+              </div>
             )}
             {profile.bio && (
               <p className="text-[13px] text-white/80 pt-2 whitespace-pre-line leading-relaxed">
@@ -1035,14 +1066,16 @@ function MePage() {
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-0.5">
-              {(tabMoments as Array<{
-                id: string;
-                _kind: "photo" | "proof";
-                photo_url?: string | null;
-                media_type?: string | null;
-                caption?: string | null;
-                venue?: { id?: string; name?: string } | null;
-              }>).map((m) => {
+              {(
+                tabMoments as Array<{
+                  id: string;
+                  _kind: "photo" | "proof";
+                  photo_url?: string | null;
+                  media_type?: string | null;
+                  caption?: string | null;
+                  venue?: { id?: string; name?: string } | null;
+                }>
+              ).map((m) => {
                 const isProof = m._kind === "proof";
                 const key = `${m._kind}-${m.id}`;
                 const url: string = m.photo_url ?? "";

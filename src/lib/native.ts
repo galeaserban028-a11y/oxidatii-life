@@ -118,9 +118,10 @@ export async function nativeShare(opts: { title?: string; text?: string; url?: s
       return true;
     } catch {}
   }
-  const nav = typeof navigator !== "undefined"
-    ? (navigator as Navigator & { share?: (data: ShareData) => Promise<void> })
-    : null;
+  const nav =
+    typeof navigator !== "undefined"
+      ? (navigator as Navigator & { share?: (data: ShareData) => Promise<void> })
+      : null;
   if (nav?.share) {
     try {
       await nav.share(opts);

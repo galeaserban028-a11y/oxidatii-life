@@ -380,7 +380,14 @@ function FriendsPage() {
   );
 }
 
-function Avatar({ p }: { p: { handle?: string | null; display_name?: string | null; avatar_url?: string | null } | null | undefined }) {
+function Avatar({
+  p,
+}: {
+  p:
+    | { handle?: string | null; display_name?: string | null; avatar_url?: string | null }
+    | null
+    | undefined;
+}) {
   const initial = (p?.handle ?? p?.display_name ?? "?")[0]?.toUpperCase();
   return (
     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-sm shrink-0 overflow-hidden">

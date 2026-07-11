@@ -51,7 +51,10 @@ function configureMapLibreRuntime() {
     // explicit same-origin worker URL; without it vector tiles silently fail
     // and the user only sees our DOM bottle markers. Keep it same-origin and
     // cache-busted so old PWA/service-worker caches cannot serve a stale file.
-    const workerUrl = new URL("/maplibre-gl-csp-worker.js?v=5.24.0", window.location.origin).toString();
+    const workerUrl = new URL(
+      "/maplibre-gl-csp-worker.js?v=5.24.0",
+      window.location.origin,
+    ).toString();
     (maplibregl as any).setWorkerUrl?.(workerUrl);
     maplibregl.setWorkerCount(1);
   } catch {
@@ -488,7 +491,6 @@ export function RomaniaMap3D({
   const [mapReadyTick, setMapReadyTick] = useState(0);
   const [firstPaintDone, setFirstPaintDone] = useState(false);
 
-
   useEffect(() => {
     navRef.current = nav;
   }, [nav]);
@@ -518,7 +520,6 @@ export function RomaniaMap3D({
       ro.observe(el);
       return () => ro.disconnect();
     }
-
 
     setMapFailed(false);
     let map: MlMap;
@@ -599,14 +600,17 @@ export function RomaniaMap3D({
     map.on("styledata", onStyleData);
     map.once("sourcedata", onStyleData);
 
-    loadWatchdog = window.setTimeout(() => {
-      if (loadedRef.current) return;
-      // On iPhone/Safari the native WebGL + glyph pipeline can be late even
-      // though the map is about to paint. Do not tear the map down here — the
-      // retry loop itself was causing the endless "se încarcă harta" state.
-      setupInteractiveLayers();
-      markFirstPaint();
-    }, isSmall ? 900 : 1200);
+    loadWatchdog = window.setTimeout(
+      () => {
+        if (loadedRef.current) return;
+        // On iPhone/Safari the native WebGL + glyph pipeline can be late even
+        // though the map is about to paint. Do not tear the map down here — the
+        // retry loop itself was causing the endless "se încarcă harta" state.
+        setupInteractiveLayers();
+        markFirstPaint();
+      },
+      isSmall ? 900 : 1200,
+    );
 
     const setupInteractiveLayers = () => {
       if (disposed) return;
@@ -1008,8 +1012,6 @@ export function RomaniaMap3D({
       if (!mapHasCriticalLayers(map)) setupInteractiveLayers();
       markFirstPaint();
     });
-
-
 
     map.on("error", (event) => {
       console.warn("Map tile error", event.error);
@@ -1656,7 +1658,6 @@ export function RomaniaMap3D({
           </div>
         </div>
       )}
-
 
       {mapFailed && (
         <div className="absolute inset-0 z-20 grid place-items-center bg-background/95 px-6 text-center">

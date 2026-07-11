@@ -30,12 +30,16 @@ export const notifyFollow = createServerFn({ method: "POST" })
       .maybeSingle();
 
     const pending = f?.status === "pending";
-    return smartPushToUsers([data.targetId], {
-      title: pending ? "👋 Cerere de follow" : "🎉 Follower nou",
-      body: pending ? `@${name} vrea să te urmărească` : `@${name} te urmărește`,
-      url: pending ? `/app/requests` : `/app/user/${userId}`,
-      tag: `follow-${userId}`,
-    }, { kind: "follow", important: true, maxPerWindow: 5, windowMinutes: 60 });
+    return smartPushToUsers(
+      [data.targetId],
+      {
+        title: pending ? "👋 Cerere de follow" : "🎉 Follower nou",
+        body: pending ? `@${name} vrea să te urmărească` : `@${name} te urmărește`,
+        url: pending ? `/app/requests` : `/app/user/${userId}`,
+        tag: `follow-${userId}`,
+      },
+      { kind: "follow", important: true, maxPerWindow: 5, windowMinutes: 60 },
+    );
   });
 
 /** Push when sending a chat message — notifies the other members. */
@@ -69,12 +73,16 @@ export const notifyChatMessage = createServerFn({ method: "POST" })
     const name = me?.handle ?? me?.display_name ?? "Mesaj nou";
 
     const body = (data.preview ?? "").trim();
-    return smartPushToUsers(targets, {
-      title: `💬 @${name}`,
-      body: body.length ? body.slice(0, 120) : "Ai un mesaj nou",
-      url: `/app/chat/${data.conversationId}`,
-      tag: `chat-${data.conversationId}`,
-    }, { kind: `chat:${data.conversationId}`, important: true, maxPerWindow: 8, windowMinutes: 15 });
+    return smartPushToUsers(
+      targets,
+      {
+        title: `💬 @${name}`,
+        body: body.length ? body.slice(0, 120) : "Ai un mesaj nou",
+        url: `/app/chat/${data.conversationId}`,
+        tag: `chat-${data.conversationId}`,
+      },
+      { kind: `chat:${data.conversationId}`, important: true, maxPerWindow: 8, windowMinutes: 15 },
+    );
   });
 
 /** Push when someone requests to join your spritz/party (party_joins insert). */
@@ -105,10 +113,14 @@ export const notifyPartyJoinRequest = createServerFn({ method: "POST" })
       .maybeSingle();
     const name = me?.handle ?? me?.display_name ?? "Cineva";
 
-    return smartPushToUsers([party.host_id], {
-      title: "🙋 Cerere la spritz",
-      body: `@${name} vrea să intre la „${party.title}"`,
-      url: `/app/parties`,
-      tag: `party-req-${data.partyId}`,
-    }, { kind: "party_req", important: true, maxPerWindow: 6, windowMinutes: 60 });
+    return smartPushToUsers(
+      [party.host_id],
+      {
+        title: "🙋 Cerere la spritz",
+        body: `@${name} vrea să intre la „${party.title}"`,
+        url: `/app/parties`,
+        tag: `party-req-${data.partyId}`,
+      },
+      { kind: "party_req", important: true, maxPerWindow: 6, windowMinutes: 60 },
+    );
   });
