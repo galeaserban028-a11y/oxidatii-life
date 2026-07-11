@@ -8,6 +8,21 @@ export const Route = createFileRoute("/app/admin/campaigns")({
   component: AdminCampaigns,
 });
 
+type CampaignRow = {
+  id: string;
+  title: string;
+  status: string;
+  kind: string | null;
+  bid_cents: number | null;
+  budget_cents: number | null;
+  spent_cents: number | null;
+  impressions: number | null;
+  clicks: number | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  business_accounts?: { brand_name?: string | null } | null;
+};
+
 function AdminCampaigns() {
   const qc = useQueryClient();
   const { data } = useQuery({
@@ -20,7 +35,7 @@ function AdminCampaigns() {
         )
         .order("created_at", { ascending: false })
         .limit(100);
-      return data ?? [];
+      return (data ?? []) as unknown as CampaignRow[];
     },
   });
 
