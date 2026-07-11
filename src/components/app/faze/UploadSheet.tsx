@@ -183,7 +183,7 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
                 className="w-full p-2.5 rounded-xl bg-foreground/[0.04] border border-foreground/10 text-[13px]"
               />
               <div className="max-h-32 overflow-y-auto space-y-0.5 mt-1">
-                {(venues ?? []).map((v: any) => (
+                {((venues ?? []) as VenueLite[]).map((v) => (
                   <button
                     key={v.id}
                     onClick={() => setSelectedVenue(v)}
