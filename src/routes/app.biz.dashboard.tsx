@@ -209,7 +209,7 @@ function DashboardPage() {
             onChange={(e) => setSelectedBiz(e.target.value)}
             className="bg-card border border-border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary"
           >
-            {businesses.map((b: any) => (
+            {businesses.map((b) => (
               <option key={b.id} value={b.id} className="bg-background">
                 {b.brand_name}
               </option>
