@@ -5,7 +5,7 @@ import {
   recordCampaignEventForUser,
 } from "@/lib/business-promotion.server";
 
-type LaunchResult = { campaign: any } | { error: string };
+type LaunchResult = { campaign: Record<string, unknown> } | { error: string };
 type TrackResult = { ok: boolean } | { error: string };
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
