@@ -7,7 +7,20 @@ import {
   type NightStats,
 } from "@/lib/night-wrap.server";
 
-type NightWrapRow = Record<string, unknown>;
+type NightWrapRow = {
+  id: string;
+  user_id: string;
+  night_date: string;
+  title: string | null;
+  tagline: string | null;
+  vibe_emoji: string | null;
+  stats: NightStats | null;
+  photo_urls: string[] | null;
+  crew_user_ids: string[] | null;
+  top_venue_id: string | null;
+  peak_hour: number | null;
+  created_at?: string;
+};
 type WrapResult = { wrap: NightWrapRow; created: boolean } | { wrap: null; reason: string };
 
 // Dedupe concurrent generations per (user, night) so a double-mount or
