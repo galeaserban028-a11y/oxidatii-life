@@ -115,7 +115,7 @@ export function PromoTakeover() {
         })
         .then(() => {});
       // optimistic counter bump
-      supabase.rpc as any; // noop; rely on aggregations
+      void supabase.rpc; // noop; rely on aggregations
     }
   }, [phase, payload, user]);
 
