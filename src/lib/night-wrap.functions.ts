@@ -14,7 +14,7 @@ type NightWrapRow = {
   title: string | null;
   tagline: string | null;
   vibe_emoji: string | null;
-  stats: unknown;
+  stats: NightStats | null;
   photo_urls: string[] | null;
   crew_user_ids: string[] | null;
   top_venue_id: string | null;
@@ -52,7 +52,7 @@ export const getOrCreateNightWrap = createServerFn({ method: "POST" })
         .eq("user_id", userId)
         .eq("night_date", nightDate)
         .maybeSingle();
-      if (existing) return { wrap: existing, created: false };
+      if (existing) return { wrap: existing as unknown as NightWrapRow, created: false };
 
       // 2. gather activity in night window
       const { from, to } = nightWindow(nightDate);
@@ -214,7 +214,7 @@ export const getOrCreateNightWrap = createServerFn({ method: "POST" })
         console.error("[night-wrap] insert failed", insertErr);
         return { wrap: null, reason: "insert_failed" };
       }
-      return { wrap: inserted, created: true };
+      return { wrap: inserted as unknown as NightWrapRow, created: true };
     })();
 
     WRAP_INFLIGHT.set(dedupeKey, work);
