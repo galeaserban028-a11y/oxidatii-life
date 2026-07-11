@@ -90,11 +90,12 @@ async function loadArchive(userId: string) {
     ),
   ].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
 
+  type VenueLite = { id: string; name: string };
   const venueIds = Array.from(new Set(items.map((i) => i.venue_id).filter(Boolean) as string[]));
   const { data: venues } = venueIds.length
     ? await supabase.from("venues").select("id, name").in("id", venueIds)
-    : { data: [] as any[] };
-  const vmap = new Map((venues ?? []).map((v: any) => [v.id, v]));
+    : { data: [] as VenueLite[] };
+  const vmap = new Map(((venues ?? []) as VenueLite[]).map((v) => [v.id, v]));
 
   return {
     items,
@@ -231,7 +232,7 @@ function ArchivePage() {
                       <Link
                         key={`${it.kind}-${it.id}`}
                         to={v ? "/app/venue/$id" : "/app/me"}
-                        params={v ? { id: v.id } : (undefined as any)}
+                        params={v ? { id: v.id } : (undefined as unknown as { id: string })}
                         className="aspect-square relative overflow-hidden rounded-lg bg-foreground/5 group"
                       >
                         <img
@@ -284,7 +285,7 @@ function ArchivePage() {
   );
 }
 
-function Stat({ label, value, icon: Icon }: { label: string; value: number; icon: any }) {
+function Stat({ label, value, icon: Icon }: { label: string; value: number; icon: React.ComponentType<{ size?: number; className?: string }> }) {
   return (
     <div className="rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur p-3 text-center">
       <Icon size={14} className="mx-auto text-zinc-500" />

@@ -27,13 +27,22 @@ async function loadFriends(userId: string) {
   const otherIds = Array.from(
     new Set(list.map((r) => (r.requester_id === userId ? r.addressee_id : r.requester_id))),
   );
+  type ProfileLite = {
+    id: string;
+    handle: string | null;
+    display_name: string | null;
+    avatar_url: string | null;
+    rank: string | null;
+    current_streak?: number | null;
+    longest_streak?: number | null;
+  };
   const { data: profiles } = otherIds.length
     ? await supabase
         .from("profiles")
         .select("id, handle, display_name, avatar_url, rank, current_streak, longest_streak")
         .in("id", otherIds)
-    : { data: [] as any[] };
-  const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+    : { data: [] as ProfileLite[] };
+  const profMap = new Map(((profiles ?? []) as ProfileLite[]).map((p) => [p.id, p]));
 
   const accepted = list.filter((r) => r.status === "accepted");
   const incoming = list.filter((r) => r.status === "pending" && r.addressee_id === userId);
@@ -178,7 +187,7 @@ function FriendsPage() {
 
         {searchResults && searchResults.length > 0 && (
           <div className="space-y-1 rounded-xl border border-foreground/10 overflow-hidden">
-            {searchResults.map((p: any) => {
+            {searchResults.map((p) => {
               const alreadyKnown =
                 data?.accepted.some((f) => f.requester_id === p.id || f.addressee_id === p.id) ||
                 data?.outgoing.some((f) => f.addressee_id === p.id) ||
@@ -371,7 +380,7 @@ function FriendsPage() {
   );
 }
 
-function Avatar({ p }: { p: any }) {
+function Avatar({ p }: { p: { handle?: string | null; display_name?: string | null; avatar_url?: string | null } | null | undefined }) {
   const initial = (p?.handle ?? p?.display_name ?? "?")[0]?.toUpperCase();
   return (
     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-neon-crimson to-neon-purple flex items-center justify-center font-display text-sm shrink-0 overflow-hidden">
