@@ -123,7 +123,7 @@ function AdminDebug() {
             Niciun bug raportat. 🎉
           </div>
         )}
-        {reports?.map((r: any) => (
+        {reports?.map((r) => (
           <div
             key={r.id}
             className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 space-y-2"
