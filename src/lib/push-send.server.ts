@@ -71,7 +71,7 @@ export async function filterByPref(userIds: string[], pref: PrefKey): Promise<st
     .in("user_id", userIds);
   if (error) return userIds; // default: send if we can't read prefs
   type PrefRow = { user_id: string } & Partial<Record<PrefKey, boolean>>;
-  const rows = (data ?? []) as PrefRow[];
+  const rows = (data ?? []) as unknown as PrefRow[];
   const opted = new Set(rows.filter((r) => r[pref] !== false).map((r) => r.user_id));
   // Users without a row default to opted-in (DB default true)
   const hasRow = new Set(rows.map((r) => r.user_id));
