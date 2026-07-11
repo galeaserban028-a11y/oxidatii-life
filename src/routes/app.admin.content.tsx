@@ -184,7 +184,7 @@ function ProofsList({ onDelete }: { onDelete: (id: string) => void }) {
         )
         .order("created_at", { ascending: false })
         .limit(60);
-      return data ?? [];
+      return (data ?? []) as unknown as ProofRow[];
     },
   });
   return (
@@ -227,7 +227,7 @@ function PhotosList({ onDelete }: { onDelete: (id: string) => void }) {
         .select("id, photo_url, caption, taken_at, profiles:user_id(handle), venues:venue_id(name)")
         .order("created_at", { ascending: false })
         .limit(60);
-      return data ?? [];
+      return (data ?? []) as unknown as PhotoRow[];
     },
   });
   return (
