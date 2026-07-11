@@ -91,7 +91,7 @@ function DiscoverPage() {
     enabled: !!user && q.trim().length < 2,
     queryFn: async (): Promise<(Profile & { common_venues: number; city_name: string | null; last_seen_at: string | null })[]> => {
       const { data } = await supabase.rpc("get_people_you_may_know", { p_limit: 16 });
-      return (data ?? []) as any;
+      return (data ?? []) as (Profile & { common_venues: number; city_name: string | null; last_seen_at: string | null })[];
     },
     staleTime: 5 * 60_000,
   });
