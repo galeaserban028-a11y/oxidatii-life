@@ -89,7 +89,7 @@ function useUnreadCount() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
-          const cid = (payload.new as any)?.conversation_id;
+          const cid = (payload.new as { conversation_id?: string } | null)?.conversation_id;
           // Only react to messages in conversations we are part of.
           if (cid && convIds.includes(cid)) refresh();
         },

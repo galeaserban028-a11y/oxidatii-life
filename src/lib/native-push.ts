@@ -59,7 +59,7 @@ export async function registerNativePush(): Promise<{ ok: boolean; reason?: stri
     });
 
     PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
-      const url = (action.notification.data as any)?.url;
+      const url = (action.notification.data as { url?: string } | null)?.url;
       if (url && typeof window !== "undefined") {
         try {
           window.location.assign(url);
@@ -69,7 +69,7 @@ export async function registerNativePush(): Promise<{ ok: boolean; reason?: stri
 
     registered = true;
     return { ok: true };
-  } catch (err: any) {
-    return { ok: false, reason: err?.message ?? String(err) };
+  } catch (err) {
+    return { ok: false, reason: err instanceof Error ? err.message : String(err) };
   }
 }

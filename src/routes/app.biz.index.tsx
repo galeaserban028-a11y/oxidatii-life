@@ -451,7 +451,7 @@ function CampaignList({ businessId }: { businessId: string }) {
 
   return (
     <div className="space-y-2">
-      {campaigns.map((c: any) => {
+      {campaigns.map((c) => {
         const ms = c.ends_at ? new Date(c.ends_at).getTime() - Date.now() : 0;
         const expired = ms <= 0;
         return (

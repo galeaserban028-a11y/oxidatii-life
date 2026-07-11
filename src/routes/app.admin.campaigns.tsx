@@ -8,6 +8,21 @@ export const Route = createFileRoute("/app/admin/campaigns")({
   component: AdminCampaigns,
 });
 
+type CampaignRow = {
+  id: string;
+  title: string;
+  status: string;
+  kind: string | null;
+  bid_cents: number | null;
+  budget_cents: number | null;
+  spent_cents: number | null;
+  impressions: number | null;
+  clicks: number | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  business_accounts?: { brand_name?: string | null } | null;
+};
+
 function AdminCampaigns() {
   const qc = useQueryClient();
   const { data } = useQuery({
@@ -20,7 +35,7 @@ function AdminCampaigns() {
         )
         .order("created_at", { ascending: false })
         .limit(100);
-      return data ?? [];
+      return (data ?? []) as unknown as CampaignRow[];
     },
   });
 
@@ -48,7 +63,7 @@ function AdminCampaigns() {
 
   return (
     <div className="space-y-1.5">
-      {data?.map((c: any) => (
+      {data?.map((c) => (
         <div
           key={c.id}
           className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 flex items-center gap-3"
@@ -74,7 +89,7 @@ function AdminCampaigns() {
             <div className="font-mono text-[10px] text-muted-foreground truncate flex items-center gap-2 mt-0.5">
               <span>{c.business_accounts?.brand_name ?? "—"}</span>
               <span>
-                · bid {(c.bid_cents / 100).toFixed(2)} / cheltuit {(c.spent_cents / 100).toFixed(2)}{" "}
+                · bid {((c.bid_cents ?? 0) / 100).toFixed(2)} / cheltuit {((c.spent_cents ?? 0) / 100).toFixed(2)}{" "}
                 / {c.budget_cents ? (c.budget_cents / 100).toFixed(0) + " RON" : "fără cap"}
               </span>
             </div>

@@ -25,7 +25,8 @@ function start() {
   // Honor user preference & device hints up front
   const reduce =
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-  const lowMem = (navigator as any).deviceMemory && (navigator as any).deviceMemory <= 3;
+  const dm = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+  const lowMem = !!dm && dm <= 3;
   const lowCores = (navigator.hardwareConcurrency ?? 8) <= 4;
   if (reduce || lowMem || lowCores) {
     setLevel("low");

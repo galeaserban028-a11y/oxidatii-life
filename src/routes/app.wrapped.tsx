@@ -29,7 +29,7 @@ function WrappedPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.rpc("get_monthly_wrap", { _month_start: null as any }).then(({ data }) => setWrap(data as Wrap));
+    supabase.rpc("get_monthly_wrap", { _month_start: null as unknown as string }).then(({ data }) => setWrap(data as Wrap));
   }, [user]);
 
   const monthName = wrap ? MONTHS[new Date(wrap.month_start).getMonth()] : "";

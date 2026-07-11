@@ -62,7 +62,7 @@ function AdminDashboard() {
         supabase.from("reports").select("*", head).eq("status", "pending"),
       ]);
 
-      const totalWallet = Number((walletSum as any).data ?? 0);
+      const totalWallet = Number((walletSum as { data?: number | null }).data ?? 0);
 
       return {
         users: users.count ?? 0,
