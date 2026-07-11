@@ -15,6 +15,15 @@ function AdminDebug() {
   const { user } = useAuth();
   const [ping, setPing] = useState<string | null>(null);
 
+  type BugReport = {
+    id: string;
+    reason: string | null;
+    details: string | null;
+    status: string;
+    created_at: string;
+    resolution_note: string | null;
+    reporter?: { handle?: string | null; display_name?: string | null } | null;
+  };
   const { data: reports } = useQuery({
     queryKey: ["admin-bug-reports"],
     queryFn: async () => {
@@ -26,7 +35,7 @@ function AdminDebug() {
         .eq("target_type", "bug_report")
         .order("created_at", { ascending: false })
         .limit(200);
-      return data ?? [];
+      return (data ?? []) as unknown as BugReport[];
     },
   });
 
