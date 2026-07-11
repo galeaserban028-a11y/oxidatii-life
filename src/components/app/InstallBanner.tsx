@@ -19,7 +19,7 @@ export function InstallBanner() {
     if (typeof window === "undefined") return;
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-      // @ts-ignore iOS
+      // @ts-expect-error iOS
       window.navigator.standalone === true;
     if (standalone) {
       setInstalled(true);
