@@ -13,6 +13,7 @@ import { errorMessage } from "@/lib/errors";
 
 
 
+type VenueStreet = { id?: string; name?: string | null; city?: { name?: string | null } | null };
 type VenueRow = {
   id: string;
   name: string;
@@ -20,9 +21,11 @@ type VenueRow = {
   description?: string | null;
   address?: string | null;
   cover_url?: string | null;
+  ig_handle?: string | null;
   opening_hours?: unknown;
-  street?: { city?: { name?: string | null } | null } | null;
-} & Record<string, unknown>;
+  street?: VenueStreet | null;
+  [key: string]: unknown;
+};
 
 type VenuePhotoRow = {
   id: string;
