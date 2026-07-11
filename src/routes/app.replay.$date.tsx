@@ -23,8 +23,8 @@ function ReplayDetailPage() {
     ok?: boolean;
     error?: string;
     top_venue?: string | null;
-    venues_count?: number;
-    sprit_proofs?: number;
+    venues_count: number;
+    sprit_proofs: number;
     photos: Array<{ id: string; photo_url: string }>;
     parties: Array<{ id: string; title?: string | null }>;
     checkins: Array<{ id: string; venue_name?: string | null; created_at: string }>;
