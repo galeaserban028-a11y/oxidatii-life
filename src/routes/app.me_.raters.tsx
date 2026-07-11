@@ -78,11 +78,12 @@ function RatersPage() {
         <ul className="divide-y divide-foreground/10">
           {data.map((r) => {
             const p = r.rater;
+            if (!p) return null;
             return (
               <li key={r.id}>
                 <Link
                   to="/app/user/$id"
-                  params={{ id: p?.id }}
+                  params={{ id: p.id }}
                   className="flex items-center gap-3 px-4 py-3 active:bg-foreground/5"
                 >
                   {p?.avatar_url ? (
