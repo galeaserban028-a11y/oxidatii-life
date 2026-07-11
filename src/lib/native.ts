@@ -4,14 +4,18 @@
  * works in PWA and native builds.
  */
 
+type CapacitorGlobal = {
+  isNativePlatform?: () => boolean;
+  getPlatform?: () => string;
+};
+
 let _isNative: boolean | null = null;
 
 export function isNative(): boolean {
   if (_isNative !== null) return _isNative;
   if (typeof window === "undefined") return false;
   try {
-    // @ts-ignore - Capacitor injects this global at runtime in native shells
-    const cap = (window as any).Capacitor;
+    const cap = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
     _isNative = !!(cap && typeof cap.isNativePlatform === "function" && cap.isNativePlatform());
   } catch {
     _isNative = false;
@@ -22,8 +26,7 @@ export function isNative(): boolean {
 export function getNativePlatform(): "ios" | "android" | "web" {
   if (typeof window === "undefined") return "web";
   try {
-    // @ts-ignore
-    const cap = (window as any).Capacitor;
+    const cap = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
     const p = cap?.getPlatform?.();
     if (p === "ios" || p === "android") return p;
   } catch {}
@@ -115,9 +118,12 @@ export async function nativeShare(opts: { title?: string; text?: string; url?: s
       return true;
     } catch {}
   }
-  if (typeof navigator !== "undefined" && (navigator as any).share) {
+  const nav = typeof navigator !== "undefined"
+    ? (navigator as Navigator & { share?: (data: ShareData) => Promise<void> })
+    : null;
+  if (nav?.share) {
     try {
-      await (navigator as any).share(opts);
+      await nav.share(opts);
       return true;
     } catch {}
   }

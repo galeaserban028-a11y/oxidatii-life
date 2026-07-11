@@ -14,6 +14,9 @@ function RatersPage() {
   const { user } = useAuth();
   const { isVipPlus: allowed } = useEntitlements();
 
+  type RaterProfile = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+  type RatingRow = { id: string; value: number; category: string; created_at: string; rater_id: string };
+
   const { data, isLoading } = useQuery({
     queryKey: ["my-raters", user?.id],
     enabled: !!user && allowed,
@@ -24,14 +27,16 @@ function RatersPage() {
         .eq("rated_id", user!.id)
         .order("created_at", { ascending: false })
         .limit(200);
-      const ids = Array.from(new Set((rows ?? []).map((r: any) => r.rater_id)));
-      if (!ids.length) return [];
+      const rowsTyped = (rows ?? []) as RatingRow[];
+      const ids = Array.from(new Set(rowsTyped.map((r) => r.rater_id)));
+      if (!ids.length) return [] as Array<RatingRow & { rater: RaterProfile | undefined }>;
       const { data: profs } = await supabase
         .from("profiles")
         .select("id, handle, display_name, avatar_url")
         .in("id", ids);
-      const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
-      return (rows ?? []).map((r: any) => ({ ...r, rater: map.get(r.rater_id) }));
+      const profsTyped = (profs ?? []) as RaterProfile[];
+      const map = new Map(profsTyped.map((p) => [p.id, p]));
+      return rowsTyped.map((r) => ({ ...r, rater: map.get(r.rater_id) }));
     },
   });
 
@@ -71,7 +76,7 @@ function RatersPage() {
         </div>
       ) : (
         <ul className="divide-y divide-foreground/10">
-          {data.map((r: any) => {
+          {data.map((r) => {
             const p = r.rater;
             return (
               <li key={r.id}>
