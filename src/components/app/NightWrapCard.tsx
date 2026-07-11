@@ -2,7 +2,22 @@ import { useEffect, useState } from "react";
 import { Sparkles, ChevronRight } from "lucide-react";
 import { NightWrapSheet } from "./NightWrapSheet";
 
-export function NightWrapCard({ wrap }: { wrap: any }) {
+type Wrap = {
+  night_date: string;
+  title: string;
+  tagline?: string | null;
+  vibe_emoji: string;
+  photo_urls?: string[] | null;
+  stats?: {
+    check_ins?: number;
+    photos?: number;
+    likes_received?: number;
+    friends_present?: number;
+    peak_hour?: number | null;
+  } | null;
+};
+
+export function NightWrapCard({ wrap }: { wrap: Wrap }) {
   const [open, setOpen] = useState(false);
   const stats = wrap.stats ?? {};
   const previewPhoto = wrap.photo_urls?.[0];
@@ -74,9 +89,9 @@ export function NightWrapCard({ wrap }: { wrap: any }) {
           )}
 
           <div className="flex items-center gap-4 pt-2 text-[10px] font-mono uppercase tracking-widest text-white/60">
-            {stats.check_ins > 0 && <span>{stats.check_ins} locuri</span>}
-            {stats.photos > 0 && <span>{stats.photos} faze</span>}
-            {stats.likes_received > 0 && <span>{stats.likes_received} ❤</span>}
+            {(stats.check_ins ?? 0) > 0 && <span>{stats.check_ins} locuri</span>}
+            {(stats.photos ?? 0) > 0 && <span>{stats.photos} faze</span>}
+            {(stats.likes_received ?? 0) > 0 && <span>{stats.likes_received} ❤</span>}
           </div>
 
           <div className="flex items-center gap-1 pt-1 text-[11px] font-bold uppercase tracking-wider text-white/90">

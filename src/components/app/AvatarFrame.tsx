@@ -557,7 +557,7 @@ function DiamondOrn() {
           viewBox="0 0 16 16"
           className="pointer-events-none absolute"
           style={{
-            top: p.top as any, left: p.left as any,
+            top: p.top as number | string, left: p.left as number | string,
             marginLeft: p.ml, marginTop: p.mt,
             width: 16, height: 16,
             filter:

@@ -104,6 +104,7 @@ export async function launchCampaignForBusiness(options: {
   if (debitError || !debited) return { error: "Wallet insuficient pentru această campanie." };
 
   const entryKindRaw = String(campaign.entry_kind ?? "");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const payload: any = {
     business_id: businessId,
     kind,

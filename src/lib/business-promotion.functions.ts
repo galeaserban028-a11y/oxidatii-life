@@ -5,6 +5,7 @@ import {
   recordCampaignEventForUser,
 } from "@/lib/business-promotion.server";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LaunchResult = { campaign: any } | { error: string };
 type TrackResult = { ok: boolean } | { error: string };
 

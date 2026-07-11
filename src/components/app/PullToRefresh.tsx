@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react";
 // a smaller dead-zone so the gesture catches immediately.
 const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
 const IS_IOS =
-  /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && "ontouchend" in (globalThis as any));
+  /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && "ontouchend" in (globalThis as unknown as Record<string, unknown>));
 const TUNING = IS_IOS
   ? { THRESHOLD: 78, MAX: 130, DAMP: 145, DEAD: 8, START_OFFSET: 6 }
   : { THRESHOLD: 64, MAX: 130, DAMP: 95, DEAD: 4, START_OFFSET: 2 };

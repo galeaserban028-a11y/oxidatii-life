@@ -284,7 +284,7 @@ function NightWrapSection() {
       const hour = new Date().getHours();
       // only after 6 AM local
       if (hour < 6) return null;
-      const result = (await generateWrap({ data: {} })) as { wrap?: unknown } | null;
+      const result = (await generateWrap({ data: {} })) as { wrap?: React.ComponentProps<typeof NightWrapCard>["wrap"] } | null;
       return result && "wrap" in result ? result.wrap : null;
     },
     staleTime: 60 * 60 * 1000,

@@ -10,8 +10,9 @@ export async function openOrCreateDM(meId: string, otherUserId: string): Promise
     .from("conversation_members")
     .select("conversation_id, conversations:conversation_id(kind)")
     .eq("user_id", meId);
-  const dmIds = (mine ?? [])
-    .filter((m: any) => m.conversations?.kind === "dm")
+  type MemberRow = { conversation_id: string; conversations?: { kind: string } | null };
+  const dmIds = ((mine ?? []) as unknown as MemberRow[])
+    .filter((m) => m.conversations?.kind === "dm")
     .map((m) => m.conversation_id);
   if (dmIds.length) {
     const { data: matches } = await supabase
