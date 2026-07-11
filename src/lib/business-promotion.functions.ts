@@ -5,7 +5,8 @@ import {
   recordCampaignEventForUser,
 } from "@/lib/business-promotion.server";
 
-type LaunchResult = { campaign: { id: string; [k: string]: unknown } } | { error: string };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LaunchResult = { campaign: any } | { error: string };
 type TrackResult = { ok: boolean } | { error: string };
 
 const UUID_RE = /^[0-9a-f-]{36}$/i;
