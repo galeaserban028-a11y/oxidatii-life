@@ -89,9 +89,9 @@ export function NightWrapCard({ wrap }: { wrap: Wrap }) {
           )}
 
           <div className="flex items-center gap-4 pt-2 text-[10px] font-mono uppercase tracking-widest text-white/60">
-            {stats.check_ins > 0 && <span>{stats.check_ins} locuri</span>}
-            {stats.photos > 0 && <span>{stats.photos} faze</span>}
-            {stats.likes_received > 0 && <span>{stats.likes_received} ❤</span>}
+            {(stats.check_ins ?? 0) > 0 && <span>{stats.check_ins} locuri</span>}
+            {(stats.photos ?? 0) > 0 && <span>{stats.photos} faze</span>}
+            {(stats.likes_received ?? 0) > 0 && <span>{stats.likes_received} ❤</span>}
           </div>
 
           <div className="flex items-center gap-1 pt-1 text-[11px] font-bold uppercase tracking-wider text-white/90">
