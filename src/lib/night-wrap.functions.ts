@@ -14,7 +14,7 @@ type NightWrapRow = {
   title: string | null;
   tagline: string | null;
   vibe_emoji: string | null;
-  stats: NightStats | null;
+  stats: unknown;
   photo_urls: string[] | null;
   crew_user_ids: string[] | null;
   top_venue_id: string | null;
