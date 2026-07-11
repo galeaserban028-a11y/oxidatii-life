@@ -158,7 +158,7 @@ function CheckinsList({ onDelete }: { onDelete: (id: string) => void }) {
   });
   return (
     <div className="space-y-1.5">
-      {data?.map((c: any) => (
+      {data?.map((c: CheckinRow) => (
         <Row key={c.id} onDelete={() => onDelete(c.id)}>
           <div className="font-display text-sm truncate">
             @{c.profiles?.handle ?? "?"} la {c.venues?.name ?? "—"}
@@ -189,7 +189,7 @@ function ProofsList({ onDelete }: { onDelete: (id: string) => void }) {
   });
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-      {data?.map((p: PartyRow) => (
+      {data?.map((p: ProofRow) => (
         <div
           key={p.id}
           className="rounded-xl border border-foreground/10 bg-foreground/[0.03] overflow-hidden"
@@ -232,7 +232,7 @@ function PhotosList({ onDelete }: { onDelete: (id: string) => void }) {
   });
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-      {data?.map((p: PartyRow) => (
+      {data?.map((p: PhotoRow) => (
         <div
           key={p.id}
           className="rounded-xl border border-foreground/10 bg-foreground/[0.03] overflow-hidden"
