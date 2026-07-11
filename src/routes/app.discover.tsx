@@ -17,7 +17,7 @@ function loadDismissed(): Set<string> {
 function saveDismissed(s: Set<string>) {
   try {
     localStorage.setItem(PYMK_DISMISS_KEY, JSON.stringify([...s]));
-  } catch {}
+  } catch { /* noop */ }
 }
 
 export const Route = createFileRoute("/app/discover")({

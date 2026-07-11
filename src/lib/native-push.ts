@@ -63,7 +63,7 @@ export async function registerNativePush(): Promise<{ ok: boolean; reason?: stri
       if (url && typeof window !== "undefined") {
         try {
           window.location.assign(url);
-        } catch {}
+        } catch { /* noop */ }
       }
     });
 

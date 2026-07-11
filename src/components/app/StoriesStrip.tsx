@@ -258,7 +258,7 @@ export function StoriesStrip() {
     try {
       const raw = window.localStorage.getItem("oxi-stories-seen");
       if (raw) setSeenIds(new Set(JSON.parse(raw)));
-    } catch {}
+    } catch { /* noop */ }
   }, []);
 
   const markSeen = (ids: string[]) => {
@@ -267,7 +267,7 @@ export function StoriesStrip() {
       for (const id of ids) next.add(id);
       try {
         window.localStorage.setItem("oxi-stories-seen", JSON.stringify(Array.from(next)));
-      } catch {}
+      } catch { /* noop */ }
       return next;
     });
   };

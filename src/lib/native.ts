@@ -29,7 +29,7 @@ export function getNativePlatform(): "ios" | "android" | "web" {
     const cap = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
     const p = cap?.getPlatform?.();
     if (p === "ios" || p === "android") return p;
-  } catch {}
+  } catch { /* noop */ }
   return "web";
 }
 
@@ -48,11 +48,11 @@ export async function bootstrapNative(): Promise<void> {
       if (getNativePlatform() === "android") {
         await StatusBar.setBackgroundColor({ color: "#1a120c" });
       }
-    } catch {}
+    } catch { /* noop */ }
 
     try {
       await SplashScreen.hide({ fadeOutDuration: 300 });
-    } catch {}
+    } catch { /* noop */ }
 
     // Android hardware back: navigate history, exit on root.
     try {
@@ -63,7 +63,7 @@ export async function bootstrapNative(): Promise<void> {
           App.exitApp().catch(() => {});
         }
       });
-    } catch {}
+    } catch { /* noop */ }
 
     // Deep linking: oxidatii.life/<path>  ->  navigate to /<path> in app.
     try {
@@ -80,16 +80,16 @@ export async function bootstrapNative(): Promise<void> {
           // Folosim history.pushState + popstate ca TanStack Router să preia ruta.
           window.history.pushState({}, "", path);
           window.dispatchEvent(new PopStateEvent("popstate"));
-        } catch {}
+        } catch { /* noop */ }
       });
-    } catch {}
+    } catch { /* noop */ }
 
     // Try to register native push (no-op if not yet authenticated; can be
     // called again later from app boot after sign-in).
     try {
       const { registerNativePush } = await import("./native-push");
       registerNativePush().catch(() => {});
-    } catch {}
+    } catch { /* noop */ }
   } catch (err) {
     console.warn("[native] bootstrap failed", err);
   }
@@ -106,7 +106,7 @@ export async function haptic(style: "light" | "medium" | "heavy" = "light") {
       heavy: ImpactStyle.Heavy,
     } as const;
     await Haptics.impact({ style: map[style] });
-  } catch {}
+  } catch { /* noop */ }
 }
 
 /** Native share if available, otherwise falls back to navigator.share / clipboard. */
@@ -116,7 +116,7 @@ export async function nativeShare(opts: { title?: string; text?: string; url?: s
       const { Share } = await import("@capacitor/share");
       await Share.share(opts);
       return true;
-    } catch {}
+    } catch { /* noop */ }
   }
   const nav =
     typeof navigator !== "undefined"
@@ -126,12 +126,12 @@ export async function nativeShare(opts: { title?: string; text?: string; url?: s
     try {
       await nav.share(opts);
       return true;
-    } catch {}
+    } catch { /* noop */ }
   }
   if (opts.url && typeof navigator !== "undefined" && navigator.clipboard) {
     try {
       await navigator.clipboard.writeText(opts.url);
-    } catch {}
+    } catch { /* noop */ }
   }
   return false;
 }

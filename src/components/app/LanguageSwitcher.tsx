@@ -9,7 +9,7 @@ export function LanguageSwitcher() {
     if (current === lng) return;
     try {
       localStorage.setItem("oxi-lang", lng);
-    } catch {}
+    } catch { /* noop */ }
     if (typeof document !== "undefined") document.documentElement.lang = lng;
     // Full reload keeps SSR/client in sync and avoids observer-vs-React races.
     if (typeof window !== "undefined") window.location.reload();

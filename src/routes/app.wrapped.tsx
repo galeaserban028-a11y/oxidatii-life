@@ -59,7 +59,7 @@ function WrappedPage() {
         await navigator.clipboard.writeText(text);
         toast.success("Copiat");
       }
-    } catch {}
+    } catch { /* noop */ }
   };
 
   return (

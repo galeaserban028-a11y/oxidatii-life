@@ -33,7 +33,7 @@ export function PromoBanner({ promotedMeta }: { promotedMeta: Record<string, Pro
       next.add(id);
       try {
         sessionStorage.setItem("oxi_dismissed_promos", JSON.stringify([...next]));
-      } catch {}
+      } catch { /* noop */ }
       return next;
     });
     setIdx(0);
@@ -141,7 +141,7 @@ export function BusinessVisibilityCTA() {
     setHidden(true);
     try {
       sessionStorage.setItem("oxi_hide_biz_cta_v3", "1");
-    } catch {}
+    } catch { /* noop */ }
   };
   return (
     <>

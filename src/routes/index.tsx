@@ -80,13 +80,13 @@ function Index() {
       }
       const stored = window.localStorage.getItem("oxi-lang");
       if (stored === "en" || stored === "ro") setLang(stored);
-    } catch {}
+    } catch { /* noop */ }
   }, []);
   const pickLang = (next: "ro" | "en") => {
     setLang(next);
     try {
       window.localStorage.setItem("oxi-lang", next);
-    } catch {}
+    } catch { /* noop */ }
     void i18n.changeLanguage(next);
   };
   const t =

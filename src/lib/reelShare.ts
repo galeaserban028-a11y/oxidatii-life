@@ -168,5 +168,5 @@ export async function shareReel(reel: ReelLike): Promise<void> {
   }
   try {
     await navigator.clipboard.writeText(`${text}\nhttps://${SITE}`);
-  } catch {}
+  } catch { /* noop */ }
 }

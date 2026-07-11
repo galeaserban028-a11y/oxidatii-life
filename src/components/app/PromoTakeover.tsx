@@ -53,7 +53,7 @@ function markSeenFull(id: string) {
     const list = JSON.parse(sessionStorage.getItem(SEEN_FULL_KEY) || "[]") as string[];
     if (!list.includes(id)) list.push(id);
     sessionStorage.setItem(SEEN_FULL_KEY, JSON.stringify(list));
-  } catch {}
+  } catch { /* noop */ }
 }
 
 async function loadActive(

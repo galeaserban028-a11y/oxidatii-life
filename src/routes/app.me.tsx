@@ -1105,7 +1105,7 @@ function MePage() {
                               const v = e.currentTarget as HTMLVideoElement;
                               try {
                                 v.currentTime = 0.5;
-                              } catch {}
+                              } catch { /* noop */ }
                             }}
                             onLoadedData={(e) => {
                               const v = e.currentTarget as HTMLVideoElement;
@@ -1115,7 +1115,7 @@ function MePage() {
                                   try {
                                     v.pause();
                                     v.currentTime = 0.5;
-                                  } catch {}
+                                  } catch { /* noop */ }
                                 })
                                 .catch(() => {});
                             }}

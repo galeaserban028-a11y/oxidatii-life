@@ -120,7 +120,7 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
         applyTransform(pullRef.current, true);
         try {
           await Promise.all([router.invalidate(), qc.invalidateQueries()]);
-        } catch {}
+        } catch { /* noop */ }
         refreshingRef.current = false;
         setRefreshing(false);
       }

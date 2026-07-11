@@ -46,7 +46,7 @@ function InvitePage() {
         await navigator.clipboard.writeText(message);
         toast.success("Mesaj copiat");
       }
-    } catch {}
+    } catch { /* noop */ }
   };
 
   const progress = stats ? Math.min((stats.count / (stats.next_milestone || 10)) * 100, 100) : 0;

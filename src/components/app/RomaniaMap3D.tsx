@@ -444,7 +444,7 @@ function repaintMap(map: MlMap) {
     try {
       map.resize();
       map.triggerRepaint();
-    } catch {}
+    } catch { /* noop */ }
   });
 }
 
@@ -579,7 +579,7 @@ export function RomaniaMap3D({
           try {
             map.resize();
             map.triggerRepaint();
-          } catch {}
+          } catch { /* noop */ }
         });
       });
       resizeObserver.observe(containerRef.current);
@@ -595,7 +595,7 @@ export function RomaniaMap3D({
         map.resize();
         map.triggerRepaint();
         markFirstPaint();
-      } catch {}
+      } catch { /* noop */ }
     };
     map.on("styledata", onStyleData);
     map.once("sourcedata", onStyleData);
@@ -691,7 +691,7 @@ export function RomaniaMap3D({
         try {
           if (map.hasImage(name)) map.removeImage(name);
           map.addImage(name, makePinImage(color, isSmall), { pixelRatio: 2 });
-        } catch {}
+        } catch { /* noop */ }
       }
 
       // Outer wide aura behind clusters — desktop only (expensive blur on mobile GPUs)
@@ -1100,7 +1100,7 @@ export function RomaniaMap3D({
         canvas.removeEventListener("webglcontextlost", onLost as any);
         canvas.removeEventListener("webglcontextrestored", onRestored as any);
         map.remove();
-      } catch {}
+      } catch { /* noop */ }
       contextRetryTimerRef.current = null;
       resizeObserver?.disconnect();
       mapRef.current = null;
@@ -1202,7 +1202,7 @@ export function RomaniaMap3D({
       let dismissed = new Set<string>();
       try {
         dismissed = new Set(JSON.parse(sessionStorage.getItem("oxi_dismissed_promos") || "[]"));
-      } catch {}
+      } catch { /* noop */ }
       const seen = new Set<string>();
       for (const v of venues) {
         const meta = promotedMeta[v.id];
@@ -1268,7 +1268,7 @@ export function RomaniaMap3D({
               );
               cur.add(meta.campaignId);
               sessionStorage.setItem("oxi_dismissed_promos", JSON.stringify([...cur]));
-            } catch {}
+            } catch { /* noop */ }
           }
           const m = promotedMarkers.current.get(v.id);
           if (m) {
@@ -1445,7 +1445,7 @@ export function RomaniaMap3D({
           bearing: 0,
           maxZoom: 9,
         });
-      } catch {}
+      } catch { /* noop */ }
     };
     if (loadedRef.current) fit();
     else map.once("load", fit);

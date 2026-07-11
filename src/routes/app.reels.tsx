@@ -172,7 +172,7 @@ function setVideoMuted(video: HTMLVideoElement, shouldMute: boolean) {
   if (!shouldMute) {
     try {
       video.volume = 1;
-    } catch {}
+    } catch { /* noop */ }
   }
 }
 
@@ -450,7 +450,7 @@ function SponsoredTile({ ad, active }: { ad: Sponsored; active: boolean }) {
   const handleClick = async () => {
     try {
       await recordCampaignEvent({ data: { campaignId: ad.id, eventType: "click" } });
-    } catch {}
+    } catch { /* noop */ }
     if (ad.cta_url) window.open(ad.cta_url, "_blank", "noopener,noreferrer");
   };
 

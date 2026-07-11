@@ -132,7 +132,7 @@ export async function disablePush(): Promise<void> {
     const endpoint = sub.endpoint;
     try {
       await sub.unsubscribe();
-    } catch {}
+    } catch { /* noop */ }
     await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
   }
 }

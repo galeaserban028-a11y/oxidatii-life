@@ -19,7 +19,7 @@ function CookiesPage() {
     try {
       localStorage.removeItem("oxi-cookie-consent-v1");
       localStorage.removeItem("oxi-cookie-consent-v1-at");
-    } catch {}
+    } catch { /* noop */ }
     window.location.reload();
   };
 

@@ -19,7 +19,7 @@ export function AgeGate() {
   const confirm = () => {
     try {
       localStorage.setItem(AGE_KEY, "1");
-    } catch {}
+    } catch { /* noop */ }
     setOpen(false);
   };
 

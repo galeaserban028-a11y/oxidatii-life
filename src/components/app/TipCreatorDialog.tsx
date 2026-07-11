@@ -172,7 +172,7 @@ export function TipCreatorButton({
 
       try {
         localStorage.setItem(LAST_AMOUNT_KEY, String(parsed));
-      } catch {}
+      } catch { /* noop */ }
       import("@/lib/native").then(({ haptic }) => haptic?.("medium")).catch(() => {});
       setSuccess(true);
       setTimeout(() => {

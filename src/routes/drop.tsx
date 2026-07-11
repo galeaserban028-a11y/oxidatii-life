@@ -68,7 +68,7 @@ function DropPage() {
       else {
         await navigator.clipboard.writeText(text);
       }
-    } catch {}
+    } catch { /* noop */ }
   };
 
   const medals = ["🥇", "🥈", "🥉"];

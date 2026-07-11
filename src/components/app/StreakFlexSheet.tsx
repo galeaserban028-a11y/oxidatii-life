@@ -39,7 +39,7 @@ export function readSeenMilestone(): number {
 export function writeSeenMilestone(m: number) {
   try {
     localStorage.setItem(SEEN_KEY, String(m));
-  } catch {}
+  } catch { /* noop */ }
 }
 
 export function StreakFlexSheet({

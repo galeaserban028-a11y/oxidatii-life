@@ -626,7 +626,7 @@ function UserPage() {
                                   onLoadedMetadata={(e) => {
                                     try {
                                       e.currentTarget.currentTime = 0.5;
-                                    } catch {}
+                                    } catch { /* noop */ }
                                   }}
                                   className="absolute inset-0 h-full w-full object-cover"
                                 />
@@ -701,7 +701,7 @@ function UserPage() {
                                   onLoadedMetadata={(e) => {
                                     try {
                                       e.currentTarget.currentTime = 0.5;
-                                    } catch {}
+                                    } catch { /* noop */ }
                                   }}
                                   className="absolute inset-0 h-full w-full object-cover"
                                 />

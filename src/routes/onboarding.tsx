@@ -39,7 +39,7 @@ function Onboarding() {
     try {
       const pending = localStorage.getItem("pending_referral_code");
       if (pending) setRefCode(pending);
-    } catch {}
+    } catch { /* noop */ }
   }, []);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ function Onboarding() {
           .eq("id", user.id)
           .maybeSingle();
         setHasDob(!!(data as { birthdate?: string | null } | null)?.birthdate);
-      } catch {}
+      } catch { /* noop */ }
     })();
   }, [user]);
 
@@ -124,9 +124,9 @@ function Onboarding() {
           toast.success("+50 șprițuri din invitație 🎉");
           try {
             localStorage.removeItem("pending_referral_code");
-          } catch {}
+          } catch { /* noop */ }
         }
-      } catch {}
+      } catch { /* noop */ }
     }
 
     await refreshProfile();
