@@ -89,7 +89,7 @@ export function ThemeAtmosphere({
       ref={rootRef}
       data-theme-atmosphere
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ ["--px" as any]: "0px", ["--py" as any]: "0px", contain: "strict" as any }}
+      style={{ ["--px" as string]: "0px", ["--py" as string]: "0px", contain: "strict" }}
       aria-hidden="true"
     >
       {iGradient > 0 && (
@@ -128,8 +128,8 @@ export function ThemeAtmosphere({
               filter: `blur(${a.blur}px)`,
               opacity: a.opacity * iAurora,
               background: a.background,
-              ["--mx" as any]: `calc(var(--px) * ${(i + 1) * 0.35})`,
-              ["--my" as any]: `calc(var(--py) * ${i % 2 ? 0.6 : 0.3})`,
+              ["--mx" as string]: `calc(var(--px) * ${(i + 1) * 0.35})`,
+              ["--my" as string]: `calc(var(--py) * ${i % 2 ? 0.6 : 0.3})`,
               transform: "translate3d(var(--mx,0), var(--my,0), 0)",
               animation: reduced
                 ? "none"
@@ -154,8 +154,8 @@ export function ThemeAtmosphere({
               background: o.background,
               boxShadow: o.boxShadow,
               opacity: o.opacity * iAurora,
-              ["--mx" as any]: `calc(var(--px) * 0.5)`,
-              ["--my" as any]: `calc(var(--py) * 0.25)`,
+              ["--mx" as string]: `calc(var(--px) * 0.5)`,
+              ["--my" as string]: `calc(var(--py) * 0.25)`,
               transform: "translate3d(var(--mx,0), var(--my,0), 0)",
               animation: `themeFloat ${o.duration}s ease-in-out ${o.delay}s infinite`,
               willChange: "transform",
