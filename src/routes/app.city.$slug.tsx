@@ -13,7 +13,7 @@ export const Route = createFileRoute("/app/city/$slug")({
     return { city: data };
   },
   head: ({ params, loaderData }) => {
-    const c: any = loaderData?.city;
+    const c = loaderData?.city as { name?: string; region?: string | null } | null | undefined;
     const name = c?.name ?? "Oraș";
     const title = `${name} — Nightlife live · OXIDAȚII`;
     const desc = `Vezi cluburile, străzile și șprițurile live din ${name}${c?.region ? `, ${c.region}` : ""} pe OXIDAȚII. Cine, unde și când — în timp real.`;
@@ -79,7 +79,7 @@ function CityPage() {
           // străzi
         </div>
         <div className="space-y-2">
-          {data.streets.map((s: any) => {
+          {(data.streets as Array<{ id: string; name: string; slug: string; venues?: Array<{ count: number }> }>).map((s) => {
             const count = s.venues?.[0]?.count ?? 0;
             return (
               <Link

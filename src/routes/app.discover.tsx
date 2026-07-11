@@ -46,7 +46,8 @@ function DiscoverPage() {
         .from("follows")
         .select("following_id,status")
         .eq("follower_id", user!.id);
-      return new Map((data ?? []).map((r: any) => [r.following_id as string, r.status as string]));
+      const rows = (data ?? []) as Array<{ following_id: string; status: string }>;
+      return new Map(rows.map((r) => [r.following_id, r.status]));
     },
   });
 
@@ -90,7 +91,7 @@ function DiscoverPage() {
     enabled: !!user && q.trim().length < 2,
     queryFn: async (): Promise<(Profile & { common_venues: number; city_name: string | null; last_seen_at: string | null })[]> => {
       const { data } = await supabase.rpc("get_people_you_may_know", { p_limit: 16 });
-      return (data ?? []) as any;
+      return (data ?? []) as (Profile & { common_venues: number; city_name: string | null; last_seen_at: string | null })[];
     },
     staleTime: 5 * 60_000,
   });

@@ -31,13 +31,13 @@ async function loadList(userId: string, tab: "followers" | "following"): Promise
     .eq(col, userId)
     .eq("status", "accepted")
     .order("created_at", { ascending: false });
-  const ids = (rows ?? []).map((r: any) => r[pickCol]);
+  const ids = ((rows ?? []) as Array<Record<string, string>>).map((r) => r[pickCol]);
   if (ids.length === 0) return [];
   const { data: profs } = await supabase
     .from("profiles")
     .select("id, handle, display_name, avatar_url, rank")
     .in("id", ids);
-  const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
+  const map = new Map(((profs ?? []) as Row[]).map((p) => [p.id, p]));
   return ids.map((id) => map.get(id)).filter(Boolean) as Row[];
 }
 

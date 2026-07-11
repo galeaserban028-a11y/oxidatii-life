@@ -26,7 +26,7 @@ function PromoPage() {
       if (error) throw error;
       if (!campaign) throw new Error("Campanie indisponibilă");
       const biz = await supabase
-        .rpc("get_business_account_public", { _id: (campaign as any).business_id })
+        .rpc("get_business_account_public", { _id: (campaign as { business_id: string }).business_id })
         .maybeSingle();
       return { campaign, biz: biz.data };
     },
@@ -48,7 +48,7 @@ function PromoPage() {
               .eq("campaign_id", id)
               .eq("user_id", user.id)
               .maybeSingle()
-          : Promise.resolve({ data: null } as any),
+          : Promise.resolve({ data: null as { user_id: string } | null }),
       ]);
       return { count: count ?? 0, liked: !!mine.data };
     },

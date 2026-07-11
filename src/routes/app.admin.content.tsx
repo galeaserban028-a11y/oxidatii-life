@@ -11,6 +11,43 @@ export const Route = createFileRoute("/app/admin/content")({
 
 type Tab = "parties" | "checkins" | "proofs" | "photos";
 
+type PartyRow = {
+  id: string;
+  title: string;
+  location_text: string | null;
+  vibe: string | null;
+  starts_at: string;
+  expires_at: string;
+  host_id: string;
+  profiles?: { handle?: string | null; display_name?: string | null } | null;
+};
+type CheckinRow = {
+  id: string;
+  created_at: string;
+  expires_at: string;
+  user_id: string;
+  venues?: { name?: string | null } | null;
+  profiles?: { handle?: string | null } | null;
+};
+type ProofRow = {
+  id: string;
+  photo_url: string | null;
+  created_at: string;
+  ai_verified: boolean | null;
+  ai_confidence: number | null;
+  ai_reason: string | null;
+  profiles?: { handle?: string | null } | null;
+  venues?: { name?: string | null } | null;
+};
+type PhotoRow = {
+  id: string;
+  photo_url: string | null;
+  caption: string | null;
+  taken_at: string | null;
+  profiles?: { handle?: string | null } | null;
+  venues?: { name?: string | null } | null;
+};
+
 function AdminContent() {
   const [tab, setTab] = useState<Tab>("parties");
   const qc = useQueryClient();
@@ -87,12 +124,12 @@ function PartiesList({ onDelete }: { onDelete: (id: string) => void }) {
         )
         .order("created_at", { ascending: false })
         .limit(100);
-      return data ?? [];
+      return (data ?? []) as unknown as PartyRow[];
     },
   });
   return (
     <div className="space-y-1.5">
-      {data?.map((p: any) => (
+      {data?.map((p: PartyRow) => (
         <Row key={p.id} onDelete={() => onDelete(p.id)}>
           <div className="font-display text-sm truncate">{p.title}</div>
           <div className="font-mono text-[10px] text-muted-foreground truncate">
@@ -116,12 +153,12 @@ function CheckinsList({ onDelete }: { onDelete: (id: string) => void }) {
         )
         .order("created_at", { ascending: false })
         .limit(100);
-      return data ?? [];
+      return (data ?? []) as unknown as CheckinRow[];
     },
   });
   return (
     <div className="space-y-1.5">
-      {data?.map((c: any) => (
+      {data?.map((c: CheckinRow) => (
         <Row key={c.id} onDelete={() => onDelete(c.id)}>
           <div className="font-display text-sm truncate">
             @{c.profiles?.handle ?? "?"} la {c.venues?.name ?? "—"}
@@ -147,12 +184,12 @@ function ProofsList({ onDelete }: { onDelete: (id: string) => void }) {
         )
         .order("created_at", { ascending: false })
         .limit(60);
-      return data ?? [];
+      return (data ?? []) as unknown as ProofRow[];
     },
   });
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-      {data?.map((p: any) => (
+      {data?.map((p: ProofRow) => (
         <div
           key={p.id}
           className="rounded-xl border border-foreground/10 bg-foreground/[0.03] overflow-hidden"
@@ -190,12 +227,12 @@ function PhotosList({ onDelete }: { onDelete: (id: string) => void }) {
         .select("id, photo_url, caption, taken_at, profiles:user_id(handle), venues:venue_id(name)")
         .order("created_at", { ascending: false })
         .limit(60);
-      return data ?? [];
+      return (data ?? []) as unknown as PhotoRow[];
     },
   });
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-      {data?.map((p: any) => (
+      {data?.map((p: PhotoRow) => (
         <div
           key={p.id}
           className="rounded-xl border border-foreground/10 bg-foreground/[0.03] overflow-hidden"
