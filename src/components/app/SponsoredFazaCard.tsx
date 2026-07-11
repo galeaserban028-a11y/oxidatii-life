@@ -38,9 +38,25 @@ export function usePromoCards() {
         console.warn("[usePromoCards]", error.message);
         return [];
       }
-      const rows = (data ?? []) as any[];
+      type CampaignRow = {
+        id: string;
+        title?: string | null;
+        body?: string | null;
+        subtitle?: string | null;
+        venue_name?: string | null;
+        business_brand_name?: string | null;
+        business_logo_url?: string | null;
+        image_urls?: string[] | null;
+        business_cover_url?: string | null;
+        video_url?: string | null;
+        cta_url?: string | null;
+        cta_text?: string | null;
+        theme_color?: string | null;
+        business_id?: string | null;
+      };
+      const rows = (data ?? []) as CampaignRow[];
       // Fetch review counts via safe public RPC (avoids business_accounts direct read)
-      const bizIds = Array.from(new Set(rows.map((r) => r.business_id).filter(Boolean)));
+      const bizIds = Array.from(new Set(rows.map((r) => r.business_id).filter(Boolean) as string[]));
       const bizExtras = new Map<string, { rating: number | null; reviews: number | null }>();
       await Promise.all(
         bizIds.map(async (id) => {
@@ -48,15 +64,16 @@ export function usePromoCards() {
             .rpc("get_business_account_public", { _id: id })
             .maybeSingle();
           if (b) {
+            const rec = b as { reputation_score?: number | null; total_reviews?: number | null };
             bizExtras.set(id, {
-              rating: (b as any).reputation_score ?? null,
-              reviews: (b as any).total_reviews ?? null,
+              rating: rec.reputation_score ?? null,
+              reviews: rec.total_reviews ?? null,
             });
           }
         }),
       );
       return rows.map((c) => {
-        const extras = bizExtras.get(c.business_id) ?? { rating: null, reviews: null };
+        const extras = bizExtras.get(c.business_id ?? "") ?? { rating: null, reviews: null };
         return {
           id: c.id as string,
           title: (c.title as string | null) ?? null,
@@ -94,7 +111,7 @@ function useCampaignLikes(campaignId: string, userId: string | undefined) {
               .eq("campaign_id", campaignId)
               .eq("user_id", userId)
               .maybeSingle()
-          : Promise.resolve({ data: null } as any),
+          : Promise.resolve({ data: null as { user_id: string } | null }),
       ]);
       return { count: count ?? 0, liked: !!mine.data };
     },

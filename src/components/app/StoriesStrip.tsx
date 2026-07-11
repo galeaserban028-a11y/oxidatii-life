@@ -16,9 +16,20 @@ type PromoTile = {
   theme: string;
 };
 
+type CampaignRow = {
+  id: string;
+  title?: string | null;
+  venue_name?: string | null;
+  business_brand_name?: string | null;
+  image_urls?: string[] | null;
+  business_cover_url?: string | null;
+  business_logo_url?: string | null;
+  theme_color?: string | null;
+};
+
 async function loadPromoTiles(): Promise<PromoTile[]> {
   const { data } = await supabase.rpc("get_active_campaigns", { _limit: 20 });
-  return ((data ?? []) as any[]).map((c) => ({
+  return ((data ?? []) as CampaignRow[]).map((c) => ({
     campaignId: c.id,
     title: c.title ?? null,
     brand: c.venue_name ?? c.business_brand_name ?? null,
@@ -68,7 +79,9 @@ async function loadStories(viewerId: string) {
     .select("following_id")
     .eq("follower_id", viewerId)
     .eq("status", "accepted");
-  const allowed = new Set<string>([viewerId, ...(follows ?? []).map((f: any) => f.following_id)]);
+  type FollowRow = { following_id: string };
+  type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+  const allowed = new Set<string>([viewerId, ...((follows ?? []) as FollowRow[]).map((f) => f.following_id)]);
 
   const filtered = stories.filter((s) => allowed.has(s.user_id));
   if (filtered.length === 0) return { groups: [] as Group[] };
@@ -78,7 +91,7 @@ async function loadStories(viewerId: string) {
     .from("profiles")
     .select("id,handle,display_name,avatar_url")
     .in("id", userIds);
-  const pm = new Map((profs ?? []).map((p: any) => [p.id, p]));
+  const pm = new Map(((profs ?? []) as ProfileLite[]).map((p) => [p.id, p]));
 
   const byUser = new Map<string, StoryRow[]>();
   for (const s of filtered) {
@@ -88,12 +101,12 @@ async function loadStories(viewerId: string) {
   }
 
   const groups: Group[] = Array.from(byUser.entries()).map(([uid, arr]) => {
-    const p: any = pm.get(uid) ?? {};
+    const p = pm.get(uid);
     return {
       user_id: uid,
-      handle: p.handle ?? p.display_name ?? "anonim",
-      avatar_url: p.avatar_url ?? null,
-      display_name: p.display_name ?? null,
+      handle: p?.handle ?? p?.display_name ?? "anonim",
+      avatar_url: p?.avatar_url ?? null,
+      display_name: p?.display_name ?? null,
       stories: arr.sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at)),
     };
   });
