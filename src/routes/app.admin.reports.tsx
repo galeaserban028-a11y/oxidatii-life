@@ -52,7 +52,13 @@ function AdminReports() {
         toast.error(error.message);
         return [];
       }
-      const ids = Array.from(new Set((rows ?? []).map((r: ReportRow) => r.reporter_id).filter(Boolean)));
+      const ids = Array.from(
+        new Set(
+          (rows ?? [])
+            .map((r: ReportRow) => r.reporter_id)
+            .filter((x): x is string => !!x),
+        ),
+      );
       let profMap: Record<string, { handle: string | null; display_name: string | null }> = {};
       if (ids.length) {
         const { data: profs } = await supabase
