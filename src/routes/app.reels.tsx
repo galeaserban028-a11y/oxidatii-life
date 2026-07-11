@@ -26,12 +26,47 @@ type Sponsored = {
   brand_name: string | null;
 };
 
+
+type CampaignRow = {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  cta_text: string | null;
+  cta_url: string | null;
+  video_url: string | null;
+  image_urls: string[] | null;
+  theme_color: string | null;
+  business_brand_name?: string | null;
+};
+
+type ReelRaw = {
+  id: string;
+  photo_url: string;
+  caption: string | null;
+  taken_at?: string | null;
+  user_id: string;
+  venue_id: string;
+  media_type?: string | null;
+  is_friend?: boolean | null;
+  is_follow?: boolean | null;
+  same_city?: boolean | null;
+};
+
+type ProfileLite = {
+  id: string;
+  handle: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
+type VenueLite = { id: string; name: string; city?: { name?: string } | null };
+
 async function loadSponsored(): Promise<Sponsored[]> {
   const { data } = await supabase.rpc("get_active_campaigns", {
     _kinds: ["boost_reel"],
     _limit: 10,
   });
-  return (data ?? []).map((c: any) => ({
+  return (data ?? []).map((c: CampaignRow) => ({
     id: c.id,
     title: c.title,
     subtitle: c.subtitle,
@@ -61,10 +96,10 @@ type Reel = {
 };
 
 async function loadReels(): Promise<Reel[]> {
-  let items: any[] = [];
+  let items: ReelRaw[] = [];
   const { data: fyp } = await supabase.rpc("get_reels_for_you", { p_limit: 80 });
   if (Array.isArray(fyp) && fyp.length) {
-    items = fyp.map((r: any) => ({
+    items = (fyp as ReelRaw[]).map((r) => ({
       id: r.id, photo_url: r.photo_url, caption: r.caption, taken_at: r.taken_at,
       user_id: r.user_id, venue_id: r.venue_id, media_type: r.media_type,
       is_friend: r.is_friend, is_follow: r.is_follow, same_city: r.same_city,
@@ -75,12 +110,12 @@ async function loadReels(): Promise<Reel[]> {
       .select("id, photo_url, caption, taken_at, user_id, venue_id, media_type")
       .order("taken_at", { ascending: false })
       .limit(80);
-    items = photos ?? [];
+    items = (photos ?? []) as ReelRaw[];
   }
   if (!items.length) return [];
   // Reels = doar video. Filtrează pozele.
   items = items.filter(
-    (p: any) =>
+    (p) =>
       p.media_type === "video" || /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(p.photo_url ?? ""),
   );
   if (!items.length) return [];
@@ -90,9 +125,9 @@ async function loadReels(): Promise<Reel[]> {
     supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", userIds),
     supabase.from("venues").select("id, name, city:cities(name)").in("id", venueIds),
   ]);
-  const pmap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
-  const vmap = new Map((venues ?? []).map((v: any) => [v.id, v]));
-  return items.map((p: any) => {
+  const pmap = new Map((profiles ?? []).map((p: ProfileLite) => [p.id, p]));
+  const vmap = new Map((venues ?? []).map((v: VenueLite) => [v.id, v]));
+  return items.map((p) => {
     const isVideo =
       p.media_type === "video" || /\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(p.photo_url);
     const prof = pmap.get(p.user_id);
@@ -497,7 +532,7 @@ function ReelsPage() {
           "photo_id",
           reels.map((r) => r.id),
         );
-      return new Set((data ?? []).map((r: any) => r.photo_id));
+      return new Set((data ?? []).map((r: { photo_id: string }) => r.photo_id));
     },
   });
 

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Check, X, Trash2, Bug, LifeBuoy, Mail, Flag } from "lucide-react";
+import { Check, X, Trash2, Bug, LifeBuoy, Mail, Flag, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
 
@@ -10,11 +10,26 @@ export const Route = createFileRoute("/app/admin/reports")({
   component: AdminReports,
 });
 
-const TYPE_META: Record<string, { label: string; icon: any; color: string }> = {
+const TYPE_META: Record<string, { label: string; icon: LucideIcon; color: string }> = {
   support_feedback: { label: "Suport & feedback", icon: LifeBuoy, color: "text-neon-mint" },
   contact_team: { label: "Contact echipă", icon: Mail, color: "text-neon-cyan" },
   bug_report: { label: "Bug", icon: Bug, color: "text-neon-crimson" },
 };
+
+
+type ReporterProfile = { handle: string | null; display_name: string | null };
+type ReportRow = {
+  id: string;
+  target_type: string;
+  target_id: string | null;
+  reason: string | null;
+  details: string | null;
+  status: string;
+  created_at: string;
+  resolution_note: string | null;
+  reporter_id: string | null;
+};
+type ReportItem = ReportRow & { reporter: ReporterProfile | null };
 
 function AdminReports() {
   const qc = useQueryClient();
@@ -37,16 +52,22 @@ function AdminReports() {
         toast.error(error.message);
         return [];
       }
-      const ids = Array.from(new Set((rows ?? []).map((r: any) => r.reporter_id).filter(Boolean)));
+      const ids = Array.from(
+        new Set(
+          (rows ?? [])
+            .map((r: ReportRow) => r.reporter_id)
+            .filter((x): x is string => !!x),
+        ),
+      );
       let profMap: Record<string, { handle: string | null; display_name: string | null }> = {};
       if (ids.length) {
         const { data: profs } = await supabase
           .from("profiles")
           .select("id, handle, display_name")
           .in("id", ids);
-        profMap = Object.fromEntries((profs ?? []).map((p: any) => [p.id, p]));
+        profMap = Object.fromEntries((profs ?? []).map((p: { id: string } & ReporterProfile) => [p.id, p]));
       }
-      return (rows ?? []).map((r: any) => ({ ...r, reporter: profMap[r.reporter_id] ?? null }));
+      return (rows ?? []).map((r: ReportRow) => ({ ...r, reporter: (r.reporter_id ? profMap[r.reporter_id] : null) ?? null }) as ReportItem);
     },
   });
 
@@ -72,20 +93,20 @@ function AdminReports() {
     qc.invalidateQueries({ queryKey: ["admin-reports"] });
   };
 
-  const counts = (data ?? []).reduce((acc: Record<string, number>, r: any) => {
+  const counts = (data ?? []).reduce((acc: Record<string, number>, r: ReportItem) => {
     acc.all = (acc.all ?? 0) + 1;
     const key = TYPE_META[r.target_type] ? r.target_type : "other";
     acc[key] = (acc[key] ?? 0) + 1;
     return acc;
   }, {});
 
-  const filtered = (data ?? []).filter((r: any) => {
+  const filtered = (data ?? []).filter((r: ReportItem) => {
     if (filter === "all") return true;
     if (filter === "other") return !TYPE_META[r.target_type];
     return r.target_type === filter;
   });
 
-  const tabs: { key: typeof filter; label: string; icon: any }[] = [
+  const tabs: { key: typeof filter; label: string; icon: LucideIcon }[] = [
     { key: "all", label: "Toate", icon: Flag },
     { key: "support_feedback", label: "Suport", icon: LifeBuoy },
     { key: "contact_team", label: "Contact", icon: Mail },
@@ -120,7 +141,7 @@ function AdminReports() {
         {filtered.length === 0 && (
           <div className="text-sm text-muted-foreground p-4 text-center">Niciun raport.</div>
         )}
-        {filtered.map((r: any) => {
+        {filtered.map((r: ReportItem) => {
           const meta = TYPE_META[r.target_type];
           const Icon = meta?.icon ?? Flag;
           return (
