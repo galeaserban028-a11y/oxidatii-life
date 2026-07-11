@@ -63,7 +63,7 @@ function AdminCampaigns() {
 
   return (
     <div className="space-y-1.5">
-      {data?.map((c: any) => (
+      {data?.map((c) => (
         <div
           key={c.id}
           className="rounded-xl border border-foreground/10 bg-foreground/[0.03] p-3 flex items-center gap-3"
