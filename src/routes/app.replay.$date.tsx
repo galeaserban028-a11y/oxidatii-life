@@ -19,12 +19,22 @@ function formatDateRo(s: string): string {
 function ReplayDetailPage() {
   const { date } = Route.useParams();
 
+  type ReplayData = {
+    ok?: boolean;
+    error?: string;
+    top_venue?: string | null;
+    venues_count?: number;
+    sprit_proofs?: number;
+    photos: Array<{ id: string; photo_url: string }>;
+    parties: Array<{ id: string; title?: string | null }>;
+    checkins: Array<{ id: string; venue_name?: string | null; created_at: string }>;
+  };
   const replayQuery = useQuery({
     queryKey: ["replay-data", date],
-    queryFn: async () => {
+    queryFn: async (): Promise<ReplayData> => {
       const { data, error } = await supabase.rpc("get_replay_data", { _date: date });
       if (error) throw error;
-      return data as any;
+      return data as unknown as ReplayData;
     },
   });
 
@@ -101,7 +111,7 @@ function ReplayDetailPage() {
             {data.checkins.length > 0 && (
               <Section title="Traseu">
                 <div className="space-y-2">
-                  {data.checkins.map((c: any) => (
+                  {data.checkins.map((c) => (
                     <div
                       key={c.id}
                       className="flex items-center gap-3 px-3 py-2 bg-card border border-foreground/10 rounded-lg"
@@ -127,7 +137,7 @@ function ReplayDetailPage() {
             {data.photos.length > 0 && (
               <Section title="Poze">
                 <div className="grid grid-cols-3 gap-2">
-                  {data.photos.map((p: any) => (
+                  {data.photos.map((p) => (
                     <img
                       key={p.id}
                       src={p.photo_url}

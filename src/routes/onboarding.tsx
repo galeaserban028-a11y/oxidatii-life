@@ -63,7 +63,7 @@ function Onboarding() {
         if (pending) {
           await supabase
             .from("profiles")
-            .update({ birthdate: pending } as any)
+            .update({ birthdate: pending } as never)
             .eq("id", user.id);
           sessionStorage.removeItem("pending_birthdate");
           setHasDob(true);
@@ -74,7 +74,7 @@ function Onboarding() {
           .select("birthdate")
           .eq("id", user.id)
           .maybeSingle();
-        setHasDob(!!(data as any)?.birthdate);
+        setHasDob(!!(data as { birthdate?: string | null } | null)?.birthdate);
       } catch {}
     })();
   }, [user]);
@@ -108,7 +108,7 @@ function Onboarding() {
     if (!hasDob && dob) update.birthdate = dob;
     const { error } = await supabase
       .from("profiles")
-      .update(update as any)
+      .update(update as never)
       .eq("id", user.id);
     setBusy(false);
     if (error) return toast.error(error.message);
