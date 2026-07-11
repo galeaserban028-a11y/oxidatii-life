@@ -55,17 +55,18 @@ function ReputationAnalyticsPage() {
     );
   }
 
-  const ratings = data ?? [];
+  type RatingRow = { value: number; category: string; created_at: string };
+  const ratings = (data ?? []) as RatingRow[];
   const total = ratings.length;
-  const avg = total === 0 ? 0 : ratings.reduce((s, r: any) => s + r.value, 0) / total;
+  const avg = total === 0 ? 0 : ratings.reduce((s, r) => s + r.value, 0) / total;
   const byCategory = CATS.map((c) => {
-    const list = ratings.filter((r: any) => r.category === c);
-    const a = list.length === 0 ? 0 : list.reduce((s, r: any) => s + r.value, 0) / list.length;
+    const list = ratings.filter((r) => r.category === c);
+    const a = list.length === 0 ? 0 : list.reduce((s, r) => s + r.value, 0) / list.length;
     return { cat: c, count: list.length, avg: a };
   });
 
   const last30 = ratings.filter(
-    (r: any) => new Date(r.created_at) > new Date(Date.now() - 30 * 86400000),
+    (r) => new Date(r.created_at) > new Date(Date.now() - 30 * 86400000),
   );
 
   return (
