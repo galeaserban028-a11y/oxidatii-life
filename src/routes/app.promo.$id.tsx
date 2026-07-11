@@ -48,7 +48,7 @@ function PromoPage() {
               .eq("campaign_id", id)
               .eq("user_id", user.id)
               .maybeSingle()
-          : Promise.resolve({ data: null } as any),
+          : Promise.resolve({ data: null as { user_id: string } | null }),
       ]);
       return { count: count ?? 0, liked: !!mine.data };
     },
