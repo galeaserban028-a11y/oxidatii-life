@@ -49,7 +49,12 @@ export default function VenueNightChat({
       if (cancel) return;
       const rows = (data as Msg[]) ?? [];
       const ids = Array.from(new Set(rows.map((m) => m.user_id)));
-      type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+      type ProfileLite = {
+        id: string;
+        handle: string | null;
+        display_name: string | null;
+        avatar_url: string | null;
+      };
       const { data: profiles } = ids.length
         ? await supabase
             .from("profiles")

@@ -15,7 +15,10 @@ function isoWeekMondayUTC(d: Date): Date {
   return dt;
 }
 
-function status(current: number, lastStreakWeek?: string | null): {
+function status(
+  current: number,
+  lastStreakWeek?: string | null,
+): {
   label: string;
   tone: "live" | "risk" | "cold";
   hint: string;
@@ -92,9 +95,7 @@ export function StreakHero({ current, longest, lastStreakWeek }: Props) {
             <div className="text-4xl font-extrabold tracking-tight text-white tabular-nums leading-none">
               {current}
             </div>
-            <span className="text-[11px] uppercase tracking-widest text-white/50 mt-2">
-              săpt
-            </span>
+            <span className="text-[11px] uppercase tracking-widest text-white/50 mt-2">săpt</span>
             <span
               className={`ml-auto text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded-full border ${badge}`}
             >
@@ -102,8 +103,7 @@ export function StreakHero({ current, longest, lastStreakWeek }: Props) {
             </span>
           </div>
           <div className="text-[12px] text-white/60 mt-1">
-            Record:{" "}
-            <span className="text-white/90 font-semibold tabular-nums">{longest}</span> săpt
+            Record: <span className="text-white/90 font-semibold tabular-nums">{longest}</span> săpt
           </div>
         </div>
       </div>
@@ -114,9 +114,7 @@ export function StreakHero({ current, longest, lastStreakWeek }: Props) {
           <div
             key={i}
             className={`h-1.5 flex-1 rounded-full transition ${
-              on
-                ? "bg-gradient-to-r from-[#ff6a00] to-[#ff3d8b]"
-                : "bg-white/10"
+              on ? "bg-gradient-to-r from-[#ff6a00] to-[#ff3d8b]" : "bg-white/10"
             }`}
           />
         ))}

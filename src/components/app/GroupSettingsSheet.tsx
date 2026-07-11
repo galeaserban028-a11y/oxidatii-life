@@ -63,8 +63,8 @@ export function GroupSettingsSheet({
         .select("requester_id,addressee_id")
         .eq("status", "accepted")
         .or(`requester_id.eq.${user!.id},addressee_id.eq.${user!.id}`);
-      const ids = ((friendRows ?? []) as Array<{ requester_id: string; addressee_id: string }>).map((r) =>
-        r.requester_id === user!.id ? r.addressee_id : r.requester_id,
+      const ids = ((friendRows ?? []) as Array<{ requester_id: string; addressee_id: string }>).map(
+        (r) => (r.requester_id === user!.id ? r.addressee_id : r.requester_id),
       );
       if (!ids.length) return [];
       const { data: profs } = await supabase
@@ -109,7 +109,7 @@ export function GroupSettingsSheet({
   const togglePick = (id: string) =>
     setPicked((s) => {
       const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
+      if (n.has(id)) n.delete(id); else n.add(id);
       return n;
     });
 

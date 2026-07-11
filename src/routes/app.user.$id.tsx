@@ -47,7 +47,6 @@ import { AvatarFrame } from "@/components/app/AvatarFrame";
 import { TipCreatorButton, CreatorEarningsBadge } from "@/components/app/TipCreatorDialog";
 import { errorMessage } from "@/lib/errors";
 
-
 type ProfilePartial = {
   id: string;
   handle?: string | null;
@@ -75,7 +74,6 @@ type PremiumBadgeInfo = {
   premium_tier?: unknown;
 } & Record<string, unknown>;
 
-
 type VenueLite = { id: string; name: string; city?: { name?: string } | null };
 type PhotoRow = {
   id: string;
@@ -86,7 +84,6 @@ type PhotoRow = {
   user_id?: string;
   venue?: VenueLite | null;
 };
-
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const VIDEO_URL_RE = /\.(mp4|webm|mov|m4v)(\?.*)?$/i;
@@ -171,7 +168,9 @@ function UserPage() {
     enabled: !!id,
     queryFn: async () => {
       const { data } = await supabase.rpc("get_user_premium_badge", { _user_id: id });
-      const row = Array.isArray(data) ? ((data as PremiumBadgeInfo[])[0] ?? null) : (data as PremiumBadgeInfo | null);
+      const row = Array.isArray(data)
+        ? ((data as PremiumBadgeInfo[])[0] ?? null)
+        : (data as PremiumBadgeInfo | null);
       return row ?? null;
     },
   });
@@ -243,7 +242,7 @@ function UserPage() {
           "id, photo_url, media_type, caption, user_id, venue:venues(id, name, city:cities(name))",
         )
         .in("id", ids);
-      const map = new Map((pics as PhotoRow[] | null ?? []).map((p) => [p.id, p] as const));
+      const map = new Map(((pics as PhotoRow[] | null) ?? []).map((p) => [p.id, p] as const));
       return (rep ?? [])
         .map((r) => ({ repostedAt: r.created_at, photo: map.get(r.photo_id) }))
         .filter((x) => x.photo);
@@ -271,7 +270,10 @@ function UserPage() {
   return (
     <div className="relative min-h-screen">
       {pageTheme && (
-        <ThemeAtmosphere theme={pageTheme} intensity={(profile?.theme_intensity ?? undefined) as never} />
+        <ThemeAtmosphere
+          theme={pageTheme}
+          intensity={(profile?.theme_intensity ?? undefined) as never}
+        />
       )}
       {pageTheme && profile?.handle && (
         <SignatureReveal
@@ -379,9 +381,7 @@ function UserPage() {
                         )}
                         <div className="font-display font-bold text-lg sm:text-2xl flex items-center gap-1.5 flex-wrap min-w-0">
                           <span className="break-words min-w-0 max-w-full">@{handle}</span>
-                          {!isPublic && (
-                            <Lock size={14} className="text-neon-crimson shrink-0" />
-                          )}
+                          {!isPublic && <Lock size={14} className="text-neon-crimson shrink-0" />}
                           <PremiumBadge
                             tier={(badge?.premium_tier ?? null) as never}
                             size="sm"
@@ -626,7 +626,7 @@ function UserPage() {
                                   onLoadedMetadata={(e) => {
                                     try {
                                       e.currentTarget.currentTime = 0.5;
-                                    } catch {}
+                                    } catch { /* noop */ }
                                   }}
                                   className="absolute inset-0 h-full w-full object-cover"
                                 />
@@ -701,7 +701,7 @@ function UserPage() {
                                   onLoadedMetadata={(e) => {
                                     try {
                                       e.currentTarget.currentTime = 0.5;
-                                    } catch {}
+                                    } catch { /* noop */ }
                                   }}
                                   className="absolute inset-0 h-full w-full object-cover"
                                 />

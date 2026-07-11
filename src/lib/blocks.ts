@@ -56,7 +56,12 @@ export function useBlockedList(userId?: string | null) {
           .eq("blocker_id", userId)
           .order("created_at", { ascending: false });
         if (!rows || rows.length === 0) return [];
-        type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+        type ProfileLite = {
+          id: string;
+          handle: string | null;
+          display_name: string | null;
+          avatar_url: string | null;
+        };
         const { data: profs } = await supabase
           .from("profiles")
           .select("id, handle, display_name, avatar_url")

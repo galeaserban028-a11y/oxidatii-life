@@ -44,7 +44,7 @@ export function TutorialOverlay() {
     if ((profile as { tutorial_seen?: boolean }).tutorial_seen) return;
     try {
       if (localStorage.getItem(LS_KEY)) return;
-    } catch {}
+    } catch { /* noop */ }
     // Slight delay so the app shell mounts first
     const t = window.setTimeout(() => setOpen(true), 600);
     return () => window.clearTimeout(t);
@@ -54,7 +54,7 @@ export function TutorialOverlay() {
     setOpen(false);
     try {
       localStorage.setItem(LS_KEY, "1");
-    } catch {}
+    } catch { /* noop */ }
     if (user) {
       await supabase
         .from("profiles")

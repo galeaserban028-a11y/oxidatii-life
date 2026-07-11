@@ -4,7 +4,18 @@ import i18n from "@/lib/i18n";
 import { AlcoholWarning } from "@/components/AlcoholWarning";
 import { SpritzIndexDial } from "@/components/app/SpritzIndexDial";
 import logoLight from "@/assets/logo-oxidatii-light.png";
-import { MapPin, Flame, Trophy, Users, Beer, Bell, Search, Plus, ChevronRight, Languages } from "lucide-react";
+import {
+  MapPin,
+  Flame,
+  Trophy,
+  Users,
+  Beer,
+  Bell,
+  Search,
+  Plus,
+  ChevronRight,
+  Languages,
+} from "lucide-react";
 import { OG_COVER_URL, SITE_URL } from "@/lib/og";
 
 const HERO_HOT_SPOTS = [
@@ -59,7 +70,6 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-
 function Index() {
   const [lang, setLang] = useState<"ro" | "en">("ro");
   useEffect(() => {
@@ -70,69 +80,83 @@ function Index() {
       }
       const stored = window.localStorage.getItem("oxi-lang");
       if (stored === "en" || stored === "ro") setLang(stored);
-    } catch {}
+    } catch { /* noop */ }
   }, []);
   const pickLang = (next: "ro" | "en") => {
     setLang(next);
     try {
       window.localStorage.setItem("oxi-lang", next);
-    } catch {}
+    } catch { /* noop */ }
     void i18n.changeLanguage(next);
   };
-  const t = lang === "en"
-    ? {
-        onlineNow: "1.2k Online Now",
-        pickLang: "Pick your language",
-        season: "Spritz Season • 2026",
-        heroLine1: "Come for a",
-        heroWord: "Spritz",
-        heroDesc1: "Where people are drinking spritz ",
-        heroDescNow: "now",
-        heroDesc2: ". Who with. And who's ",
-        heroDescKing: "king of the table",
-        heroDesc3: ".",
-        ctaJoin: "Enter the chaos",
-        ctaHave: "I have an account",
-        featuresLabel: "What you'll find inside",
-        zones: "4 ZONES",
-        tMap: "Map", tMapSub: "Live places",
-        tFaze: "Moments", tFazeSub: "Post your night",
-        tTop: "Top", tTopSub: "God ranking",
-        tSquad: "Squad", tSquadSub: "Your oxidații",
-        liveTitle: "Drinking right now",
-        seeAll: "See all",
-        dockMap: "Map", dockFaze: "Moments", dockTop: "Top", dockMe: "Me",
-        addSpot: "Add spot",
-        legal: "Alcohol seriously harms health. Please drink responsibly.",
-      }
-    : {
-        onlineNow: "1.2k Online Acum",
-        pickLang: "Alege limba",
-        season: "Sezonul Șprițului • 2026",
-        heroLine1: "Hai la",
-        heroWord: "Șpriț",
-        heroDesc1: "Unde se bea șpriț ",
-        heroDescNow: "acum",
-        heroDesc2: ". Cu cine. Și cine-i ",
-        heroDescKing: "rege la masă",
-        heroDesc3: ".",
-        ctaJoin: "Intră în haos",
-        ctaHave: "Am cont",
-        featuresLabel: "Ce găsești în app",
-        zones: "4 ZONE",
-        tMap: "Hartă", tMapSub: "Locuri Live",
-        tFaze: "Faze", tFazeSub: "Postează seara",
-        tTop: "Top", tTopSub: "Clasament zeu",
-        tSquad: "Haita", tSquadSub: "Oxidații tăi",
-        liveTitle: "Se bea acum",
-        seeAll: "Vezi tot",
-        dockMap: "Hartă", dockFaze: "Faze", dockTop: "Top", dockMe: "Eu",
-        addSpot: "Adaugă spot",
-        legal: "Alcoolul dăunează grav sănătății. Consumați responsabil.",
-      };
+  const t =
+    lang === "en"
+      ? {
+          onlineNow: "1.2k Online Now",
+          pickLang: "Pick your language",
+          season: "Spritz Season • 2026",
+          heroLine1: "Come for a",
+          heroWord: "Spritz",
+          heroDesc1: "Where people are drinking spritz ",
+          heroDescNow: "now",
+          heroDesc2: ". Who with. And who's ",
+          heroDescKing: "king of the table",
+          heroDesc3: ".",
+          ctaJoin: "Enter the chaos",
+          ctaHave: "I have an account",
+          featuresLabel: "What you'll find inside",
+          zones: "4 ZONES",
+          tMap: "Map",
+          tMapSub: "Live places",
+          tFaze: "Moments",
+          tFazeSub: "Post your night",
+          tTop: "Top",
+          tTopSub: "God ranking",
+          tSquad: "Squad",
+          tSquadSub: "Your oxidații",
+          liveTitle: "Drinking right now",
+          seeAll: "See all",
+          dockMap: "Map",
+          dockFaze: "Moments",
+          dockTop: "Top",
+          dockMe: "Me",
+          addSpot: "Add spot",
+          legal: "Alcohol seriously harms health. Please drink responsibly.",
+        }
+      : {
+          onlineNow: "1.2k Online Acum",
+          pickLang: "Alege limba",
+          season: "Sezonul Șprițului • 2026",
+          heroLine1: "Hai la",
+          heroWord: "Șpriț",
+          heroDesc1: "Unde se bea șpriț ",
+          heroDescNow: "acum",
+          heroDesc2: ". Cu cine. Și cine-i ",
+          heroDescKing: "rege la masă",
+          heroDesc3: ".",
+          ctaJoin: "Intră în haos",
+          ctaHave: "Am cont",
+          featuresLabel: "Ce găsești în app",
+          zones: "4 ZONE",
+          tMap: "Hartă",
+          tMapSub: "Locuri Live",
+          tFaze: "Faze",
+          tFazeSub: "Postează seara",
+          tTop: "Top",
+          tTopSub: "Clasament zeu",
+          tSquad: "Haita",
+          tSquadSub: "Oxidații tăi",
+          liveTitle: "Se bea acum",
+          seeAll: "Vezi tot",
+          dockMap: "Hartă",
+          dockFaze: "Faze",
+          dockTop: "Top",
+          dockMe: "Eu",
+          addSpot: "Adaugă spot",
+          legal: "Alcoolul dăunează grav sănătății. Consumați responsabil.",
+        };
   return (
     <main className="relative min-h-[100svh] mx-auto max-w-md flex flex-col overflow-hidden bg-[#050510] text-white">
-
       {/* ambient glows */}
       <div className="absolute top-[10%] right-0 w-[60vmin] h-[60vmin] rounded-full pointer-events-none blur-[100px] bg-orange-600/20" />
       <div className="absolute bottom-[20%] -left-20 w-[50vmin] h-[50vmin] rounded-full pointer-events-none blur-[100px] bg-pink-600/15" />
@@ -206,7 +230,6 @@ function Index() {
 
       {/* Hero */}
       <section className="relative z-10 px-4 mb-6">
-
         <div className="relative p-7 rounded-[32px] overflow-hidden border border-white/10 bg-gradient-to-b from-white/[0.08] to-transparent backdrop-blur-sm">
           <div className="absolute top-0 right-0 w-40 h-40 bg-orange-600/30 blur-3xl pointer-events-none" />
           <div className="inline-block px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 mb-4">
@@ -222,8 +245,11 @@ function Index() {
             </span>
           </h2>
           <p className="text-sm text-white/60 leading-relaxed mb-7 max-w-[260px]">
-            {t.heroDesc1}<span className="text-white font-bold">{t.heroDescNow}</span>{t.heroDesc2}
-            <span className="text-orange-400">{t.heroDescKing}</span>{t.heroDesc3}
+            {t.heroDesc1}
+            <span className="text-white font-bold">{t.heroDescNow}</span>
+            {t.heroDesc2}
+            <span className="text-orange-400">{t.heroDescKing}</span>
+            {t.heroDesc3}
           </p>
           <div className="space-y-3">
             <Link

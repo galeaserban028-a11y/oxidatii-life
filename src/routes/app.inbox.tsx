@@ -5,7 +5,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { throttle } from "@/lib/throttle";
 import { useAuth } from "@/lib/auth";
 import { openOrCreateDM, createGroupChat } from "@/lib/chat";
-import { ArrowLeft, PenSquare, Users, Loader2, Search, X, Check, Trash2, ImageIcon, Video, Mic, Paperclip } from "lucide-react";
+import {
+  ArrowLeft,
+  PenSquare,
+  Users,
+  Loader2,
+  Search,
+  X,
+  Check,
+  Trash2,
+  ImageIcon,
+  Video,
+  Mic,
+  Paperclip,
+} from "lucide-react";
 import { toast } from "sonner";
 import { errorMessage } from "@/lib/errors";
 
@@ -23,10 +36,25 @@ function InboxPage() {
   const [showNew, setShowNew] = useState(false);
   const [tab, setTab] = useState<Tab>("mesaje");
 
-  type ConvBase = { id: string; kind: string; title: string | null; last_message_at: string | null };
+  type ConvBase = {
+    id: string;
+    kind: string;
+    title: string | null;
+    last_message_at: string | null;
+  };
   type ConvWithRead = ConvBase & { last_read_at: string | null };
-  type LastMsg = { conversation_id: string; body: string | null; sender_id: string; created_at: string };
-  type ProfLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+  type LastMsg = {
+    conversation_id: string;
+    body: string | null;
+    sender_id: string;
+    created_at: string;
+  };
+  type ProfLite = {
+    id: string;
+    handle: string | null;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
   type ConvItem = ConvWithRead & { others: ProfLite[]; last: LastMsg | null; unread: boolean };
 
   const { data: conversations = [] as ConvItem[], isLoading } = useQuery<ConvItem[]>({
@@ -40,7 +68,11 @@ function InboxPage() {
         )
         .eq("user_id", user!.id);
       if (!members) return [];
-      type MemberRow = { conversation_id: string; last_read_at: string | null; conversations: ConvBase | null };
+      type MemberRow = {
+        conversation_id: string;
+        last_read_at: string | null;
+        conversations: ConvBase | null;
+      };
       const convs = (members as MemberRow[])
         .map((m) => (m.conversations ? { ...m.conversations, last_read_at: m.last_read_at } : null))
         .filter((c): c is ConvWithRead => !!c)
@@ -83,7 +115,11 @@ function InboxPage() {
           .map((m) => profMap.get(m.user_id))
           .filter((p): p is ProfLite => !!p);
         const last = lastByConv.get(c.id) ?? null;
-        const unread = !!last && last.sender_id !== user!.id && !!c.last_read_at && last.created_at > c.last_read_at;
+        const unread =
+          !!last &&
+          last.sender_id !== user!.id &&
+          !!c.last_read_at &&
+          last.created_at > c.last_read_at;
         return { ...c, others, last, unread };
       });
     },
@@ -432,15 +468,22 @@ function formatPreview(body: string | null | undefined): ReactNode {
   const trimmed = body.trim();
   const isUrl = /^https?:\/\/\S+$/i.test(trimmed);
   if (isUrl) {
-    if (/\.(png|jpe?g|gif|webp|heic|heif|avif)(\?|$)/i.test(trimmed)) return <ImageIcon size={14} className="inline text-fuchsia-400" />;
-    if (/\.(mp4|mov|webm|m4v)(\?|$)/i.test(trimmed)) return <Video size={14} className="inline text-cyan-400" />;
-    if (/\.(mp3|m4a|ogg|wav|webm)(\?|$)/i.test(trimmed)) return <Mic size={14} className="inline text-lime-400" />;
-    if (/\/storage\/v1\/object\//i.test(trimmed)) return <Paperclip size={14} className="inline text-zinc-400" />;
+    if (/\.(png|jpe?g|gif|webp|heic|heif|avif)(\?|$)/i.test(trimmed))
+      return <ImageIcon size={14} className="inline text-fuchsia-400" />;
+    if (/\.(mp4|mov|webm|m4v)(\?|$)/i.test(trimmed))
+      return <Video size={14} className="inline text-cyan-400" />;
+    if (/\.(mp3|m4a|ogg|wav|webm)(\?|$)/i.test(trimmed))
+      return <Mic size={14} className="inline text-lime-400" />;
+    if (/\/storage\/v1\/object\//i.test(trimmed))
+      return <Paperclip size={14} className="inline text-zinc-400" />;
     // Generic link: show clean URL text, no emoji/icon
     return trimmed.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/$/, "");
   }
   // Strip inline URLs from mixed text (no emoji, no icon)
-  return trimmed.replace(/https?:\/\/\S+/gi, "").replace(/\s+/g, " ").trim();
+  return trimmed
+    .replace(/https?:\/\/\S+/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function ConversationRow({
@@ -457,7 +500,12 @@ function ConversationRow({
     title: string | null;
     last_message_at: string | null;
     last_read_at: string | null;
-    others: { id: string; handle: string | null; display_name: string | null; avatar_url: string | null }[];
+    others: {
+      id: string;
+      handle: string | null;
+      display_name: string | null;
+      avatar_url: string | null;
+    }[];
     last: { body: string | null; sender_id: string; created_at: string } | null;
     unread: boolean;
   };
@@ -567,11 +615,7 @@ function ConversationRow({
 
   if (removed) return null;
 
-  const subtitle = conv.last
-    ? formatPreview(conv.last.body)
-    : isDM
-      ? "Spune ceva 👋"
-      : "Grup nou";
+  const subtitle = conv.last ? formatPreview(conv.last.body) : isDM ? "Spune ceva 👋" : "Grup nou";
 
   return (
     <div className="relative overflow-hidden">
@@ -709,7 +753,12 @@ function NewMessageSheet({
       ]);
       type FR = { requester_id: string; addressee_id: string; status: string };
       type FollowR = { following_id: string };
-      type Prof = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+      type Prof = {
+        id: string;
+        handle: string | null;
+        display_name: string | null;
+        avatar_url: string | null;
+      };
       const friendIds = new Set(
         ((friendRows ?? []) as FR[]).map((r) =>
           r.requester_id === user!.id ? r.addressee_id : r.requester_id,
@@ -744,7 +793,7 @@ function NewMessageSheet({
   const toggle = (id: string) =>
     setSelected((s) => {
       const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
+      if (n.has(id)) n.delete(id); else n.add(id);
       return n;
     });
 

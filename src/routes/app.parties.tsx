@@ -173,7 +173,7 @@ function PartiesPage() {
         try {
           const { notifyPartyJoin } = await import("@/lib/notifications.functions");
           notifyPartyJoin({ data: { partyId } }).catch(() => {});
-        } catch {}
+        } catch { /* noop */ }
       }
     },
     onSuccess: async () => {
@@ -760,7 +760,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
         try {
           const { notifyNewPartyInCity } = await import("@/lib/notifications.functions");
           notifyNewPartyInCity({ data: { partyId: inserted.id } }).catch(() => {});
-        } catch {}
+        } catch { /* noop */ }
       }
     },
     onSuccess: () => {

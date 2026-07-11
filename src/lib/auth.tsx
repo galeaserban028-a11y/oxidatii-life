@@ -88,7 +88,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .maybeSingle();
 
         const stateRequest = supabase.rpc("get_my_account_state");
-        const timeout = new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 12000));
+        const timeout = new Promise<null>((resolve) =>
+          window.setTimeout(() => resolve(null), 12000),
+        );
         return Promise.race([Promise.all([profileRequest, stateRequest]), timeout]);
       };
 

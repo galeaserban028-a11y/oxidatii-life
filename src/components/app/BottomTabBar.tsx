@@ -231,7 +231,7 @@ export function BottomTabBar() {
     setWarnDismissed(true);
     try {
       window.sessionStorage.setItem("oxi-alc-warn", "1");
-    } catch {}
+    } catch { /* noop */ }
   };
 
   const hidden = loc.pathname.startsWith("/app/biz") || loc.pathname.startsWith("/app/admin");

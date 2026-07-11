@@ -53,7 +53,7 @@ function markSeenFull(id: string) {
     const list = JSON.parse(sessionStorage.getItem(SEEN_FULL_KEY) || "[]") as string[];
     if (!list.includes(id)) list.push(id);
     sessionStorage.setItem(SEEN_FULL_KEY, JSON.stringify(list));
-  } catch {}
+  } catch { /* noop */ }
 }
 
 async function loadActive(
@@ -63,7 +63,6 @@ async function loadActive(
     _kinds: ["boost_story", "boost_feed", "boost_discover"],
     _limit: 20,
   });
-
 
   const dismissed = new Set([...getDismissed(), ...excludeIds]);
   const list = ((data ?? []) as Campaign[]).filter((c) => !dismissed.has(c.id));
@@ -116,7 +115,7 @@ export function PromoTakeover() {
         })
         .then(() => {});
       // optimistic counter bump
-      supabase.rpc as any; // noop; rely on aggregations
+      void supabase.rpc; // noop; rely on aggregations
     }
   }, [phase, payload, user]);
 

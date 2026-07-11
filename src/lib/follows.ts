@@ -142,7 +142,12 @@ export function useIncomingFollowRequests(userId?: string | null) {
         .from("profiles")
         .select("id, handle, display_name, avatar_url")
         .in("id", ids);
-      type ProfLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+      type ProfLite = {
+        id: string;
+        handle: string | null;
+        display_name: string | null;
+        avatar_url: string | null;
+      };
       const map = new Map(((profs ?? []) as ProfLite[]).map((p) => [p.id, p]));
       return rows.map((r) => ({ ...r, follower: map.get(r.follower_id) ?? null }));
     },

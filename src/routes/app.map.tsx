@@ -114,7 +114,12 @@ type ProfileRow = {
   display_name: string | null;
   avatar_url: string | null;
 };
-type VenueLite = { id: string; name: string; lat: number | string | null; lng: number | string | null };
+type VenueLite = {
+  id: string;
+  name: string;
+  lat: number | string | null;
+  lng: number | string | null;
+};
 
 async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   const { data: rows } = await supabase
@@ -491,7 +496,6 @@ function MapPage() {
         };
       }
       return map;
-
     },
     refetchInterval: 60_000,
   });
@@ -645,11 +649,7 @@ function MapPage() {
     enabled: !!user,
     queryFn: async () => {
       const [pRes, stateRes, locRes] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("city_id")
-          .eq("id", user!.id)
-          .maybeSingle(),
+        supabase.from("profiles").select("city_id").eq("id", user!.id).maybeSingle(),
         supabase.rpc("get_my_account_state"),
         supabase.from("private_locations").select("lat, lng, radius_m").eq("user_id", user!.id),
       ]);
@@ -796,7 +796,11 @@ function MapPage() {
     // we wait for an explicit tap on the live-OFF banner / consent button.
     const start = async () => {
       try {
-        const perms = (navigator as Navigator & { permissions?: { query?: (d: PermissionDescriptor) => Promise<PermissionStatus> } }).permissions;
+        const perms = (
+          navigator as Navigator & {
+            permissions?: { query?: (d: PermissionDescriptor) => Promise<PermissionStatus> };
+          }
+        ).permissions;
         const status = perms?.query
           ? await perms.query({ name: "geolocation" as PermissionName }).catch(() => null)
           : null;
@@ -854,7 +858,13 @@ function MapPage() {
         .gt("expires_at", nowIso)
         .not("venue_id", "is", null)
         .limit(400);
-      type HotspotVenue = { id: string; name: string; lat: number | string | null; lng: number | string | null; city_id: string };
+      type HotspotVenue = {
+        id: string;
+        name: string;
+        lat: number | string | null;
+        lng: number | string | null;
+        city_id: string;
+      };
       type HotspotRow = { venue_id: string; venues: HotspotVenue | null };
       const counts = new Map<string, { venue: HotspotVenue; count: number }>();
       for (const c of (data ?? []) as HotspotRow[]) {
@@ -1075,7 +1085,6 @@ function MapPage() {
             }}
           />
 
-
           {activeCity && (
             <div className="absolute top-3 left-3 right-3 z-10 flex items-center gap-2 rounded-2xl backdrop-blur-xl bg-black/50 border border-white/10 px-3 py-2">
               <MapPin size={12} className="text-[#ffea00] shrink-0" />
@@ -1128,7 +1137,6 @@ function MapPage() {
             onFocus={(lat, lng) => setFocusCity({ lat, lng, zoom: 14.5 })}
             onCellsChange={setHeatNowCells}
           />
-
         </div>
 
         <MapSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />

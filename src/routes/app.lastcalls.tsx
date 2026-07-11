@@ -158,7 +158,11 @@ function PingCard({ ping, onReveal }: { ping: Ping; onReveal: (id: string) => vo
         <div className="flex-1 min-w-0">
           <div className="font-display font-black text-sm">Cineva vrea să te vadă diseară 👀</div>
           <div className="text-xs text-muted-foreground mt-0.5">
-            Expiră în {expiresIn}h · {new Date(ping.created_at).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" })}
+            Expiră în {expiresIn}h ·{" "}
+            {new Date(ping.created_at).toLocaleTimeString("ro-RO", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </div>
           <button
             onClick={() => onReveal(ping.id)}

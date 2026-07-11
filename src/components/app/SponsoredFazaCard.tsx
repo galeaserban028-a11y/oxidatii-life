@@ -56,7 +56,9 @@ export function usePromoCards() {
       };
       const rows = (data ?? []) as CampaignRow[];
       // Fetch review counts via safe public RPC (avoids business_accounts direct read)
-      const bizIds = Array.from(new Set(rows.map((r) => r.business_id).filter(Boolean) as string[]));
+      const bizIds = Array.from(
+        new Set(rows.map((r) => r.business_id).filter(Boolean) as string[]),
+      );
       const bizExtras = new Map<string, { rating: number | null; reviews: number | null }>();
       await Promise.all(
         bizIds.map(async (id) => {
@@ -80,7 +82,9 @@ export function usePromoCards() {
           body: (c.body as string | null) ?? (c.subtitle as string | null) ?? null,
           brand: (c.venue_name ?? c.business_brand_name ?? null) as string | null,
           logo: (c.business_logo_url ?? null) as string | null,
-          cover: ((Array.isArray(c.image_urls) && c.image_urls[0]) ?? c.business_cover_url ?? null) as string | null,
+          cover: ((Array.isArray(c.image_urls) && c.image_urls[0]) ??
+            c.business_cover_url ??
+            null) as string | null,
           video: (c.video_url as string | null) ?? null,
           ctaUrl: (c.cta_url as string | null) ?? null,
           ctaText: (c.cta_text as string | null) ?? null,
@@ -89,7 +93,6 @@ export function usePromoCards() {
           reviewsCount: extras.reviews,
         };
       });
-
     },
     refetchInterval: 120_000,
   });

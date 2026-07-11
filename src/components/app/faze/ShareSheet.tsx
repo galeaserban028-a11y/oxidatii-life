@@ -29,7 +29,9 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
           .eq("following_id", user.id)
           .eq("status", "accepted"),
       ]);
-      const iFollowSet = new Set(((iFollow ?? []) as { following_id: string }[]).map((r) => r.following_id));
+      const iFollowSet = new Set(
+        ((iFollow ?? []) as { following_id: string }[]).map((r) => r.following_id),
+      );
       const mutualIds = ((followMe ?? []) as { follower_id: string }[])
         .map((r) => r.follower_id)
         .filter((id) => iFollowSet.has(id));
@@ -106,7 +108,14 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
             </div>
           ) : (
             <ul className="divide-y divide-foreground/5">
-              {(friends as Array<{ id: string; handle: string | null; display_name: string | null; avatar_url: string | null }>).map((f) => {
+              {(
+                friends as Array<{
+                  id: string;
+                  handle: string | null;
+                  display_name: string | null;
+                  avatar_url: string | null;
+                }>
+              ).map((f) => {
                 const name = f.display_name ?? f.handle ?? "anonim";
                 const initial = (name[0] ?? "?").toUpperCase();
                 const isSending = sending === f.id;

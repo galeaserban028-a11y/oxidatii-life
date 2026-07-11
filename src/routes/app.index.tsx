@@ -96,8 +96,20 @@ async function loadFeed() {
     new Set(items.map((i) => i.venue_id).filter((v): v is string => !!v)),
   );
 
-  type ProfileLite = { id: string; handle: string | null; display_name: string | null; rank: string | null; avatar_url: string | null };
-  type VenueLite = { id: string; name: string; slug: string; address: string | null; city: { name: string; slug: string } | null };
+  type ProfileLite = {
+    id: string;
+    handle: string | null;
+    display_name: string | null;
+    rank: string | null;
+    avatar_url: string | null;
+  };
+  type VenueLite = {
+    id: string;
+    name: string;
+    slug: string;
+    address: string | null;
+    city: { name: string; slug: string } | null;
+  };
 
   const [{ data: profilesData }, { data: venuesData }] = await Promise.all([
     userIds.length
@@ -284,7 +296,9 @@ function NightWrapSection() {
       const hour = new Date().getHours();
       // only after 6 AM local
       if (hour < 6) return null;
-      const result = (await generateWrap({ data: {} })) as { wrap?: React.ComponentProps<typeof NightWrapCard>["wrap"] } | null;
+      const result = (await generateWrap({ data: {} })) as {
+        wrap?: React.ComponentProps<typeof NightWrapCard>["wrap"];
+      } | null;
       return result && "wrap" in result ? result.wrap : null;
     },
     staleTime: 60 * 60 * 1000,
@@ -459,10 +473,30 @@ function formatCount(n: number) {
   return String(n);
 }
 
-type FeedProfile = { id: string; handle: string | null; display_name: string | null; rank: string | null; avatar_url: string | null };
-type FeedVenue = { id: string; name: string; slug: string; address: string | null; city: { name: string; slug: string } | null };
+type FeedProfile = {
+  id: string;
+  handle: string | null;
+  display_name: string | null;
+  rank: string | null;
+  avatar_url: string | null;
+};
+type FeedVenue = {
+  id: string;
+  name: string;
+  slug: string;
+  address: string | null;
+  city: { name: string; slug: string } | null;
+};
 
-function FeedCard({ item, profile, venue }: { item: FeedItem; profile: FeedProfile | undefined; venue: FeedVenue | undefined }) {
+function FeedCard({
+  item,
+  profile,
+  venue,
+}: {
+  item: FeedItem;
+  profile: FeedProfile | undefined;
+  venue: FeedVenue | undefined;
+}) {
   const handle = profile?.display_name ?? profile?.handle ?? "Anonim";
   const badge = pickFeedBadge(item.id, item.kind === "proof");
   const { user } = useAuth();

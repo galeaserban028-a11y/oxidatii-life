@@ -37,10 +37,7 @@ export function pushSupported(): boolean {
 export function isIosStandalone(): boolean {
   // iOS only supports web push when the PWA is installed (added to Home Screen)
   const nav = navigator as Navigator & { standalone?: boolean };
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    nav.standalone === true
-  );
+  return window.matchMedia("(display-mode: standalone)").matches || nav.standalone === true;
 }
 
 export function platformBlocksPush(): { blocked: boolean; reason?: string } {
@@ -135,7 +132,7 @@ export async function disablePush(): Promise<void> {
     const endpoint = sub.endpoint;
     try {
       await sub.unsubscribe();
-    } catch {}
+    } catch { /* noop */ }
     await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint);
   }
 }

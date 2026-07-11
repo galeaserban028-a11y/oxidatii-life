@@ -39,7 +39,7 @@ function Onboarding() {
     try {
       const pending = localStorage.getItem("pending_referral_code");
       if (pending) setRefCode(pending);
-    } catch {}
+    } catch { /* noop */ }
   }, []);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ function Onboarding() {
           .eq("id", user.id)
           .maybeSingle();
         setHasDob(!!(data as { birthdate?: string | null } | null)?.birthdate);
-      } catch {}
+      } catch { /* noop */ }
     })();
   }, [user]);
 
@@ -92,7 +92,7 @@ function Onboarding() {
 
   async function save() {
     if (!user) return;
-    if (!/^[a-z0-9_\.]{3,24}$/.test(handle)) return toast.error("Handle: 3-24 chars, a-z 0-9 _ .");
+    if (!/^[a-z0-9_.]{3,24}$/.test(handle)) return toast.error("Handle: 3-24 chars, a-z 0-9 _ .");
     if (!cityId) return toast.error("Alege orașul");
     if (!hasDob) {
       if (!dob) return toast.error("Pune data nașterii");
@@ -116,13 +116,17 @@ function Onboarding() {
     // Apply referral code if present
     if (refCode && refCode.length >= 4) {
       try {
-        const { data: r } = await supabase.rpc("apply_referral_code", { _code: refCode.toUpperCase() });
+        const { data: r } = await supabase.rpc("apply_referral_code", {
+          _code: refCode.toUpperCase(),
+        });
         const res = r as { ok: boolean; error?: string } | null;
         if (res?.ok) {
           toast.success("+50 șprițuri din invitație 🎉");
-          try { localStorage.removeItem("pending_referral_code"); } catch {}
+          try {
+            localStorage.removeItem("pending_referral_code");
+          } catch { /* noop */ }
         }
-      } catch {}
+      } catch { /* noop */ }
     }
 
     await refreshProfile();
@@ -186,7 +190,8 @@ function Onboarding() {
         {!hasDob && (
           <div>
             <label className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
-              Data nașterii <span className="text-foreground/40 normal-case tracking-normal">(18+)</span>
+              Data nașterii{" "}
+              <span className="text-foreground/40 normal-case tracking-normal">(18+)</span>
             </label>
             <div className="mt-2">
               <BirthdatePicker value={dob} onChange={setDob} />
@@ -216,7 +221,10 @@ function Onboarding() {
 
         <div>
           <label className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
-            Cod invitație <span className="text-foreground/40 normal-case tracking-normal">(opțional · +50 șprițuri)</span>
+            Cod invitație{" "}
+            <span className="text-foreground/40 normal-case tracking-normal">
+              (opțional · +50 șprițuri)
+            </span>
           </label>
           <input
             value={refCode}

@@ -285,7 +285,15 @@ function ArchivePage() {
   );
 }
 
-function Stat({ label, value, icon: Icon }: { label: string; value: number; icon: React.ComponentType<{ size?: number; className?: string }> }) {
+function Stat({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string;
+  value: number;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+}) {
   return (
     <div className="rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur p-3 text-center">
       <Icon size={14} className="mx-auto text-zinc-500" />

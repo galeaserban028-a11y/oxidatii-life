@@ -60,7 +60,9 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
       const trimmedCaption = caption.trim();
       try {
         if (!isVideo) {
-          const v = await modMedia({ data: { imageUrl: pub.publicUrl, caption: trimmedCaption || null } });
+          const v = await modMedia({
+            data: { imageUrl: pub.publicUrl, caption: trimmedCaption || null },
+          });
           if (!v.allowed) {
             await supabase.storage.from("venue-photos").remove([path]);
             toast.error(v.reason || "Conținut respins de moderare");

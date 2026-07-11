@@ -49,9 +49,7 @@ async function filterByFreqCap(
     .gte("window_start", since);
 
   const blocked = new Set(
-    (data ?? [])
-      .filter((r) => (r.count ?? 0) >= maxPerWindow)
-      .map((r) => r.user_id as string),
+    (data ?? []).filter((r) => (r.count ?? 0) >= maxPerWindow).map((r) => r.user_id as string),
   );
   return userIds.filter((id) => !blocked.has(id));
 }

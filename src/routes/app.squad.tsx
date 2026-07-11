@@ -526,7 +526,9 @@ function SquadPage() {
             grupuri active
           </h2>
           <div className="space-y-3">
-            {(groups as Array<{ id: string; title: string | null; last_message_at: string | null }>).map((g) => (
+            {(
+              groups as Array<{ id: string; title: string | null; last_message_at: string | null }>
+            ).map((g) => (
               <Link
                 key={g.id}
                 to="/app/chat/$id"
@@ -595,7 +597,15 @@ function SquadPage() {
           </Link>
         ) : (
           <div className="divide-y divide-white/5">
-            {(friends as Array<{ id: string; handle: string | null; display_name: string | null; avatar_url: string | null; city?: { name: string } | null }>).map((p) => (
+            {(
+              friends as Array<{
+                id: string;
+                handle: string | null;
+                display_name: string | null;
+                avatar_url: string | null;
+                city?: { name: string } | null;
+              }>
+            ).map((p) => (
               <div key={p.id} className="flex items-center justify-between py-3">
                 <Link
                   to="/app/user/$id"

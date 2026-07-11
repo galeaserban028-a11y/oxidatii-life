@@ -219,18 +219,12 @@ export function CheckInShareSheet({
         <div className="p-4 pt-6 space-y-4">
           <div className="text-center space-y-1">
             <h2 className="font-display font-black text-xl text-white">Ai făcut check-in! 🎉</h2>
-            <p className="text-xs text-white/60">
-              Pune-l pe Story și adu prieteni pe OXIDAȚII
-            </p>
+            <p className="text-xs text-white/60">Pune-l pe Story și adu prieteni pe OXIDAȚII</p>
           </div>
 
           <div className="rounded-2xl overflow-hidden bg-black/40 aspect-[9/16] flex items-center justify-center">
             {imgUrl ? (
-              <img
-                src={imgUrl}
-                alt="Story card"
-                className="w-full h-full object-cover"
-              />
+              <img src={imgUrl} alt="Story card" className="w-full h-full object-cover" />
             ) : (
               <div className="text-white/40 text-xs">generez cardul...</div>
             )}
@@ -277,7 +271,14 @@ export function CheckInShareSheet({
 
 // ---------- helpers ----------
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -306,7 +307,7 @@ function drawInitialAvatar(
   cx: number,
   cy: number,
   r: number,
-  name: string
+  name: string,
 ) {
   const grad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
   grad.addColorStop(0, "#ec4899");
@@ -327,7 +328,7 @@ function drawStat(
   x: number,
   y: number,
   value: string,
-  label: string
+  label: string,
 ) {
   ctx.textAlign = "center";
   ctx.font = "900 84px 'Barlow', system-ui, sans-serif";

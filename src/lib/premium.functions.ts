@@ -28,7 +28,6 @@ type SyncResult =
     }
   | { success: false; error: string };
 
-
 // Allowed price IDs (subscriptions + one-time coin packs + à la carte)
 const ALLOWED_PRICES = new Set([
   "vip_monthly",
@@ -53,7 +52,6 @@ const ALLOWED_PRICES = new Set([
   "boost_5d",
   "boost_30d",
 ]);
-
 
 const COIN_PACKS: Record<string, number> = {
   coins_mic: 50,
@@ -96,7 +94,7 @@ const ALACARTE_SKUS: Record<
   },
   last_call_send: {
     name: "Last Call · trimite ping",
-    description: "Trimite un ping anonim cuiva: \"Cineva vrea să te vadă diseară 👀\".",
+    description: 'Trimite un ping anonim cuiva: "Cineva vrea să te vadă diseară 👀".',
     amount: 299,
     currency: "ron",
     kind: "last_call_send",
@@ -119,8 +117,7 @@ const ALACARTE_SKUS: Record<
   },
   boost_2d: {
     name: "Promovare · 2 zile",
-    description:
-      "Postarea ta apare 2 zile în feed-ul principal și în Faze cu badge Sponsorizat.",
+    description: "Postarea ta apare 2 zile în feed-ul principal și în Faze cu badge Sponsorizat.",
     amount: 50000, // 500 RON
     currency: "ron",
     kind: "campaign_boost",
@@ -128,8 +125,7 @@ const ALACARTE_SKUS: Record<
   },
   boost_5d: {
     name: "Promovare · 5 zile",
-    description:
-      "Postarea ta apare 5 zile în feed-ul principal și în Faze cu badge Sponsorizat.",
+    description: "Postarea ta apare 5 zile în feed-ul principal și în Faze cu badge Sponsorizat.",
     amount: 100000, // 1000 RON
     currency: "ron",
     kind: "campaign_boost",
@@ -145,8 +141,6 @@ const ALACARTE_SKUS: Record<
     days: 30,
   },
 };
-
-
 
 // price_id → premium tier + one-time coin grant. Must match webhook at src/routes/api/public/payments/webhook.tsx
 const TIER_MAP: Record<string, { tier: "vip" | "vip_plus" | "pro" | "elite"; coins: number }> = {
@@ -274,7 +268,6 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
         ...(data.extra?.ping_id && { ping_id: data.extra.ping_id }),
         ...(data.extra?.date && { replay_date: data.extra.date }),
         ...(data.extra?.campaign_id && { campaign_id: data.extra.campaign_id }),
-
       };
 
       const session = await stripe.checkout.sessions.create({
@@ -383,7 +376,6 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
         return { success: true, campaignId, boostDays: days };
       }
 
-
       // À la carte: Replay Night — unlock a specific day's wrap
       if (isReplayNight) {
         const replayDate =
@@ -431,7 +423,6 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
           },
         };
       }
-
 
       // À la carte: Crystal Ball 7 zile — grant unlock window
       if (isCrystalBall) {
@@ -581,7 +572,6 @@ export const syncCheckoutToProfile = createServerFn({ method: "POST" })
       return { success: false, error: getStripeErrorMessage(error) };
     }
   });
-
 
 export const createPremiumPortalSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

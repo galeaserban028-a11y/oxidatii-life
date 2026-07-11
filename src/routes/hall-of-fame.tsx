@@ -8,7 +8,10 @@ export const Route = createFileRoute("/hall-of-fame")({
   head: () => ({
     meta: [
       { title: "Hall of Fame — Founding Members · OXIDAȚII" },
-      { name: "description", content: "Cei care au adus comunitatea OXIDAȚII la viață. Founding Members forever." },
+      {
+        name: "description",
+        content: "Cei care au adus comunitatea OXIDAȚII la viață. Founding Members forever.",
+      },
       { property: "og:title", content: "Hall of Fame — Founding Members" },
       { property: "og:description", content: "Top invitatori OXIDAȚII. Forever on the wall." },
       { property: "og:url", content: "https://oxidatii.life/hall-of-fame" },
@@ -18,7 +21,13 @@ export const Route = createFileRoute("/hall-of-fame")({
   component: HallOfFame,
 });
 
-type Row = { display_name: string | null; handle: string | null; avatar_url: string | null; invites: number; rank: number };
+type Row = {
+  display_name: string | null;
+  handle: string | null;
+  avatar_url: string | null;
+  invites: number;
+  rank: number;
+};
 
 function HallOfFame() {
   const [rows, setRows] = useState<Row[]>([]);
@@ -41,13 +50,21 @@ function HallOfFame() {
 
         <div className="text-center mb-8">
           <Crown className="w-12 h-12 mx-auto text-amber-400 mb-3 drop-shadow-[0_0_20px_rgba(251,191,36,0.6)]" />
-          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-amber-400 mb-2">// FOREVER</div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-amber-400 mb-2">
+            // FOREVER
+          </div>
           <h1 className="font-display font-black text-3xl mb-2">HALL OF FAME</h1>
-          <p className="text-sm text-white/60">Cei care au construit OXIDAȚII. Foreverver pe perete.</p>
+          <p className="text-sm text-white/60">
+            Cei care au construit OXIDAȚII. Foreverver pe perete.
+          </p>
         </div>
 
         {loading ? (
-          <div className="space-y-2">{[...Array(5)].map((_, i) => <div key={i} className="h-16 rounded-xl bg-white/5 animate-pulse" />)}</div>
+          <div className="space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 rounded-xl bg-white/5 animate-pulse" />
+            ))}
+          </div>
         ) : rows.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center text-sm text-white/50">
             Lista e încă goală. Fii primul Founding Member.
@@ -58,10 +75,13 @@ function HallOfFame() {
               <div
                 key={r.handle ?? r.display_name ?? r.rank}
                 className={`flex items-center gap-3 p-3 rounded-xl border ${
-                  r.rank === 1 ? "border-amber-400/60 bg-gradient-to-r from-amber-500/20 to-transparent"
-                  : r.rank === 2 ? "border-slate-300/40 bg-gradient-to-r from-slate-400/15 to-transparent"
-                  : r.rank === 3 ? "border-orange-700/50 bg-gradient-to-r from-orange-700/15 to-transparent"
-                  : "border-white/10 bg-white/5"
+                  r.rank === 1
+                    ? "border-amber-400/60 bg-gradient-to-r from-amber-500/20 to-transparent"
+                    : r.rank === 2
+                      ? "border-slate-300/40 bg-gradient-to-r from-slate-400/15 to-transparent"
+                      : r.rank === 3
+                        ? "border-orange-700/50 bg-gradient-to-r from-orange-700/15 to-transparent"
+                        : "border-white/10 bg-white/5"
                 }`}
               >
                 <div className="w-8 text-center font-display font-black text-lg">{r.rank}</div>
@@ -76,7 +96,9 @@ function HallOfFame() {
                 </div>
                 <div className="text-right">
                   <div className="font-mono font-bold text-amber-400">{r.invites}</div>
-                  <div className="text-[10px] text-white/40 uppercase tracking-widest">invitați</div>
+                  <div className="text-[10px] text-white/40 uppercase tracking-widest">
+                    invitați
+                  </div>
                 </div>
               </div>
             ))}
@@ -85,8 +107,13 @@ function HallOfFame() {
 
         <div className="mt-8 rounded-2xl border border-amber-400/30 bg-amber-500/5 p-5 text-center">
           <p className="text-sm text-white/80 mb-3">Vrei pe perete?</p>
-          <p className="text-xs text-white/50 mb-4">Invită 10 prieteni cu codul tău și apari aici pentru totdeauna.</p>
-          <a href="/app/invite" className="inline-block px-6 py-3 rounded-full bg-amber-500 text-black font-display font-bold uppercase tracking-widest text-sm">
+          <p className="text-xs text-white/50 mb-4">
+            Invită 10 prieteni cu codul tău și apari aici pentru totdeauna.
+          </p>
+          <a
+            href="/app/invite"
+            className="inline-block px-6 py-3 rounded-full bg-amber-500 text-black font-display font-bold uppercase tracking-widest text-sm"
+          >
             Vezi codul meu
           </a>
         </div>

@@ -30,7 +30,14 @@ type DropStats = {
   total_spritz: number;
   active_users: number;
   top_cities: Array<{ city: string; count: number }>;
-  top_proof: { id: string; photo_url: string; likes: number; display_name: string | null; handle: string | null; avatar_url: string | null } | null;
+  top_proof: {
+    id: string;
+    photo_url: string;
+    likes: number;
+    display_name: string | null;
+    handle: string | null;
+    avatar_url: string | null;
+  } | null;
   week_start: string;
 };
 
@@ -47,15 +54,21 @@ function DropPage() {
     };
     load();
     const t = setInterval(load, 30000);
-    return () => { mounted = false; clearInterval(t); };
+    return () => {
+      mounted = false;
+      clearInterval(t);
+    };
   }, []);
 
   const share = async () => {
     const text = `🍹 ${stats?.total_spritz ?? 0} șprițuri băute săptămâna asta în România. Care e orașul tău? oxidatii.life/drop`;
     try {
-      if (navigator.share) await navigator.share({ title: "Spritz Drop", text, url: "https://oxidatii.life/drop" });
-      else { await navigator.clipboard.writeText(text); }
-    } catch {}
+      if (navigator.share)
+        await navigator.share({ title: "Spritz Drop", text, url: "https://oxidatii.life/drop" });
+      else {
+        await navigator.clipboard.writeText(text);
+      }
+    } catch { /* noop */ }
   };
 
   const medals = ["🥇", "🥈", "🥉"];
@@ -117,7 +130,9 @@ function DropPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-white/40">Încă nimeni n-a băut săptămâna asta. Fii primul.</p>
+                <p className="text-sm text-white/40">
+                  Încă nimeni n-a băut săptămâna asta. Fii primul.
+                </p>
               )}
             </div>
 
@@ -127,16 +142,26 @@ function DropPage() {
                 <div className="px-5 pt-4 pb-3 flex items-center gap-2 text-xs text-fuchsia-300 uppercase tracking-widest font-mono">
                   ⚡ Faza săptămânii
                 </div>
-                <img src={stats.top_proof.photo_url} alt="" className="w-full aspect-square object-cover" />
+                <img
+                  src={stats.top_proof.photo_url}
+                  alt=""
+                  className="w-full aspect-square object-cover"
+                />
                 <div className="p-4">
                   <div className="flex items-center gap-2">
                     {stats.top_proof.avatar_url && (
-                      <img src={stats.top_proof.avatar_url} alt="" className="w-8 h-8 rounded-full" />
+                      <img
+                        src={stats.top_proof.avatar_url}
+                        alt=""
+                        className="w-8 h-8 rounded-full"
+                      />
                     )}
                     <span className="font-bold text-sm">
                       {stats.top_proof.display_name || "@" + stats.top_proof.handle}
                     </span>
-                    <span className="ml-auto text-xs text-white/50">❤ {stats.top_proof.likes ?? 0}</span>
+                    <span className="ml-auto text-xs text-white/50">
+                      ❤ {stats.top_proof.likes ?? 0}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -145,7 +170,10 @@ function DropPage() {
             {/* CTA */}
             <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center mt-6">
               <p className="text-sm text-white/70 mb-3">Vrei să fii pe lista săptămâna viitoare?</p>
-              <a href="/signup" className="inline-block px-6 py-3 rounded-full bg-gradient-to-r from-orange-500 to-pink-600 font-display font-bold uppercase tracking-widest text-sm">
+              <a
+                href="/signup"
+                className="inline-block px-6 py-3 rounded-full bg-gradient-to-r from-orange-500 to-pink-600 font-display font-bold uppercase tracking-widest text-sm"
+              >
                 Intră în haos →
               </a>
             </div>

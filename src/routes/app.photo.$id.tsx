@@ -115,7 +115,12 @@ function PhotoPage() {
         .eq("photo_id", id)
         .order("created_at", { ascending: true });
       const ids = Array.from(new Set((rows ?? []).map((c) => c.user_id)));
-      type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
+      type ProfileLite = {
+        id: string;
+        handle: string | null;
+        display_name: string | null;
+        avatar_url: string | null;
+      };
       const { data: profs } = ids.length
         ? await supabase
             .from("profiles")

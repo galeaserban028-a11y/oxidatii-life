@@ -37,7 +37,8 @@ function StreetPage() {
         params={{ slug: (data.street.city as unknown as { slug: string; name: string }).slug }}
         className="inline-flex items-center gap-1 text-xs font-mono uppercase tracking-widest text-muted-foreground"
       >
-        <ArrowLeft size={14} /> {(data.street.city as unknown as { slug: string; name: string }).name}
+        <ArrowLeft size={14} />{" "}
+        {(data.street.city as unknown as { slug: string; name: string }).name}
       </Link>
       <div>
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-green/80">

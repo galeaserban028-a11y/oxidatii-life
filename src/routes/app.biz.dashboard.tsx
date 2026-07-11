@@ -4,15 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { PremiumCheckoutDialog } from "@/components/PremiumCheckoutDialog";
-import {
-  BarChart3,
-  Users,
-  Eye,
-  Sparkles,
-  Megaphone,
-  TrendingUp,
-  ArrowLeft,
-} from "lucide-react";
+import { BarChart3, Users, Eye, Sparkles, Megaphone, TrendingUp, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/app/biz/dashboard")({
   head: () => ({ meta: [{ title: "Business Dashboard · OXIDAȚII" }] }),
@@ -125,18 +117,35 @@ function DashboardPage() {
                   Analytics · Lunar
                 </span>
               </div>
-              <h1 className="text-3xl leading-[0.95] font-bold text-foreground" style={{ letterSpacing: "-0.02em" }}>
+              <h1
+                className="text-3xl leading-[0.95] font-bold text-foreground"
+                style={{ letterSpacing: "-0.02em" }}
+              >
                 Vezi cine îți umple <span className="text-primary">localul.</span>
               </h1>
               <ul className="space-y-2.5 text-sm text-foreground/85">
-                <li className="flex gap-2.5"><Users size={16} className="mt-0.5 shrink-0 text-primary" /> Vizitatori unici pe 30 zile</li>
-                <li className="flex gap-2.5"><BarChart3 size={16} className="mt-0.5 shrink-0 text-primary" /> Heatmap oră cu oră</li>
-                <li className="flex gap-2.5"><TrendingUp size={16} className="mt-0.5 shrink-0 text-primary" /> Trend zilnic + zile de vârf</li>
-                <li className="flex gap-2.5"><Megaphone size={16} className="mt-0.5 shrink-0 text-primary" /> Deblochezi Sponsored Reels + boost</li>
+                <li className="flex gap-2.5">
+                  <Users size={16} className="mt-0.5 shrink-0 text-primary" /> Vizitatori unici pe
+                  30 zile
+                </li>
+                <li className="flex gap-2.5">
+                  <BarChart3 size={16} className="mt-0.5 shrink-0 text-primary" /> Heatmap oră cu
+                  oră
+                </li>
+                <li className="flex gap-2.5">
+                  <TrendingUp size={16} className="mt-0.5 shrink-0 text-primary" /> Trend zilnic +
+                  zile de vârf
+                </li>
+                <li className="flex gap-2.5">
+                  <Megaphone size={16} className="mt-0.5 shrink-0 text-primary" /> Deblochezi
+                  Sponsored Reels + boost
+                </li>
               </ul>
               <div className="flex items-baseline gap-2 pt-1">
                 <div className="text-4xl font-bold text-primary">99</div>
-                <div className="text-sm text-muted-foreground uppercase tracking-widest">RON / lună</div>
+                <div className="text-sm text-muted-foreground uppercase tracking-widest">
+                  RON / lună
+                </div>
               </div>
               <button
                 onClick={() => setCheckoutOpen(true)}
@@ -197,7 +206,10 @@ function DashboardPage() {
             <div className="text-[10px] uppercase tracking-[0.28em] text-primary/80 mb-1">
               Business Dashboard
             </div>
-            <h1 className="text-2xl font-bold text-foreground leading-none" style={{ letterSpacing: "-0.02em" }}>
+            <h1
+              className="text-2xl font-bold text-foreground leading-none"
+              style={{ letterSpacing: "-0.02em" }}
+            >
               Panou <span className="text-primary">Analytics</span>
             </h1>
             <p className="mt-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.24em] text-accent">
@@ -280,22 +292,29 @@ function DashboardPage() {
                 <p className="text-xs text-muted-foreground">Fără date în ultimele 30 zile.</p>
               ) : (
                 <div className="space-y-1.5">
-                  {[...(stats.daily ?? [])].slice(-7).reverse().map((d) => {
-                    const max = Math.max(1, ...(stats.daily ?? []).map((x) => x.c));
-                    const pct = (d.c / max) * 100;
-                    return (
-                      <div key={d.d} className="flex items-center gap-2 text-xs">
-                        <div className="w-16 text-muted-foreground">{d.d.slice(5)}</div>
-                        <div className="flex-1 h-5 rounded bg-muted/40 overflow-hidden">
-                          <div
-                            className="h-full"
-                            style={{ width: `${pct}%`, background: "linear-gradient(90deg, hsl(var(--accent)), hsl(var(--primary)))" }}
-                          />
+                  {[...(stats.daily ?? [])]
+                    .slice(-7)
+                    .reverse()
+                    .map((d) => {
+                      const max = Math.max(1, ...(stats.daily ?? []).map((x) => x.c));
+                      const pct = (d.c / max) * 100;
+                      return (
+                        <div key={d.d} className="flex items-center gap-2 text-xs">
+                          <div className="w-16 text-muted-foreground">{d.d.slice(5)}</div>
+                          <div className="flex-1 h-5 rounded bg-muted/40 overflow-hidden">
+                            <div
+                              className="h-full"
+                              style={{
+                                width: `${pct}%`,
+                                background:
+                                  "linear-gradient(90deg, hsl(var(--accent)), hsl(var(--primary)))",
+                              }}
+                            />
+                          </div>
+                          <div className="w-8 text-right text-foreground/85">{d.c}</div>
                         </div>
-                        <div className="w-8 text-right text-foreground/85">{d.c}</div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               )}
             </div>
@@ -307,7 +326,9 @@ function DashboardPage() {
                 className="rounded-2xl border border-border bg-gradient-to-br from-accent/20 to-transparent p-4 text-center transition hover:border-accent/60"
               >
                 <Megaphone size={20} className="mx-auto mb-1.5 text-accent" />
-                <div className="font-bold uppercase text-xs tracking-[0.18em] text-foreground">Promovare</div>
+                <div className="font-bold uppercase text-xs tracking-[0.18em] text-foreground">
+                  Promovare
+                </div>
                 <div className="text-[10px] text-muted-foreground mt-0.5">boost feed & reels</div>
               </Link>
               <Link
@@ -315,7 +336,9 @@ function DashboardPage() {
                 className="rounded-2xl border border-border bg-gradient-to-br from-primary/20 to-transparent p-4 text-center transition hover:border-primary/60"
               >
                 <Sparkles size={20} className="mx-auto mb-1.5 text-primary" />
-                <div className="font-bold uppercase text-xs tracking-[0.18em] text-foreground">Exclusiv</div>
+                <div className="font-bold uppercase text-xs tracking-[0.18em] text-foreground">
+                  Exclusiv
+                </div>
                 <div className="text-[10px] text-muted-foreground mt-0.5">slot premium/oraș</div>
               </Link>
             </div>

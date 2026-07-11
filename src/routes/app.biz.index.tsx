@@ -22,7 +22,6 @@ import { syncCheckoutToProfile } from "@/lib/premium.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { errorMessage } from "@/lib/errors";
 
-
 export const Route = createFileRoute("/app/biz/")({
   head: () => ({ meta: [{ title: "Promovare · OXIDAȚII" }] }),
   component: BizPage,
@@ -40,9 +39,15 @@ const TIERS: {
 }[] = [
   { id: "t500", priceRon: 500, days: 2, label: "2 zile", color: "#00e5ff", priceId: "boost_2d" },
   { id: "t1000", priceRon: 1000, days: 5, label: "5 zile", color: "#ff3d8b", priceId: "boost_5d" },
-  { id: "t2500", priceRon: 2500, days: 30, label: "30 zile", color: "#ffea00", priceId: "boost_30d" },
+  {
+    id: "t2500",
+    priceRon: 2500,
+    days: 30,
+    label: "30 zile",
+    color: "#ffea00",
+    priceId: "boost_30d",
+  },
 ];
-
 
 async function loadBiz(userId: string) {
   const { data } = await supabase
@@ -102,8 +107,6 @@ function BizPage() {
     })();
   }, [qc]);
 
-
-
   if (!user)
     return (
       <div className="px-4 pt-10 text-center text-sm text-muted-foreground">
@@ -156,7 +159,8 @@ function BizPage() {
               </span>
             </div>
             <h1
-              className="text-[13vw] sm:text-[80px] lg:text-[104px] leading-[0.88] uppercase text-foreground" style={{ letterSpacing: "-0.02em" }}
+              className="text-[13vw] sm:text-[80px] lg:text-[104px] leading-[0.88] uppercase text-foreground"
+              style={{ letterSpacing: "-0.02em" }}
             >
               Fii văzut.
               <br />
@@ -191,11 +195,7 @@ function BizPage() {
               { n: "3×", l: "engagement vs feed" },
             ].map((s) => (
               <div key={s.l}>
-                <div
-                  className="text-3xl sm:text-4xl text-primary"
-                >
-                  {s.n}
-                </div>
+                <div className="text-3xl sm:text-4xl text-primary">{s.n}</div>
                 <div className="mt-1 text-[10px] uppercase tracking-[0.24em] text-foreground/50">
                   {s.l}
                 </div>
@@ -212,7 +212,8 @@ function BizPage() {
                 Pachete · plată per postare
               </div>
               <h2
-                className="text-4xl sm:text-5xl uppercase text-foreground leading-none" style={{ letterSpacing: "-0.01em" }}
+                className="text-4xl sm:text-5xl uppercase text-foreground leading-none"
+                style={{ letterSpacing: "-0.01em" }}
               >
                 Alege durata.
                 <br />
@@ -238,14 +239,8 @@ function BizPage() {
                     {t.label}
                   </div>
                   <div className="mt-3 flex items-baseline gap-1.5">
-                    <span
-                      className="text-5xl text-foreground"
-                    >
-                      {t.priceRon}
-                    </span>
-                    <span className="text-sm uppercase tracking-widest text-primary">
-                      RON
-                    </span>
+                    <span className="text-5xl text-foreground">{t.priceRon}</span>
+                    <span className="text-sm uppercase tracking-widest text-primary">RON</span>
                   </div>
                   <ul className="mt-5 space-y-2 text-sm text-foreground/70">
                     <li className="flex gap-2">
@@ -319,7 +314,8 @@ function BizPage() {
           </div>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <h1
-              className="text-4xl sm:text-6xl uppercase text-foreground leading-[0.9]" style={{ letterSpacing: "-0.01em" }}
+              className="text-4xl sm:text-6xl uppercase text-foreground leading-[0.9]"
+              style={{ letterSpacing: "-0.01em" }}
             >
               {activeBiz.brand_name}
             </h1>
@@ -344,11 +340,7 @@ function BizPage() {
               <BarChart3 size={22} />
             </div>
             <div className="flex-1 min-w-0">
-              <div
-                className="uppercase text-base text-foreground"
-              >
-                Business Dashboard
-              </div>
+              <div className="uppercase text-base text-foreground">Business Dashboard</div>
               <div className="text-[11px] text-foreground/60 mt-0.5">
                 Heatmap · vizitatori unici · reels sponsorizate · 99 RON/lună
               </div>
@@ -369,19 +361,11 @@ function BizPage() {
               <div
                 key={t.id}
                 className={`rounded-2xl border p-4 text-center ${
-                  i === 1
-                    ? "border-primary/60 bg-primary/5"
-                    : "border-primary/15 bg-card/40"
+                  i === 1 ? "border-primary/60 bg-primary/5" : "border-primary/15 bg-card/40"
                 }`}
               >
-                <div
-                  className="text-3xl text-foreground"
-                >
-                  {t.priceRon}
-                </div>
-                <div className="text-[9px] uppercase tracking-[0.24em] text-primary">
-                  RON
-                </div>
+                <div className="text-3xl text-foreground">{t.priceRon}</div>
+                <div className="text-[9px] uppercase tracking-[0.24em] text-primary">RON</div>
                 <div className="text-[11px] text-foreground/60 mt-1.5">{t.label}</div>
               </div>
             ))}
@@ -393,11 +377,7 @@ function BizPage() {
       <section>
         <div className="max-w-5xl mx-auto px-6 py-8">
           <div className="flex items-baseline justify-between mb-5">
-            <h2
-              className="text-2xl uppercase text-foreground"
-            >
-              Postările tale
-            </h2>
+            <h2 className="text-2xl uppercase text-foreground">Postările tale</h2>
             <span className="text-[10px] uppercase tracking-[0.24em] text-foreground/40">
               live · draft · expirat
             </span>
@@ -586,9 +566,6 @@ function PostModal({
 
   const currentTier = TIERS.find((t) => t.id === tier)!;
 
-
-
-
   const inputClass =
     "w-full bg-white/5 rounded-xl px-3 py-3 text-sm border border-white/10 focus:border-neon-crimson outline-none";
 
@@ -664,7 +641,11 @@ function PostModal({
                   <label
                     className={`flex flex-col items-center justify-center gap-2 cursor-pointer ${inputClass} py-10 border-dashed text-zinc-400 hover:text-white hover:border-[#c724ff]/50`}
                   >
-                    {uploading ? <Loader2 size={18} className="animate-spin" /> : <Film size={18} />}
+                    {uploading ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <Film size={18} />
+                    )}
                     <span className="text-[11px] font-mono uppercase tracking-widest">
                       {uploading ? "se încarcă..." : "alege video"}
                     </span>
@@ -739,7 +720,6 @@ function PostModal({
               </>
             )}
 
-
             <Field label="Titlu">
               <input
                 autoFocus
@@ -810,7 +790,11 @@ function PostModal({
           setCheckoutOpen(false);
           // If they close without paying, campaign remains draft — clean up
           if (pendingCampaignId) {
-            supabase.from("campaigns").delete().eq("id", pendingCampaignId).then(() => {});
+            supabase
+              .from("campaigns")
+              .delete()
+              .eq("id", pendingCampaignId)
+              .then(() => {});
             setPendingCampaignId(null);
           }
         }}
@@ -822,7 +806,6 @@ function PostModal({
     </div>
   );
 }
-
 
 function CreateBusinessSheet({
   open,

@@ -42,7 +42,8 @@ async function composePhoto(reel: ReelLike): Promise<Blob | null> {
     const W = 1080;
     const H = 1920;
     const canvas = document.createElement("canvas");
-    canvas.width = W; canvas.height = H;
+    canvas.width = W;
+    canvas.height = H;
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
@@ -52,8 +53,12 @@ async function composePhoto(reel: ReelLike): Promise<Blob | null> {
 
     // cover-fit
     const ar = img.width / img.height;
-    let dw = W, dh = W / ar;
-    if (dh < H) { dh = H; dw = H * ar; }
+    let dw = W,
+      dh = W / ar;
+    if (dh < H) {
+      dh = H;
+      dw = H * ar;
+    }
     const dx = (W - dw) / 2;
     const dy = (H - dh) / 2;
     ctx.drawImage(img, dx, dy, dw, dh);
@@ -89,8 +94,10 @@ async function composePhoto(reel: ReelLike): Promise<Blob | null> {
       const lines: string[] = [];
       for (const w of words) {
         const test = line ? line + " " + w : w;
-        if (ctx.measureText(test).width > max) { lines.push(line); line = w; }
-        else line = test;
+        if (ctx.measureText(test).width > max) {
+          lines.push(line);
+          line = w;
+        } else line = test;
       }
       if (line) lines.push(line);
       lines.slice(0, 2).forEach((l, i) => ctx.fillText(l, 60, H - 95 + i * 42));
@@ -116,8 +123,11 @@ async function composePhoto(reel: ReelLike): Promise<Blob | null> {
 function downloadBlob(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = name;
-  document.body.appendChild(a); a.click(); a.remove();
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
   URL.revokeObjectURL(url);
 }
 
@@ -133,7 +143,9 @@ export async function shareReel(reel: ReelLike): Promise<void> {
         try {
           await navigator.share({ files: [file], text, title: "Oxidații" });
           return;
-        } catch { /* cancelled or unsupported – fall through */ }
+        } catch {
+          /* cancelled or unsupported – fall through */
+        }
       }
       downloadBlob(blob, `oxidatii-reel-${reel.id}.png`);
       return;
@@ -147,7 +159,14 @@ export async function shareReel(reel: ReelLike): Promise<void> {
     url: `https://${SITE}`,
   };
   if (navigator.share) {
-    try { await navigator.share(shareData); return; } catch { /* cancelled */ }
+    try {
+      await navigator.share(shareData);
+      return;
+    } catch {
+      /* cancelled */
+    }
   }
-  try { await navigator.clipboard.writeText(`${text}\nhttps://${SITE}`); } catch {}
+  try {
+    await navigator.clipboard.writeText(`${text}\nhttps://${SITE}`);
+  } catch { /* noop */ }
 }

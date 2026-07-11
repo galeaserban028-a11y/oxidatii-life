@@ -16,7 +16,6 @@ type AvatarFrameProps = {
   style?: CSSProperties;
 };
 
-
 type Tier = "starter" | "rare" | "epic" | "legendary" | "mythic";
 
 type FrameStyle = {
@@ -33,73 +32,57 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
   neon: {
     aura: "rgba(217,70,239,0.28)",
     ringGlow: "rgba(217,70,239,0.45)",
-    bezel:
-      "linear-gradient(135deg,#22d3ee 0%,#a855f7 50%,#ec4899 100%)",
-    highlight:
-      "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0) 55%)",
+    bezel: "linear-gradient(135deg,#22d3ee 0%,#a855f7 50%,#ec4899 100%)",
+    highlight: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0) 55%)",
     tier: "starter",
   },
   ice: {
     aura: "rgba(125,211,252,0.32)",
     ringGlow: "rgba(56,189,248,0.6)",
-    bezel:
-      "linear-gradient(140deg,#ffffff 0%,#e0f2fe 25%,#67e8f9 55%,#0284c7 100%)",
-    highlight:
-      "linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0) 45%)",
+    bezel: "linear-gradient(140deg,#ffffff 0%,#e0f2fe 25%,#67e8f9 55%,#0284c7 100%)",
+    highlight: "linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0) 45%)",
     tier: "rare",
   },
   vipplus_crystal: {
     aura: "rgba(251,113,133,0.32)",
     ringGlow: "rgba(251,113,133,0.6)",
-    bezel:
-      "linear-gradient(140deg,#fff1f2 0%,#fecdd3 30%,#fb7185 60%,#9f1239 100%)",
-    highlight:
-      "linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0) 50%)",
+    bezel: "linear-gradient(140deg,#fff1f2 0%,#fecdd3 30%,#fb7185 60%,#9f1239 100%)",
+    highlight: "linear-gradient(180deg, rgba(255,255,255,0.7), rgba(255,255,255,0) 50%)",
     tier: "rare",
   },
   fire: {
     aura: "rgba(249,115,22,0.4)",
     ringGlow: "rgba(239,68,68,0.7)",
-    bezel:
-      "linear-gradient(140deg,#fef3c7 0%,#facc15 25%,#f97316 55%,#dc2626 100%)",
-    highlight:
-      "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0) 50%)",
+    bezel: "linear-gradient(140deg,#fef3c7 0%,#facc15 25%,#f97316 55%,#dc2626 100%)",
+    highlight: "linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0) 50%)",
     tier: "epic",
   },
   gold: {
     aura: "rgba(250,204,21,0.4)",
     ringGlow: "rgba(250,204,21,0.7)",
-    bezel:
-      "linear-gradient(140deg,#fff7c2 0%,#fde68a 25%,#facc15 55%,#a16207 100%)",
-    highlight:
-      "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0) 55%)",
+    bezel: "linear-gradient(140deg,#fff7c2 0%,#fde68a 25%,#facc15 55%,#a16207 100%)",
+    highlight: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0) 55%)",
     tier: "epic",
   },
   vip_aurum: {
     aura: "rgba(251,191,36,0.4)",
     ringGlow: "rgba(251,191,36,0.7)",
-    bezel:
-      "conic-gradient(from 30deg,#fff7c2,#f59e0b,#fde68a,#854d0e,#fde68a,#f59e0b,#fff7c2)",
-    highlight:
-      "linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0) 50%)",
+    bezel: "conic-gradient(from 30deg,#fff7c2,#f59e0b,#fde68a,#854d0e,#fde68a,#f59e0b,#fff7c2)",
+    highlight: "linear-gradient(180deg, rgba(255,255,255,0.8), rgba(255,255,255,0) 50%)",
     tier: "epic",
   },
   pro_holo: {
     aura: "rgba(139,92,246,0.4)",
     ringGlow: "rgba(168,85,247,0.7)",
-    bezel:
-      "conic-gradient(from 0deg,#22d3ee,#3b82f6,#a855f7,#ec4899,#f59e0b,#22d3ee)",
-    highlight:
-      "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0) 50%)",
+    bezel: "conic-gradient(from 0deg,#22d3ee,#3b82f6,#a855f7,#ec4899,#f59e0b,#22d3ee)",
+    highlight: "linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0) 50%)",
     tier: "legendary",
   },
   elite_diamond: {
     aura: "rgba(186,230,253,0.45)",
     ringGlow: "rgba(125,211,252,0.75)",
-    bezel:
-      "linear-gradient(140deg,#ffffff 0%,#e0f2fe 20%,#bae6fd 45%,#94a3b8 75%,#475569 100%)",
-    highlight:
-      "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0) 55%)",
+    bezel: "linear-gradient(140deg,#ffffff 0%,#e0f2fe 20%,#bae6fd 45%,#94a3b8 75%,#475569 100%)",
+    highlight: "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0) 55%)",
     tier: "legendary",
   },
   legend: {
@@ -107,8 +90,7 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
     ringGlow: "rgba(168,85,247,0.85)",
     bezel:
       "conic-gradient(from 0deg,#fde047,#f97316,#ef4444,#ec4899,#a855f7,#22d3ee,#10b981,#fde047)",
-    highlight:
-      "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0) 55%)",
+    highlight: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0) 55%)",
     tier: "mythic",
   },
 };
@@ -129,16 +111,26 @@ export const TIER_LABEL: Record<Tier, string> = {
 function Ornament({ frameId, preview }: { frameId: string; preview: boolean }) {
   if (preview) return null;
   switch (frameId) {
-    case "neon":           return <NeonOrn />;
-    case "ice":            return <IceOrn />;
-    case "vipplus_crystal":return <CrystalOrn />;
-    case "fire":           return <FireOrn />;
-    case "gold":           return <GoldOrn />;
-    case "vip_aurum":      return <AurumOrn />;
-    case "pro_holo":       return <HoloOrn />;
-    case "elite_diamond":  return <DiamondOrn />;
-    case "legend":         return <LegendOrn />;
-    default:               return null;
+    case "neon":
+      return <NeonOrn />;
+    case "ice":
+      return <IceOrn />;
+    case "vipplus_crystal":
+      return <CrystalOrn />;
+    case "fire":
+      return <FireOrn />;
+    case "gold":
+      return <GoldOrn />;
+    case "vip_aurum":
+      return <AurumOrn />;
+    case "pro_holo":
+      return <HoloOrn />;
+    case "elite_diamond":
+      return <DiamondOrn />;
+    case "legend":
+      return <LegendOrn />;
+    default:
+      return null;
   }
 }
 
@@ -172,9 +164,12 @@ function IceOrn() {
           viewBox="0 0 20 20"
           style={{
             position: "absolute",
-            top: "50%", left: "50%",
-            width: 12, height: 12,
-            marginTop: -6, marginLeft: -6,
+            top: "50%",
+            left: "50%",
+            width: 12,
+            height: 12,
+            marginTop: -6,
+            marginLeft: -6,
             transform: `rotate(${deg}deg) translateY(calc(-50% - 14px))`,
             filter: "drop-shadow(0 0 4px #67e8f9) drop-shadow(0 0 8px #38bdf8)",
           }}
@@ -225,8 +220,13 @@ function CrystalOrn() {
           <div
             key={deg}
             style={{
-              position: "absolute", top: "50%", left: "50%",
-              width: 6, height: 6, marginTop: -3, marginLeft: -3,
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              width: 6,
+              height: 6,
+              marginTop: -3,
+              marginLeft: -3,
               transform: `rotate(${deg}deg) translateY(calc(-50% - 4px)) rotate(45deg)`,
               background: "linear-gradient(135deg,#fff,#fb7185)",
               boxShadow: "0 0 6px #fb7185, 0 0 12px #f43f5e",
@@ -307,8 +307,11 @@ function FireOrn() {
           key={i}
           className="pointer-events-none absolute"
           style={{
-            top: e.t, left: e.l,
-            width: 4, height: 4, borderRadius: "50%",
+            top: e.t,
+            left: e.l,
+            width: 4,
+            height: 4,
+            borderRadius: "50%",
             background: "#fde047",
             boxShadow: "0 0 6px #f97316, 0 0 12px #ef4444",
             animation: `oxi-pf-twinkle 1.4s ease-in-out ${e.d}s infinite`,
@@ -335,8 +338,13 @@ function GoldOrn() {
           <div
             key={deg}
             style={{
-              position: "absolute", top: "50%", left: "50%",
-              width: 8, height: 8, marginTop: -4, marginLeft: -4,
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              width: 8,
+              height: 8,
+              marginTop: -4,
+              marginLeft: -4,
               transform: `rotate(${deg}deg) translateY(calc(-50% - 3px))`,
               borderRadius: "50%",
               background:
@@ -362,8 +370,7 @@ function AurumOrn() {
         className="pointer-events-none absolute rounded-full"
         style={{
           inset: -10,
-          background:
-            "radial-gradient(circle, rgba(251,191,36,0.55) 0%, transparent 65%)",
+          background: "radial-gradient(circle, rgba(251,191,36,0.55) 0%, transparent 65%)",
           animation: "oxi-pf-breathe 3.6s ease-in-out infinite",
           zIndex: 0,
         }}
@@ -397,7 +404,8 @@ function AurumOrn() {
             rx="5.5"
             ry="2.6"
             fill="url(#laurelG)"
-            stroke="#a16207" strokeWidth="0.3"
+            stroke="#a16207"
+            strokeWidth="0.3"
             transform={`rotate(${y < 46 ? -32 : 32} 6 ${y})`}
           />
         ))}
@@ -409,7 +417,8 @@ function AurumOrn() {
             rx="5.5"
             ry="2.6"
             fill="url(#laurelG)"
-            stroke="#a16207" strokeWidth="0.3"
+            stroke="#a16207"
+            strokeWidth="0.3"
             transform={`rotate(${y < 46 ? 32 : -32} 94 ${y})`}
           />
         ))}
@@ -426,11 +435,16 @@ function AurumOrn() {
           key={i}
           className="pointer-events-none absolute"
           style={{
-            top: s.t, left: s.l,
-            width: 5, height: 5, marginTop: -2.5, marginLeft: -2.5,
+            top: s.t,
+            left: s.l,
+            width: 5,
+            height: 5,
+            marginTop: -2.5,
+            marginLeft: -2.5,
             background: "#fff7ad",
             boxShadow: "0 0 6px #fde68a, 0 0 12px #facc15",
-            clipPath: "polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%)",
+            clipPath:
+              "polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%)",
             animation: `oxi-pf-twinkle ${1.8 + i * 0.3}s ease-in-out infinite`,
             zIndex: 7,
           }}
@@ -462,8 +476,7 @@ function HoloOrn() {
         className="pointer-events-none absolute rounded-full"
         style={{
           inset: -5,
-          background:
-            "conic-gradient(from 0deg,#22d3ee,#3b82f6,#a855f7,#ec4899,#f59e0b,#22d3ee)",
+          background: "conic-gradient(from 0deg,#22d3ee,#3b82f6,#a855f7,#ec4899,#f59e0b,#22d3ee)",
           WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 100%)",
           mask: "radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 100%)",
           animation: "oxi-pf-rotate 3.5s linear infinite",
@@ -498,8 +511,13 @@ function HoloOrn() {
             <div
               key={deg}
               style={{
-                position: "absolute", top: "50%", left: "50%",
-                width: 10, height: 10, marginTop: -5, marginLeft: -5,
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                width: 10,
+                height: 10,
+                marginTop: -5,
+                marginLeft: -5,
                 transform: `rotate(${deg}deg) translateY(calc(-50% - 10px))`,
                 borderRadius: "50%",
                 background: `radial-gradient(circle at 30% 30%, #fff 0%, ${c} 60%, transparent 100%)`,
@@ -538,8 +556,7 @@ function DiamondOrn() {
         className="pointer-events-none absolute rounded-full"
         style={{
           inset: -14,
-          background:
-            "radial-gradient(circle, rgba(186,230,253,0.55) 0%, transparent 65%)",
+          background: "radial-gradient(circle, rgba(186,230,253,0.55) 0%, transparent 65%)",
           animation: "oxi-pf-breathe 3.2s ease-in-out infinite",
           zIndex: 0,
         }}
@@ -557,11 +574,13 @@ function DiamondOrn() {
           viewBox="0 0 16 16"
           className="pointer-events-none absolute"
           style={{
-            top: p.top as number | string, left: p.left as number | string,
-            marginLeft: p.ml, marginTop: p.mt,
-            width: 16, height: 16,
-            filter:
-              "drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px #67e8f9)",
+            top: p.top as number | string,
+            left: p.left as number | string,
+            marginLeft: p.ml,
+            marginTop: p.mt,
+            width: 16,
+            height: 16,
+            filter: "drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px #67e8f9)",
             animation: `oxi-pf-twinkle ${2.2 + i * 0.3}s ease-in-out ${i * 0.2}s infinite`,
             zIndex: 7,
           }}
@@ -576,7 +595,12 @@ function DiamondOrn() {
             </linearGradient>
           </defs>
           {/* diamond shape with facets */}
-          <polygon points="8,0 16,6 8,16 0,6" fill={`url(#dia${i})`} stroke="#fff" strokeWidth="0.5" />
+          <polygon
+            points="8,0 16,6 8,16 0,6"
+            fill={`url(#dia${i})`}
+            stroke="#fff"
+            strokeWidth="0.5"
+          />
           <polygon points="8,0 16,6 8,7 0,6" fill="rgba(255,255,255,0.45)" />
           <polygon points="8,0 11,4 8,5 5,4" fill="rgba(255,255,255,0.8)" />
         </svg>
@@ -592,8 +616,12 @@ function DiamondOrn() {
           key={`sp${i}`}
           className="pointer-events-none absolute"
           style={{
-            top: s.top, left: s.left,
-            width: 6, height: 6, marginTop: -3, marginLeft: -3,
+            top: s.top,
+            left: s.left,
+            width: 6,
+            height: 6,
+            marginTop: -3,
+            marginLeft: -3,
             background: "#fff",
             clipPath:
               "polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%)",
@@ -634,8 +662,7 @@ function LegendOrn() {
             "conic-gradient(from 0deg, rgba(245,158,11,0.7), rgba(239,68,68,0.6), rgba(168,85,247,0.7), rgba(34,211,238,0.6), rgba(16,185,129,0.6), rgba(245,158,11,0.7))",
           WebkitMask:
             "radial-gradient(farthest-side, transparent 56%, #000 76%, #000 92%, transparent 100%)",
-          mask:
-            "radial-gradient(farthest-side, transparent 56%, #000 76%, #000 92%, transparent 100%)",
+          mask: "radial-gradient(farthest-side, transparent 56%, #000 76%, #000 92%, transparent 100%)",
           animation: "oxi-pf-rotate 7s linear infinite, oxi-pf-aurora-hue 12s linear infinite",
           filter: "blur(3px) saturate(1.4)",
           zIndex: 1,
@@ -647,8 +674,7 @@ function LegendOrn() {
         className="pointer-events-none absolute rounded-full"
         style={{
           inset: -4,
-          background:
-            "conic-gradient(from 0deg,#fde047,#f97316,#ef4444,#a855f7,#22d3ee,#fde047)",
+          background: "conic-gradient(from 0deg,#fde047,#f97316,#ef4444,#a855f7,#22d3ee,#fde047)",
           WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 100%)",
           mask: "radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 100%)",
           animation: "oxi-pf-rotate 3s linear infinite",
@@ -662,9 +688,11 @@ function LegendOrn() {
         viewBox="0 0 44 26"
         className="pointer-events-none absolute"
         style={{
-          top: -22, left: "50%",
+          top: -22,
+          left: "50%",
           marginLeft: -22,
-          width: 44, height: 26,
+          width: 44,
+          height: 26,
           zIndex: 8,
           filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.4)) drop-shadow(0 0 6px #facc15)",
         }}
@@ -680,9 +708,19 @@ function LegendOrn() {
         <path
           d="M2 24 L6 8 L14 16 L22 2 L30 16 L38 8 L42 24 Z"
           fill="url(#legCrownG)"
-          stroke="#fde68a" strokeWidth="0.8"
+          stroke="#fde68a"
+          strokeWidth="0.8"
         />
-        <rect x="2" y="22" width="40" height="3" rx="1" fill="#a16207" stroke="#fde68a" strokeWidth="0.4" />
+        <rect
+          x="2"
+          y="22"
+          width="40"
+          height="3"
+          rx="1"
+          fill="#a16207"
+          stroke="#fde68a"
+          strokeWidth="0.4"
+        />
         <circle cx="22" cy="6" r="2.4" fill="#f43f5e" stroke="#fff" strokeWidth="0.4" />
         <circle cx="6" cy="10" r="1.6" fill="#22d3ee" stroke="#fff" strokeWidth="0.3" />
         <circle cx="38" cy="10" r="1.6" fill="#a855f7" stroke="#fff" strokeWidth="0.3" />
@@ -697,9 +735,13 @@ function LegendOrn() {
       >
         <div
           style={{
-            position: "absolute", top: "50%", left: "50%",
-            width: 26, height: 5,
-            marginTop: -2.5, marginLeft: -2.5,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            width: 26,
+            height: 5,
+            marginTop: -2.5,
+            marginLeft: -2.5,
             transform: "translateY(calc(-50% - 8px))",
             background: "linear-gradient(90deg, transparent, #fde047 50%, #fff 100%)",
             borderRadius: 9999,
@@ -708,9 +750,13 @@ function LegendOrn() {
         />
         <div
           style={{
-            position: "absolute", top: "50%", left: "50%",
-            width: 9, height: 9,
-            marginTop: -4.5, marginLeft: -4.5,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            width: 9,
+            height: 9,
+            marginTop: -4.5,
+            marginLeft: -4.5,
             transform: "translateY(calc(-50% - 8px)) translateX(13px)",
             borderRadius: "50%",
             background: "radial-gradient(circle at 30% 30%, #fff, #fde047 60%, #f97316)",
@@ -730,8 +776,12 @@ function LegendOrn() {
           key={i}
           className="pointer-events-none absolute"
           style={{
-            top: s.t, left: s.l,
-            width: 5, height: 5, marginTop: -2.5, marginLeft: -2.5,
+            top: s.t,
+            left: s.l,
+            width: 5,
+            height: 5,
+            marginTop: -2.5,
+            marginLeft: -2.5,
             background: "#fff",
             clipPath:
               "polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%)",
@@ -844,8 +894,10 @@ export function AvatarFrame({
           <div
             style={{
               position: "absolute",
-              top: "-20%", bottom: "-20%",
-              left: "-50%", width: "35%",
+              top: "-20%",
+              bottom: "-20%",
+              left: "-50%",
+              width: "35%",
               background:
                 "linear-gradient(90deg, transparent, rgba(255,255,255,0.55) 50%, transparent)",
               filter: "blur(2px)",
@@ -891,10 +943,10 @@ export function AvatarFrame({
                 frame.tier === "mythic"
                   ? "linear-gradient(90deg,#f59e0b,#ec4899,#a855f7,#22d3ee)"
                   : frame.tier === "legendary"
-                  ? "linear-gradient(90deg,#22d3ee,#a855f7,#ec4899)"
-                  : frame.tier === "epic"
-                  ? "linear-gradient(90deg,#f59e0b,#facc15)"
-                  : "linear-gradient(90deg,#0ea5e9,#67e8f9)",
+                    ? "linear-gradient(90deg,#22d3ee,#a855f7,#ec4899)"
+                    : frame.tier === "epic"
+                      ? "linear-gradient(90deg,#f59e0b,#facc15)"
+                      : "linear-gradient(90deg,#0ea5e9,#67e8f9)",
             }}
           >
             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white drop-shadow">

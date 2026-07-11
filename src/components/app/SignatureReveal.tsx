@@ -22,7 +22,7 @@ export function SignatureReveal({
       const k = `sig-reveal:${storageKey}`;
       if (sessionStorage.getItem(k)) return;
       sessionStorage.setItem(k, "1");
-    } catch {}
+    } catch { /* noop */ }
     setShow(true);
     const t = setTimeout(() => setShow(false), 1700);
     return () => clearTimeout(t);

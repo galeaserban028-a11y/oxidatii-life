@@ -35,8 +35,17 @@ async function loadSpritzOfDay(): Promise<SpritzTile[]> {
   const seen = new Set<string>();
   const out: SpritzTile[] = [];
   type ProofRow = {
-    id: string; user_id: string; photo_url: string; media_type: "image" | "video"; created_at: string;
-    profile?: { handle?: string | null; avatar_url?: string | null; display_name?: string | null; is_public?: boolean | null } | null;
+    id: string;
+    user_id: string;
+    photo_url: string;
+    media_type: "image" | "video";
+    created_at: string;
+    profile?: {
+      handle?: string | null;
+      avatar_url?: string | null;
+      display_name?: string | null;
+      is_public?: boolean | null;
+    } | null;
     venue?: { name?: string | null } | null;
   };
   for (const r of (data ?? []) as unknown as ProofRow[]) {

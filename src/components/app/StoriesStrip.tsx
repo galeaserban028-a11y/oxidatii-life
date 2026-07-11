@@ -42,7 +42,6 @@ async function loadPromoTiles(): Promise<PromoTile[]> {
   }));
 }
 
-
 type StoryRow = {
   id: string;
   user_id: string;
@@ -80,8 +79,16 @@ async function loadStories(viewerId: string) {
     .eq("follower_id", viewerId)
     .eq("status", "accepted");
   type FollowRow = { following_id: string };
-  type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
-  const allowed = new Set<string>([viewerId, ...((follows ?? []) as FollowRow[]).map((f) => f.following_id)]);
+  type ProfileLite = {
+    id: string;
+    handle: string | null;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
+  const allowed = new Set<string>([
+    viewerId,
+    ...((follows ?? []) as FollowRow[]).map((f) => f.following_id),
+  ]);
 
   const filtered = stories.filter((s) => allowed.has(s.user_id));
   if (filtered.length === 0) return { groups: [] as Group[] };
@@ -251,7 +258,7 @@ export function StoriesStrip() {
     try {
       const raw = window.localStorage.getItem("oxi-stories-seen");
       if (raw) setSeenIds(new Set(JSON.parse(raw)));
-    } catch {}
+    } catch { /* noop */ }
   }, []);
 
   const markSeen = (ids: string[]) => {
@@ -260,7 +267,7 @@ export function StoriesStrip() {
       for (const id of ids) next.add(id);
       try {
         window.localStorage.setItem("oxi-stories-seen", JSON.stringify(Array.from(next)));
-      } catch {}
+      } catch { /* noop */ }
       return next;
     });
   };
