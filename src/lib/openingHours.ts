@@ -52,7 +52,7 @@ function parseSlot(v: unknown): DaySchedule {
     return m ? { open: m[1], close: m[2] } : null;
   }
   if (typeof v === "object") {
-    const o = v as any;
+    const o = v as { closed?: boolean; open?: unknown; close?: unknown };
     if (o.closed) return null;
     if (typeof o.open === "string" && typeof o.close === "string")
       return { open: o.open, close: o.close };
@@ -60,9 +60,10 @@ function parseSlot(v: unknown): DaySchedule {
   return null;
 }
 
-export function normalizeHours(raw: any): Record<DayKey, DaySchedule> {
+export function normalizeHours(raw: unknown): Record<DayKey, DaySchedule> {
   const out = {} as Record<DayKey, DaySchedule>;
-  for (const k of DAY_KEYS) out[k] = parseSlot(raw?.[k]);
+  const r = (raw ?? {}) as Record<string, unknown>;
+  for (const k of DAY_KEYS) out[k] = parseSlot(r[k]);
   return out;
 }
 
@@ -111,7 +112,7 @@ export function nextOpenLabel(
 }
 
 /** Richer evaluation in Europe/Bucharest tz. */
-export function evalOpenNow(raw: any, now = new Date()) {
+export function evalOpenNow(raw: unknown, now = new Date()) {
   const hours = normalizeHours(raw);
   const fmt = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Europe/Bucharest",

@@ -47,9 +47,9 @@ export async function sendPushToUsers(
           body,
         );
         sent++;
-      } catch (err: any) {
+      } catch (err) {
         failed++;
-        const code = err?.statusCode;
+        const code = (err as { statusCode?: number })?.statusCode;
         if (code === 404 || code === 410) deadIds.push(s.id);
       }
     }),
@@ -70,8 +70,10 @@ export async function filterByPref(userIds: string[], pref: PrefKey): Promise<st
     .select("user_id, " + pref)
     .in("user_id", userIds);
   if (error) return userIds; // default: send if we can't read prefs
-  const opted = new Set((data as any[]).filter((r) => r[pref] !== false).map((r) => r.user_id));
+  type PrefRow = { user_id: string } & Partial<Record<PrefKey, boolean>>;
+  const rows = (data ?? []) as unknown as PrefRow[];
+  const opted = new Set(rows.filter((r) => r[pref] !== false).map((r) => r.user_id));
   // Users without a row default to opted-in (DB default true)
-  const hasRow = new Set((data as any[]).map((r) => r.user_id));
+  const hasRow = new Set(rows.map((r) => r.user_id));
   return userIds.filter((id) => !hasRow.has(id) || opted.has(id));
 }

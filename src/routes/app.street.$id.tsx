@@ -34,10 +34,10 @@ function StreetPage() {
     <div className="px-4 pt-6 pb-4 space-y-5">
       <Link
         to="/app/city/$slug"
-        params={{ slug: (data.street.city as any).slug }}
+        params={{ slug: (data.street.city as unknown as { slug: string; name: string }).slug }}
         className="inline-flex items-center gap-1 text-xs font-mono uppercase tracking-widest text-muted-foreground"
       >
-        <ArrowLeft size={14} /> {(data.street.city as any).name}
+        <ArrowLeft size={14} /> {(data.street.city as unknown as { slug: string; name: string }).name}
       </Link>
       <div>
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-neon-green/80">
@@ -52,7 +52,7 @@ function StreetPage() {
             Niciun loc încă pe strada asta. Adaugă tu primul.
           </div>
         )}
-        {data.venues.map((v: any) => (
+        {data.venues.map((v) => (
           <Link
             key={v.id}
             to="/app/venue/$id"

@@ -39,13 +39,14 @@ export function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () =
         .order("created_at", { ascending: true });
       const rows = (data ?? []) as RawComment[];
       const ids = Array.from(new Set(rows.map((c) => c.user_id)));
+      type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
       const { data: profs } = ids.length
         ? await supabase
             .from("profiles")
             .select("id, handle, display_name, avatar_url")
             .in("id", ids)
-        : { data: [] as any[] };
-      const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
+        : { data: [] as ProfileLite[] };
+      const map = new Map(((profs ?? []) as ProfileLite[]).map((p) => [p.id, p]));
       return rows.map((c) => ({ ...c, profile: map.get(c.user_id) })) as RawComment[];
     },
   });
@@ -62,7 +63,7 @@ export function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () =
         .in("comment_id", commentIds);
       const counts = new Map<string, number>();
       const mine = new Set<string>();
-      (data ?? []).forEach((r: any) => {
+      ((data ?? []) as Array<{ comment_id: string; user_id: string }>).forEach((r) => {
         counts.set(r.comment_id, (counts.get(r.comment_id) ?? 0) + 1);
         if (user && r.user_id === user.id) mine.add(r.comment_id);
       });

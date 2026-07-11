@@ -115,13 +115,14 @@ function PhotoPage() {
         .eq("photo_id", id)
         .order("created_at", { ascending: true });
       const ids = Array.from(new Set((rows ?? []).map((c) => c.user_id)));
+      type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
       const { data: profs } = ids.length
         ? await supabase
             .from("profiles")
             .select("id, handle, display_name, avatar_url")
             .in("id", ids)
-        : { data: [] as any[] };
-      const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
+        : { data: [] as ProfileLite[] };
+      const map = new Map(((profs ?? []) as ProfileLite[]).map((p) => [p.id, p]));
       return (rows ?? []).map((c) => ({ ...c, profile: map.get(c.user_id) }));
     },
   });
@@ -417,7 +418,7 @@ function PhotoPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {comments.map((c: any) => (
+            {comments.map((c) => (
               <div key={c.id} className="flex items-start gap-3">
                 {c.profile?.avatar_url ? (
                   <img

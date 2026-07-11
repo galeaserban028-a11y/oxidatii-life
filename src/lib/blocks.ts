@@ -56,6 +56,7 @@ export function useBlockedList(userId?: string | null) {
           .eq("blocker_id", userId)
           .order("created_at", { ascending: false });
         if (!rows || rows.length === 0) return [];
+        type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
         const { data: profs } = await supabase
           .from("profiles")
           .select("id, handle, display_name, avatar_url")
@@ -63,10 +64,10 @@ export function useBlockedList(userId?: string | null) {
             "id",
             rows.map((r) => r.blocked_id),
           );
-        const map = new Map((profs ?? []).map((p: any) => [p.id, p]));
-        return rows.map((r) => ({ ...r, blocked: map.get(r.blocked_id) ?? null })) as any;
+        const map = new Map(((profs ?? []) as ProfileLite[]).map((p) => [p.id, p]));
+        return rows.map((r) => ({ ...r, blocked: map.get(r.blocked_id) ?? null })) as BlockedUser[];
       }
-      return (data ?? []) as any;
+      return (data ?? []) as unknown as BlockedUser[];
     },
   });
 }
