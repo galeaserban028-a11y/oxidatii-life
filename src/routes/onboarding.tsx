@@ -92,7 +92,7 @@ function Onboarding() {
 
   async function save() {
     if (!user) return;
-    if (!/^[a-z0-9_\.]{3,24}$/.test(handle)) return toast.error("Handle: 3-24 chars, a-z 0-9 _ .");
+    if (!/^[a-z0-9_.]{3,24}$/.test(handle)) return toast.error("Handle: 3-24 chars, a-z 0-9 _ .");
     if (!cityId) return toast.error("Alege orașul");
     if (!hasDob) {
       if (!dob) return toast.error("Pune data nașterii");
