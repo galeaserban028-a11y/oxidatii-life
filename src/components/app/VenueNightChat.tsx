@@ -49,13 +49,14 @@ export default function VenueNightChat({
       if (cancel) return;
       const rows = (data as Msg[]) ?? [];
       const ids = Array.from(new Set(rows.map((m) => m.user_id)));
+      type ProfileLite = { id: string; handle: string | null; display_name: string | null; avatar_url: string | null };
       const { data: profiles } = ids.length
         ? await supabase
             .from("profiles")
             .select("id, handle, display_name, avatar_url")
             .in("id", ids)
-        : { data: [] as any[] };
-      const profById = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+        : { data: [] as ProfileLite[] };
+      const profById = new Map(((profiles ?? []) as ProfileLite[]).map((p) => [p.id, p]));
       setMsgs(rows.map((m) => ({ ...m, author: profById.get(m.user_id) ?? null })));
       requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: 999999 }));
     })();
@@ -77,7 +78,7 @@ export default function VenueNightChat({
           filter: `venue_id=eq.${venueId}`,
         },
         async (payload) => {
-          const row = payload.new as any;
+          const row = payload.new as Msg & { intent_date: string };
           if (row.intent_date !== date) return;
           // hydrate author
           const { data: prof } = await supabase
@@ -110,7 +111,7 @@ export default function VenueNightChat({
           intent_date: date,
           user_id: user.id,
           body: body.trim().slice(0, 240),
-        } as any)
+        })
         .select("id, user_id, body, created_at")
         .single();
       if (error) throw error;
