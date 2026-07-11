@@ -26,7 +26,7 @@ function PromoPage() {
       if (error) throw error;
       if (!campaign) throw new Error("Campanie indisponibilă");
       const biz = await supabase
-        .rpc("get_business_account_public", { _id: (campaign as any).business_id })
+        .rpc("get_business_account_public", { _id: (campaign as { business_id: string }).business_id })
         .maybeSingle();
       return { campaign, biz: biz.data };
     },
