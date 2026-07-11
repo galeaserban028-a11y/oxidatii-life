@@ -125,7 +125,7 @@ async function loadFeed(userId: string) {
         .gt("expires_at", new Date().toISOString())
         .maybeSingle(),
       supabase
-        .rpc("get_business_account_public", { _id: pick.business_id })
+        .rpc("get_business_account_public", { _id: pick.business_id! })
         .maybeSingle(),
     ]);
     if (party) boosted = { campaign: pick, party: party as PartyFull, business: biz as BusinessLite };
