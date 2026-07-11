@@ -124,7 +124,7 @@ function PartiesList({ onDelete }: { onDelete: (id: string) => void }) {
         )
         .order("created_at", { ascending: false })
         .limit(100);
-      return data ?? [];
+      return (data ?? []) as unknown as PartyRow[];
     },
   });
   return (
@@ -153,7 +153,7 @@ function CheckinsList({ onDelete }: { onDelete: (id: string) => void }) {
         )
         .order("created_at", { ascending: false })
         .limit(100);
-      return data ?? [];
+      return (data ?? []) as unknown as CheckinRow[];
     },
   });
   return (
