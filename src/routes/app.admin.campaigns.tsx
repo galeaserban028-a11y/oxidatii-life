@@ -89,7 +89,7 @@ function AdminCampaigns() {
             <div className="font-mono text-[10px] text-muted-foreground truncate flex items-center gap-2 mt-0.5">
               <span>{c.business_accounts?.brand_name ?? "—"}</span>
               <span>
-                · bid {(c.bid_cents / 100).toFixed(2)} / cheltuit {(c.spent_cents / 100).toFixed(2)}{" "}
+                · bid {((c.bid_cents ?? 0) / 100).toFixed(2)} / cheltuit {((c.spent_cents ?? 0) / 100).toFixed(2)}{" "}
                 / {c.budget_cents ? (c.budget_cents / 100).toFixed(0) + " RON" : "fără cap"}
               </span>
             </div>
