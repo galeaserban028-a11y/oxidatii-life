@@ -104,7 +104,7 @@ export async function launchCampaignForBusiness(options: {
   if (debitError || !debited) return { error: "Wallet insuficient pentru această campanie." };
 
   const entryKindRaw = String(campaign.entry_kind ?? "");
-  const payload: Record<string, unknown> = {
+  const payload: Record<string, unknown> & { business_id: string; title: string } = {
     business_id: businessId,
     kind,
     party_id: uuid(campaign.party_id),
