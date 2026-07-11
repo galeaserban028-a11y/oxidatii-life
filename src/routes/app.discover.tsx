@@ -46,7 +46,8 @@ function DiscoverPage() {
         .from("follows")
         .select("following_id,status")
         .eq("follower_id", user!.id);
-      return new Map((data ?? []).map((r: any) => [r.following_id as string, r.status as string]));
+      const rows = (data ?? []) as Array<{ following_id: string; status: string }>;
+      return new Map(rows.map((r) => [r.following_id, r.status]));
     },
   });
 
