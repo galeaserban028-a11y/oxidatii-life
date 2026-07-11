@@ -36,10 +36,10 @@ export function pushSupported(): boolean {
 
 export function isIosStandalone(): boolean {
   // iOS only supports web push when the PWA is installed (added to Home Screen)
-  // @ts-ignore — non-standard but iOS uses this
+  const nav = navigator as Navigator & { standalone?: boolean };
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
-    (navigator as any).standalone === true
+    nav.standalone === true
   );
 }
 
@@ -52,7 +52,7 @@ export function platformBlocksPush(): { blocked: boolean; reason?: string } {
   const ua = navigator.userAgent;
   const isIOS =
     /iPhone|iPad|iPod/.test(ua) ||
-    (navigator.platform === "MacIntel" && (navigator as any).maxTouchPoints > 1);
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   if (isIOS && !isIosStandalone()) {
     return { blocked: true, reason: "Pe iOS trebuie să adaugi întâi aplicația pe Home Screen." };
   }
@@ -61,7 +61,7 @@ export function platformBlocksPush(): { blocked: boolean; reason?: string } {
 
 export async function getPushState(): Promise<"granted" | "denied" | "default" | "unsupported"> {
   if (!pushSupported()) return "unsupported";
-  return Notification.permission as any;
+  return Notification.permission;
 }
 
 export async function getCurrentSubscription(): Promise<PushSubscription | null> {
