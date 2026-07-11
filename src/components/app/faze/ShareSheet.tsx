@@ -29,10 +29,10 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
           .eq("following_id", user.id)
           .eq("status", "accepted"),
       ]);
-      const iFollowSet = new Set((iFollow ?? []).map((r: any) => r.following_id));
-      const mutualIds = (followMe ?? [])
-        .map((r: any) => r.follower_id)
-        .filter((id: string) => iFollowSet.has(id));
+      const iFollowSet = new Set(((iFollow ?? []) as { following_id: string }[]).map((r) => r.following_id));
+      const mutualIds = ((followMe ?? []) as { follower_id: string }[])
+        .map((r) => r.follower_id)
+        .filter((id) => iFollowSet.has(id));
       if (!mutualIds.length) return [];
       const { data: profs } = await supabase
         .from("profiles")
@@ -106,7 +106,7 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
             </div>
           ) : (
             <ul className="divide-y divide-foreground/5">
-              {friends.map((f: any) => {
+              {(friends as Array<{ id: string; handle: string | null; display_name: string | null; avatar_url: string | null }>).map((f) => {
                 const name = f.display_name ?? f.handle ?? "anonim";
                 const initial = (name[0] ?? "?").toUpperCase();
                 const isSending = sending === f.id;
