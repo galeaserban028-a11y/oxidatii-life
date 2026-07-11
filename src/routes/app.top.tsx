@@ -71,7 +71,7 @@ function TopPage() {
   const [exportOpen, setExportOpen] = useState(false);
 
   
-type MyRank = { in_top?: boolean; rank?: number; spritz_score?: number } | null;
+type MyRank = { in_top?: boolean; rank?: number; spritz_score?: number; base_sprits?: number; explorer_score?: number; squad_maker?: number; sunrise_index?: number; trendsetter?: number } | null;
 type CityCountryRow = { country: string | null };
 
   const now = new Date();
