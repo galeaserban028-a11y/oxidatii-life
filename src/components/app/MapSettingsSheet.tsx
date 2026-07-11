@@ -44,6 +44,12 @@ const DEFAULTS: MapSettings = {
   map_require_reciprocity: false,
 };
 
+
+type AccountStateRow = Partial<MapSettings> & Record<string, unknown>;
+type FriendshipRow = { requester_id: string; addressee_id: string };
+type FriendProfile = { id: string; display_name: string | null; handle: string | null; avatar_url: string | null };
+type PrivateLocation = { id: string; label: string; lat: number; lng: number; radius_m: number };
+
 export function MapSettingsSheet({
   open,
   onOpenChange,
