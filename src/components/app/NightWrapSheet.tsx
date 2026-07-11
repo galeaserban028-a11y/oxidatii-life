@@ -2,7 +2,22 @@ import { useEffect, useRef, useState } from "react";
 import { X, Share2, Download, Loader2 } from "lucide-react";
 import { toPng } from "html-to-image";
 
-export function NightWrapSheet({ wrap, onClose }: { wrap: any; onClose: () => void }) {
+type Wrap = {
+  night_date: string;
+  title: string;
+  tagline?: string | null;
+  vibe_emoji: string;
+  photo_urls?: string[] | null;
+  stats?: {
+    check_ins?: number;
+    photos?: number;
+    likes_received?: number;
+    friends_present?: number;
+    peak_hour?: number | null;
+  } | null;
+};
+
+export function NightWrapSheet({ wrap, onClose }: { wrap: Wrap; onClose: () => void }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState<null | "share" | "download">(null);
 
