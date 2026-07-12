@@ -1,5 +1,4 @@
-import * as React from 'react'
-
+import * as React from "react";
 import {
   Body,
   Button,
@@ -9,69 +8,73 @@ import {
   Html,
   Link,
   Preview,
+  Section,
   Text,
-} from '@react-email/components'
+} from "@react-email/components";
+import {
+  BRAND,
+  main,
+  container,
+  logo,
+  logoAccent,
+  tagline,
+  card,
+  h1,
+  text,
+  link,
+  buttonWrap,
+  button,
+  footer,
+  smallLine,
+} from "./_brand";
 
 interface InviteEmailProps {
-  siteName: string
-  siteUrl: string
-  confirmationUrl: string
+  siteName: string;
+  siteUrl: string;
+  confirmationUrl: string;
 }
 
-export const InviteEmail = ({
-  siteName,
-  siteUrl,
-  confirmationUrl,
-}: InviteEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const InviteEmail = ({ siteName, siteUrl, confirmationUrl }: InviteEmailProps) => (
+  <Html lang="ro" dir="ltr">
     <Head />
-    <Preview>You've been invited to join {siteName}</Preview>
+    <Preview>Ai fost invitat pe {siteName}.</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>You've been invited</Heading>
-        <Text style={text}>
-          You've been invited to join{' '}
-          <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
-          </Link>
-          . Click the button below to accept the invitation and create your
-          account.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Accept Invitation
-        </Button>
+        <Heading as="h1" style={logo}>
+          <span style={logoAccent}>{BRAND.name}</span>
+        </Heading>
+        <Text style={tagline}>Invitație</Text>
+        <Section style={card}>
+          <Heading as="h2" style={h1}>
+            Ai fost invitat 🎉
+          </Heading>
+          <Text style={text}>
+            Cineva te vrea în gașcă pe{" "}
+            <Link href={siteUrl} style={link}>
+              <strong>{siteName}</strong>
+            </Link>
+            . Acceptă invitația și îți facem contul.
+          </Text>
+          <Section style={buttonWrap}>
+            <Button style={button} href={confirmationUrl}>
+              Acceptă invitația
+            </Button>
+          </Section>
+          <Text style={smallLine}>
+            Nu merge butonul? Copiază link-ul:
+            <br />
+            <Link href={confirmationUrl} style={link}>
+              {confirmationUrl}
+            </Link>
+          </Text>
+        </Section>
         <Text style={footer}>
-          If you weren't expecting this invitation, you can safely ignore this
-          email.
+          Nu te așteptai la invitație? Ignoră emailul.
+          <br />© {new Date().getFullYear()} {BRAND.name}
         </Text>
       </Container>
     </Body>
   </Html>
-)
+);
 
-export default InviteEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+export default InviteEmail;
