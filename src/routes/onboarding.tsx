@@ -144,12 +144,12 @@ function Onboarding() {
   return (
     <main className="min-h-screen bg-background text-foreground px-6 py-10">
       <div className="flex items-center justify-between mb-4">
-        <Link
-          to="/signup"
+        <button
+          onClick={backOut}
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
         >
-          <ChevronLeft size={16} /> înapoi
-        </Link>
+          <ChevronLeft size={16} /> ieși
+        </button>
         <Link
           to="/"
           className="font-display font-black text-xl tracking-widest text-gradient-chaos"
