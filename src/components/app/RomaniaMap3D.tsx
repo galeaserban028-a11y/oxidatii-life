@@ -1631,7 +1631,7 @@ export function RomaniaMap3D({
         }
       `}</style>
 
-      <div ref={containerRef} className="absolute inset-0 touch-pan-x touch-pan-y" />
+      <div ref={containerRef} className="absolute inset-0" style={{ touchAction: "pan-x pan-y" }} />
 
       {/* Loading skeleton — removed from DOM after first paint so it cannot cover the map in PWA. */}
       {!firstPaintDone && !mapFailed && (
