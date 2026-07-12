@@ -25,7 +25,15 @@ type City = { id: string; name: string; slug: string };
 
 function Onboarding() {
   const nav = useNavigate();
-  const { user, profile, loading, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile, signOut } = useAuth();
+
+  async function backOut() {
+    // Escape onboarding cleanly: sign out then go to landing.
+    try {
+      await signOut();
+    } catch { /* noop */ }
+    nav({ to: "/", replace: true });
+  }
   const [handle, setHandle] = useState("");
   const [cityId, setCityId] = useState("");
   const [locOk, setLocOk] = useState(false);
@@ -136,12 +144,12 @@ function Onboarding() {
   return (
     <main className="min-h-screen bg-background text-foreground px-6 py-10">
       <div className="flex items-center justify-between mb-4">
-        <Link
-          to="/signup"
+        <button
+          onClick={backOut}
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
         >
-          <ChevronLeft size={16} /> înapoi
-        </Link>
+          <ChevronLeft size={16} /> ieși
+        </button>
         <Link
           to="/"
           className="font-display font-black text-xl tracking-widest text-gradient-chaos"
