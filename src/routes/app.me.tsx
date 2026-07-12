@@ -146,7 +146,12 @@ function MePage() {
     const m = streakMilestoneReached(currentStreak);
     if (!m) return;
     if (readSeenMilestone() < m) {
-      const t = setTimeout(() => setStreakFlex(m), 600);
+      const t = setTimeout(() => {
+        // Mark as seen the moment we open it — otherwise navigating away
+        // without closing pops the sheet again on every profile visit.
+        writeSeenMilestone(m);
+        setStreakFlex(m);
+      }, 600);
       return () => clearTimeout(t);
     }
   }, [currentStreak]);
