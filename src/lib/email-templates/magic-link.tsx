@@ -1,5 +1,4 @@
-import * as React from 'react'
-
+import * as React from "react";
 import {
   Body,
   Button,
@@ -7,62 +6,71 @@ import {
   Head,
   Heading,
   Html,
+  Link,
   Preview,
+  Section,
   Text,
-} from '@react-email/components'
+} from "@react-email/components";
+import {
+  BRAND,
+  main,
+  container,
+  logo,
+  logoAccent,
+  tagline,
+  card,
+  h1,
+  text,
+  link,
+  buttonWrap,
+  button,
+  footer,
+  smallLine,
+} from "./_brand";
 
 interface MagicLinkEmailProps {
-  siteName: string
-  confirmationUrl: string
+  siteName: string;
+  confirmationUrl: string;
 }
 
-export const MagicLinkEmail = ({
-  siteName,
-  confirmationUrl,
-}: MagicLinkEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProps) => (
+  <Html lang="ro" dir="ltr">
     <Head />
-    <Preview>Your login link for {siteName}</Preview>
+    <Preview>Link-ul tău de login pentru {siteName}.</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Your login link</Heading>
-        <Text style={text}>
-          Click the button below to log in to {siteName}. This link will expire
-          shortly.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Log In
-        </Button>
+        <Heading as="h1" style={logo}>
+          <span style={logoAccent}>{BRAND.name}</span>
+        </Heading>
+        <Text style={tagline}>Login rapid</Text>
+        <Section style={card}>
+          <Heading as="h2" style={h1}>
+            Link-ul tău magic ✨
+          </Heading>
+          <Text style={text}>
+            Apasă butonul de mai jos ca să te loghezi la {siteName}. Link-ul expiră repede,
+            folosește-l acum.
+          </Text>
+          <Section style={buttonWrap}>
+            <Button style={button} href={confirmationUrl}>
+              Intră în cont
+            </Button>
+          </Section>
+          <Text style={smallLine}>
+            Nu merge butonul? Copiază link-ul:
+            <br />
+            <Link href={confirmationUrl} style={link}>
+              {confirmationUrl}
+            </Link>
+          </Text>
+        </Section>
         <Text style={footer}>
-          If you didn't request this link, you can safely ignore this email.
+          Nu ai cerut tu login? Ignoră emailul.
+          <br />© {new Date().getFullYear()} {BRAND.name}
         </Text>
       </Container>
     </Body>
   </Html>
-)
+);
 
-export default MagicLinkEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+export default MagicLinkEmail;
