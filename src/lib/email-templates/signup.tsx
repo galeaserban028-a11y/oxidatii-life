@@ -1,5 +1,4 @@
-import * as React from 'react'
-
+import * as React from "react";
 import {
   Body,
   Button,
@@ -9,14 +8,31 @@ import {
   Html,
   Link,
   Preview,
+  Section,
   Text,
-} from '@react-email/components'
+} from "@react-email/components";
+import {
+  BRAND,
+  main,
+  container,
+  logo,
+  logoAccent,
+  tagline,
+  card,
+  h1,
+  text,
+  link,
+  buttonWrap,
+  button,
+  footer,
+  smallLine,
+} from "./_brand";
 
 interface SignupEmailProps {
-  siteName: string
-  siteUrl: string
-  recipient: string
-  confirmationUrl: string
+  siteName: string;
+  siteUrl: string;
+  recipient: string;
+  confirmationUrl: string;
 }
 
 export const SignupEmail = ({
@@ -25,60 +41,50 @@ export const SignupEmail = ({
   recipient,
   confirmationUrl,
 }: SignupEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="ro" dir="ltr">
     <Head />
-    <Preview>Confirm your email for {siteName}</Preview>
+    <Preview>Confirmă-ți emailul și intră în haos.</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm your email</Heading>
-        <Text style={text}>
-          Thanks for signing up for{' '}
-          <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
-          </Link>
-          !
-        </Text>
-        <Text style={text}>
-          Please confirm your email address (
-          <Link href={`mailto:${recipient}`} style={link}>
-            {recipient}
-          </Link>
-          ) by clicking the button below:
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Verify Email
-        </Button>
+        <Heading as="h1" style={logo}>
+          <span style={logoAccent}>{BRAND.name}</span>
+        </Heading>
+        <Text style={tagline}>Șprițul începe aici</Text>
+        <Section style={card}>
+          <Heading as="h2" style={h1}>
+            Bine ai venit! 🍹
+          </Heading>
+          <Text style={text}>
+            Mersi că te-ai înscris pe{" "}
+            <Link href={siteUrl} style={link}>
+              <strong>{siteName}</strong>
+            </Link>
+            . Un ultim pas — confirmă emailul{" "}
+            <Link href={`mailto:${recipient}`} style={link}>
+              {recipient}
+            </Link>{" "}
+            ca să pornim petrecerea.
+          </Text>
+          <Section style={buttonWrap}>
+            <Button style={button} href={confirmationUrl}>
+              Confirmă emailul
+            </Button>
+          </Section>
+          <Text style={smallLine}>
+            Nu merge butonul? Copiază link-ul:
+            <br />
+            <Link href={confirmationUrl} style={link}>
+              {confirmationUrl}
+            </Link>
+          </Text>
+        </Section>
         <Text style={footer}>
-          If you didn't create an account, you can safely ignore this email.
+          Dacă nu tu ai făcut contul, ignoră emailul.
+          <br />© {new Date().getFullYear()} {BRAND.name}
         </Text>
       </Container>
     </Body>
   </Html>
-)
+);
 
-export default SignupEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+export default SignupEmail;
