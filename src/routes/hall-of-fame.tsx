@@ -44,7 +44,7 @@ function HallOfFame() {
       <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[80vmin] h-[80vmin] rounded-full blur-[140px] bg-amber-500/20 pointer-events-none" />
       <div className="relative z-10 max-w-md mx-auto px-6 py-8">
         <a href="/" className="flex items-center gap-2 mb-8">
-          <img src={logoLight} alt="OXIDAȚII" className="w-9 h-9" />
+          <img src={logoLight.url} alt="OXIDAȚII" className="w-9 h-9" />
           <span className="font-display font-black tracking-widest text-sm">OXIDAȚII</span>
         </a>
 

@@ -165,7 +165,7 @@ function Index() {
       <header className="relative z-10 flex items-center justify-between px-6 py-6">
         <div className="flex items-center gap-3">
           <img
-            src={logoLight}
+            src={logoLight.url}
             alt="Logo OXIDAȚII"
             className="w-11 h-11 object-contain drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]"
           />
