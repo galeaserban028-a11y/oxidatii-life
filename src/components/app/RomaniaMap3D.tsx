@@ -43,6 +43,8 @@ const TYPE_COLOR: Record<string, string> = {
 };
 
 const NEON_BACKBONE_SRC = "oxi-neon-backbone";
+const INITIAL_MAP_CENTER: [number, number] = [25.0, 45.9];
+const INITIAL_MAP_ZOOM = { compact: 4.35, desktop: 4.8 };
 const CRITICAL_STYLE_LAYERS = ["oxi-backbone-core"];
 function configureMapLibreRuntime() {
   if (typeof window === "undefined") return;
@@ -531,6 +533,8 @@ export function RomaniaMap3D({
     let contextWasLost = false;
     let disposed = false;
     const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
+    const initialCenter = INITIAL_MAP_CENTER;
+    const initialZoom = isSmall ? INITIAL_MAP_ZOOM.compact : INITIAL_MAP_ZOOM.desktop;
     const markFirstPaint = () => {
       if (!disposed) setFirstPaintDone(true);
     };
@@ -540,9 +544,9 @@ export function RomaniaMap3D({
       map = new maplibregl.Map({
         container: containerRef.current,
         style: buildNeonStyle(isSmall),
-        center: [25.0, 45.9],
-        zoom: isSmall ? 3.2 : 3.8,
-        minZoom: 2.5,
+        center: initialCenter,
+        zoom: initialZoom,
+        minZoom: isSmall ? 3.4 : 3.6,
         pitch: 0,
         bearing: 0,
         attributionControl: { compact: true },
@@ -1257,7 +1261,7 @@ export function RomaniaMap3D({
         close.type = "button";
         close.setAttribute("aria-label", "Ascunde reclama");
         close.textContent = "×";
-        close.style.cssText = `position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'DM Sans',sans-serif;font-weight:900;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.78;`;
+        close.style.cssText = `position:absolute;top:1px;right:1px;width:18px;height:18px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'DM Sans',sans-serif;font-weight:900;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.82;box-shadow:0 2px 8px rgba(0,0,0,.55);`;
         close.onclick = (e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -1627,7 +1631,7 @@ export function RomaniaMap3D({
         }
       `}</style>
 
-      <div ref={containerRef} className="absolute inset-0" />
+      <div ref={containerRef} className="absolute inset-0" style={{ touchAction: "pan-x pan-y" }} />
 
       {/* Loading skeleton — removed from DOM after first paint so it cannot cover the map in PWA. */}
       {!firstPaintDone && !mapFailed && (
