@@ -17,8 +17,18 @@ function ForgotPasswordPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
+    // Always redirect to the public canonical domain so the reset link doesn't
+    // land on a Lovable preview subdomain (which sits behind the Lovable auth
+    // gate and would force the user to sign in to Lovable first).
+    const host =
+      typeof window !== "undefined" ? window.location.hostname : "";
+    const isPublic =
+      host === "oxidatii.life" ||
+      host === "www.oxidatii.life" ||
+      host === "oxidatii-life.lovable.app";
+    const origin = isPublic ? window.location.origin : "https://oxidatii.life";
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + "/reset-password",
+      redirectTo: origin + "/reset-password",
     });
     setBusy(false);
     if (error) {
