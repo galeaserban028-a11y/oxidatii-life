@@ -97,7 +97,15 @@ function ResetPasswordPage() {
             </p>
           </div>
 
-          {!ready ? (
+          {errMsg ? (
+            <div className="rounded-xl border border-neon-crimson/40 bg-neon-crimson/10 p-4 text-sm space-y-2">
+              <div className="font-display text-neon-crimson">Link invalid sau expirat.</div>
+              <p className="text-xs text-muted-foreground break-words">{errMsg}</p>
+              <Link to="/forgot-password" className="text-neon-purple text-xs underline">
+                Cere alt link
+              </Link>
+            </div>
+          ) : !ready ? (
             <div className="rounded-xl border border-foreground/15 p-4 text-sm text-muted-foreground">
               Verificăm link-ul... Dacă rămâne așa, deschide din nou link-ul din email.
             </div>
