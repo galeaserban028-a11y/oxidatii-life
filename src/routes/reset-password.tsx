@@ -12,22 +12,51 @@ export const Route = createFileRoute("/reset-password")({
 function ResetPasswordPage() {
   const nav = useNavigate();
   const [ready, setReady] = useState(false);
+  const [errMsg, setErrMsg] = useState<string | null>(null);
   const [pwd, setPwd] = useState("");
   const [pwd2, setPwd2] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    // Supabase puts the recovery tokens in the URL hash; the client SDK
-    // auto-exchanges them into a session via detectSessionInUrl.
-    const hash = typeof window !== "undefined" ? window.location.hash : "";
-    const isRecovery = hash.includes("type=recovery") || hash.includes("access_token");
+    const url = new URL(window.location.href);
+    const hash = window.location.hash || "";
+    const code = url.searchParams.get("code");
+    const errorDesc =
+      url.searchParams.get("error_description") ||
+      new URLSearchParams(hash.replace(/^#/, "")).get("error_description");
+
+    if (errorDesc) {
+      setErrMsg(decodeURIComponent(errorDesc));
+      return;
+    }
+
     const { data: sub } = supabase.auth.onAuthStateChange((evt) => {
-      if (evt === "PASSWORD_RECOVERY" || evt === "SIGNED_IN") setReady(true);
+      if (evt === "PASSWORD_RECOVERY" || evt === "SIGNED_IN" || evt === "USER_UPDATED") {
+        setReady(true);
+      }
     });
-    // Fallback: if a session already exists when we land here, we're ready
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session || isRecovery) setReady(true);
-    });
+
+    (async () => {
+      // PKCE flow: ?code=... → exchange for a session
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          setErrMsg(error.message);
+          return;
+        }
+        window.history.replaceState({}, "", url.pathname);
+        setReady(true);
+        return;
+      }
+      // Hash flow: #access_token=...&type=recovery
+      if (hash.includes("access_token") || hash.includes("type=recovery")) {
+        setReady(true);
+        return;
+      }
+      const { data } = await supabase.auth.getSession();
+      if (data.session) setReady(true);
+    })();
+
     return () => sub.subscription.unsubscribe();
   }, []);
 
