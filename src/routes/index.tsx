@@ -254,13 +254,33 @@ function Index() {
           <div className="space-y-3">
             <Link
               to="/signup"
+              onClick={(e) => {
+                const el = e.currentTarget;
+                if (el.dataset.tapped === "1") {
+                  e.preventDefault();
+                  return;
+                }
+                el.dataset.tapped = "1";
+                el.style.pointerEvents = "none";
+                el.style.opacity = "0.6";
+              }}
               className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 via-pink-500 to-purple-600 font-extrabold text-sm uppercase tracking-widest shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2 group active:scale-[0.98] transition text-white"
             >
               {t.ctaJoin}
               <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
-              to="/login"
+              to="/signup"
+              onClick={(e) => {
+                const el = e.currentTarget;
+                if (el.dataset.tapped === "1") {
+                  e.preventDefault();
+                  return;
+                }
+                el.dataset.tapped = "1";
+                el.style.pointerEvents = "none";
+                el.style.opacity = "0.6";
+              }}
               className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 font-bold text-xs uppercase tracking-widest text-white/70 flex items-center justify-center active:scale-[0.98] transition"
             >
               {t.ctaHave}
@@ -268,6 +288,7 @@ function Index() {
           </div>
         </div>
       </section>
+
 
       {/* Features Grid */}
       <section className="relative z-10 px-4 mb-8">
