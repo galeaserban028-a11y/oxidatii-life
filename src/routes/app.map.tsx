@@ -380,6 +380,7 @@ function MapPage() {
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
   const [autoLocated, setAutoLocated] = useState(false);
   const focusedFromSearchRef = useRef<string | null>(null);
+  const previousCountryRef = useRef<string | "all">("all");
 
   const { data: citiesData, isLoading } = useQuery({
     queryKey: ["cities"],
@@ -606,15 +607,24 @@ function MapPage() {
     [cities, country],
   );
 
-  // Fit bounds when country changes (or reset to Europe when "all")
+  // Fit bounds only when the user actually changes country. Do not auto-animate
+  // on initial data load; that made the map feel like it was jumping/bugging.
   useEffect(() => {
+    const previousCountry = previousCountryRef.current;
+    const countryChanged = previousCountry !== country;
+    previousCountryRef.current = country;
+
     if (country === "all") {
-      // Whole Europe-ish bounds
-      setFitBounds([
-        [-12, 35],
-        [42, 60],
-      ]);
-      setFocusCity(null);
+      if (countryChanged) {
+        // Whole Europe-ish bounds when the user intentionally resets the country filter.
+        setFitBounds([
+          [-12, 35],
+          [42, 60],
+        ]);
+        setFocusCity(null);
+      } else {
+        setFitBounds(null);
+      }
       return;
     }
     const pts = cities.filter((c) => c.country === country);
@@ -636,7 +646,7 @@ function MapPage() {
       [minLng - padLng, minLat - padLat],
       [maxLng + padLng, maxLat + padLat],
     ]);
-    setFocusCity(null);
+    if (countryChanged) setFocusCity(null);
   }, [country, cities]);
 
   useEffect(() => {
