@@ -73,8 +73,14 @@ function ResetPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col bg-background text-foreground px-6 py-10">
-      <div className="flex items-center justify-between mb-4">
+    <main
+      className="min-h-[100dvh] flex flex-col bg-background text-foreground px-5 sm:px-6"
+      style={{
+        paddingTop: "calc(env(safe-area-inset-top, 0px) + 1.25rem)",
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)",
+      }}
+    >
+      <div className="flex items-center justify-between mb-6">
         <Link
           to="/login"
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition"
@@ -83,15 +89,15 @@ function ResetPasswordPage() {
         </Link>
         <Link
           to="/"
-          className="font-display font-black text-xl tracking-widest text-gradient-chaos"
+          className="font-display font-black text-lg sm:text-xl tracking-widest text-gradient-chaos"
         >
           OXIDAȚII
         </Link>
       </div>
-      <div className="flex-1 flex items-center">
+      <div className="flex-1 flex items-start sm:items-center pt-4 sm:pt-0">
         <div className="w-full max-w-sm mx-auto space-y-6">
           <div>
-            <h1 className="font-display font-black text-3xl">Parolă nouă.</h1>
+            <h1 className="font-display font-black text-3xl sm:text-4xl leading-tight">Parolă nouă.</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Alege o parolă pe care să n-o uiți data viitoare.
             </p>
