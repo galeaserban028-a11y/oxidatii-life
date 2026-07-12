@@ -49,10 +49,18 @@ function SignupPage() {
     }
 
     // No account yet → create one. Birthdate is captured in onboarding.
+    // Redirect the confirmation link to the public canonical domain so it
+    // doesn't land on a Lovable preview subdomain behind the auth gate.
+    const host = typeof window !== "undefined" ? window.location.hostname : "";
+    const isPublic =
+      host === "oxidatii.life" ||
+      host === "www.oxidatii.life" ||
+      host === "oxidatii-life.lovable.app";
+    const origin = isPublic ? window.location.origin : "https://oxidatii.life";
     const { error } = await supabase.auth.signUp({
       email,
       password: pwd,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: origin },
     });
     if (error) {
       setBusy(false);
