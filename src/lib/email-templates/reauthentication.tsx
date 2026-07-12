@@ -1,5 +1,4 @@
-import * as React from 'react'
-
+import * as React from "react";
 import {
   Body,
   Container,
@@ -7,52 +6,54 @@ import {
   Heading,
   Html,
   Preview,
+  Section,
   Text,
-} from '@react-email/components'
+} from "@react-email/components";
+import {
+  BRAND,
+  main,
+  container,
+  logo,
+  logoAccent,
+  tagline,
+  card,
+  h1,
+  text,
+  codeStyle,
+  footer,
+} from "./_brand";
 
 interface ReauthenticationEmailProps {
-  token: string
+  token: string;
 }
 
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="ro" dir="ltr">
     <Head />
-    <Preview>Your verification code</Preview>
+    <Preview>Codul tău de verificare {BRAND.name}.</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm reauthentication</Heading>
-        <Text style={text}>Use the code below to confirm your identity:</Text>
-        <Text style={codeStyle}>{token}</Text>
+        <Heading as="h1" style={logo}>
+          <span style={logoAccent}>{BRAND.name}</span>
+        </Heading>
+        <Text style={tagline}>Cod verificare</Text>
+        <Section style={card}>
+          <Heading as="h2" style={h1}>
+            Confirmă identitatea 🔐
+          </Heading>
+          <Text style={text}>Folosește codul de mai jos ca să confirmi:</Text>
+          <Text style={codeStyle}>{token}</Text>
+          <Text style={text}>
+            Codul expiră repede. Nu-l da nimănui, echipa {BRAND.name} nu-l va cere niciodată.
+          </Text>
+        </Section>
         <Text style={footer}>
-          This code will expire shortly. If you didn't request this, you can
-          safely ignore this email.
+          Nu tu ai cerut codul? Ignoră emailul.
+          <br />© {new Date().getFullYear()} {BRAND.name}
         </Text>
       </Container>
     </Body>
   </Html>
-)
+);
 
-export default ReauthenticationEmail
-
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const codeStyle = {
-  fontFamily: 'Courier, monospace',
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 30px',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+export default ReauthenticationEmail;
