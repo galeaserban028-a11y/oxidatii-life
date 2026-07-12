@@ -55,7 +55,10 @@ function ForgotPasswordPage() {
 
         <div className="w-full max-w-sm mx-auto space-y-6">
           <div>
-            <h1 className="font-display font-black text-3xl">Mi-am uitat parola.</h1>
+            <h1 className="font-display font-black text-3xl sm:text-4xl leading-tight break-words">
+              Mi-am uitat<br className="sm:hidden" /> parola.
+            </h1>
+
             <p className="text-sm text-muted-foreground mt-1">
               Pune email-ul, îți trimitem un link de resetare.
             </p>
