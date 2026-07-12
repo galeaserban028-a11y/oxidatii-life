@@ -25,7 +25,15 @@ type City = { id: string; name: string; slug: string };
 
 function Onboarding() {
   const nav = useNavigate();
-  const { user, profile, loading, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile, signOut } = useAuth();
+
+  async function backOut() {
+    // Escape onboarding cleanly: sign out then go to landing.
+    try {
+      await signOut();
+    } catch { /* noop */ }
+    nav({ to: "/", replace: true });
+  }
   const [handle, setHandle] = useState("");
   const [cityId, setCityId] = useState("");
   const [locOk, setLocOk] = useState(false);
