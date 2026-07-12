@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
   value: string; // YYYY-MM-DD or ""
@@ -21,7 +21,20 @@ const MONTHS = [
 ];
 
 export function BirthdatePicker({ value, onChange }: Props) {
-  const [y, m, d] = value ? value.split("-") : ["", "", ""];
+  // Local state so partial selections stay visible even before all 3 are set.
+  const [y, setY] = useState("");
+  const [m, setM] = useState("");
+  const [d, setD] = useState("");
+
+  // Sync from parent when it actually has a value (e.g. reset).
+  useEffect(() => {
+    if (value) {
+      const [yy, mm, dd] = value.split("-");
+      setY(yy || "");
+      setM(mm || "");
+      setD(dd || "");
+    }
+  }, [value]);
 
   const currentYear = new Date().getFullYear();
   // 18+ only → max year = current - 18. Range down to 1940.
@@ -37,13 +50,20 @@ export function BirthdatePicker({ value, onChange }: Props) {
   }, [y, m]);
 
   function update(part: "y" | "m" | "d", v: string) {
-    const ny = part === "y" ? v : y;
-    const nm = part === "m" ? v : m;
+    let ny = part === "y" ? v : y;
+    let nm = part === "m" ? v : m;
     let nd = part === "d" ? v : d;
+
+    // Clamp day if month/year changed.
     if (ny && nm && nd) {
       const maxD = new Date(Number(ny), Number(nm), 0).getDate();
       if (Number(nd) > maxD) nd = String(maxD).padStart(2, "0");
     }
+
+    setY(ny);
+    setM(nm);
+    setD(nd);
+
     if (ny && nm && nd) onChange(`${ny}-${nm}-${nd}`);
     else onChange("");
   }
