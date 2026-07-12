@@ -77,12 +77,9 @@ function Onboarding() {
           setHasDob(true);
           return;
         }
-        const { data } = await supabase
-          .from("profiles")
-          .select("birthdate")
-          .eq("id", user.id)
-          .maybeSingle();
-        setHasDob(!!(data as { birthdate?: string | null } | null)?.birthdate);
+        const { data } = await supabase.rpc("get_my_account_state");
+        const row = Array.isArray(data) ? data[0] : data;
+        setHasDob(!!(row as { birthdate?: string | null } | null)?.birthdate);
       } catch { /* noop */ }
     })();
   }, [user]);
