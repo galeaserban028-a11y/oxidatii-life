@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Flame, Trophy, Users, Share2 } from "lucide-react";
-import logoLight from "@/assets/logo-oxidatii-light.png";
+import logoLight from "@/assets/logo-oxidatii.png.asset.json";
 
 export const Route = createFileRoute("/drop")({
   head: () => ({
@@ -81,7 +81,7 @@ function DropPage() {
       <div className="relative z-10 max-w-md mx-auto px-6 py-8">
         <header className="flex items-center justify-between mb-8">
           <a href="/" className="flex items-center gap-2">
-            <img src={logoLight} alt="OXIDAȚII" className="w-9 h-9" />
+            <img src={logoLight.url} alt="OXIDAȚII" className="w-9 h-9" />
             <span className="font-display font-black tracking-widest text-sm">OXIDAȚII</span>
           </a>
           <button onClick={share} className="p-2 rounded-full bg-white/5 border border-white/10">

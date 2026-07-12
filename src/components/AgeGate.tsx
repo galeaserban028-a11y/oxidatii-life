@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
-import logoSticker from "@/assets/logo-oxidatii.png";
+import logoSticker from "@/assets/logo-oxidatii.png.asset.json";
 
 const AGE_KEY = "oxi-age-verified-v1";
 
@@ -30,7 +30,7 @@ export function AgeGate() {
       <div className="w-full max-w-sm rounded-2xl border border-neon-crimson/30 bg-background p-6 text-center shadow-2xl">
         <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center">
           <img
-            src={logoSticker}
+            src={logoSticker.url}
             alt="Logo OXIDAȚII — verificare vârstă"
             className="h-20 w-20 object-contain drop-shadow-[0_4px_18px_rgba(255,49,88,0.45)]"
           />
