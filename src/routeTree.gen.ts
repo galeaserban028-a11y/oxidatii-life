@@ -73,6 +73,7 @@ import { Route as AppAdminDebugRouteImport } from './routes/app.admin.debug'
 import { Route as AppAdminContentRouteImport } from './routes/app.admin.content'
 import { Route as AppAdminCampaignsRouteImport } from './routes/app.admin.campaigns'
 import { Route as AppAdminBusinessesRouteImport } from './routes/app.admin.businesses'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicCronStreakRiskRouteImport } from './routes/api/public/cron.streak-risk'
 import { Route as ApiPublicCronHeatAlertsRouteImport } from './routes/api/public/cron.heat-alerts'
@@ -399,6 +400,12 @@ const AppAdminBusinessesRoute = AppAdminBusinessesRouteImport.update({
   path: '/businesses',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -484,6 +491,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
   '/api/public/cron/streak-risk': typeof ApiPublicCronStreakRiskRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -551,6 +559,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
   '/api/public/cron/streak-risk': typeof ApiPublicCronStreakRiskRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -621,6 +630,7 @@ export interface FileRoutesById {
   '/api/public/cron/heat-alerts': typeof ApiPublicCronHeatAlertsRoute
   '/api/public/cron/streak-risk': typeof ApiPublicCronStreakRiskRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -692,6 +702,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/heat-alerts'
     | '/api/public/cron/streak-risk'
     | '/api/public/payments/webhook'
+    | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -759,6 +770,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/heat-alerts'
     | '/api/public/cron/streak-risk'
     | '/api/public/payments/webhook'
+    | '/lovable/email/queue/process'
   id:
     | '__root__'
     | '/'
@@ -828,6 +840,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/heat-alerts'
     | '/api/public/cron/streak-risk'
     | '/api/public/payments/webhook'
+    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -850,6 +863,7 @@ export interface RootRouteChildren {
   ApiPublicCronHeatAlertsRoute: typeof ApiPublicCronHeatAlertsRoute
   ApiPublicCronStreakRiskRoute: typeof ApiPublicCronStreakRiskRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1302,6 +1316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminBusinessesRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -1471,6 +1492,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronHeatAlertsRoute: ApiPublicCronHeatAlertsRoute,
   ApiPublicCronStreakRiskRoute: ApiPublicCronStreakRiskRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
