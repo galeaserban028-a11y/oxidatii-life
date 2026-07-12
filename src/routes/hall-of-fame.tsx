@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Crown } from "lucide-react";
-import logoLight from "@/assets/logo-oxidatii-light.png";
+import logoLight from "@/assets/logo-oxidatii.png.asset.json";
 
 export const Route = createFileRoute("/hall-of-fame")({
   head: () => ({

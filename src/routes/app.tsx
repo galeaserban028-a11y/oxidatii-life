@@ -11,7 +11,7 @@ import { SwipeNavigator } from "@/components/app/SwipeNavigator";
 import { useLiveLocation } from "@/hooks/useLiveLocation";
 import { TutorialOverlay } from "@/components/app/TutorialOverlay";
 import { useCompactMode } from "@/lib/compactMode";
-import logoSticker from "@/assets/logo-oxidatii.png";
+import logoSticker from "@/assets/logo-oxidatii.png.asset.json";
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,

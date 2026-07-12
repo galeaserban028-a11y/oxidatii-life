@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { ChevronLeft, Minimize2, Maximize2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import logoBanner from "@/assets/logo-oxidatii.png";
+import logoBanner from "@/assets/logo-oxidatii.png.asset.json";
 
 import { GlobalSearch } from "./GlobalSearch";
 import { HeaderSpritzPill } from "./HeaderSpritzPill";

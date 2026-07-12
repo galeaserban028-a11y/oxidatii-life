@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import i18n from "@/lib/i18n";
 import { AlcoholWarning } from "@/components/AlcoholWarning";
 import { SpritzIndexDial } from "@/components/app/SpritzIndexDial";
-import logoLight from "@/assets/logo-oxidatii-light.png";
+import logoLight from "@/assets/logo-oxidatii.png.asset.json";
 import {
   MapPin,
   Flame,

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Flame, Trophy, Users, Share2 } from "lucide-react";
-import logoLight from "@/assets/logo-oxidatii-light.png";
+import logoLight from "@/assets/logo-oxidatii.png.asset.json";
 
 export const Route = createFileRoute("/drop")({
   head: () => ({
