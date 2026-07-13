@@ -35,7 +35,7 @@ export function CookieConsent() {
     setOpen(false);
   };
 
-  if (!open || isAppRoute) return null;
+  if (!open || isHiddenRoute) return null;
 
   return (
     <div
