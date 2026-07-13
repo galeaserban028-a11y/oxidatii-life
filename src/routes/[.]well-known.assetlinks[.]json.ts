@@ -6,7 +6,10 @@ const ASSETLINKS = [
     target: {
       namespace: "android_app",
       package_name: "com.oxidatii.app",
-      sha256_cert_fingerprints: ["92:D8:58:F8:21:A6:34:20:7D:B7:47:08:7F:15:3A:C0:AF:1D:0D:CB:8C:4A:98:44:51:DC:53:E1:26:26:A9:7B"],
+      sha256_cert_fingerprints: [
+        "92:D8:58:F8:21:A6:34:20:7D:B7:47:08:7F:15:3A:C0:AF:1D:0D:CB:8C:4A:98:44:51:DC:53:E1:26:26:A9:7B",
+        "08:35:8B:0A:2D:9C:9F:37:BB:EA:61:F1:84:B8:87:B1:61:C7:14:D8:8D:D7:D5:84:CC:EE:5B:74:BC:5A:A2:8E"
+      ],
     },
   },
 ];
