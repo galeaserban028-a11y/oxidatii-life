@@ -88,8 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .maybeSingle();
 
         const stateRequest = supabase.rpc("get_my_account_state");
+        // 4s is plenty for a healthy round-trip; anything above that means the
+        // network is stalled and we should refresh the session and retry once.
         const timeout = new Promise<null>((resolve) =>
-          window.setTimeout(() => resolve(null), 12000),
+          window.setTimeout(() => resolve(null), 4000),
         );
         return Promise.race([Promise.all([profileRequest, stateRequest]), timeout]);
       };
@@ -162,8 +164,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Only act on real identity transitions, not silent token refreshes.
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         router.invalidate();
-        // Never refetch right after SIGNED_OUT: the cleared session would 401 every protected query.
-        if (event !== "SIGNED_OUT") qc.invalidateQueries();
+        // On SIGNED_IN there is nothing meaningful cached yet — invalidating
+        // would fire a storm of parallel refetches that compete with the
+        // profile load and make login feel slow. Skip it; individual pages
+        // will trigger their own queries as they mount.
+        if (event === "USER_UPDATED") qc.invalidateQueries();
       }
     });
 
