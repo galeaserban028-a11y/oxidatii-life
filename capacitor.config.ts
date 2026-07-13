@@ -15,7 +15,7 @@ const config: CapacitorConfig = {
   webDir: "capacitor-www",
   server: {
     url: devServerUrl,
-    cleartext: true,
+    cleartext: false,
     // Hosts that the remote WebView may navigate to. OAuth itself is opened
     // deliberately in a secure system Custom Tab / Safari view.
     allowNavigation: [
