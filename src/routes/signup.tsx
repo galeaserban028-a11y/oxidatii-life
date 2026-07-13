@@ -19,18 +19,10 @@ function SignupPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
-    // Navigate as soon as we have a user — don't wait for the profile fetch to
-    // finish. Onboarding and /app/map already gate on the profile themselves,
-    // so blocking here just adds perceived login latency.
+    if (loading || !user) return;
     if (profile) {
       nav({ to: profile.onboarded ? "/app/map" : "/onboarding", replace: true });
-    } else if (!loading) {
-      // Profile fetch finished but returned nothing → go set it up.
-      nav({ to: "/onboarding", replace: true });
     } else {
-      // Profile still loading — jump to onboarding; it will redirect to /app
-      // once the profile arrives and reports `onboarded=true`.
       nav({ to: "/onboarding", replace: true });
     }
   }, [user, profile, loading, nav]);
