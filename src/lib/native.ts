@@ -65,50 +65,80 @@ export async function bootstrapNative(): Promise<void> {
       });
     } catch { /* noop */ }
 
-    // Deep linking: oxidatii.life/<path>  ->  navigate to /<path> in app.
+    // Deep linking + OAuth return. The same handler is used for warm resumes
+    // (`appUrlOpen`) and cold starts (`getLaunchUrl`).
     try {
-      App.addListener("appUrlOpen", async ({ url }) => {
+      let lastHandledUrl: string | null = null;
+      const handleNativeUrl = async (url: string) => {
+        if (url === lastHandledUrl) return;
+        lastHandledUrl = url;
         try {
           const u = new URL(url);
-          // Acceptăm host-urile noastre https + schema custom oxidatii://
-          const okHost =
-            u.protocol === "oxidatii:" ||
-            u.host === "oxidatii.life" ||
+          const isOAuthScheme = u.protocol === "oxidatii:" && u.host === "oauth";
+          const isKnownWebHost =
+            u.protocol === "https:" &&
+            (u.host === "oxidatii.life" ||
             u.host === "www.oxidatii.life" ||
-            u.host.endsWith(".lovable.app");
-          if (!okHost) return;
+            u.host === "oxidatii-life.lovable.app");
+          if (!isOAuthScheme && !isKnownWebHost) return;
 
-          // Parse OAuth return BEFORE pushState — detectSessionInUrl only
-          // runs at client init, so we must hand tokens to Supabase manually.
-          const hash = u.hash.startsWith("#") ? u.hash.slice(1) : u.hash;
-          const hashParams = new URLSearchParams(hash);
-          const accessToken = hashParams.get("access_token");
-          const refreshToken = hashParams.get("refresh_token");
-          const code = u.searchParams.get("code");
-          const isOAuthReturn = !!accessToken || !!code;
+          const hashParams = new URLSearchParams(u.hash.replace(/^#/, ""));
+          const getOAuthParam = (key: string) =>
+            u.searchParams.get(key) ?? hashParams.get(key);
+          const accessToken = getOAuthParam("access_token");
+          const refreshToken = getOAuthParam("refresh_token");
+          const codeParam = getOAuthParam("code");
+          const oauthError = getOAuthParam("error");
+          const isOAuthReturn =
+            isOAuthScheme || !!accessToken || !!codeParam || !!oauthError;
 
           if (isOAuthReturn) {
+            let error: Error | null = null;
             try {
+              const returnedState = getOAuthParam("state");
+              const expectedState = localStorage.getItem("lovable_oauth_state");
+              if (!expectedState || returnedState !== expectedState) {
+                throw new Error("Răspuns OAuth invalid (state diferit). Încearcă din nou.");
+              }
+              localStorage.removeItem("lovable_oauth_state");
+
+              if (oauthError) {
+                throw new Error(
+                  getOAuthParam("error_description") ?? "Autentificarea a fost anulată.",
+                );
+              }
+
               const { supabase } = await import("@/integrations/supabase/client");
               if (accessToken && refreshToken) {
-                await supabase.auth.setSession({
+                const { error: sessionError } = await supabase.auth.setSession({
                   access_token: accessToken,
                   refresh_token: refreshToken,
                 });
-              } else if (code) {
-                await supabase.auth.exchangeCodeForSession(code);
+                if (sessionError) throw sessionError;
+              } else if (codeParam) {
+                const { error: exchangeError } =
+                  await supabase.auth.exchangeCodeForSession(codeParam);
+                if (exchangeError) throw exchangeError;
+              } else {
+                throw new Error("Brokerul OAuth nu a returnat tokenurile sesiunii.");
               }
             } catch (e) {
-              console.error("[native] OAuth session hydration failed", e);
+              error = e instanceof Error ? e : new Error(String(e));
+              console.warn("[native] OAuth session hydration failed", e);
             }
-            // Close the Custom Tab overlay now that we're back in the WebView.
-            import("./native-oauth")
-              .then((m) => m.closeNativeOAuthBrowser())
-              .catch(() => {});
-            // Strip tokens from the URL and land on a safe path — the auth
-            // gate will route the user to onboarding / app based on profile.
-            window.history.replaceState({}, "", "/");
-            window.dispatchEvent(new PopStateEvent("popstate"));
+
+            const oauth = await import("./native-oauth");
+            await oauth.closeNativeOAuthBrowser().catch(() => {});
+            window.dispatchEvent(
+              new CustomEvent(oauth.NATIVE_OAUTH_FINISHED_EVENT, {
+                detail: { error: error?.message ?? null },
+              }),
+            );
+
+            if (!error) {
+              window.history.replaceState({}, "", "/signup");
+              window.dispatchEvent(new PopStateEvent("popstate"));
+            }
             return;
           }
 
@@ -116,8 +146,14 @@ export async function bootstrapNative(): Promise<void> {
           window.history.pushState({}, "", path);
           window.dispatchEvent(new PopStateEvent("popstate"));
         } catch { /* noop */ }
+      };
+
+      await App.addListener("appUrlOpen", ({ url }) => {
+        void handleNativeUrl(url);
       });
 
+      const launch = await App.getLaunchUrl();
+      if (launch?.url) await handleNativeUrl(launch.url);
     } catch { /* noop */ }
 
     // Try to register native push (no-op if not yet authenticated; can be

@@ -5,6 +5,7 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { ChevronLeft } from "lucide-react";
+import { NATIVE_OAUTH_FINISHED_EVENT } from "@/lib/native-oauth";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Intră · OXIDAȚII" }] }),
@@ -26,6 +27,17 @@ function SignupPage() {
       nav({ to: "/onboarding", replace: true });
     }
   }, [user, profile, loading, nav]);
+
+  useEffect(() => {
+    const onNativeOAuthFinished = (event: Event) => {
+      setBusy(false);
+      const error = (event as CustomEvent<{ error?: string | null }>).detail?.error;
+      if (error) toast.error(error);
+    };
+    window.addEventListener(NATIVE_OAUTH_FINISHED_EVENT, onNativeOAuthFinished);
+    return () =>
+      window.removeEventListener(NATIVE_OAUTH_FINISHED_EVENT, onNativeOAuthFinished);
+  }, []);
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();

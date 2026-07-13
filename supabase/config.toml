@@ -1,1 +1,12 @@
 project_id = "qzxvnjpumtujfylfofmg"
+
+[auth]
+site_url = "https://oxidatii.life"
+additional_redirect_urls = [
+  "https://oxidatii.life",
+  "https://oxidatii.life/auth/callback",
+  "https://www.oxidatii.life",
+  "https://*.lovable.app",
+  "http://localhost:3000",
+  "http://localhost:8080",
+]

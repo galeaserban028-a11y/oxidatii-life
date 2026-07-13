@@ -4,9 +4,8 @@ import type { CapacitorConfig } from "@capacitor/cli";
 // on Cloudflare, so there is no static `index.html` to bundle offline. `webDir`
 // points to a tiny stub folder that only exists to satisfy `cap sync`; the real
 // UI is served from `server.url`. Override with CAP_SERVER_URL for local dev.
-// Use the custom domain so Android App Links (configured for oxidatii.life
-// in AndroidManifest.xml + /.well-known/assetlinks.json) catch OAuth redirects
-// back into the native app instead of leaving the user stuck in Chrome.
+// OAuth returns to an HTTPS callback on this domain, which then opens the
+// registered `oxidatii://oauth` native scheme.
 const PUBLISHED_URL = "https://oxidatii.life";
 const devServerUrl = process.env.CAP_SERVER_URL ?? PUBLISHED_URL;
 
@@ -17,15 +16,13 @@ const config: CapacitorConfig = {
   server: {
     url: devServerUrl,
     cleartext: true,
-    // Keep OAuth flows (Google, Apple, Lovable broker) inside the app WebView
-    // instead of punting the user to Chrome. Any host NOT in this list is
-    // treated as external and opened in the system browser.
+    // Hosts that the remote WebView may navigate to. OAuth itself is opened
+    // deliberately in a secure system Custom Tab / Safari view.
     allowNavigation: [
       "oxidatii.life",
       "*.oxidatii.life",
       "*.lovable.app",
       "*.lovable.dev",
-      "oauth.lovable.dev",
       "accounts.google.com",
       "*.google.com",
       "*.googleusercontent.com",

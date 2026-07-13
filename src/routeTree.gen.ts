@@ -24,6 +24,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as UHandleRouteImport } from './routes/u.$handle'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AppWrappedRouteImport } from './routes/app.wrapped'
 import { Route as AppTopRouteImport } from './routes/app.top'
 import { Route as AppSquadRouteImport } from './routes/app.squad'
@@ -153,6 +154,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const UHandleRoute = UHandleRouteImport.update({
   id: '/u/$handle',
   path: '/u/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppWrappedRoute = AppWrappedRouteImport.update({
@@ -476,6 +482,7 @@ export interface FileRoutesByFullPath {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/wrapped': typeof AppWrappedRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/u/$handle': typeof UHandleRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
@@ -546,6 +553,7 @@ export interface FileRoutesByTo {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/wrapped': typeof AppWrappedRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/u/$handle': typeof UHandleRoute
   '/app': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
@@ -619,6 +627,7 @@ export interface FileRoutesById {
   '/app/squad': typeof AppSquadRoute
   '/app/top': typeof AppTopRoute
   '/app/wrapped': typeof AppWrappedRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/u/$handle': typeof UHandleRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
@@ -693,6 +702,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/wrapped'
+    | '/auth/callback'
     | '/u/$handle'
     | '/app/'
     | '/app/admin/businesses'
@@ -763,6 +773,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/wrapped'
+    | '/auth/callback'
     | '/u/$handle'
     | '/app'
     | '/app/admin/businesses'
@@ -835,6 +846,7 @@ export interface FileRouteTypes {
     | '/app/squad'
     | '/app/top'
     | '/app/wrapped'
+    | '/auth/callback'
     | '/u/$handle'
     | '/app/'
     | '/app/admin/businesses'
@@ -883,6 +895,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   DotwellKnownAppleAppSiteAssociationRoute: typeof DotwellKnownAppleAppSiteAssociationRoute
   DotwellKnownAssetlinksDotjsonRoute: typeof DotwellKnownAssetlinksDotjsonRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   UHandleRoute: typeof UHandleRoute
   ApiPublicCronHeatAlertsRoute: typeof ApiPublicCronHeatAlertsRoute
   ApiPublicCronStreakRiskRoute: typeof ApiPublicCronStreakRiskRoute
@@ -997,6 +1010,13 @@ declare module '@tanstack/react-router' {
       path: '/u/$handle'
       fullPath: '/u/$handle'
       preLoaderRoute: typeof UHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/wrapped': {
@@ -1528,6 +1548,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotwellKnownAppleAppSiteAssociationRoute:
     DotwellKnownAppleAppSiteAssociationRoute,
   DotwellKnownAssetlinksDotjsonRoute: DotwellKnownAssetlinksDotjsonRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   UHandleRoute: UHandleRoute,
   ApiPublicCronHeatAlertsRoute: ApiPublicCronHeatAlertsRoute,
   ApiPublicCronStreakRiskRoute: ApiPublicCronStreakRiskRoute,

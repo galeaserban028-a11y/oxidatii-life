@@ -10,23 +10,26 @@
  * SFSafariViewController (iOS) for OAuth in mobile apps — that's what
  * `@capacitor/browser` gives us. The flow:
  *
- *   1. We construct the same broker URL that the SDK would navigate to
- *      (https://oauth.lovable.dev/?provider=...&redirect_uri=<site>&state=...).
+ *   1. We construct the same broker URL that the SDK uses:
+ *      https://oxidatii.life/~oauth/initiate.
  *   2. `Browser.open()` opens it in a Custom Tab / Safari view — a real
  *      Chromium instance, so Google is happy.
- *   3. User signs in; the broker redirects to our `redirect_uri`
- *      (https://oxidatii.life/…#access_token=…). That URL is an Android
- *      App Link, so the OS launches our app with the URL.
+ *   3. The broker returns to /auth/callback. That HTTPS page forwards the
+ *      response to `oxidatii://oauth`, which launches the native app without
+ *      relying on Android App Links or iOS Universal Links.
  *   4. The global `App.addListener("appUrlOpen")` in src/lib/native.ts
- *      navigates the WebView to that path. Supabase's `detectSessionInUrl`
- *      picks up the token fragment and hydrates the session.
+ *      validates the OAuth response and hydrates the Supabase session.
  *   5. We close the Custom Tab.
  */
 
 import { isNative } from "./native";
 
-const OAUTH_BROKER_URL = "https://oauth.lovable.dev/";
-const NATIVE_REDIRECT_URI = "oxidatii://oauth";
+const OAUTH_BROKER_URL = "https://oxidatii.life/~oauth/initiate";
+const NATIVE_REDIRECT_URI = "https://oxidatii.life/auth/callback";
+
+export const NATIVE_OAUTH_FINISHED_EVENT = "native-oauth-finished";
+
+let removeBrowserFinishedListener: (() => Promise<void>) | null = null;
 
 function generateState(): string {
   if (typeof crypto !== "undefined" && crypto.getRandomValues) {
@@ -46,7 +49,9 @@ export async function signInWithOAuthNative(
     const { Browser } = await import("@capacitor/browser");
     const state = generateState();
     try {
-      sessionStorage.setItem("lovable_oauth_state", state);
+      // localStorage survives a WebView process restart while the user is in
+      // the system browser; sessionStorage may not.
+      localStorage.setItem("lovable_oauth_state", state);
     } catch {
       /* noop */
     }
@@ -56,10 +61,18 @@ export async function signInWithOAuthNative(
     url.searchParams.set("redirect_uri", NATIVE_REDIRECT_URI);
     url.searchParams.set("state", state);
 
+    if (removeBrowserFinishedListener) {
+      await removeBrowserFinishedListener().catch(() => {});
+      removeBrowserFinishedListener = null;
+    }
+    const listener = await Browser.addListener("browserFinished", () => {
+      window.dispatchEvent(new Event(NATIVE_OAUTH_FINISHED_EVENT));
+    });
+    removeBrowserFinishedListener = () => listener.remove();
+
     await Browser.open({
       url: url.toString(),
-      presentationStyle: "popover",
-      windowName: "_self",
+      presentationStyle: "fullscreen",
     });
     return { error: null, started: true };
   } catch (e) {
@@ -73,6 +86,10 @@ export async function signInWithOAuthNative(
 /** Close the Custom Tab if it's still open (called on deep-link return). */
 export async function closeNativeOAuthBrowser(): Promise<void> {
   if (!isNative()) return;
+  if (removeBrowserFinishedListener) {
+    await removeBrowserFinishedListener().catch(() => {});
+    removeBrowserFinishedListener = null;
+  }
   try {
     const { Browser } = await import("@capacitor/browser");
     await Browser.close();
