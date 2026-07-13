@@ -88,8 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .maybeSingle();
 
         const stateRequest = supabase.rpc("get_my_account_state");
+        // 4s is plenty for a healthy round-trip; anything above that means the
+        // network is stalled and we should refresh the session and retry once.
         const timeout = new Promise<null>((resolve) =>
-          window.setTimeout(() => resolve(null), 12000),
+          window.setTimeout(() => resolve(null), 4000),
         );
         return Promise.race([Promise.all([profileRequest, stateRequest]), timeout]);
       };
