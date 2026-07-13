@@ -28,6 +28,14 @@
                 <data android:scheme="https" android:host="oxidatii.life" />
                 <data android:scheme="https" android:host="www.oxidatii.life" />
             </intent-filter>
+
+            <!-- Custom URL scheme pentru OAuth redirect (bypass App Links verification) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="oxidatii" />
+            </intent-filter>
         </activity>
 
         <provider

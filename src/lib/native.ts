@@ -70,8 +70,9 @@ export async function bootstrapNative(): Promise<void> {
       App.addListener("appUrlOpen", async ({ url }) => {
         try {
           const u = new URL(url);
-          // Acceptăm doar host-urile noastre (custom URL schemes ar avea alt host).
+          // Acceptăm host-urile noastre https + schema custom oxidatii://
           const okHost =
+            u.protocol === "oxidatii:" ||
             u.host === "oxidatii.life" ||
             u.host === "www.oxidatii.life" ||
             u.host.endsWith(".lovable.app");

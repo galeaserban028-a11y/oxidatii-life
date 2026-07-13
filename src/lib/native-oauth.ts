@@ -26,7 +26,7 @@
 import { isNative } from "./native";
 
 const OAUTH_BROKER_URL = "https://oauth.lovable.dev/";
-const NATIVE_REDIRECT_URI = "https://oxidatii.life";
+const NATIVE_REDIRECT_URI = "oxidatii://oauth";
 
 function generateState(): string {
   if (typeof crypto !== "undefined" && crypto.getRandomValues) {
