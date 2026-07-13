@@ -6,7 +6,7 @@ const ASSETLINKS = [
     target: {
       namespace: "android_app",
       package_name: "com.oxidatii.app",
-      sha256_cert_fingerprints: ["REPLACE_WITH_RELEASE_SHA256_FINGERPRINT"],
+      sha256_cert_fingerprints: ["92:D8:58:F8:21:A6:34:20:7D:B7:47:08:7F:15:3A:C0:AF:1D:0D:CB:8C:4A:98:44:51:DC:53:E1:26:26:A9:7B"],
     },
   },
 ];
