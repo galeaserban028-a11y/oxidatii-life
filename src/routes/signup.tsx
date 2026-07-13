@@ -83,6 +83,20 @@ function SignupPage() {
 
   async function handleOAuth(provider: "google" | "apple") {
     setBusy(true);
+    // On Capacitor native we route Google/Apple through a Chrome Custom Tab
+    // (Android) / SFSafariViewController (iOS) — Google refuses raw WebView.
+    // Deep-link return is handled globally in src/lib/native.ts.
+    const { isNative } = await import("@/lib/native");
+    if (isNative()) {
+      const { signInWithOAuthNative } = await import("@/lib/native-oauth");
+      const nr = await signInWithOAuthNative(provider);
+      if (nr.error) {
+        toast.error(nr.error.message ?? `${provider} a picat`);
+        setBusy(false);
+      }
+      // On success the Custom Tab is open; app resumes via appUrlOpen.
+      return;
+    }
     const r = await lovable.auth.signInWithOAuth(provider, {
       redirect_uri: window.location.origin,
     });

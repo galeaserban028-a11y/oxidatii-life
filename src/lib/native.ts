@@ -80,6 +80,13 @@ export async function bootstrapNative(): Promise<void> {
           // Folosim history.pushState + popstate ca TanStack Router să preia ruta.
           window.history.pushState({}, "", path);
           window.dispatchEvent(new PopStateEvent("popstate"));
+          // Dacă venim dintr-un flux OAuth (Custom Tab / Safari view), închidem
+          // overlay-ul acum că am ajuns înapoi în WebView-ul aplicației.
+          if (u.hash.includes("access_token") || u.searchParams.has("code")) {
+            import("./native-oauth")
+              .then((m) => m.closeNativeOAuthBrowser())
+              .catch(() => {});
+          }
         } catch { /* noop */ }
       });
     } catch { /* noop */ }
