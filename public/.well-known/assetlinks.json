@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.oxidatii.app",
+      "sha256_cert_fingerprints": [
+        "92D858F821A634207DB747087F153AC0AF1D0DCB8C4A984451DC53E12626A97B"
+      ]
+    }
+  }
+]
