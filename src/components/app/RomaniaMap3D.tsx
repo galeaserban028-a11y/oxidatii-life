@@ -624,8 +624,10 @@ export function RomaniaMap3D({
           type: "geojson",
           data: { type: "FeatureCollection", features: [] },
           cluster: true,
-          clusterRadius: 48,
-          clusterMaxZoom: 12,
+          // Grupăm agresiv doar la zoom foarte mic; de la zoom mediu în sus,
+          // fiecare local apare cu propria sticluță de vin (nu bulinuțe).
+          clusterRadius: 26,
+          clusterMaxZoom: 8,
         });
       } catch {
         window.setTimeout(setupInteractiveLayers, 120);
