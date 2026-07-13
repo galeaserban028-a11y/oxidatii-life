@@ -14,7 +14,26 @@ const config: CapacitorConfig = {
   appId: "com.oxidatii.app",
   appName: "OXIDAȚII",
   webDir: "capacitor-www",
-  server: { url: devServerUrl, cleartext: true },
+  server: {
+    url: devServerUrl,
+    cleartext: true,
+    // Keep OAuth flows (Google, Apple, Lovable broker) inside the app WebView
+    // instead of punting the user to Chrome. Any host NOT in this list is
+    // treated as external and opened in the system browser.
+    allowNavigation: [
+      "oxidatii.life",
+      "*.oxidatii.life",
+      "*.lovable.app",
+      "*.lovable.dev",
+      "oauth.lovable.dev",
+      "accounts.google.com",
+      "*.google.com",
+      "*.googleusercontent.com",
+      "appleid.apple.com",
+      "*.apple.com",
+      "*.supabase.co",
+    ],
+  },
   ios: {
     contentInset: "always",
     allowsLinkPreview: false,
