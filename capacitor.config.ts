@@ -4,7 +4,10 @@ import type { CapacitorConfig } from "@capacitor/cli";
 // on Cloudflare, so there is no static `index.html` to bundle offline. `webDir`
 // points to a tiny stub folder that only exists to satisfy `cap sync`; the real
 // UI is served from `server.url`. Override with CAP_SERVER_URL for local dev.
-const PUBLISHED_URL = "https://oxidatii.lovable.app";
+// Use the custom domain so Android App Links (configured for oxidatii.life
+// in AndroidManifest.xml + /.well-known/assetlinks.json) catch OAuth redirects
+// back into the native app instead of leaving the user stuck in Chrome.
+const PUBLISHED_URL = "https://oxidatii.life";
 const devServerUrl = process.env.CAP_SERVER_URL ?? PUBLISHED_URL;
 
 const config: CapacitorConfig = {
