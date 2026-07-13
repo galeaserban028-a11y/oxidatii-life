@@ -14,7 +14,11 @@ export function getConsent(): ConsentValue {
 export function CookieConsent() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
-  const isAppRoute = location.pathname.startsWith("/app");
+  // Hide on /app/* and on auth/onboarding flows — the banner is a fixed bottom
+  // sheet that otherwise covers form fields and the primary submit button
+  // (and blocks reaching them when the mobile keyboard is open).
+  const HIDE_PREFIXES = ["/app", "/onboarding", "/signup", "/login", "/reset-password", "/forgot-password"];
+  const isHiddenRoute = HIDE_PREFIXES.some((p) => location.pathname === p || location.pathname.startsWith(p + "/"));
 
   useEffect(() => {
     if (!getConsent()) setOpen(true);
