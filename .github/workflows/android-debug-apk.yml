@@ -1,0 +1,64 @@
+name: Android Debug APK
+
+# Fast test build. Produces an unsigned debug APK you can sideload on your
+# phone to verify native changes (e.g. capacitor.config.ts allowNavigation
+# tweaks) without going through Google Play.
+#
+# How to use:
+# 1. GitHub → Actions → "Android Debug APK" → Run workflow.
+# 2. When it finishes, open the run → Artifacts → download `app-debug-apk`.
+# 3. Transfer the APK to your Android phone and install it
+#    (Settings → Allow install from this source, first time only).
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "capacitor.config.ts"
+      - "android/**"
+      - ".github/workflows/android-debug-apk.yml"
+
+jobs:
+  build-debug-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install web deps
+        run: bun install --frozen-lockfile
+
+      - name: Build web bundle
+        run: bun run build
+
+      - name: Capacitor sync android
+        run: bunx cap sync android
+
+      - name: Decode google-services.json (optional)
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        if: ${{ env.GOOGLE_SERVICES_JSON_BASE64 != '' }}
+        run: echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > android/app/google-services.json
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
