@@ -67,7 +67,7 @@ export async function bootstrapNative(): Promise<void> {
 
     // Deep linking: oxidatii.life/<path>  ->  navigate to /<path> in app.
     try {
-      App.addListener("appUrlOpen", ({ url }) => {
+      App.addListener("appUrlOpen", async ({ url }) => {
         try {
           const u = new URL(url);
           // Acceptăm doar host-urile noastre (custom URL schemes ar avea alt host).
@@ -76,19 +76,47 @@ export async function bootstrapNative(): Promise<void> {
             u.host === "www.oxidatii.life" ||
             u.host.endsWith(".lovable.app");
           if (!okHost) return;
-          const path = `${u.pathname}${u.search}${u.hash}` || "/";
-          // Folosim history.pushState + popstate ca TanStack Router să preia ruta.
-          window.history.pushState({}, "", path);
-          window.dispatchEvent(new PopStateEvent("popstate"));
-          // Dacă venim dintr-un flux OAuth (Custom Tab / Safari view), închidem
-          // overlay-ul acum că am ajuns înapoi în WebView-ul aplicației.
-          if (u.hash.includes("access_token") || u.searchParams.has("code")) {
+
+          // Parse OAuth return BEFORE pushState — detectSessionInUrl only
+          // runs at client init, so we must hand tokens to Supabase manually.
+          const hash = u.hash.startsWith("#") ? u.hash.slice(1) : u.hash;
+          const hashParams = new URLSearchParams(hash);
+          const accessToken = hashParams.get("access_token");
+          const refreshToken = hashParams.get("refresh_token");
+          const code = u.searchParams.get("code");
+          const isOAuthReturn = !!accessToken || !!code;
+
+          if (isOAuthReturn) {
+            try {
+              const { supabase } = await import("@/integrations/supabase/client");
+              if (accessToken && refreshToken) {
+                await supabase.auth.setSession({
+                  access_token: accessToken,
+                  refresh_token: refreshToken,
+                });
+              } else if (code) {
+                await supabase.auth.exchangeCodeForSession(code);
+              }
+            } catch (e) {
+              console.error("[native] OAuth session hydration failed", e);
+            }
+            // Close the Custom Tab overlay now that we're back in the WebView.
             import("./native-oauth")
               .then((m) => m.closeNativeOAuthBrowser())
               .catch(() => {});
+            // Strip tokens from the URL and land on a safe path — the auth
+            // gate will route the user to onboarding / app based on profile.
+            window.history.replaceState({}, "", "/");
+            window.dispatchEvent(new PopStateEvent("popstate"));
+            return;
           }
+
+          const path = `${u.pathname}${u.search}${u.hash}` || "/";
+          window.history.pushState({}, "", path);
+          window.dispatchEvent(new PopStateEvent("popstate"));
         } catch { /* noop */ }
       });
+
     } catch { /* noop */ }
 
     // Try to register native push (no-op if not yet authenticated; can be
