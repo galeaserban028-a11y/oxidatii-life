@@ -134,7 +134,7 @@ function ExclusivePage() {
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {[1, 2, 3].map((idx) => {
                     const slot = citySlots.find((s) => s.slot_index === idx);
-                    const taken = slot?.business_id;
+                    const taken = slot?.is_taken;
                     return (
                       <div
                         key={idx}
