@@ -113,7 +113,7 @@ function ExclusivePage() {
         <div className="mt-8 space-y-4">
           {(cities ?? []).map((c) => {
             const citySlots = byCity.get(c.id) ?? [];
-            const free = citySlots.filter((s) => !s.business_id).length;
+            const free = 3 - citySlots.filter((s) => s.is_taken).length;
             return (
               <div key={c.id} className="rounded-3xl border border-border/40 bg-card/40 p-5">
                 <div className="flex items-center justify-between">
