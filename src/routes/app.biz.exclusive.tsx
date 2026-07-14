@@ -11,11 +11,9 @@ export const Route = createFileRoute("/app/biz/exclusive")({
 });
 
 interface Slot {
-  id: string;
   city_id: string;
   slot_index: number;
-  business_id: string | null;
-  claimed_at: string | null;
+  is_taken: boolean;
   locked_until: string | null;
 }
 
@@ -49,11 +47,11 @@ function ExclusivePage() {
   const { data: slots } = useQuery({
     queryKey: ["all-exclusive-slots"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("exclusive_partner_slots")
-        .select("*")
-        .order("city_id")
-        .order("slot_index");
+      const { data } = await (
+        supabase.rpc as unknown as (
+          fn: string,
+        ) => Promise<{ data: Slot[] | null; error: unknown }>
+      )("list_exclusive_slots");
       return (data ?? []) as Slot[];
     },
   });
@@ -115,7 +113,7 @@ function ExclusivePage() {
         <div className="mt-8 space-y-4">
           {(cities ?? []).map((c) => {
             const citySlots = byCity.get(c.id) ?? [];
-            const free = citySlots.filter((s) => !s.business_id).length;
+            const free = 3 - citySlots.filter((s) => s.is_taken).length;
             return (
               <div key={c.id} className="rounded-3xl border border-border/40 bg-card/40 p-5">
                 <div className="flex items-center justify-between">
@@ -136,7 +134,7 @@ function ExclusivePage() {
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {[1, 2, 3].map((idx) => {
                     const slot = citySlots.find((s) => s.slot_index === idx);
-                    const taken = slot?.business_id;
+                    const taken = slot?.is_taken;
                     return (
                       <div
                         key={idx}
