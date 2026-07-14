@@ -1304,6 +1304,9 @@ function MapPage() {
                             </span>
                           )}
                         </div>
+                        <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-[#ff3d8b]/70 truncate mt-0.5">
+                          // {venueNickname(v.name, v.type)}
+                        </div>
                         <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate flex items-center gap-1 font-bold mt-0.5">
                           <MapPin size={9} /> {city?.name ?? "?"}
                           {v.address ? ` · ${v.address}` : ""}
