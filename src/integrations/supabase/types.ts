@@ -3593,6 +3593,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      realtime_can_access_topic: { Args: { _topic: string }; Returns: boolean }
       record_profile_visit: {
         Args: { _profile_id: string }
         Returns: undefined
