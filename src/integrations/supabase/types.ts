@@ -3567,6 +3567,15 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      list_exclusive_slots: {
+        Args: never
+        Returns: {
+          city_id: string
+          is_taken: boolean
+          locked_until: string
+          slot_index: number
+        }[]
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
