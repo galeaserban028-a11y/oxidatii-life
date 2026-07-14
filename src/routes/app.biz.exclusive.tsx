@@ -11,11 +11,9 @@ export const Route = createFileRoute("/app/biz/exclusive")({
 });
 
 interface Slot {
-  id: string;
   city_id: string;
   slot_index: number;
-  business_id: string | null;
-  claimed_at: string | null;
+  is_taken: boolean;
   locked_until: string | null;
 }
 
