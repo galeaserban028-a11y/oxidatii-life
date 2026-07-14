@@ -406,8 +406,6 @@ function MapPage() {
     },
   });
   const cities = citiesData ?? EMPTY_CITIES;
-
-  const cities = citiesData ?? EMPTY_CITIES;
   const cityMap = useMemo(() => new Map(cities.map((c) => [c.id, c])), [cities]);
 
   // Focus point for Google Places lookup: user GPS > map focus > selected city.
