@@ -557,7 +557,6 @@ function MapPage() {
     };
   }, [user?.id, qc]);
 
-  const cityMap = useMemo(() => new Map(cities.map((c) => [c.id, c])), [cities]);
 
   // Country chip list (sorted by venue count desc)
   const countries = useMemo(() => {
