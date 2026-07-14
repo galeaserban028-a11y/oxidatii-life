@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { throttle } from "@/lib/throttle";
@@ -28,6 +29,8 @@ import {
   BusinessVisibilityCTA,
   type PromoMeta,
 } from "@/components/app/map/PromoBanner";
+import { searchNightlifeNearby } from "@/lib/google-places.functions";
+import { venueNickname } from "@/lib/venueNickname";
 
 export const Route = createFileRoute("/app/map")({
   head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
