@@ -47,11 +47,11 @@ function ExclusivePage() {
   const { data: slots } = useQuery({
     queryKey: ["all-exclusive-slots"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("exclusive_partner_slots")
-        .select("*")
-        .order("city_id")
-        .order("slot_index");
+      const { data } = await (
+        supabase.rpc as unknown as (
+          fn: string,
+        ) => Promise<{ data: Slot[] | null; error: unknown }>
+      )("list_exclusive_slots");
       return (data ?? []) as Slot[];
     },
   });
