@@ -407,32 +407,60 @@ function MapPage() {
   });
   const cities = citiesData ?? EMPTY_CITIES;
 
+  const cities = citiesData ?? EMPTY_CITIES;
+  const cityMap = useMemo(() => new Map(cities.map((c) => [c.id, c])), [cities]);
+
+  // Focus point for Google Places lookup: user GPS > map focus > selected city.
+  const focusPoint = useMemo(() => {
+    if (geo) return { lat: geo.lat, lng: geo.lng, key: "geo" };
+    if (focusCity) return { lat: focusCity.lat, lng: focusCity.lng, key: "focus" };
+    if (cityId !== "all") {
+      const c = cityMap.get(cityId);
+      if (c) return { lat: c.lat, lng: c.lng, key: `city:${cityId}` };
+    }
+    return null;
+  }, [geo, focusCity, cityId, cityMap]);
+
+  const searchNightlife = useServerFn(searchNightlifeNearby);
+
+  // Live Google Places pull around the focus point. Snaps to a ~1km grid so
+  // small pans don't burn credits — the cache stays hot when you zoom in/out.
+  const gridLat = focusPoint ? Math.round(focusPoint.lat * 100) / 100 : null;
+  const gridLng = focusPoint ? Math.round(focusPoint.lng * 100) / 100 : null;
   const { data: venues = [] } = useQuery({
-    queryKey: ["map-venues-all"],
-    staleTime: 15 * 60 * 1000,
-    gcTime: 60 * 60 * 1000,
+    queryKey: ["google-nightlife", gridLat, gridLng],
+    enabled: !!focusPoint,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    queryFn: async () => {
-      // fetch ALL venues, paginating past the 1000 row default
-      const all: Venue[] = [];
-      let from = 0;
-      const step = 1000;
-      while (true) {
-        const { data, error } = await supabase
-          .from("venues")
-          .select("id, name, type, lat, lng, city_id, address, opening_hours, cover_url")
-          .not("lat", "is", null)
-          .not("lng", "is", null)
-          .order("name")
-          .range(from, from + step - 1);
-        if (error) throw error;
-        const batch = (data ?? []) as Venue[];
-        all.push(...batch);
-        if (batch.length < step) break;
-        from += step;
-      }
-      return normalizeMapVenues(all);
+    queryFn: async (): Promise<Venue[]> => {
+      if (!focusPoint) return [];
+      const places = await searchNightlife({
+        data: { lat: focusPoint.lat, lng: focusPoint.lng, radiusM: 6000 },
+      });
+      // Attach to nearest city so existing filters / labels still work.
+      return places.map((p) => {
+        let nearestCityId = cities[0]?.id ?? "";
+        let bestDist = Infinity;
+        for (const c of cities) {
+          const d = (c.lat - p.lat) ** 2 + (c.lng - p.lng) ** 2;
+          if (d < bestDist) {
+            bestDist = d;
+            nearestCityId = c.id;
+          }
+        }
+        return {
+          id: p.id,
+          name: p.name,
+          type: p.type,
+          lat: p.lat,
+          lng: p.lng,
+          city_id: nearestCityId,
+          address: p.address,
+          opening_hours: null,
+          cover_url: null,
+        };
+      });
     },
   });
 
