@@ -69,9 +69,18 @@ function AppLayout() {
   useEffect(() => {
     const outlet = outletRef.current;
     if (!outlet) return;
-    const obs = new MutationObserver(() => {
-      updateHeaderColor();
-    });
+    // Debounce so we don't re-read computed styles on every child mutation
+    // during data loads / animations — the biggest source of AppLayout jank.
+    let raf = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const schedule = () => {
+      if (timer) return;
+      timer = setTimeout(() => {
+        timer = null;
+        raf = requestAnimationFrame(updateHeaderColor);
+      }, 120);
+    };
+    const obs = new MutationObserver(schedule);
     const observeRoot = (root: Element | null) => {
       if (!root) return;
       obs.observe(root, {
@@ -81,8 +90,13 @@ function AppLayout() {
     };
     obs.observe(outlet, { childList: true });
     observeRoot(outlet.firstElementChild);
-    return () => obs.disconnect();
+    return () => {
+      obs.disconnect();
+      if (timer) clearTimeout(timer);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, [pathname, loading, updateHeaderColor]);
+
 
   useEffect(() => {
     if (loading) return;
