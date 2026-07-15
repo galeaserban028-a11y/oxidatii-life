@@ -488,6 +488,7 @@ export function RomaniaMap3D({
   const contextRetryTimerRef = useRef<number | null>(null);
   const onCityClickRef = useRef<typeof onCityClick>(onCityClick);
   const onCenterChangeRef = useRef<typeof onCenterChange>(onCenterChange);
+  const nav = useNavigate();
   const navRef = useRef(nav);
   const autoRetryCountRef = useRef(0);
   const [mapFailed, setMapFailed] = useState(false);
