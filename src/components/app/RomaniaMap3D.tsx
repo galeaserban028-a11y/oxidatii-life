@@ -472,8 +472,8 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
 
 const VENUES_SRC = "venues-src";
 const HEAT_SRC = "venues-heat-src";
-const SMALL_CITY_LIMIT = 18;
-const DESKTOP_CITY_LIMIT = 42;
+const SMALL_CITY_LIMIT = 60;
+const DESKTOP_CITY_LIMIT = 120;
 
 function isValidLngLat(lng: unknown, lat: unknown) {
   const x = Number(lng);
