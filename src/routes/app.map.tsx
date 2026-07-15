@@ -440,7 +440,7 @@ function MapPage() {
     queryFn: async (): Promise<Venue[]> => {
       if (!focusPoint) return [];
       const places = await searchNightlife({
-        data: { lat: focusPoint.lat, lng: focusPoint.lng, radiusM: 6000 },
+        data: { lat: focusPoint.lat, lng: focusPoint.lng, radiusM: 10000 },
       });
       // Attach to nearest city so existing filters / labels still work.
       return places.map((p) => {
