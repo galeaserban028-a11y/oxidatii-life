@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+
 import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { throttle } from "@/lib/throttle";
@@ -29,7 +29,7 @@ import {
   BusinessVisibilityCTA,
   type PromoMeta,
 } from "@/components/app/map/PromoBanner";
-import { searchNightlifeNearby } from "@/lib/google-places.functions";
+
 import { venueNickname } from "@/lib/venueNickname";
 
 export const Route = createFileRoute("/app/map")({
@@ -382,9 +382,6 @@ function MapPage() {
   );
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
   const [autoLocated, setAutoLocated] = useState(false);
-  // Centrul curent al hărții (updated on pan/zoom) — driver primar pentru
-  // fetch-ul Google Places, ca să meargă în toată Europa, nu doar în RO.
-  const [viewportCenter, setViewportCenter] = useState<{ lat: number; lng: number } | null>(null);
   const focusedFromSearchRef = useRef<string | null>(null);
   const previousCountryRef = useRef<string | "all">("all");
 
@@ -411,60 +408,32 @@ function MapPage() {
   const cities = citiesData ?? EMPTY_CITIES;
   const cityMap = useMemo(() => new Map(cities.map((c) => [c.id, c])), [cities]);
 
-  // Focus point pentru Google Places: viewportul curent al hărții e prioritar
-  // (așa acoperim toată Europa pe măsură ce utilizatorul mută harta). Fallback
-  // pe GPS / orașul focusat / orașul selectat / București.
-  const focusPoint = useMemo(() => {
-    if (viewportCenter) return { lat: viewportCenter.lat, lng: viewportCenter.lng, key: "viewport" };
-    if (geo) return { lat: geo.lat, lng: geo.lng, key: "geo" };
-    if (focusCity) return { lat: focusCity.lat, lng: focusCity.lng, key: "focus" };
-    if (cityId !== "all") {
-      const c = cityMap.get(cityId);
-      if (c) return { lat: c.lat, lng: c.lng, key: `city:${cityId}` };
-    }
-    return { lat: 44.4396, lng: 26.0963, key: "default:bucuresti" };
-  }, [viewportCenter, geo, focusCity, cityId, cityMap]);
-
-  const searchNightlife = useServerFn(searchNightlifeNearby);
-
-  // Live Google Places pull around the focus point. Snaps to a ~1km grid so
-  // small pans don't burn credits — the cache stays hot when you zoom in/out.
-  const gridLat = focusPoint ? Math.round(focusPoint.lat * 100) / 100 : null;
-  const gridLng = focusPoint ? Math.round(focusPoint.lng * 100) / 100 : null;
+  // Toate venue-urile reale din DB (Europa), paginate peste limita de 1000.
   const { data: venues = [] } = useQuery({
-    queryKey: ["google-nightlife", gridLat, gridLng],
-    enabled: !!focusPoint,
-    staleTime: 10 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
+    queryKey: ["map-venues-all"],
+    staleTime: 15 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
     refetchOnWindowFocus: false,
-    queryFn: async (): Promise<Venue[]> => {
-      if (!focusPoint) return [];
-      const places = await searchNightlife({
-        data: { lat: focusPoint.lat, lng: focusPoint.lng, radiusM: 10000 },
-      });
-      // Attach to nearest city so existing filters / labels still work.
-      return places.map((p) => {
-        let nearestCityId = cities[0]?.id ?? "";
-        let bestDist = Infinity;
-        for (const c of cities) {
-          const d = (c.lat - p.lat) ** 2 + (c.lng - p.lng) ** 2;
-          if (d < bestDist) {
-            bestDist = d;
-            nearestCityId = c.id;
-          }
-        }
-        return {
-          id: p.id,
-          name: p.name,
-          type: p.type,
-          lat: p.lat,
-          lng: p.lng,
-          city_id: nearestCityId,
-          address: p.address,
-          opening_hours: null,
-          cover_url: null,
-        };
-      });
+    refetchOnMount: false,
+    queryFn: async () => {
+      const all: Venue[] = [];
+      let from = 0;
+      const step = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from("venues")
+          .select("id, name, type, lat, lng, city_id, address, opening_hours, cover_url")
+          .not("lat", "is", null)
+          .not("lng", "is", null)
+          .order("name")
+          .range(from, from + step - 1);
+        if (error) throw error;
+        const batch = (data ?? []) as Venue[];
+        all.push(...batch);
+        if (batch.length < step) break;
+        from += step;
+      }
+      return normalizeMapVenues(all);
     },
   });
 
