@@ -382,6 +382,9 @@ function MapPage() {
   );
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
   const [autoLocated, setAutoLocated] = useState(false);
+  // Centrul curent al hărții (updated on pan/zoom) — driver primar pentru
+  // fetch-ul Google Places, ca să meargă în toată Europa, nu doar în RO.
+  const [viewportCenter, setViewportCenter] = useState<{ lat: number; lng: number } | null>(null);
   const focusedFromSearchRef = useRef<string | null>(null);
   const previousCountryRef = useRef<string | "all">("all");
 
@@ -408,19 +411,19 @@ function MapPage() {
   const cities = citiesData ?? EMPTY_CITIES;
   const cityMap = useMemo(() => new Map(cities.map((c) => [c.id, c])), [cities]);
 
-  // Focus point for Google Places lookup: user GPS > map focus > selected city.
-  // Fallback la București ca să apară locații reale imediat, chiar dacă
-  // utilizatorul n-a dat permisiunea la locație și n-a ales un oraș.
+  // Focus point pentru Google Places: viewportul curent al hărții e prioritar
+  // (așa acoperim toată Europa pe măsură ce utilizatorul mută harta). Fallback
+  // pe GPS / orașul focusat / orașul selectat / București.
   const focusPoint = useMemo(() => {
+    if (viewportCenter) return { lat: viewportCenter.lat, lng: viewportCenter.lng, key: "viewport" };
     if (geo) return { lat: geo.lat, lng: geo.lng, key: "geo" };
     if (focusCity) return { lat: focusCity.lat, lng: focusCity.lng, key: "focus" };
     if (cityId !== "all") {
       const c = cityMap.get(cityId);
       if (c) return { lat: c.lat, lng: c.lng, key: `city:${cityId}` };
     }
-    // Default: centrul Bucureștiului
     return { lat: 44.4396, lng: 26.0963, key: "default:bucuresti" };
-  }, [geo, focusCity, cityId, cityMap]);
+  }, [viewportCenter, geo, focusCity, cityId, cityMap]);
 
   const searchNightlife = useServerFn(searchNightlifeNearby);
 
@@ -437,7 +440,7 @@ function MapPage() {
     queryFn: async (): Promise<Venue[]> => {
       if (!focusPoint) return [];
       const places = await searchNightlife({
-        data: { lat: focusPoint.lat, lng: focusPoint.lng, radiusM: 6000 },
+        data: { lat: focusPoint.lat, lng: focusPoint.lng, radiusM: 10000 },
       });
       // Attach to nearest city so existing filters / labels still work.
       return places.map((p) => {
@@ -1124,6 +1127,7 @@ function MapPage() {
               setCityId(c.id);
               setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
             }}
+            onCenterChange={(lat, lng) => setViewportCenter({ lat, lng })}
           />
 
           {activeCity && (

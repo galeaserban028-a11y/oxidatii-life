@@ -466,6 +466,7 @@ export function RomaniaMap3D({
   fitBounds,
   promotedMeta = {},
   heatNowCells = [],
+  onCenterChange,
 }: {
   cities: City[];
   venues?: Venue[];
@@ -475,6 +476,7 @@ export function RomaniaMap3D({
   fitBounds?: [[number, number], [number, number]] | null;
   promotedMeta?: Record<string, { theme: string; cover: string | null; campaignId?: string }>;
   heatNowCells?: HeatNowCell[];
+  onCenterChange?: (lat: number, lng: number, zoom: number) => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
@@ -485,6 +487,7 @@ export function RomaniaMap3D({
   const compactMapRef = useRef(false);
   const contextRetryTimerRef = useRef<number | null>(null);
   const onCityClickRef = useRef<typeof onCityClick>(onCityClick);
+  const onCenterChangeRef = useRef<typeof onCenterChange>(onCenterChange);
   const nav = useNavigate();
   const navRef = useRef(nav);
   const autoRetryCountRef = useRef(0);
@@ -499,6 +502,9 @@ export function RomaniaMap3D({
   useEffect(() => {
     onCityClickRef.current = onCityClick;
   }, [onCityClick]);
+  useEffect(() => {
+    onCenterChangeRef.current = onCenterChange;
+  }, [onCenterChange]);
 
   // INIT map once
   useEffect(() => {
@@ -1040,6 +1046,8 @@ export function RomaniaMap3D({
         containerRef.current?.classList.remove("oxi-map-moving");
       }, 120);
       refreshLabels();
+      const c = map.getCenter();
+      onCenterChangeRef.current?.(c.lat, c.lng, map.getZoom());
     };
     map.on("movestart", onMoveStart);
     map.on("moveend", onMoveEnd);
