@@ -138,10 +138,10 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
           onClick={() => fileRef.current?.click()}
           className="w-full aspect-[4/3] rounded-2xl border border-dashed border-foreground/20 flex items-center justify-center overflow-hidden bg-foreground/[0.04]"
         >
-          {file ? (
+          {file && previewUrl ? (
             file.type.startsWith("video/") ? (
               <video
-                src={URL.createObjectURL(file)}
+                src={previewUrl}
                 className="h-full w-full object-cover"
                 playsInline
                 muted
@@ -149,7 +149,7 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
                 loop
               />
             ) : (
-              <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
+              <img src={previewUrl} alt="" className="h-full w-full object-cover" />
             )
           ) : (
             <div className="text-center space-y-1 text-muted-foreground">
