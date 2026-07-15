@@ -41,7 +41,7 @@ export async function sendPushToUsers(
   let failed = 0;
 
   await Promise.all(
-    subs.map(async (s) => {
+    webSubs.map(async (s) => {
       try {
         await webpush.sendNotification(
           { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
