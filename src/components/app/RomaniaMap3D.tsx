@@ -705,8 +705,9 @@ export function RomaniaMap3D({
           cluster: true,
           // Grupăm agresiv doar la zoom foarte mic; de la zoom mediu în sus,
           // fiecare local apare cu propria sticluță de vin (nu bulinuțe).
-          clusterRadius: 26,
-          clusterMaxZoom: 8,
+          clusterRadius: 22,
+          clusterMaxZoom: 7,
+
         });
       } catch {
         window.setTimeout(setupInteractiveLayers, 120);
