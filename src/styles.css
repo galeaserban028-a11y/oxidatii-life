@@ -488,7 +488,7 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
   border: 1px solid rgba(255,255,255,0.28);
   box-shadow: 0 4px 14px rgba(0,0,0,0.55), 0 0 14px currentColor;
   animation: oxi-frame-badge-float 2.4s ease-in-out infinite;
-  backdrop-filter: blur(6px);
+  /* blur removed for perf */
 }
 .oxi-frame-badge--rare { color: #67e8f9; }
 .oxi-frame-badge--epic { color: #fbbf24; }
