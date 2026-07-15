@@ -370,6 +370,79 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
       },
     });
   }
+  // Country labels — visible when zoomed out over Europe.
+  layers.push({
+    id: "place-country-labels",
+    type: "symbol",
+    source: "openmaptiles",
+    "source-layer": "place",
+    filter: ["==", "class", "country"],
+    minzoom: 2,
+    maxzoom: 6,
+    layout: {
+      "text-field": ["coalesce", ["get", "name:ro"], ["get", "name:en"], ["get", "name"]],
+      "text-font": ["Noto Sans Bold"],
+      "text-size": ["interpolate", ["linear"], ["zoom"], 2, 10, 5, 15],
+      "text-letter-spacing": 0.15,
+      "text-transform": "uppercase",
+    },
+    paint: {
+      "text-color": "#ff9cf0",
+      "text-halo-color": "#0d0b1e",
+      "text-halo-width": 1.4,
+      "text-halo-blur": 1,
+    },
+  });
+  // City / town labels — the main "unde-i orașul" reference for users.
+  layers.push({
+    id: "place-city-labels",
+    type: "symbol",
+    source: "openmaptiles",
+    "source-layer": "place",
+    filter: ["in", "class", "city", "town"],
+    minzoom: 4,
+    layout: {
+      "text-field": ["coalesce", ["get", "name:ro"], ["get", "name:en"], ["get", "name"]],
+      "text-font": ["Noto Sans Regular"],
+      "text-size": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        4, 10,
+        7, ["case", ["==", ["get", "class"], "city"], 13, 10],
+        11, ["case", ["==", ["get", "class"], "city"], 17, 13],
+      ],
+      "text-anchor": "top",
+      "text-offset": [0, 0.6],
+      "symbol-sort-key": ["case", ["==", ["get", "class"], "city"], 0, 1],
+    },
+    paint: {
+      "text-color": "#f5e8ff",
+      "text-halo-color": "#0d0b1e",
+      "text-halo-width": 1.6,
+      "text-halo-blur": 0.8,
+    },
+  });
+  if (!lowEnd) {
+    layers.push({
+      id: "place-village-labels",
+      type: "symbol",
+      source: "openmaptiles",
+      "source-layer": "place",
+      filter: ["in", "class", "village", "suburb", "neighbourhood"],
+      minzoom: 10,
+      layout: {
+        "text-field": ["coalesce", ["get", "name:ro"], ["get", "name:en"], ["get", "name"]],
+        "text-font": ["Noto Sans Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 10, 10, 14, 13],
+      },
+      paint: {
+        "text-color": "#c9b4e6",
+        "text-halo-color": "#0d0b1e",
+        "text-halo-width": 1.3,
+      },
+    });
+  }
   return {
     version: 8,
     glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
