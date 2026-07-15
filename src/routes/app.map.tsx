@@ -1103,7 +1103,7 @@ function MapPage() {
           />
 
           {activeCity && (
-            <div className="absolute top-3 left-3 right-3 z-10 flex items-center gap-2 rounded-2xl bg-black/50 border border-white/10 px-3 py-2">
+            <div className="absolute top-3 left-3 z-40 flex items-center gap-2 rounded-2xl bg-black/85 border border-white/10 px-3 py-2 max-w-[calc(100%-6rem)]">
               <MapPin size={12} className="text-[#ffea00] shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="text-[8px] uppercase tracking-[0.22em] text-[#ffea00] font-bold">
@@ -1114,7 +1114,7 @@ function MapPage() {
               <Link
                 to="/app/city/$slug"
                 params={{ slug: activeCity.slug }}
-                className="text-[9px] uppercase tracking-widest text-[#ff3d8b] border border-[#ff3d8b]/40 rounded-full px-2 py-0.5 font-bold"
+                className="shrink-0 text-[9px] uppercase tracking-widest text-[#ff3d8b] border border-[#ff3d8b]/40 rounded-full px-2 py-0.5 font-bold"
               >
                 străzi →
               </Link>
@@ -1124,7 +1124,7 @@ function MapPage() {
                   setFocusCity(null);
                 }}
                 aria-label="Șterge filtru"
-                className="h-6 w-6 grid place-items-center rounded-full border border-white/15 text-white/60"
+                className="shrink-0 h-6 w-6 grid place-items-center rounded-full border border-white/15 text-white/60 bg-black/60"
               >
                 <X size={11} />
               </button>
@@ -1139,8 +1139,9 @@ function MapPage() {
                 top: "0.5rem",
                 right: "0.5rem",
               }}
-              className="absolute z-20 h-8 w-8 grid place-items-center rounded-full bg-black/45 border border-white/10 text-white/70 active:scale-95 transition"
+              className="absolute z-40 h-8 w-8 grid place-items-center rounded-full bg-black/70 border border-white/10 text-white/70 active:scale-95 transition"
             >
+
               {privacyQ.data?.settings?.map_ghost ? (
                 <Ghost size={15} className="text-[#c724ff]" />
               ) : (
