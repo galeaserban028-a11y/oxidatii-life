@@ -382,6 +382,9 @@ function MapPage() {
   );
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
   const [autoLocated, setAutoLocated] = useState(false);
+  // Centrul curent al hărții (updated on pan/zoom) — driver primar pentru
+  // fetch-ul Google Places, ca să meargă în toată Europa, nu doar în RO.
+  const [viewportCenter, setViewportCenter] = useState<{ lat: number; lng: number } | null>(null);
   const focusedFromSearchRef = useRef<string | null>(null);
   const previousCountryRef = useRef<string | "all">("all");
 
