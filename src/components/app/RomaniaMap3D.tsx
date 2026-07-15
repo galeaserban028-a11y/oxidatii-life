@@ -1010,7 +1010,9 @@ export function RomaniaMap3D({
     };
     map.on("movestart", onMoveStart);
     map.on("moveend", onMoveEnd);
-    map.on("zoomend", refreshLabels);
+    // City marker scaling: only update at zoomend (not every zoom frame) to
+    // avoid touching ~200 DOM nodes per frame during pinch-zoom, which was
+    // the main source of map jank on mid-tier phones.
     const updateCityZoom = () => {
       const zoom = map.getZoom();
       const scale = getCityScaleForZoom(zoom, compactMapRef.current);
@@ -1018,9 +1020,9 @@ export function RomaniaMap3D({
         ?.querySelectorAll<HTMLElement>(".oxi-city-marker")
         .forEach((m) => m.style.setProperty("--city-scale", String(scale)));
     };
-    map.on("zoom", updateCityZoom);
     map.on("zoomend", updateCityZoom);
     window.setTimeout(updateCityZoom, 0);
+
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
       event.preventDefault();
