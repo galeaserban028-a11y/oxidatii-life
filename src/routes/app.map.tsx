@@ -1094,8 +1094,11 @@ function MapPage() {
             heatNowCells={heatNowCells}
             onCityClick={(c) => {
               setCityId(c.id);
-              setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
+              // Zoom past the venue minzoom (13) so the small venue bottles
+              // appear immediately without the user having to pinch-zoom again.
+              setFocusCity({ lat: c.lat, lng: c.lng, zoom: 13.6 });
             }}
+
             
           />
 
