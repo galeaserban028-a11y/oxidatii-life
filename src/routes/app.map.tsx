@@ -409,6 +409,8 @@ function MapPage() {
   const cityMap = useMemo(() => new Map(cities.map((c) => [c.id, c])), [cities]);
 
   // Focus point for Google Places lookup: user GPS > map focus > selected city.
+  // Fallback la București ca să apară locații reale imediat, chiar dacă
+  // utilizatorul n-a dat permisiunea la locație și n-a ales un oraș.
   const focusPoint = useMemo(() => {
     if (geo) return { lat: geo.lat, lng: geo.lng, key: "geo" };
     if (focusCity) return { lat: focusCity.lat, lng: focusCity.lng, key: "focus" };
@@ -416,7 +418,8 @@ function MapPage() {
       const c = cityMap.get(cityId);
       if (c) return { lat: c.lat, lng: c.lng, key: `city:${cityId}` };
     }
-    return null;
+    // Default: centrul Bucureștiului
+    return { lat: 44.4396, lng: 26.0963, key: "default:bucuresti" };
   }, [geo, focusCity, cityId, cityMap]);
 
   const searchNightlife = useServerFn(searchNightlifeNearby);
