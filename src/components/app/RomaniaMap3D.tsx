@@ -1313,6 +1313,14 @@ export function RomaniaMap3D({
       bottleStage.style.animation = "oxi-marker-pop 0.34s cubic-bezier(0.22,1,0.36,1) both";
       wrap.appendChild(bottleStage);
 
+      const label = document.createElement("div");
+      label.className = "oxi-city-label";
+      label.dataset.priority = String(c.chaos_level);
+      label.textContent = c.name;
+      label.style.cssText =
+        "display:inline-block;max-width:110px;padding:2px 8px;border-radius:999px;background:rgba(6,7,10,0.78);border:1px solid rgba(255,255,255,0.12);color:#fff;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;line-height:1.2;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 8px rgba(0,0,0,0.55);pointer-events:none;backdrop-filter:blur(4px);";
+      wrap.appendChild(label);
+
       let shattering = false;
       const shatter = () => {
         if (shattering) return;
