@@ -97,7 +97,7 @@ function AppLayout() {
   return (
     <main
       ref={mainRef}
-      className={`min-h-screen bg-background text-foreground overflow-x-hidden ${compact ? "oxi-compact" : ""}`}
+      className={`min-h-screen bg-background text-foreground ${compact ? "oxi-compact" : ""}`}
       style={
         {
           ["--header-bg" as string]: headerColor,
