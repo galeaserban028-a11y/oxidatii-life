@@ -1094,6 +1094,10 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
   }
 }
 
+/* City bottle markers must never occlude the map chrome (filter pill,
+   heat button, settings, X). Cap their stacking so z-40 chrome wins. */
+.maplibregl-marker { z-index: 1; }
+
 /* ── MapLibre controls — OXI dark glass aesthetic ── */
 .maplibregl-ctrl-group {
   background: oklch(0.16 0.015 30 / 0.92) !important;
