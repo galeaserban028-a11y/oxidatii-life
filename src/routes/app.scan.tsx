@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Camera, Search, X, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -30,6 +30,11 @@ function ScanPage() {
   const [newVenueType, setNewVenueType] = useState<"club" | "bar" | "terasa">("club");
   const [newVenueCityId, setNewVenueCityId] = useState<string>("");
   const [creating, setCreating] = useState(false);
+  const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   const { data: cities = [] } = useQuery({
     queryKey: ["all-cities"],
@@ -225,7 +230,7 @@ function ScanPage() {
           >
             {file.type.startsWith("video/") ? (
               <video
-                src={URL.createObjectURL(file)}
+                src={previewUrl ?? undefined}
                 className="h-full w-full object-cover"
                 autoPlay
                 muted
@@ -233,7 +238,7 @@ function ScanPage() {
                 playsInline
               />
             ) : (
-              <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
+              <img src={previewUrl ?? undefined} alt="" className="h-full w-full object-cover" />
             )}
             <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-black/70 text-white text-[10px] font-mono uppercase tracking-widest">
               {file.type.startsWith("video/") ? "▶ clip" : "📷 poză"}

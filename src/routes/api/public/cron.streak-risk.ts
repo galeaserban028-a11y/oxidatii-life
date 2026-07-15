@@ -7,7 +7,14 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/cron/streak-risk")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const secret = process.env.CRON_SECRET;
+        const provided =
+          request.headers.get("x-cron-secret") ??
+          new URL(request.url).searchParams.get("secret");
+        if (!secret || provided !== secret) {
+          return new Response("Unauthorized", { status: 401 });
+        }
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { smartPushToUsers } = await import("@/lib/smart-push.server");
 

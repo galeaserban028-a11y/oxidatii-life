@@ -604,6 +604,10 @@ function StoryUploadSheet({
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
   const mediaType: "image" | "video" = file?.type.startsWith("video") ? "video" : "image";
 
   async function submit() {

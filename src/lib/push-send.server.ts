@@ -32,7 +32,8 @@ export async function sendPushToUsers(
     .select("id, endpoint, p256dh, auth")
     .in("user_id", userIds);
   if (error) throw new Error(error.message);
-  if (!subs?.length) return { sent: 0, failed: 0 };
+  const webSubs = (subs ?? []).filter((s) => !s.endpoint.startsWith("native:"));
+  if (!webSubs.length) return { sent: 0, failed: 0 };
 
   const body = JSON.stringify(payload);
   const deadIds: string[] = [];
@@ -40,7 +41,7 @@ export async function sendPushToUsers(
   let failed = 0;
 
   await Promise.all(
-    subs.map(async (s) => {
+    webSubs.map(async (s) => {
       try {
         await webpush.sendNotification(
           { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
