@@ -1295,7 +1295,7 @@ export function RomaniaMap3D({
     if (!map) return;
     const markerCities = [...cities].sort((a, b) => b.chaos_level - a.chaos_level);
     const bottleSVG = (size: number, color: string) => `
-      <svg width="${size}" height="${size * 2.2}" viewBox="0 0 20 44" xmlns="http://www.w3.org/2000/svg" style="display:block;${compactMapRef.current ? "" : `filter:drop-shadow(0 0 6px ${color}) drop-shadow(0 2px 3px rgba(0,0,0,0.7));`}">
+      <svg width="${size}" height="${size * 2.2}" viewBox="0 0 20 44" xmlns="http://www.w3.org/2000/svg" style="display:block;">
         <rect x="8.5" y="0" width="3" height="6" rx="1" fill="#1a0f05"/>
         <rect x="7.5" y="5" width="5" height="3" fill="#d4a857"/>
         <path d="M8 8 L8 16 Q5 18 5 24 L5 40 Q5 43 8 43 L12 43 Q15 43 15 40 L15 24 Q15 18 12 16 L12 8 Z" fill="${color}" stroke="rgba(255,255,255,0.4)" stroke-width="0.6"/>
@@ -1303,6 +1303,7 @@ export function RomaniaMap3D({
         <text x="10" y="30.6" text-anchor="middle" font-family="DM Sans,sans-serif" font-weight="900" font-size="3.4" fill="#7a1e1e">OXI</text>
         <ellipse cx="7" cy="22" rx="1" ry="6" fill="rgba(255,255,255,0.28)"/>
       </svg>`;
+
     const seen = new Set<string>();
     for (const c of markerCities) {
       if (!isValidLngLat(c.lng, c.lat)) continue;
