@@ -1096,7 +1096,7 @@ function MapPage() {
               setCityId(c.id);
               setFocusCity({ lat: c.lat, lng: c.lng, zoom: 12.4 });
             }}
-            onCenterChange={(lat, lng) => setViewportCenter({ lat, lng })}
+            
           />
 
           {activeCity && (
