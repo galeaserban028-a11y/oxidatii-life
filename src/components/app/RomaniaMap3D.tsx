@@ -1010,7 +1010,9 @@ export function RomaniaMap3D({
     };
     map.on("movestart", onMoveStart);
     map.on("moveend", onMoveEnd);
-    map.on("zoomend", refreshLabels);
+    // City marker scaling: only update at zoomend (not every zoom frame) to
+    // avoid touching ~200 DOM nodes per frame during pinch-zoom, which was
+    // the main source of map jank on mid-tier phones.
     const updateCityZoom = () => {
       const zoom = map.getZoom();
       const scale = getCityScaleForZoom(zoom, compactMapRef.current);
@@ -1018,9 +1020,9 @@ export function RomaniaMap3D({
         ?.querySelectorAll<HTMLElement>(".oxi-city-marker")
         .forEach((m) => m.style.setProperty("--city-scale", String(scale)));
     };
-    map.on("zoom", updateCityZoom);
     map.on("zoomend", updateCityZoom);
     window.setTimeout(updateCityZoom, 0);
+
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
       event.preventDefault();
@@ -1293,7 +1295,7 @@ export function RomaniaMap3D({
     if (!map) return;
     const markerCities = [...cities].sort((a, b) => b.chaos_level - a.chaos_level);
     const bottleSVG = (size: number, color: string) => `
-      <svg width="${size}" height="${size * 2.2}" viewBox="0 0 20 44" xmlns="http://www.w3.org/2000/svg" style="display:block;${compactMapRef.current ? "" : `filter:drop-shadow(0 0 6px ${color}) drop-shadow(0 2px 3px rgba(0,0,0,0.7));`}">
+      <svg width="${size}" height="${size * 2.2}" viewBox="0 0 20 44" xmlns="http://www.w3.org/2000/svg" style="display:block;">
         <rect x="8.5" y="0" width="3" height="6" rx="1" fill="#1a0f05"/>
         <rect x="7.5" y="5" width="5" height="3" fill="#d4a857"/>
         <path d="M8 8 L8 16 Q5 18 5 24 L5 40 Q5 43 8 43 L12 43 Q15 43 15 40 L15 24 Q15 18 12 16 L12 8 Z" fill="${color}" stroke="rgba(255,255,255,0.4)" stroke-width="0.6"/>
@@ -1301,6 +1303,7 @@ export function RomaniaMap3D({
         <text x="10" y="30.6" text-anchor="middle" font-family="DM Sans,sans-serif" font-weight="900" font-size="3.4" fill="#7a1e1e">OXI</text>
         <ellipse cx="7" cy="22" rx="1" ry="6" fill="rgba(255,255,255,0.28)"/>
       </svg>`;
+
     const seen = new Set<string>();
     for (const c of markerCities) {
       if (!isValidLngLat(c.lng, c.lat)) continue;
@@ -1340,7 +1343,7 @@ export function RomaniaMap3D({
       label.dataset.priority = String(c.chaos_level);
       label.textContent = c.name;
       label.style.cssText =
-        "display:inline-block;max-width:110px;padding:2px 8px;border-radius:999px;background:rgba(6,7,10,0.78);border:1px solid rgba(255,255,255,0.12);color:#fff;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;line-height:1.2;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 8px rgba(0,0,0,0.55);pointer-events:none;backdrop-filter:blur(4px);transform-origin:top center;";
+        "display:inline-block;max-width:110px;padding:2px 8px;border-radius:999px;background:rgba(6,7,10,0.88);border:1px solid rgba(255,255,255,0.12);color:#fff;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;line-height:1.2;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 2px 8px rgba(0,0,0,0.55);pointer-events:none;transform-origin:top center;";
       wrap.appendChild(label);
 
       let shattering = false;
