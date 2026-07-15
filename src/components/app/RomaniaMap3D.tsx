@@ -705,8 +705,9 @@ export function RomaniaMap3D({
           cluster: true,
           // Grupăm agresiv doar la zoom foarte mic; de la zoom mediu în sus,
           // fiecare local apare cu propria sticluță de vin (nu bulinuțe).
-          clusterRadius: 26,
-          clusterMaxZoom: 8,
+          clusterRadius: 22,
+          clusterMaxZoom: 7,
+
         });
       } catch {
         window.setTimeout(setupInteractiveLayers, 120);
@@ -916,20 +917,19 @@ export function RomaniaMap3D({
           "icon-ignore-placement": true,
           "icon-anchor": "center",
           "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
-          ...(isSmall
-            ? {}
-            : {
-                // Numele localului apare doar de la zoom 12+ ca să nu se aglomereze
-                // harta la zoom mic.
-                "text-field": ["step", ["zoom"], "", 12, ["get", "name"]],
-                "text-font": ["Noto Sans Bold"],
-                "text-size": ["interpolate", ["linear"], ["zoom"], 12, 10, 16, 13],
-                "text-offset": [0, 1.4],
-                "text-anchor": "top",
-                "text-optional": true,
-                "text-letter-spacing": 0.04,
-                "text-max-width": 8,
-              }),
+          // Numele localului apare de la zoom 11+ pe toate device-urile,
+          // ca să vezi ce e fiecare sticluță mai ales pe România.
+          "text-field": ["step", ["zoom"], "", 11, ["get", "name"]],
+          "text-font": ["Noto Sans Bold"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 11, 10, 14, 12, 17, 14],
+          "text-offset": [0, -1.9],
+          "text-anchor": "bottom",
+          "text-optional": true,
+          "text-letter-spacing": 0.04,
+          "text-max-width": 9,
+          "text-allow-overlap": false,
+          "text-padding": 2,
+
         },
         paint: {
           "text-color": "#ffffff",
