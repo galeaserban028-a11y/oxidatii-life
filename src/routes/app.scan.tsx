@@ -30,6 +30,11 @@ function ScanPage() {
   const [newVenueType, setNewVenueType] = useState<"club" | "bar" | "terasa">("club");
   const [newVenueCityId, setNewVenueCityId] = useState<string>("");
   const [creating, setCreating] = useState(false);
+  const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   const { data: cities = [] } = useQuery({
     queryKey: ["all-cities"],
