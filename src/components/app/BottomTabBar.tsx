@@ -287,7 +287,7 @@ export function BottomTabBar() {
           gap: shrunk ? 2 : 4,
           padding: shrunk ? "6px 10px" : "8px 12px",
           width: "min(98%, 600px)",
-          background: "rgba(15, 13, 28, 0.85)",
+          background: "rgba(15, 13, 28, 0.96)",
           backdropFilter: "none",
           WebkitBackdropFilter: "none",
           borderRadius: shrunk ? 22 : 28,
