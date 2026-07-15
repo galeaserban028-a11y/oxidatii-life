@@ -780,101 +780,11 @@ export function RomaniaMap3D({
         } catch { /* noop */ }
       }
 
-      // Outer wide aura behind clusters — desktop only (expensive blur on mobile GPUs)
-      if (!isSmall) {
-        map.addLayer({
-          id: "venues-clusters-aura",
-          type: "circle",
-          source: VENUES_SRC,
-          filter: ["has", "point_count"],
-          paint: {
-            "circle-color": [
-              "step",
-              ["get", "point_count"],
-              "rgba(255,43,214,0.42)",
-              80,
-              "rgba(255,255,255,0.28)",
-              240,
-              "rgba(255,140,90,0.42)",
-            ],
-            "circle-radius": ["step", ["get", "point_count"], 18, 80, 22, 240, 26],
-            "circle-blur": 0.65,
-            "circle-opacity": 0.32,
-          },
-        });
-      }
+      // Venue clusters are intentionally hidden. Cities are represented by
+      // DOM bottle markers with city-name labels below, so users see
+      // "sticluță + oraș" instead of abstract dots.
 
-      map.addLayer({
-        id: "venues-clusters-glow",
-        type: "circle",
-        source: VENUES_SRC,
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": [
-            "step",
-            ["get", "point_count"],
-            "rgba(255,43,214,0.55)",
-            80,
-            "rgba(255,255,255,0.38)",
-            240,
-            "rgba(255,140,90,0.55)",
-          ],
-          "circle-radius": ["step", ["get", "point_count"], 14, 80, 17, 240, 20],
-          "circle-blur": isSmall ? 0.2 : 0.45,
-          "circle-opacity": isSmall ? 0.7 : 1,
-        },
-      });
-
-      map.addLayer({
-        id: "venues-clusters",
-        type: "circle",
-        source: VENUES_SRC,
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": [
-            "step",
-            ["get", "point_count"],
-            "rgba(10,6,18,0.92)",
-            80,
-            "rgba(20,14,26,0.92)",
-            240,
-            "rgba(48,28,22,0.92)",
-          ],
-          "circle-radius": ["step", ["get", "point_count"], 10, 80, 12, 240, 14],
-          "circle-stroke-width": 1.6,
-          "circle-stroke-color": [
-            "step",
-            ["get", "point_count"],
-            "#c724ff",
-            80,
-            "#ffffff",
-            240,
-            "#ff3d8b",
-          ],
-        },
-      });
-
-      if (!isSmall) {
-        map.addLayer({
-          id: "venues-cluster-count",
-          type: "symbol",
-          source: VENUES_SRC,
-          filter: ["has", "point_count"],
-          layout: {
-            "text-field": "{point_count_abbreviated}",
-            "text-size": ["step", ["get", "point_count"], 10, 80, 11, 240, 12],
-            "text-font": ["Noto Sans Bold"],
-            "text-allow-overlap": true,
-          },
-          paint: {
-            "text-color": "#ffffff",
-            "text-halo-color": "rgba(0,0,0,0.85)",
-            "text-halo-width": 1.2,
-          },
-        });
-      }
-
-      // unclustered points → clear wine-bottle pins
+      // unclustered points → clear wine-bottle pins (no venue name floating above)
       map.addLayer({
         id: "venues-points",
         type: "symbol",
@@ -917,44 +827,12 @@ export function RomaniaMap3D({
           "icon-ignore-placement": true,
           "icon-anchor": "center",
           "symbol-sort-key": ["case", ["==", ["get", "type"], "club"], 1, 5],
-          // Numele apare sub sticluță de la un zoom ceva mai mare,
-          // ca eticheta să nu aglomereze harta când e depărtat.
-          "text-field": ["step", ["zoom"], "", 12, ["get", "name"]],
-          "text-font": ["Noto Sans Bold"],
-          "text-size": ["interpolate", ["linear"], ["zoom"], 12, 10, 14, 12, 17, 14],
-          "text-offset": [0, 1.6],
-          "text-anchor": "top",
-          "text-optional": true,
-          "text-letter-spacing": 0.04,
-          "text-max-width": 9,
-          "text-allow-overlap": false,
-          "text-padding": 2,
-
+          "text-field": "",
         },
-        paint: {
-          "text-color": "#ffffff",
-          "text-halo-color": "rgba(6,7,10,0.92)",
-          "text-halo-width": 1.4,
-          "text-halo-blur": 0.6,
-        },
+        paint: {},
       });
 
-      // click → zoom into cluster / navigate to venue
-      map.on("click", "venues-clusters", (e) => {
-        const f = e.features?.[0];
-        if (!f) return;
-        const id = (f.properties as any).cluster_id;
-        (map.getSource(VENUES_SRC) as maplibregl.GeoJSONSource)
-          .getClusterExpansionZoom(id)
-          .then((zoom) => {
-            map.easeTo({
-              center: (f.geometry as any).coordinates,
-              zoom: zoom + 0.2,
-              duration: 500,
-            });
-          })
-          .catch(() => {});
-      });
+      // click → navigate to venue
       map.on("click", "venues-points", (e) => {
         const f = e.features?.[0];
         if (!f) return;
@@ -995,7 +873,7 @@ export function RomaniaMap3D({
             navRef.current({ to: "/app/venue/$id", params: { id: p.id } });
           });
       });
-      for (const layer of ["venues-clusters", "venues-points"]) {
+      for (const layer of ["venues-points"]) {
         map.on("mouseenter", layer, () => {
           map.getCanvas().style.cursor = "pointer";
         });
