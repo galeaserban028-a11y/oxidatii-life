@@ -502,6 +502,9 @@ export function RomaniaMap3D({
   useEffect(() => {
     onCityClickRef.current = onCityClick;
   }, [onCityClick]);
+  useEffect(() => {
+    onCenterChangeRef.current = onCenterChange;
+  }, [onCenterChange]);
 
   // INIT map once
   useEffect(() => {
