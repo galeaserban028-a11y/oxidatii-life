@@ -43,7 +43,7 @@ function ReplayDetailPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-foreground/10">
+      <div className="sticky top-0 z-10 bg-background/95 border-b border-foreground/10">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link to="/app/replay" className="p-2 -ml-2 hover:bg-foreground/5 rounded-lg">
             <ArrowLeft size={20} />

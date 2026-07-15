@@ -134,7 +134,7 @@ function FriendsPage() {
       </header>
 
       {/* Step-by-step visual */}
-      <div className="rounded-2xl border border-white/5 bg-zinc-900/30 backdrop-blur p-5 space-y-4">
+      <div className="rounded-2xl border border-white/5 bg-zinc-900/30 p-5 space-y-4">
         <div className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">
           cum adaugi prieteni
         </div>
@@ -171,7 +171,7 @@ function FriendsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="@handle sau nume..."
-            className="w-full p-3.5 pl-11 rounded-2xl bg-zinc-900/30 border border-white/5 text-sm focus:outline-none focus:border-neon-crimson/40 transition-colors backdrop-blur"
+            className="w-full p-3.5 pl-11 rounded-2xl bg-zinc-900/30 border border-white/5 text-sm focus:outline-none focus:border-neon-crimson/40 transition-colors"
           />
           <svg
             className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"

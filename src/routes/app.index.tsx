@@ -210,7 +210,7 @@ function AppFeed() {
                 background: "radial-gradient(circle, rgba(255,255,255,0.4), transparent 70%)",
               }}
             />
-            <div className="relative w-11 h-11 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-white">
+            <div className="relative w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center text-white">
               <Plus size={24} strokeWidth={2.8} />
             </div>
             <div className="relative">

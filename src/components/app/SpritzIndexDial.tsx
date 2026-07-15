@@ -85,7 +85,7 @@ export function SpritzIndexDial({ cityId = null, cityName, compact = false }: Pr
     return (
       <Link
         to="/app/spritz-index"
-        className="block relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-orange-500/[0.08] via-pink-500/[0.04] to-transparent backdrop-blur-sm p-5 active:scale-[0.98] transition"
+        className="block relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-orange-500/[0.08] via-pink-500/[0.04] to-transparent p-5 active:scale-[0.98] transition"
       >
         <div
           className="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl pointer-events-none"

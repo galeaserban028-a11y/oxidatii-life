@@ -18,9 +18,10 @@ function tabIndex(pathname: string): number {
 }
 
 const transition = {
-  duration: 0.28,
+  duration: 0.18,
   ease: [0.22, 1, 0.36, 1] as const,
 };
+
 
 const style = {
   willChange: "opacity, transform",

@@ -120,10 +120,10 @@ export function StreakFlexSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200 overflow-y-auto">
+    <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200 overflow-y-auto">
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-white active:scale-90 transition"
+        className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 flex items-center justify-center text-white active:scale-90 transition"
         aria-label="Close"
       >
         <X size={20} />

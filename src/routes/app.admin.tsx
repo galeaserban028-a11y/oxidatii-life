@@ -89,7 +89,7 @@ function AdminLayout() {
   return (
     <div className="min-h-screen">
       {/* Sticky header + tab bar */}
-      <div className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-foreground/10">
+      <div className="sticky top-0 z-30 bg-background/85 border-b border-foreground/10">
         <div className="px-4 pt-3 pb-2 flex items-center gap-2">
           <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-neon-crimson/15 text-neon-crimson">
             <ShieldAlert size={15} />

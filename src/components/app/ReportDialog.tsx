@@ -114,7 +114,7 @@ export function ReportDialog({
         aria-label={label}
         className={
           className ??
-          "h-9 w-9 rounded-full bg-foreground/10 backdrop-blur flex items-center justify-center text-white/90 active:scale-95 transition"
+          "h-9 w-9 rounded-full bg-foreground/10 flex items-center justify-center text-white/90 active:scale-95 transition"
         }
       >
         <Flag size={15} />

@@ -101,7 +101,7 @@ function ReputationAnalyticsPage() {
             <Stat label="ultimele 30z" value={last30.length} />
           </div>
 
-          <div className="rounded-2xl border border-white/5 bg-zinc-900/30 backdrop-blur overflow-hidden">
+          <div className="rounded-2xl border border-white/5 bg-zinc-900/30 overflow-hidden">
             {byCategory.map((c) => (
               <div key={c.cat} className="p-4 border-b border-white/5 last:border-b-0">
                 <div className="flex items-baseline justify-between mb-2">
@@ -127,7 +127,7 @@ function ReputationAnalyticsPage() {
 
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur p-4 text-center">
+    <div className="rounded-2xl bg-zinc-900/30 border border-white/5 p-4 text-center">
       <div className="font-display text-2xl tabular-nums">{value}</div>
       <div className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 mt-1.5">{label}</div>
     </div>

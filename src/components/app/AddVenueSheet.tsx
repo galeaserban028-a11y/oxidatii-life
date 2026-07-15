@@ -160,7 +160,7 @@ export function AddVenueSheet({ cities, onAdded }: Props) {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex flex-col">
+        <div className="fixed inset-0 z-[100] bg-background/95 flex flex-col">
           <div className="flex items-center justify-between p-4 border-b border-foreground/10">
             <div>
               <div className="font-display font-black text-xl">

@@ -155,7 +155,7 @@ export function GroupSettingsSheet({
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-md">
+    <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center bg-black/60">
       <div className="w-full sm:max-w-md bg-background border-t sm:border border-foreground/10 sm:rounded-3xl rounded-t-3xl max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-foreground/10">
           <div className="font-display font-black text-lg">Grup</div>

@@ -216,7 +216,7 @@ export function ReputationCard(props: Props) {
           }}
         >
           <div
-            className="relative rounded-2xl px-3.5 py-2.5 flex items-center gap-3 backdrop-blur-xl"
+            className="relative rounded-2xl px-3.5 py-2.5 flex items-center gap-3"
             style={{ background: "rgba(10,10,21,0.92)" }}
           >
             {/* radial neon wash behind progress (clipped) */}

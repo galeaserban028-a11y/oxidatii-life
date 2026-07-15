@@ -156,7 +156,7 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
       >
         <div
           ref={spinnerRef}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-lg backdrop-blur"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/85 shadow-lg"
           style={{ willChange: "transform" }}
         >
           <Loader2 className={`h-5 w-5 text-foreground ${refreshing ? "animate-spin" : ""}`} />

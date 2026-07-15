@@ -100,7 +100,7 @@ export function HeatNowButton({
         top: "0.5rem",
         right: "3rem",
       }}
-      className={`absolute z-20 h-8 px-2.5 flex items-center gap-1.5 rounded-full backdrop-blur-xl border transition active:scale-95 ${
+      className={`absolute z-20 h-8 px-2.5 flex items-center gap-1.5 rounded-full border transition active:scale-95 ${
         enabled
           ? "bg-gradient-to-r from-[#ff3d8b]/30 to-[#ffb000]/30 border-[#ff3d8b]/50 text-[#ffea00]"
           : "bg-black/45 border-white/10 text-white/70"

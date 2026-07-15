@@ -898,7 +898,7 @@ function MapPage() {
   return (
     <div className="pb-32 bg-[#050505] min-h-screen text-white">
       {/* Sticky header — cinema bento */}
-      <header className="sticky top-0 z-30 px-4 pt-5 pb-3 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5">
+      <header className="sticky top-0 z-30 px-4 pt-5 pb-3 bg-[#050505]/85 border-b border-white/5">
         <div className="flex items-end justify-between gap-3">
           <div>
             <h1 className="text-[34px] leading-none tracking-tight" style={instrument}>
@@ -925,7 +925,7 @@ function MapPage() {
           <button
             onClick={requestGeo}
             aria-label="Locația mea"
-            className={`h-10 w-10 grid place-items-center rounded-full border backdrop-blur active:scale-95 transition ${geo ? "border-transparent text-white bg-gradient-to-tr from-[#ff3d8b] to-[#c724ff] shadow-lg shadow-[#ff3d8b]/30" : "border-white/10 text-white/70 bg-white/5"}`}
+            className={`h-10 w-10 grid place-items-center rounded-full border active:scale-95 transition ${geo ? "border-transparent text-white bg-gradient-to-tr from-[#ff3d8b] to-[#c724ff] shadow-lg shadow-[#ff3d8b]/30" : "border-white/10 text-white/70 bg-white/5"}`}
           >
             <Navigation size={16} />
           </button>
@@ -1033,7 +1033,7 @@ function MapPage() {
                             {cityMap.get(venue.city_id)?.name ?? "—"}
                           </div>
                         </div>
-                        <div className="shrink-0 backdrop-blur-xl bg-black/40 border border-white/10 rounded-full px-2 py-0.5 flex items-center gap-0.5">
+                        <div className="shrink-0 bg-black/40 border border-white/10 rounded-full px-2 py-0.5 flex items-center gap-0.5">
                           <span className="text-[10px] font-bold text-[#ff3d8b]">{count}</span>
                           <span className="text-[9px]">🔥</span>
                         </div>
@@ -1100,7 +1100,7 @@ function MapPage() {
           />
 
           {activeCity && (
-            <div className="absolute top-3 left-3 right-3 z-10 flex items-center gap-2 rounded-2xl backdrop-blur-xl bg-black/50 border border-white/10 px-3 py-2">
+            <div className="absolute top-3 left-3 right-3 z-10 flex items-center gap-2 rounded-2xl bg-black/50 border border-white/10 px-3 py-2">
               <MapPin size={12} className="text-[#ffea00] shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="text-[8px] uppercase tracking-[0.22em] text-[#ffea00] font-bold">
@@ -1136,7 +1136,7 @@ function MapPage() {
                 top: "0.5rem",
                 right: "0.5rem",
               }}
-              className="absolute z-20 h-8 w-8 grid place-items-center rounded-full backdrop-blur-xl bg-black/45 border border-white/10 text-white/70 active:scale-95 transition"
+              className="absolute z-20 h-8 w-8 grid place-items-center rounded-full bg-black/45 border border-white/10 text-white/70 active:scale-95 transition"
             >
               {privacyQ.data?.settings?.map_ghost ? (
                 <Ghost size={15} className="text-[#c724ff]" />

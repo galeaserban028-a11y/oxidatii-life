@@ -488,7 +488,7 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
   border: 1px solid rgba(255,255,255,0.28);
   box-shadow: 0 4px 14px rgba(0,0,0,0.55), 0 0 14px currentColor;
   animation: oxi-frame-badge-float 2.4s ease-in-out infinite;
-  backdrop-filter: blur(6px);
+  /* blur removed for perf */
 }
 .oxi-frame-badge--rare { color: #67e8f9; }
 .oxi-frame-badge--epic { color: #fbbf24; }
@@ -729,12 +729,10 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
   }
 
   .glass {
-    background: oklch(0.21 0.018 30 / 75%);
-    backdrop-filter: blur(20px) saturate(140%);
-
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    background: oklch(0.21 0.018 30 / 92%);
     border: 1px solid var(--border);
   }
+
 
   .card-surface {
     background: var(--card);
@@ -1098,9 +1096,7 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
 
 /* ── MapLibre controls — OXI dark glass aesthetic ── */
 .maplibregl-ctrl-group {
-  background: oklch(0.16 0.015 30 / 0.75) !important;
-  backdrop-filter: blur(16px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  background: oklch(0.16 0.015 30 / 0.92) !important;
   border: 1px solid oklch(0.3 0.02 30) !important;
   border-radius: 14px !important;
   box-shadow:
@@ -1108,6 +1104,7 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
     0 2px 6px -2px oklch(0 0 0 / 30%) !important;
   overflow: hidden;
 }
+
 
 .maplibregl-ctrl-group button {
   background: transparent !important;
@@ -1145,7 +1142,7 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
 /* MapLibre attribution compact */
 .maplibregl-ctrl-attrib.maplibregl-compact {
   background: oklch(0.16 0.015 30 / 0.65) !important;
-  backdrop-filter: blur(12px) !important;
+  /* blur removed for perf */
   border: 1px solid oklch(0.3 0.02 30 / 0.5) !important;
   border-radius: 10px !important;
   color: var(--muted-foreground) !important;
@@ -1223,35 +1220,8 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
     transform: translateZ(0);
     backface-visibility: hidden;
   }
-  /* Halve blur radius — visually identical on small screens, ~3-4x cheaper */
-  .backdrop-blur-3xl {
-    backdrop-filter: blur(16px) saturate(130%);
-    -webkit-backdrop-filter: blur(16px) saturate(130%);
-  }
-  .backdrop-blur-2xl {
-    backdrop-filter: blur(12px) saturate(130%);
-    -webkit-backdrop-filter: blur(12px) saturate(130%);
-  }
-  .backdrop-blur-xl {
-    backdrop-filter: blur(9px) saturate(125%);
-    -webkit-backdrop-filter: blur(9px) saturate(125%);
-  }
-  .backdrop-blur-lg {
-    backdrop-filter: blur(7px) saturate(120%);
-    -webkit-backdrop-filter: blur(7px) saturate(120%);
-  }
-  .backdrop-blur-md {
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-  }
-  .backdrop-blur {
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-  }
-  .backdrop-blur-sm {
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-  }
+  /* backdrop-blur has been removed app-wide for FPS reasons; kept placeholder empty */
+
 
   /* Decorative infinite animations are expensive when offscreen too. Stop
      them so the compositor isn't churning behind solid content. */
