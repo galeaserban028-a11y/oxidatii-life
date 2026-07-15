@@ -100,11 +100,12 @@ export function HeatNowButton({
         top: "0.5rem",
         right: "3rem",
       }}
-      className={`absolute z-20 h-8 px-2.5 flex items-center gap-1.5 rounded-full border transition active:scale-95 ${
+      className={`absolute z-40 h-8 px-2.5 flex items-center gap-1.5 rounded-full border transition active:scale-95 ${
         enabled
-          ? "bg-gradient-to-r from-[#ff3d8b]/30 to-[#ffb000]/30 border-[#ff3d8b]/50 text-[#ffea00]"
-          : "bg-black/45 border-white/10 text-white/70"
+          ? "bg-gradient-to-r from-[#ff3d8b]/60 to-[#ffb000]/60 border-[#ff3d8b]/60 text-[#ffea00]"
+          : "bg-black/70 border-white/10 text-white/80"
       }`}
+
     >
       <Flame size={13} className={enabled ? "text-[#ff3d8b] animate-pulse" : ""} />
       <span className="text-[10px] font-bold uppercase tracking-wider">
