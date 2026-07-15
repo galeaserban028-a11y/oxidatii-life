@@ -1275,7 +1275,7 @@ export function RomaniaMap3D({
     if (!map) return;
     const markerCities = [...cities]
       .sort((a, b) => b.chaos_level - a.chaos_level)
-      .slice(0, compactMapRef.current ? 12 : DESKTOP_CITY_LIMIT);
+      .slice(0, compactMapRef.current ? SMALL_CITY_LIMIT : DESKTOP_CITY_LIMIT);
     const bottleSVG = (size: number, color: string) => `
       <svg width="${size}" height="${size * 2.2}" viewBox="0 0 20 44" xmlns="http://www.w3.org/2000/svg" style="display:block;${compactMapRef.current ? "" : `filter:drop-shadow(0 0 6px ${color}) drop-shadow(0 2px 3px rgba(0,0,0,0.7));`}">
         <rect x="8.5" y="0" width="3" height="6" rx="1" fill="#1a0f05"/>
