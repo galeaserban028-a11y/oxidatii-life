@@ -20,6 +20,11 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
   const [selectedVenue, setSelectedVenue] = useState<VenueLite | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
 
   const { data: venues } = useQuery({
     queryKey: ["venues-search", venueQuery],
