@@ -1046,6 +1046,8 @@ export function RomaniaMap3D({
         containerRef.current?.classList.remove("oxi-map-moving");
       }, 120);
       refreshLabels();
+      const c = map.getCenter();
+      onCenterChangeRef.current?.(c.lat, c.lng, map.getZoom());
     };
     map.on("movestart", onMoveStart);
     map.on("moveend", onMoveEnd);
