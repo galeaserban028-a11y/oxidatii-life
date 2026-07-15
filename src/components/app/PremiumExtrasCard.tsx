@@ -47,10 +47,18 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
       if (field === "music_clip_url") {
         const dur = await new Promise<number>((res) => {
           const a = document.createElement("audio");
+          const url = URL.createObjectURL(file);
           a.preload = "metadata";
-          a.onloadedmetadata = () => res(a.duration);
-          a.onerror = () => res(0);
-          a.src = URL.createObjectURL(file);
+          a.onloadedmetadata = () => {
+            const d = a.duration;
+            URL.revokeObjectURL(url);
+            res(d);
+          };
+          a.onerror = () => {
+            URL.revokeObjectURL(url);
+            res(0);
+          };
+          a.src = url;
         });
         if (dur > 16) {
           toast.error("Maxim 15 secunde");
