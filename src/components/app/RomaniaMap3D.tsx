@@ -466,6 +466,7 @@ export function RomaniaMap3D({
   fitBounds,
   promotedMeta = {},
   heatNowCells = [],
+  onCenterChange,
 }: {
   cities: City[];
   venues?: Venue[];
@@ -475,6 +476,7 @@ export function RomaniaMap3D({
   fitBounds?: [[number, number], [number, number]] | null;
   promotedMeta?: Record<string, { theme: string; cover: string | null; campaignId?: string }>;
   heatNowCells?: HeatNowCell[];
+  onCenterChange?: (lat: number, lng: number, zoom: number) => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
