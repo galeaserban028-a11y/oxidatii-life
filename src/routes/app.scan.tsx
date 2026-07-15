@@ -230,7 +230,7 @@ function ScanPage() {
           >
             {file.type.startsWith("video/") ? (
               <video
-                src={URL.createObjectURL(file)}
+                src={previewUrl ?? undefined}
                 className="h-full w-full object-cover"
                 autoPlay
                 muted
@@ -238,7 +238,7 @@ function ScanPage() {
                 playsInline
               />
             ) : (
-              <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
+              <img src={previewUrl ?? undefined} alt="" className="h-full w-full object-cover" />
             )}
             <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-black/70 text-white text-[10px] font-mono uppercase tracking-widest">
               {file.type.startsWith("video/") ? "▶ clip" : "📷 poză"}
