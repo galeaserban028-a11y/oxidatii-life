@@ -192,7 +192,7 @@ function VenuePage() {
               top: "calc(env(safe-area-inset-top) + 1rem)",
               left: "calc(env(safe-area-inset-left) + 1rem)",
             }}
-            className="absolute h-10 w-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-foreground shadow-md"
+            className="absolute h-10 w-10 rounded-full bg-white/90 flex items-center justify-center text-foreground shadow-md"
           >
             <ArrowLeft size={18} />
           </Link>
@@ -203,7 +203,7 @@ function VenuePage() {
               top: "calc(env(safe-area-inset-top) + 1rem)",
               left: "calc(env(safe-area-inset-left) + 1rem)",
             }}
-            className="absolute h-10 w-10 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-foreground shadow-md"
+            className="absolute h-10 w-10 rounded-full bg-white/90 flex items-center justify-center text-foreground shadow-md"
           >
             <ArrowLeft size={18} />
           </Link>

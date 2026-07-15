@@ -119,7 +119,7 @@ function FollowersPage() {
               <Link
                 to="/app/user/$id"
                 params={{ id: p.id }}
-                className="flex items-center gap-3 p-3 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur hover:bg-zinc-800/40 active:scale-[0.99] transition"
+                className="flex items-center gap-3 p-3 rounded-2xl bg-zinc-900/30 border border-white/5 hover:bg-zinc-800/40 active:scale-[0.99] transition"
               >
                 <div className="h-11 w-11 rounded-full bg-foreground/10 overflow-hidden flex items-center justify-center shrink-0">
                   {p.avatar_url ? (

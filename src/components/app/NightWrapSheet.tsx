@@ -101,10 +101,10 @@ export function NightWrapSheet({ wrap, onClose }: { wrap: Wrap; onClose: () => v
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200 overflow-y-auto">
+    <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200 overflow-y-auto">
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-white active:scale-90 transition-transform"
+        className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 flex items-center justify-center text-white active:scale-90 transition-transform"
         aria-label="Close"
       >
         <X size={20} />
@@ -219,7 +219,7 @@ export function NightWrapSheet({ wrap, onClose }: { wrap: Wrap; onClose: () => v
 
 function StatBox({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl bg-white/10 backdrop-blur border border-white/10 px-3 py-2.5">
+    <div className="rounded-xl bg-white/10 border border-white/10 px-3 py-2.5">
       <div className="text-[22px] font-bold tabular-nums text-white leading-none">{value}</div>
       <div className="mt-1 text-[9px] font-mono uppercase tracking-[0.2em] text-white/60">
         {label}

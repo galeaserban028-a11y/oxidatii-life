@@ -42,7 +42,7 @@ export function PromoBanner({ promotedMeta }: { promotedMeta: Record<string, Pro
   return (
     <div className="absolute bottom-2 left-2 right-[60px] z-20 pointer-events-none">
       <div
-        className="pointer-events-auto flex items-center gap-2.5 rounded-xl bg-background/95 backdrop-blur border px-2 py-2 shadow-2xl"
+        className="pointer-events-auto flex items-center gap-2.5 rounded-xl bg-background/95 border px-2 py-2 shadow-2xl"
         style={{
           borderColor: `${cur.theme}66`,
           boxShadow: `0 8px 28px ${cur.theme}44, 0 0 0 1px ${cur.theme}22`,

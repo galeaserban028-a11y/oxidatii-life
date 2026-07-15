@@ -355,7 +355,7 @@ function BoostedCard({ boosted, userId }: { boosted: NonNullable<Boosted>; userI
 
   return (
     <article className="rounded-2xl overflow-hidden border border-neon-purple/40 bg-gradient-to-br from-neon-purple/10 via-background to-neon-crimson/10 relative">
-      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 text-[9px] font-mono uppercase tracking-widest px-2 py-1 rounded-md bg-background/70 backdrop-blur border border-neon-purple/40 text-neon-purple">
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 text-[9px] font-mono uppercase tracking-widest px-2 py-1 rounded-md bg-background/70 border border-neon-purple/40 text-neon-purple">
         <Rocket size={9} /> boosted
       </div>
       <Link to="/app/squad" onClick={onClick} className="block">

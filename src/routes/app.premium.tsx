@@ -246,7 +246,7 @@ function PremiumPage() {
       </div>
 
       {/* Top bar */}
-      <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/80 border-b border-border/60 px-4 h-14 flex items-center gap-2">
+      <header className="sticky top-0 z-30 bg-background/80 border-b border-border/60 px-4 h-14 flex items-center gap-2">
         <Link to="/app/me" className="p-2 -ml-2 active:scale-95 transition" aria-label="Înapoi">
           <ArrowLeft size={20} strokeWidth={2} />
         </Link>
@@ -295,7 +295,7 @@ function PremiumPage() {
             const a = ACCENT[active.accent];
             return (
               <div
-                className={`rounded-2xl border ${a.border} ${a.glow} p-4 flex items-center gap-3 backdrop-blur-sm`}
+                className={`rounded-2xl border ${a.border} ${a.glow} p-4 flex items-center gap-3`}
               >
                 <span className={`w-2 h-2 rounded-full ${a.dot}`} />
                 <div className="min-w-0 flex-1">
@@ -312,7 +312,7 @@ function PremiumPage() {
           })()}
 
         {/* BILLING TOGGLE */}
-        <div className="flex gap-1 p-1 bg-card/60 border border-border rounded-full backdrop-blur-sm">
+        <div className="flex gap-1 p-1 bg-card/60 border border-border rounded-full">
           <button
             onClick={() => setAnnual(false)}
             className={`flex-1 py-2.5 text-[11px] font-semibold uppercase tracking-widest rounded-full transition-all ${
@@ -347,7 +347,7 @@ function PremiumPage() {
             return (
               <div
                 key={tier.id}
-                className={`relative rounded-3xl p-4 sm:p-5 transition-all bg-card/50 backdrop-blur-md border ${
+                className={`relative rounded-3xl p-4 sm:p-5 transition-all bg-card/50 border ${
                   featured ? "border-2 " + a.border + " " + a.glow : a.border
                 } ${tier.accent === "gold" ? a.glow + " overflow-hidden" : ""}`}
               >
@@ -436,7 +436,7 @@ function PremiumPage() {
           </p>
 
           {/* Crystal Ball */}
-          <div className="bg-card/50 backdrop-blur-md border border-primary/30 rounded-2xl p-5 shadow-[0_10px_40px_-20px_hsl(var(--primary)/0.4)]">
+          <div className="bg-card/50 border border-primary/30 rounded-2xl p-5 shadow-[0_10px_40px_-20px_hsl(var(--primary)/0.4)]">
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center text-lg">
@@ -462,7 +462,7 @@ function PremiumPage() {
           {/* Replay Night */}
           <Link
             to="/app/replay"
-            className="block bg-card/50 backdrop-blur-md border border-[color:var(--neon-yellow)]/30 rounded-2xl p-5 hover:border-[color:var(--neon-yellow)]/50 transition-colors"
+            className="block bg-card/50 border border-[color:var(--neon-yellow)]/30 rounded-2xl p-5 hover:border-[color:var(--neon-yellow)]/50 transition-colors"
           >
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-3">
@@ -491,7 +491,7 @@ function PremiumPage() {
           {/* Last Call */}
           <Link
             to="/app/lastcalls"
-            className="block bg-card/50 backdrop-blur-md border border-primary/30 rounded-2xl p-5 hover:border-primary/50 transition-colors"
+            className="block bg-card/50 border border-primary/30 rounded-2xl p-5 hover:border-primary/50 transition-colors"
           >
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-3">
@@ -517,7 +517,7 @@ function PremiumPage() {
 
           {/* Profile Boost */}
           {ent.isActive && (
-            <div className="bg-card/50 backdrop-blur-md border border-accent/30 rounded-2xl p-5">
+            <div className="bg-card/50 border border-accent/30 rounded-2xl p-5">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center text-lg">
@@ -545,7 +545,7 @@ function PremiumPage() {
             <b className="text-foreground">Ce sunt:</b> monedă internă pentru cadouri în chat,
             frame-uri și boost-uri scurte. <b className="text-foreground">Nu expiră.</b>
           </p>
-          <div className="bg-card/50 backdrop-blur-md border border-border rounded-3xl p-3 space-y-2">
+          <div className="bg-card/50 border border-border rounded-3xl p-3 space-y-2">
             {COIN_PACKS.map((p) => (
               <button
                 key={p.id}

@@ -12,7 +12,7 @@ export function LegalPage({
 }) {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-foreground/10 bg-background/80 backdrop-blur sticky top-0 z-10">
+      <header className="border-b border-foreground/10 bg-background/80 sticky top-0 z-10">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
           <Link
             to="/"

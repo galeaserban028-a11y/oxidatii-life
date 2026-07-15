@@ -101,7 +101,7 @@ export function UploadSheet({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end justify-center px-2"
+      className="fixed inset-0 z-[60] bg-black/80 flex items-end justify-center px-2"
       onClick={onClose}
       style={{ ...hind, paddingBottom: SHEET_BOTTOM, paddingTop: "1rem" }}
     >

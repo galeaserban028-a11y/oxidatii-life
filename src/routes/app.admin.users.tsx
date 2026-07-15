@@ -309,7 +309,7 @@ function EditUserSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[80] bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-2"
+      className="fixed inset-0 z-[80] bg-black/80 flex items-end sm:items-center justify-center p-2"
       onClick={onClose}
     >
       <div

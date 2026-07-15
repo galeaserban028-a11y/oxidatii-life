@@ -796,7 +796,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
 
   const sheet = (
     <div
-      className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-xl flex items-start justify-center px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:items-center"
+      className="fixed inset-0 z-[9999] bg-black/80 flex items-start justify-center px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-[calc(env(safe-area-inset-bottom)+0.75rem)] sm:items-center"
       onClick={onClose}
       style={HIND}
     >
@@ -806,7 +806,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 1.25rem)" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 z-10 -mx-5 -mt-5 px-5 pt-5 pb-3 bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/5 flex items-center justify-between">
+        <div className="sticky top-0 z-10 -mx-5 -mt-5 px-5 pt-5 pb-3 bg-[#0a0a0a]/95 border-b border-white/5 flex items-center justify-between">
           <div>
             <div className="text-[9px] uppercase tracking-[0.28em] text-[#ff3d8b] font-bold">
               formular șpriț
@@ -909,7 +909,7 @@ function CreatePartySheet({ onClose }: { onClose: () => void }) {
           />
         </div>
 
-        <div className="sticky bottom-0 z-10 -mx-5 -mb-5 px-5 pt-3 pb-5 bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/5">
+        <div className="sticky bottom-0 z-10 -mx-5 -mb-5 px-5 pt-3 pb-5 bg-[#0a0a0a]/95 border-t border-white/5">
           <button
             type="button"
             onClick={handleCreateClick}

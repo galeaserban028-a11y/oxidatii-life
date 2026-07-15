@@ -230,7 +230,7 @@ function Index() {
 
       {/* Hero */}
       <section className="relative z-10 px-4 mb-6">
-        <div className="relative p-7 rounded-[32px] overflow-hidden border border-white/10 bg-gradient-to-b from-white/[0.08] to-transparent backdrop-blur-sm">
+        <div className="relative p-7 rounded-[32px] overflow-hidden border border-white/10 bg-gradient-to-b from-white/[0.08] to-transparent">
           <div className="absolute top-0 right-0 w-40 h-40 bg-orange-600/30 blur-3xl pointer-events-none" />
           <div className="inline-block px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 mb-4">
             <span className="font-mono text-[10px] font-bold tracking-widest text-orange-400 uppercase">
@@ -337,7 +337,7 @@ function Index() {
 
       {/* Live Activity */}
       <section className="relative z-10 px-4 mb-28">
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
+        <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
           <div className="flex justify-between items-center mb-5">
             <div className="flex items-center gap-2">
               <Beer className="w-4 h-4 text-orange-400" />
@@ -372,7 +372,7 @@ function Index() {
 
       {/* Bottom Dock */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 z-30 w-full max-w-md p-4 bg-gradient-to-t from-[#050510] via-[#050510]/90 to-transparent pointer-events-none">
-        <nav className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-full flex items-center justify-between px-5 py-2.5 pointer-events-auto">
+        <nav className="bg-white/10 border border-white/10 rounded-full flex items-center justify-between px-5 py-2.5 pointer-events-auto">
           <DockItem to="/app" icon={<MapPin className="w-5 h-5" />} label={t.dockMap} />
           <DockItem to="/app/faze" icon={<Flame className="w-5 h-5" />} label={t.dockFaze} />
           <div className="-mt-10">

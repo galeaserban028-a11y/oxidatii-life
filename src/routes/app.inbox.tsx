@@ -819,7 +819,7 @@ function NewMessageSheet({
   const mode = selected.size <= 1 ? "dm" : "grup";
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex flex-col">
+    <div className="fixed inset-0 z-[100] bg-background/95 flex flex-col">
       <div className="flex items-center justify-between p-4 border-b border-foreground/10">
         <div>
           <div className="font-display font-black text-xl">mesaj nou</div>

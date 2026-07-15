@@ -88,12 +88,12 @@ function RequestsPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="caută după @handle sau nume"
-            className="w-full h-11 pl-10 pr-3 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur text-sm placeholder:text-zinc-600 focus:outline-none focus:border-neon-crimson/40"
+            className="w-full h-11 pl-10 pr-3 rounded-2xl bg-zinc-900/30 border border-white/5 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-neon-crimson/40"
           />
         </div>
         <button
           onClick={() => setSort((s) => (s === "newest" ? "oldest" : "newest"))}
-          className="h-11 px-3 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold active:scale-95 transition"
+          className="h-11 px-3 rounded-2xl bg-zinc-900/30 border border-white/5 flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-bold active:scale-95 transition"
           aria-label="Schimbă sortarea"
         >
           <ArrowDownUp size={13} />
@@ -122,7 +122,7 @@ function RequestsPage() {
             return (
               <li
                 key={r.id}
-                className="flex items-center gap-3 p-3 rounded-2xl border border-white/5 bg-zinc-900/30 backdrop-blur"
+                className="flex items-center gap-3 p-3 rounded-2xl border border-white/5 bg-zinc-900/30"
               >
                 <Link
                   to="/app/user/$id"

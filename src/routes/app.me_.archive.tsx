@@ -295,7 +295,7 @@ function Stat({
   icon: React.ComponentType<{ size?: number; className?: string }>;
 }) {
   return (
-    <div className="rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur p-3 text-center">
+    <div className="rounded-2xl bg-zinc-900/30 border border-white/5 p-3 text-center">
       <Icon size={14} className="mx-auto text-zinc-500" />
       <div className="font-display font-bold text-xl mt-1.5 leading-none">{value}</div>
       <div className="text-[9px] uppercase tracking-[0.2em] text-zinc-500 mt-1.5">{label}</div>

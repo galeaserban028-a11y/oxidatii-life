@@ -407,7 +407,7 @@ function UserPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button
-                              className="p-2 rounded-xl bg-secondary/70 backdrop-blur border border-border text-foreground flex items-center justify-center active:scale-[0.98] transition shrink-0"
+                              className="p-2 rounded-xl bg-secondary/70 border border-border text-foreground flex items-center justify-center active:scale-[0.98] transition shrink-0"
                               aria-label="Mai multe"
                             >
                               <MoreVertical size={18} />

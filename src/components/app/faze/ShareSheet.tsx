@@ -72,7 +72,7 @@ export function ShareSheet({ photo, onClose }: { photo: Moment; onClose: () => v
 
   return (
     <div
-      className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end"
+      className="fixed inset-0 z-[60] bg-black/80 flex items-end"
       onClick={onClose}
       style={hind}
     >

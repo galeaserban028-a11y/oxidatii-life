@@ -161,7 +161,7 @@ function PromoPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => (history.length > 1 ? history.back() : navigate({ to: "/app" }))}
-            className="size-10 rounded-full bg-black/55 backdrop-blur-md border border-white/15 text-white flex items-center justify-center active:scale-95 transition"
+            className="size-10 rounded-full bg-black/55 border border-white/15 text-white flex items-center justify-center active:scale-95 transition"
             aria-label="Înapoi"
           >
             <ArrowLeft size={16} />
@@ -192,7 +192,7 @@ function PromoPage() {
           </div>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 mt-1">
+        <div className="bg-white/10 px-3 py-1.5 rounded-full border border-white/20 mt-1">
           <span className="text-[9px] font-black text-white uppercase tracking-[0.18em]">
             Sponsorizat
           </span>
@@ -260,7 +260,7 @@ function PromoPage() {
           <button
             onClick={toggleLike}
             aria-label="Apreciază"
-            className="size-14 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 flex items-center justify-center active:bg-white/20 transition-all"
+            className="size-14 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center active:bg-white/20 transition-all"
           >
             <Heart
               size={22}

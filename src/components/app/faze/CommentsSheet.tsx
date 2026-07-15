@@ -138,7 +138,7 @@ export function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () =
 
   return (
     <div
-      className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-end animate-fade-in"
+      className="fixed inset-0 z-[60] bg-black/80 flex items-end animate-fade-in"
       onClick={onClose}
       style={hind}
     >
@@ -153,7 +153,7 @@ export function CommentsSheet({ photo, onClose }: { photo: Moment; onClose: () =
         </div>
 
         {/* Header */}
-        <div className="px-6 py-4 flex items-center justify-between border-b border-white/5 sticky top-0 z-20 bg-[#0b0a1a]/90 backdrop-blur-xl">
+        <div className="px-6 py-4 flex items-center justify-between border-b border-white/5 sticky top-0 z-20 bg-[#0b0a1a]/90">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-[#ff3d8b] shadow-[0_0_10px_#ff3d8b]" />
             <h2

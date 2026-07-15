@@ -121,11 +121,11 @@ function WrappedPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="rounded-xl bg-white/10 backdrop-blur p-3">
+              <div className="rounded-xl bg-white/10 p-3">
                 <div className="font-display font-black text-2xl">{wrap?.nights ?? 0}</div>
                 <div className="text-[10px] uppercase tracking-widest text-white/60">nopți</div>
               </div>
-              <div className="rounded-xl bg-white/10 backdrop-blur p-3">
+              <div className="rounded-xl bg-white/10 p-3">
                 <div className="font-display font-black text-sm truncate">
                   {wrap?.top_venue?.name || "—"}
                 </div>

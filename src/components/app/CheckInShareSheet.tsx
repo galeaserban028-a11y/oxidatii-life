@@ -210,7 +210,7 @@ export function CheckInShareSheet({
       <DialogContent className="max-w-sm p-0 gap-0 bg-[#0a0416] border-white/10 overflow-hidden">
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 z-10 rounded-full bg-black/40 backdrop-blur p-2 text-white/80 hover:text-white"
+          className="absolute top-3 right-3 z-10 rounded-full bg-black/40 p-2 text-white/80 hover:text-white"
           aria-label="Închide"
         >
           <X size={18} />

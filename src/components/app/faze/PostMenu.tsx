@@ -11,7 +11,7 @@ export function PostMenu({
 }) {
   return (
     <div
-      className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center"
+      className="fixed inset-0 z-[60] bg-black/70 flex items-end sm:items-center justify-center"
       onClick={onClose}
       style={hind}
     >

@@ -71,7 +71,7 @@ function StreetPage() {
               )}
               <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
               {v.verified && (
-                <div className="absolute top-3 right-3 text-[9px] font-mono uppercase tracking-widest px-2 py-1 rounded-full bg-neon-green/15 text-neon-green border border-neon-green/40 backdrop-blur">
+                <div className="absolute top-3 right-3 text-[9px] font-mono uppercase tracking-widest px-2 py-1 rounded-full bg-neon-green/15 text-neon-green border border-neon-green/40">
                   ✓ verificat
                 </div>
               )}

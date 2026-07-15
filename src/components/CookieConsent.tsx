@@ -42,7 +42,7 @@ export function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label="Setări cookie-uri"
-      className="fixed inset-x-2 bottom-2 z-[100] mx-auto max-w-2xl rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-2xl backdrop-blur md:inset-x-auto md:left-4 md:right-4"
+      className="fixed inset-x-2 bottom-2 z-[100] mx-auto max-w-2xl rounded-2xl border border-foreground/15 bg-background/95 p-4 shadow-2xl md:inset-x-auto md:left-4 md:right-4"
     >
       <div className="flex flex-col gap-3">
         <div>

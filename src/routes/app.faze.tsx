@@ -304,7 +304,7 @@ function FazePage() {
   return (
     <div className="pb-32 max-w-[480px] mx-auto bg-[#050505] min-h-screen text-white" style={hind}>
       {/* Header */}
-      <header className="flex items-center justify-between px-4 pt-5 pb-3 sticky top-0 z-30 bg-[#050505]/85 backdrop-blur-xl">
+      <header className="flex items-center justify-between px-4 pt-5 pb-3 sticky top-0 z-30 bg-[#050505]/85">
         <div>
           <h1 className="text-[34px] leading-none tracking-tight" style={instrument}>
             FAZE<span className="text-[#ffea00]">.</span>
@@ -355,7 +355,7 @@ function FazePage() {
       </header>
 
       {/* Tabs */}
-      <div className="flex px-4 gap-6 overflow-x-auto no-scrollbar border-b border-white/5 sticky top-[76px] z-20 bg-[#050505]/85 backdrop-blur-xl">
+      <div className="flex px-4 gap-6 overflow-x-auto no-scrollbar border-b border-white/5 sticky top-[76px] z-20 bg-[#050505]/85">
         {(
           [
             { k: "pentru-tine", label: "Pentru tine" },
@@ -454,7 +454,7 @@ function FazePage() {
                   {/* Top overlay: badge left, author right */}
                   <div className="absolute inset-x-0 top-0 p-3 flex justify-between items-start gap-2 pointer-events-none">
                     <span
-                      className={`backdrop-blur-xl bg-black/40 border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.18em] uppercase ${
+                      className={` bg-black/40 border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold tracking-[0.18em] uppercase ${
                         badge.key === "legendar"
                           ? "text-[#ffea00]"
                           : badge.key === "murit"
@@ -470,7 +470,7 @@ function FazePage() {
                       <Link
                         to="/app/user/$id"
                         params={{ id: it.user_id }}
-                        className="flex items-center gap-2 backdrop-blur-xl bg-black/40 border border-white/10 pl-1 pr-3 py-1 rounded-full"
+                        className="flex items-center gap-2 bg-black/40 border border-white/10 pl-1 pr-3 py-1 rounded-full"
                       >
                         <div className="size-6 rounded-full overflow-hidden border border-[#ff3d8b]">
                           {profile?.avatar_url ? (
@@ -493,7 +493,7 @@ function FazePage() {
                         <button
                           onClick={() => setMenuFor(it)}
                           aria-label="Opțiuni"
-                          className="pointer-events-auto size-8 rounded-full backdrop-blur-xl bg-black/40 border border-white/10 grid place-items-center text-white/80 active:scale-90 transition"
+                          className="pointer-events-auto size-8 rounded-full bg-black/40 border border-white/10 grid place-items-center text-white/80 active:scale-90 transition"
                         >
                           <svg viewBox="0 0 24 24" className="size-4 fill-current">
                             <circle cx="5" cy="12" r="1.8" />
@@ -505,7 +505,7 @@ function FazePage() {
                         <ReportDialog
                           targetType="photo"
                           targetId={it.id}
-                          className="pointer-events-auto size-8 rounded-full backdrop-blur-xl bg-black/40 border border-white/10 grid place-items-center text-white/70 active:scale-95 transition"
+                          className="pointer-events-auto size-8 rounded-full bg-black/40 border border-white/10 grid place-items-center text-white/70 active:scale-95 transition"
                         />
                       )}
                     </div>
@@ -513,7 +513,7 @@ function FazePage() {
 
                   {/* Bottom floating glass action pill */}
                   <div className="absolute inset-x-3 bottom-3">
-                    <div className="backdrop-blur-2xl bg-black/35 border border-white/10 rounded-2xl p-2.5 flex items-center justify-around">
+                    <div className=" bg-black/35 border border-white/10 rounded-2xl p-2.5 flex items-center justify-around">
                       <button
                         onClick={() => toggleLike(it)}
                         aria-label="Apreciază"

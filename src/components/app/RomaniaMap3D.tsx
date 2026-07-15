@@ -1681,7 +1681,7 @@ export function RomaniaMap3D({
 
       {/* Zoom + recenter controls — stacked bottom-right */}
       <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-2">
-        <div className="flex flex-col rounded-full overflow-hidden backdrop-blur-xl bg-black/60 border border-white/15 shadow-lg shadow-black/40 transition-colors hover:border-white/25">
+        <div className="flex flex-col rounded-full overflow-hidden bg-black/60 border border-white/15 shadow-lg shadow-black/40 transition-colors hover:border-white/25">
           <button
             onClick={() => mapRef.current?.zoomIn({ duration: 220 })}
             aria-label="Apropie harta"
@@ -1701,7 +1701,7 @@ export function RomaniaMap3D({
           <button
             onClick={handleRecenter}
             aria-label="Re-centrează pe poziția mea"
-            className="h-10 w-10 grid place-items-center rounded-full backdrop-blur-xl bg-black/60 border border-white/15 text-white/90 active:scale-95 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 hover:border-white/25 will-change-transform shadow-lg shadow-black/40"
+            className="h-10 w-10 grid place-items-center rounded-full bg-black/60 border border-white/15 text-white/90 active:scale-95 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 hover:border-white/25 will-change-transform shadow-lg shadow-black/40"
           >
             <Crosshair size={18} />
           </button>

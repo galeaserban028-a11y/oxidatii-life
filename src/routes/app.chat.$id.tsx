@@ -469,7 +469,7 @@ function ChatPage() {
   const ui = (
     <div className={`fixed inset-0 z-[100] flex flex-col text-foreground ${theme.bg}`}>
       {/* Header */}
-      <header className="relative flex items-center gap-3 px-3 pt-[max(env(safe-area-inset-top),0.5rem)] pb-3 border-b border-foreground/[0.06] bg-background/40 backdrop-blur-2xl">
+      <header className="relative flex items-center gap-3 px-3 pt-[max(env(safe-area-inset-top),0.5rem)] pb-3 border-b border-foreground/[0.06] bg-background/40">
         <button
           onClick={() => nav({ to: "/app/inbox" })}
           aria-label="înapoi"
@@ -557,7 +557,7 @@ function ChatPage() {
 
       {/* Theme strip */}
       {showThemes && (
-        <div className="px-3 py-3 border-b border-foreground/[0.06] bg-background/40 backdrop-blur-xl animate-fade-in">
+        <div className="px-3 py-3 border-b border-foreground/[0.06] bg-background/40 animate-fade-in">
           <div className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground mb-2">
             temă fundal
           </div>
@@ -674,7 +674,7 @@ function ChatPage() {
 
       {/* Emoji bar */}
       {showEmoji && (
-        <div className="px-3 py-2 border-t border-foreground/[0.06] bg-background/60 backdrop-blur-xl animate-fade-in">
+        <div className="px-3 py-2 border-t border-foreground/[0.06] bg-background/60 animate-fade-in">
           <div className="flex gap-1 overflow-x-auto scrollbar-none">
             {QUICK_EMOJIS.map((e) => (
               <button
@@ -724,7 +724,7 @@ function ChatPage() {
         typeof document !== "undefined" &&
         createPortal(
           <div
-            className="fixed inset-0 z-[210] bg-black/85 backdrop-blur-xl flex flex-col animate-fade-in"
+            className="fixed inset-0 z-[210] bg-black/85 flex flex-col animate-fade-in"
             style={{
               paddingTop: "max(env(safe-area-inset-top), 1rem)",
               paddingBottom: "max(env(safe-area-inset-bottom), 1rem)",
@@ -802,7 +802,7 @@ function ChatPage() {
           if (!open) setDeleteTarget(null);
         }}
       >
-        <AlertDialogContent className="border-foreground/10 bg-background/95 backdrop-blur-2xl max-w-sm rounded-2xl">
+        <AlertDialogContent className="border-foreground/10 bg-background/95 max-w-sm rounded-2xl">
           <AlertDialogHeader className="space-y-3">
             <div className="mx-auto h-12 w-12 rounded-full bg-neon-crimson/10 flex items-center justify-center">
               <Trash2 size={22} className="text-neon-crimson" />
@@ -958,7 +958,7 @@ function Composer({
         e.preventDefault();
         onSend();
       }}
-      className="flex items-end gap-2 pt-2 pb-[max(env(safe-area-inset-bottom),0.6rem)] pl-[max(env(safe-area-inset-left),0.75rem)] pr-[max(env(safe-area-inset-right),0.75rem)] border-t border-foreground/[0.06] bg-background/60 backdrop-blur-2xl"
+      className="flex items-end gap-2 pt-2 pb-[max(env(safe-area-inset-bottom),0.6rem)] pl-[max(env(safe-area-inset-left),0.75rem)] pr-[max(env(safe-area-inset-right),0.75rem)] border-t border-foreground/[0.06] bg-background/60"
     >
       {recording ? (
         <div className="flex-1 flex items-center gap-3 rounded-3xl bg-foreground/[0.07] border border-neon-crimson/40 pl-4 pr-2 py-2.5 animate-fade-in">
@@ -1206,7 +1206,7 @@ function MessageBubble({
       className={`px-4 py-2 text-[15px] leading-snug break-words ${radius} ${
         mine
           ? `text-white bg-gradient-to-br ${theme.mine} ${theme.mineShadow}`
-          : "bg-foreground/[0.08] text-foreground backdrop-blur-sm"
+          : "bg-foreground/[0.08] text-foreground"
       }`}
     >
       {body}
@@ -1321,7 +1321,7 @@ function VoiceBubble({
       className={`flex items-center gap-3 px-3 py-2.5 rounded-3xl min-w-[200px] max-w-[260px] ${
         mine
           ? `text-white bg-gradient-to-br ${theme.mine} ${theme.mineShadow}`
-          : "bg-foreground/[0.08] backdrop-blur-sm"
+          : "bg-foreground/[0.08]"
       }`}
     >
       <button
@@ -1384,7 +1384,7 @@ function GiftSheet({ onClose, onSend }: { onClose: () => void; onSend: (g: Gift)
 
   return (
     <div
-      className="fixed inset-0 z-[110] flex items-end justify-center bg-background/70 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[110] flex items-end justify-center bg-background/70 animate-fade-in"
       onClick={onClose}
     >
       <div

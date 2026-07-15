@@ -247,7 +247,7 @@ function SettingsPage() {
   return (
     <div className="pb-10">
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-xl border-b border-foreground/10 px-3 h-12 flex items-center gap-2">
+      <header className="sticky top-0 z-30 bg-background/90 border-b border-foreground/10 px-3 h-12 flex items-center gap-2">
         <Link to="/app/me" className="p-1.5 -ml-1.5 active:scale-95" aria-label="Înapoi">
           <ChevronLeft size={22} />
         </Link>

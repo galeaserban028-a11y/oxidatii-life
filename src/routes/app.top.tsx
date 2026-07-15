@@ -160,7 +160,7 @@ function TopPage() {
     <div className="min-h-[100dvh] bg-[#050505] text-white">
       {/* Sticky header */}
       <header
-        className="sticky z-30 bg-[#050505]/85 backdrop-blur-xl border-b border-white/5"
+        className="sticky z-30 bg-[#050505]/85 border-b border-white/5"
         style={{ top: "env(safe-area-inset-top)" }}
       >
         <div className="px-5 pt-4 pb-3 max-w-xl mx-auto">
@@ -242,7 +242,7 @@ function TopPage() {
             <div className="relative mt-2">
               <button
                 onClick={() => setCountryOpen((o) => !o)}
-                className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur text-sm font-semibold active:scale-[0.99] transition-all"
+                className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-white/10 bg-white/[0.03] text-sm font-semibold active:scale-[0.99] transition-all"
               >
                 <span>{COUNTRY_LABEL[country] ?? country}</span>
                 <ChevronDown
@@ -387,7 +387,7 @@ function TopPage() {
                             </div>
                           </div>
                           <div
-                            className={`${podiumH} w-full rounded-t-2xl backdrop-blur-xl border-t border-white/10 ${
+                            className={`${podiumH} w-full rounded-t-2xl border-t border-white/10 ${
                               isKing
                                 ? "bg-gradient-to-t from-[#c724ff]/30 to-transparent"
                                 : "bg-white/[0.03]"
@@ -643,7 +643,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed left-0 right-0 flex items-start justify-center overflow-y-auto bg-black/95 backdrop-blur-md isolate"
+      className="fixed left-0 right-0 flex items-start justify-center overflow-y-auto bg-black/95 isolate"
       style={{
         zIndex: 2147483647,
         top: topClearance,

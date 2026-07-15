@@ -146,7 +146,7 @@ export function MessageReactions({
       </button>
       {picker && (
         <div
-          className="absolute z-20 mt-7 flex gap-0.5 px-1.5 py-1 rounded-full bg-background/95 backdrop-blur-xl border border-foreground/10 shadow-2xl animate-fade-in"
+          className="absolute z-20 mt-7 flex gap-0.5 px-1.5 py-1 rounded-full bg-background/95 border border-foreground/10 shadow-2xl animate-fade-in"
           onMouseLeave={() => setPicker(false)}
         >
           {QUICK.map((e) => (

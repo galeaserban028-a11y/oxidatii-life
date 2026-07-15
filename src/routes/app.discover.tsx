@@ -169,7 +169,7 @@ function DiscoverPage() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="@handle sau nume..."
-          className="w-full p-3.5 pl-11 rounded-2xl bg-zinc-900/30 border border-white/5 text-sm focus:outline-none focus:border-neon-purple/40 transition-colors backdrop-blur"
+          className="w-full p-3.5 pl-11 rounded-2xl bg-zinc-900/30 border border-white/5 text-sm focus:outline-none focus:border-neon-purple/40 transition-colors"
         />
         <svg
           className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"
@@ -209,7 +209,7 @@ function DiscoverPage() {
                   return (
                     <div
                       key={p.id}
-                      className="snap-start shrink-0 w-36 relative rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/70 to-zinc-950/40 p-3 backdrop-blur-md overflow-hidden group"
+                      className="snap-start shrink-0 w-36 relative rounded-2xl border border-white/10 bg-gradient-to-b from-zinc-900/70 to-zinc-950/40 p-3 overflow-hidden group"
                     >
                       {/* Subtle aura */}
                       <div className="absolute -top-8 -right-8 size-20 bg-amber-400/10 rounded-full blur-2xl pointer-events-none" />

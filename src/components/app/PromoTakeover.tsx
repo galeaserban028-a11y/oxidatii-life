@@ -218,12 +218,12 @@ export function PromoTakeover() {
             markSeenFull(payload.campaign.id);
             setPhase("mini");
           }}
-          className="absolute top-4 right-4 p-2 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 z-20"
+          className="absolute top-4 right-4 p-2 rounded-full bg-black/60 border border-white/20 z-20"
           aria-label="Închide"
         >
           <X size={16} className="text-white" />
         </button>
-        <div className="absolute top-4 left-4 px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-sm flex items-center gap-1.5 z-20">
+        <div className="absolute top-4 left-4 px-2.5 py-1 rounded-md bg-black/60 flex items-center gap-1.5 z-20">
           <Sparkles size={11} className="text-white" />
           <span className="font-mono text-[10px] uppercase tracking-widest text-white">
             Promovat
@@ -263,7 +263,7 @@ export function PromoTakeover() {
                   <img src={img!} alt="" className="w-full max-h-[55vh] object-contain bg-black" />
                 )}
                 {campaign.video_url && (
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-sm flex items-center gap-1">
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/70 flex items-center gap-1">
                     <Video size={10} className="text-white" />
                     <span className="font-mono text-[9px] uppercase tracking-widest text-white">
                       Clip
@@ -283,7 +283,7 @@ export function PromoTakeover() {
 
             {/* Event facts card */}
             {facts.length > 0 && (
-              <div className="rounded-2xl bg-white/[0.06] backdrop-blur-md border border-white/10 p-4 space-y-2.5">
+              <div className="rounded-2xl bg-white/[0.06] border border-white/10 p-4 space-y-2.5">
                 {facts.map((f, i) => (
                   <div key={i} className="flex items-center gap-3 text-white">
                     <div
@@ -330,7 +330,7 @@ export function PromoTakeover() {
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") handleClick();
         }}
-        className="w-full flex items-center gap-3 p-2 pr-2 rounded-full bg-background/95 backdrop-blur-md border active:scale-[0.98] transition text-left cursor-pointer"
+        className="w-full flex items-center gap-3 p-2 pr-2 rounded-full bg-background/95 border active:scale-[0.98] transition text-left cursor-pointer"
         style={{
           borderColor: `${color}55`,
           animation: "promo-shimmer 2.6s ease-in-out infinite",

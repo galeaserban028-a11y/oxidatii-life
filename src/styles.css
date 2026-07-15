@@ -1224,31 +1224,31 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
     backface-visibility: hidden;
   }
   /* Halve blur radius — visually identical on small screens, ~3-4x cheaper */
-  .backdrop-blur-3xl {
+  . {
     backdrop-filter: blur(16px) saturate(130%);
     -webkit-backdrop-filter: blur(16px) saturate(130%);
   }
-  .backdrop-blur-2xl {
+  . {
     backdrop-filter: blur(12px) saturate(130%);
     -webkit-backdrop-filter: blur(12px) saturate(130%);
   }
-  .backdrop-blur-xl {
+  . {
     backdrop-filter: blur(9px) saturate(125%);
     -webkit-backdrop-filter: blur(9px) saturate(125%);
   }
-  .backdrop-blur-lg {
+  . {
     backdrop-filter: blur(7px) saturate(120%);
     -webkit-backdrop-filter: blur(7px) saturate(120%);
   }
-  .backdrop-blur-md {
+  . {
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
   }
-  .backdrop-blur {
+  . {
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
   }
-  .backdrop-blur-sm {
+  . {
     backdrop-filter: blur(3px);
     -webkit-backdrop-filter: blur(3px);
   }

@@ -87,10 +87,10 @@ export function LeaderboardExportSheet({ top3, me, scopeLabel, monthLabel, onClo
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 backdrop-blur flex items-center justify-center text-white active:scale-90 transition"
+        className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 flex items-center justify-center text-white active:scale-90 transition"
         aria-label="Close"
       >
         <X size={20} />
@@ -186,7 +186,7 @@ export function LeaderboardExportSheet({ top3, me, scopeLabel, monthLabel, onClo
             </div>
 
             {me && (
-              <div className="mt-6 rounded-2xl border border-white/15 bg-white/[0.07] backdrop-blur p-3 flex items-center justify-between">
+              <div className="mt-6 rounded-2xl border border-white/15 bg-white/[0.07] p-3 flex items-center justify-between">
                 <div>
                   <div className="text-[10px] font-mono uppercase tracking-widest text-white/50">
                     Tu

@@ -53,7 +53,7 @@ function RatersPage() {
 
   return (
     <div className="pb-24 min-h-screen bg-background">
-      <header className="sticky top-0 z-30 bg-background/85 backdrop-blur-xl border-b border-white/5 px-5 h-14 flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-background/85 border-b border-white/5 px-5 h-14 flex items-center gap-3">
         <Link
           to="/app/me"
           className="h-9 w-9 -ml-1.5 rounded-xl bg-zinc-900/30 border border-white/5 flex items-center justify-center active:scale-95 transition"

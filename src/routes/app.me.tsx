@@ -458,7 +458,7 @@ function MePage() {
       >
         {/* Top bar — sunset glass */}
         <header
-          className="sticky top-0 z-30 px-3 h-12 flex items-center justify-between bg-[#050505]/80 backdrop-blur-md"
+          className="sticky top-0 z-30 px-3 h-12 flex items-center justify-between bg-[#050505]/80"
           style={{
             paddingTop: "calc(env(safe-area-inset-top) + 0.25rem)",
             height: "calc(env(safe-area-inset-top) + 3rem)",
@@ -1145,14 +1145,14 @@ function MePage() {
                         />
                       )}
                       {isProof && (
-                        <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#ffea00]/50">
+                        <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-black/40 border border-[#ffea00]/50">
                           <span className="font-mono text-[8px] uppercase text-[#ffea00]">
                             verificat
                           </span>
                         </div>
                       )}
                       {tab === "reposts" && (
-                        <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-md backdrop-blur-xl bg-black/40 border border-[#c724ff]/50">
+                        <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-md bg-black/40 border border-[#c724ff]/50">
                           <span className="font-mono text-[8px] uppercase text-[#c724ff]">
                             ↻ repost
                           </span>
@@ -1176,7 +1176,7 @@ function MePage() {
                       }}
                       disabled={deleting === key}
                       aria-label="Șterge"
-                      className={`absolute ${tab === "reposts" ? "top-1 left-1" : "top-1 right-1"} z-10 h-6 w-6 rounded-full backdrop-blur-xl bg-black/60 border border-white/20 text-white text-[11px] leading-none flex items-center justify-center hover:bg-red-500/80 transition disabled:opacity-50`}
+                      className={`absolute ${tab === "reposts" ? "top-1 left-1" : "top-1 right-1"} z-10 h-6 w-6 rounded-full bg-black/60 border border-white/20 text-white text-[11px] leading-none flex items-center justify-center hover:bg-red-500/80 transition disabled:opacity-50`}
                     >
                       {deleting === key ? "…" : "×"}
                     </button>

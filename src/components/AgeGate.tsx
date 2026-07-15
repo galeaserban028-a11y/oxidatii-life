@@ -26,7 +26,7 @@ export function AgeGate() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4">
       <div className="w-full max-w-sm rounded-2xl border border-neon-crimson/30 bg-background p-6 text-center shadow-2xl">
         <div className="mx-auto mb-3 flex h-20 w-20 items-center justify-center">
           <img

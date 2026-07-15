@@ -102,7 +102,7 @@ export function BusinessReviewCard({
     ));
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-zinc-950/60 backdrop-blur-xl p-4 space-y-4">
+    <div className="rounded-2xl border border-white/[0.06] bg-zinc-950/60 p-4 space-y-4">
       {/* Header / current rating */}
       <div className="flex items-center justify-between gap-3">
         <div>

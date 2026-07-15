@@ -98,7 +98,7 @@ export function CreateDecisionPollSheet({
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-end justify-center bg-black/65 backdrop-blur-sm"
+      className="fixed inset-0 z-[70] flex items-end justify-center bg-black/65"
       onClick={() => onOpenChange(false)}
     >
       <div

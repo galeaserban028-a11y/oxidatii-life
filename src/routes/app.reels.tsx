@@ -266,7 +266,7 @@ function ReelTile({
       {pill && (
         <div className="absolute top-[calc(env(safe-area-inset-top)+58px)] left-3 z-10">
           <div
-            className={`px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border backdrop-blur-md ${pill.cls}`}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border ${pill.cls}`}
           >
             {pill.label}
           </div>
@@ -275,7 +275,7 @@ function ReelTile({
 
       {paused && reel.isVideo && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="rounded-full bg-black/50 p-5 backdrop-blur-md">
+          <div className="rounded-full bg-black/50 p-5">
             <svg viewBox="0 0 24 24" className="size-10 fill-white">
               <path d="M8 5v14l11-7z" />
             </svg>
@@ -291,7 +291,7 @@ function ReelTile({
           aria-label="like"
         >
           <div
-            className={`size-12 rounded-full backdrop-blur-md flex items-center justify-center ${
+            className={`size-12 rounded-full flex items-center justify-center ${
               liked ? "bg-[#ff3d8b]" : "bg-white/10 border border-white/20"
             }`}
           >
@@ -306,7 +306,7 @@ function ReelTile({
           className="flex flex-col items-center gap-1 active:scale-90 transition"
           aria-label="comment"
         >
-          <div className="size-12 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center">
+          <div className="size-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
             <svg viewBox="0 0 24 24" className="size-6 fill-none stroke-white" strokeWidth="2">
               <path d="M21 12a8 8 0 1 1-3-6.2L21 5l-1 4.5A8 8 0 0 1 21 12z" />
             </svg>
@@ -340,7 +340,7 @@ function ReelTile({
           className="flex flex-col items-center gap-1 active:scale-90 transition"
           aria-label="share"
         >
-          <div className="size-12 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center">
+          <div className="size-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
             <svg
               viewBox="0 0 24 24"
               className="size-6 fill-none stroke-white"
@@ -366,7 +366,7 @@ function ReelTile({
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") handleSoundToggle(e);
           }}
-          className="absolute right-3 top-[calc(env(safe-area-inset-top)+58px)] z-20 min-h-11 min-w-11 rounded-full bg-black/45 border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,.35)] backdrop-blur-md flex items-center justify-center active:scale-90 transition"
+          className="absolute right-3 top-[calc(env(safe-area-inset-top)+58px)] z-20 min-h-11 min-w-11 rounded-full bg-black/45 border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,.35)] flex items-center justify-center active:scale-90 transition"
           aria-label="mute"
           aria-pressed={!muted}
         >
@@ -473,7 +473,7 @@ function SponsoredTile({ ad, active }: { ad: Sponsored; active: boolean }) {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
       <div
-        className="absolute top-[calc(env(safe-area-inset-top)+58px)] left-3 z-10 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border backdrop-blur-md"
+        className="absolute top-[calc(env(safe-area-inset-top)+58px)] left-3 z-10 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border"
         style={{ background: `${color}22`, borderColor: `${color}66`, color: "#fff" }}
       >
         ✦ Sponsorizat{ad.brand_name ? ` · ${ad.brand_name}` : ""}
@@ -488,7 +488,7 @@ function SponsoredTile({ ad, active }: { ad: Sponsored; active: boolean }) {
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") handleSponsoredSoundToggle(e);
           }}
-          className="absolute right-3 top-[calc(env(safe-area-inset-top)+58px)] z-10 size-9 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center"
+          className="absolute right-3 top-[calc(env(safe-area-inset-top)+58px)] z-10 size-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center"
           aria-label="mute"
           aria-pressed={!muted}
         >

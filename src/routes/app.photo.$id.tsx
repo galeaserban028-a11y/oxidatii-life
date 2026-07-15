@@ -463,7 +463,7 @@ function PhotoPage() {
 
       {/* Comment input */}
       <div
-        className="sticky bottom-0 mt-6 px-3 pb-3 bg-background/90 backdrop-blur-xl border-t border-foreground/10 pt-3 flex items-end gap-2"
+        className="sticky bottom-0 mt-6 px-3 pb-3 bg-background/90 border-t border-foreground/10 pt-3 flex items-end gap-2"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 5.5rem)" }}
       >
         <textarea

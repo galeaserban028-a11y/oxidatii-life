@@ -649,11 +649,11 @@ function StoryUploadSheet({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:pb-4 animate-fade-in"
+      className="fixed inset-0 z-[9999] bg-black/85 flex items-end sm:items-center justify-center p-0 sm:p-4 pb-[calc(8rem+env(safe-area-inset-bottom))] sm:pb-4 animate-fade-in"
       onClick={onClose}
     >
       <div
-        className="w-full sm:max-w-md bg-zinc-900/70 backdrop-blur-3xl border border-white/10 rounded-t-[32px] sm:rounded-[32px] p-5 space-y-5 max-h-[calc(100dvh-10rem-env(safe-area-inset-bottom))] sm:max-h-[92dvh] overflow-y-auto shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] animate-scale-in"
+        className="w-full sm:max-w-md bg-zinc-900/70 border border-white/10 rounded-t-[32px] sm:rounded-[32px] p-5 space-y-5 max-h-[calc(100dvh-10rem-env(safe-area-inset-bottom))] sm:max-h-[92dvh] overflow-y-auto shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)] animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -697,14 +697,14 @@ function StoryUploadSheet({
                 value={caption}
                 onChange={(e) => setCaption(e.target.value.slice(0, 200))}
                 placeholder="Adaugă un mesaj…"
-                className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d8b]/50 backdrop-blur-xl text-sm"
+                className="w-full bg-white/10 border border-white/10 rounded-2xl px-5 py-3.5 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#ff3d8b]/50 text-sm"
               />
             </div>
 
             {/* Schimbă media */}
             <button
               onClick={() => inputRef.current?.click()}
-              className="absolute top-3 right-3 p-2.5 bg-black/50 backdrop-blur-md rounded-2xl text-white border border-white/10 hover:bg-black/70 transition-all"
+              className="absolute top-3 right-3 p-2.5 bg-black/50 rounded-2xl text-white border border-white/10 hover:bg-black/70 transition-all"
               aria-label="Schimbă media"
             >
               <Upload size={16} />

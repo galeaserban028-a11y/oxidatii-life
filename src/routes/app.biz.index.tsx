@@ -571,7 +571,7 @@ function PostModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-50 bg-black/80 overflow-y-auto"
       onClick={onClose}
     >
       <div className="min-h-full flex items-end sm:items-center justify-center sm:p-4">
@@ -825,7 +825,7 @@ function CreateBusinessSheet({
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end md:items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-black/70 flex items-end md:items-center justify-center p-4"
       onClick={onClose}
     >
       <div

@@ -158,7 +158,7 @@ export default function PhotoZoom({ src, alt = "", onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl touch-none select-none overscroll-contain"
+      className="fixed inset-0 z-[100] bg-black/95 touch-none select-none overscroll-contain"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -174,7 +174,7 @@ export default function PhotoZoom({ src, alt = "", onClose }: Props) {
           onClose();
         }}
         aria-label="Închide"
-        className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 backdrop-blur-xl border border-white/15 grid place-items-center text-white active:scale-90 transition"
+        className="absolute top-4 right-4 z-10 size-10 rounded-full bg-white/10 border border-white/15 grid place-items-center text-white active:scale-90 transition"
       >
         <svg
           viewBox="0 0 24 24"

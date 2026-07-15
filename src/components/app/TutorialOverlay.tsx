@@ -68,7 +68,7 @@ export function TutorialOverlay() {
   const last = step === STEPS.length - 1;
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/80 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] backdrop-blur-sm sm:items-center sm:pb-4">
+    <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/80 p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] sm:items-center sm:pb-4">
       <div className="relative w-full max-w-sm rounded-[28px] border border-foreground/15 bg-background p-6 shadow-2xl">
         <button
           onClick={finish}

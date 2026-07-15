@@ -235,10 +235,10 @@ function ScanPage() {
             ) : (
               <img src={URL.createObjectURL(file)} alt="" className="h-full w-full object-cover" />
             )}
-            <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-black/70 text-white text-[10px] font-mono uppercase tracking-widest backdrop-blur">
+            <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-black/70 text-white text-[10px] font-mono uppercase tracking-widest">
               {file.type.startsWith("video/") ? "▶ clip" : "📷 poză"}
             </div>
-            <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs backdrop-blur">
+            <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs">
               schimbă
             </div>
           </button>
