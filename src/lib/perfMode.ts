@@ -27,7 +27,11 @@ function start() {
   const dm = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
   const lowMem = !!dm && dm <= 3;
   const lowCores = (navigator.hardwareConcurrency ?? 8) <= 4;
-  if (reduce || lowMem || lowCores) {
+  // Capacitor WebView is slower at compositing than Chrome — force low perf on
+  // native so effects that subscribe here degrade automatically.
+  const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+  const isNative = !!(cap && typeof cap.isNativePlatform === "function" && cap.isNativePlatform());
+  if (reduce || lowMem || lowCores || isNative) {
     setLevel("low");
     // Still keep monitoring in case it recovers (e.g. reduced motion off later)
   }

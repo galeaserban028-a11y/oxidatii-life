@@ -1,6 +1,7 @@
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useRouterState } from "@tanstack/react-router";
 import { memo, ReactNode, useRef } from "react";
+import { usePerfLevel } from "@/hooks/usePerfLevel";
 
 // Top-level tab order used to derive slide direction. Anything not in this list
 // uses a neutral fade so deep links / detail pages don't jump sideways.
@@ -31,6 +32,7 @@ const style = {
 function PageTransitionImpl({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const prefersReducedMotion = useReducedMotion();
+  const perf = usePerfLevel();
   const prevRef = useRef<string>(pathname);
 
   // Resolve direction BEFORE updating prev ref so we animate from old → new.
@@ -41,7 +43,9 @@ function PageTransitionImpl({ children }: { children: ReactNode }) {
   if (a !== -1 && b !== -1 && a !== b) dir = b > a ? 1 : -1;
   prevRef.current = pathname;
 
-  if (prefersReducedMotion) {
+  // Skip framer-motion entirely on native / low perf: AnimatePresence + transform
+  // on the whole page is the single biggest cause of jank in Capacitor WebView.
+  if (prefersReducedMotion || perf === "low") {
     return <>{children}</>;
   }
 
