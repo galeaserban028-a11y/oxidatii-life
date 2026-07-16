@@ -606,10 +606,10 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    touch-action: manipulation;
+    /* No `touch-action: manipulation` on <html>: pe unele WebView-uri Android
+       face scroll-ul să pară „lipit". Îl aplicăm doar pe elemente interactive. */
   }
 
-  html,
   body {
     background-color: #050510;
     background-image:
