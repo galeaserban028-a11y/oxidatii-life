@@ -17,6 +17,7 @@ const NATIVE_PUSH_ENABLED = false;
 let registered = false;
 
 export async function registerNativePush(): Promise<{ ok: boolean; reason?: string }> {
+  if (!NATIVE_PUSH_ENABLED) return { ok: false, reason: "Native push not configured" };
   if (!isNative()) return { ok: false, reason: "Not native" };
   if (registered) return { ok: true };
 
