@@ -1,6 +1,7 @@
 import webpush from "web-push";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { VAPID_PUBLIC_KEY, VAPID_SUBJECT } from "./push-config";
+import { sendFcmToTokens } from "./fcm.server";
 
 let configured = false;
 function configure() {
