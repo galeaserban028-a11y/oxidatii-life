@@ -1,6 +1,7 @@
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { useRouterState } from "@tanstack/react-router";
 import { memo, ReactNode, useRef } from "react";
+import { usePerfLevel } from "@/hooks/usePerfLevel";
 
 // Top-level tab order used to derive slide direction. Anything not in this list
 // uses a neutral fade so deep links / detail pages don't jump sideways.
