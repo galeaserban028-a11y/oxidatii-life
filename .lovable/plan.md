@@ -1,56 +1,53 @@
-# Fac aplicația mult mai smooth
+## Obiectiv
 
-Optimizări țintite pe cele mai frecvente surse de lag din aplicație. Nicio schimbare de design vizibilă — doar fluiditate.
+Pe Android, aplicația să nu mai încarce `https://oxidatii.life` la fiecare navigare (asta îți dă senzația de "web lent"). În loc de asta, tot UI-ul se bundeluiește în APK; doar apelurile la backend (server functions, Supabase, etc.) pleacă în rețea.
 
-## Ce voi face
+Pe iOS lăsăm cum e (funcționează perfect).
 
-### 1. Reduc costul de `backdrop-blur` (163 utilizări în 65 fișiere)
-`backdrop-blur` re-eșantionează fiecare pixel de sub element la fiecare frame; peste conținut animat (feed, hartă, reels, storii) e principala sursă de jank pe telefoane mid-range.
-- Header-uri sticky, taburi de jos, sheet-uri modale, tooltip-uri → înlocuiesc `backdrop-blur-*` cu fundal semi-opac (`bg-background/95`) + `box-shadow` / `text-shadow` unde e cazul.
-- Păstrez blur-ul doar la 1-2 elemente statice unde chiar arată bine (ex. dialog full-screen peste imagine, nu peste video/animație).
+## Ce implică (tehnic, dar contează)
 
-### 2. Liste virtuale & rendare grea
-- `app.feed`, `app.inbox`, `app.friends`, `app.followers`, `app.chat.$id`, `app.reels`, `app.notifications`: adaug virtualizare pe listele lungi (`@tanstack/react-virtual`) sau paginare cu `IntersectionObserver` unde lipsește.
-- `StoriesStrip`, `FeaturedTonightStrip`, `SpritzOfDayStrip`: `content-visibility: auto` + `contain: layout paint` pentru card-uri off-screen.
+TanStack Start rulează SSR pe Cloudflare. Ca să bage tot UI-ul în APK trebuie:
 
-### 3. Imagini
-- Toate `<img>` din feed / lista de venue-uri / stories → `loading="lazy"` + `decoding="async"` + `width`/`height` explicit (previne layout shift).
-- Avatarurile mari primesc `fetchpriority="low"` când sunt sub fold.
-- Cover-urile mari (venue, promo, wrapped) trec pe `srcset` cu `?w=` unde CDN-ul permite; altfel dimensiune fixă mai mică.
+1. **Un al doilea build target: "SPA/native"** — același cod, dar cu `ssr: false` global și output static (`dist/spa/`). Rutele merg tot prin TanStack Router, doar că totul se randează pe client.
+2. **Toate `createServerFn` să știe unde e serverul** — în mod SPA, `createServerFn` face fetch la un URL absolut. Setăm `VITE_SERVER_URL=https://oxidatii.life` la build-ul de SPA și configurăm baza corect, ca serverfn-urile să meargă la producție.
+3. **Capacitor pe Android schimbă strategia**:
+   - `webDir: "dist/spa"` (bundle local)
+   - `server.url` **ștearsă doar pe Android** (rămâne doar pentru iOS, unde funcționează)
+   - `server.androidScheme: "https"` ca cookie-urile / OAuth-ul să meargă
+4. **OAuth callback** rămâne pe HTTPS la `oxidatii.life`, apoi redirect prin `oxidatii://oauth` (deja e configurat, verificăm).
+5. **Push, deep links, `.well-known/assetlinks.json`** — rămân pe domeniul public, nu se schimbă.
 
-### 4. Animații care rulează în fundal
-- Reduc opacitatea/frecvența efectelor decorative (`AvatarAura`, `SignatureReveal`, `ThemeAtmosphere`, `CrystalBallCard`, `StreakHero`) când `getPerfLevel() === "low"` (există deja infrastructura în `src/lib/perfMode.ts`, o folosesc consistent).
-- Elimin `filter: drop-shadow` din SVG-uri animate (foarte scump); înlocuiesc cu `box-shadow` sau `text-shadow` pe wrapper.
-- Adaug `will-change: transform` doar pe elementele care chiar se animează, și îl scot când animația se termină.
+## Pași (în ordine)
 
-### 5. Re-render-uri React
-- `AppLayout`: `resolvePageBackgroundColor` + `MutationObserver` rulează la fiecare navigare — îl mut în spatele unui `requestIdleCallback` și debounce 100ms.
-- Rutele grele (`app.map`, `app.faze`, `app.reels`) primesc `React.memo` pe componentele card mari + `useCallback` pe handler-e transmise în listă.
-- Query-urile cu `staleTime: 0` implicit primesc `staleTime` explicit (30s–5min) pentru date care nu se schimbă per secundă.
+```text
+1. Adaug script `bun run build:spa` care produce dist/spa/ (ssr: false)
+2. Config Capacitor: iOS păstrează server.url; Android citește webDir local
+3. Toate serverFn primesc VITE_SERVER_URL absolut în modul SPA
+4. Workflow-ul android-release.yml rulează build:spa înainte de cap sync
+5. Test: cap sync android + verificare că APK-ul deschide UI fără rețea
+6. Fix perf Android separat: elimin backdrop-blur unde e overlay peste conținut animat (recomandat de Lovable), scad animațiile de tranziție pe Android low-end
+```
 
-### 6. Scroll & touch
-- Pe containere lungi: `overscroll-behavior: contain` ca să nu propage scroll-ul la `body`.
-- `PageTransition` folosește tranziții de opacitate/transform pe container mare — verific că nu creează layout thrash și scurtez durata (200→140ms).
-- `SwipeNavigator`: pasiv listeners pe `touchmove` acolo unde nu face `preventDefault`.
+## Ce trebuie să știi că se poate strica
 
-### 7. Bundle & first paint
-- `React.lazy` pe rutele grele care nu se ating imediat (`app.admin.*`, `app.wrapped`, `app.replay*`, `LeaderboardExportSheet`, `NightWrapSheet`).
-- Verific că sheet-urile mari sunt încărcate doar când se deschid, nu la mount-ul paginii părinte.
+- **Rutele care fac data-fetch în `loader` sub `_authenticated/`** merg tot bine (loaderul rulează pe client în SPA), dar fac un request extra la prima intrare. E acceptabil.
+- **SEO și link-uri publice** (index, /u/$handle, blog etc.) rămân servite de Cloudflare SSR — SPA-ul e doar în APK-ul Android.
+- **Prima deschidere după update** trebuie să descarce noul APK; nu mai există "publish web = update instant pe Android". Ăsta e trade-off-ul lui B.
+- **Testarea reală**: nu pot testa APK-ul din sandbox. Îți dau build-ul prin GitHub Actions (workflow-ul deja există) și tu îl instalezi pe telefon. Dacă ceva scârțâie, iterăm.
 
-## Ce NU ating
-- Design-ul vizual (culori, layout, tipografie) rămâne identic.
-- Logica de business, RLS, backend-ul.
-- Harta — deja optimizată în tur-ul anterior.
+## Perf Android (în același PR)
 
-## Verificare
-După fiecare grup de modificări:
-- Build passes.
-- Playwright headless pe `/app`, `/app/feed`, `/app/map`, `/app/reels`: măsor FPS via `performance.now()` pe scroll + screenshot să confirm că nu s-a rupt nimic vizual.
-- Verific `getPerfLevel()` se schimbă corect pe device slab (simulez cu CPU throttle 4x).
+- Elimin `backdrop-blur` de pe elemente peste conținut animat (bar tab, header sticky peste feed) — înlocuiesc cu fundal solid + `text-shadow` unde e nevoie.
+- `PageTransition` deja e dezactivat pe `perf: "low"`; forțez `perf: "low"` pe Android WebView cu RAM < 4GB.
+- `SwipeNavigator` rămâne, dar pe Android reduc pragul de detecție ca să nu concureze cu scroll-ul.
 
-## Detalii tehnice
-- Nu ating `src/integrations/supabase/*`, `src/routeTree.gen.ts`, `capacitor.config.ts`.
-- Toate schimbările sunt în `src/components/app/*`, `src/routes/app.*`, `src/lib/perfMode.ts`, `src/hooks/usePerfLevel.ts`.
-- Adaug `@tanstack/react-virtual` dacă nu există deja.
+## Confirmă înainte să încep
 
-Grupul e mare — dacă vrei să tai din scope (ex. doar blur + liste, sau doar animații), spune-mi și fac doar acele bucăți.
+Vrei să merg direct pe planul ăsta? Odată ce încep, atinge:
+- `capacitor.config.ts`
+- `vite.config.ts` (adaugă mod SPA)
+- `package.json` (script nou)
+- `.github/workflows/android-release.yml`
+- câteva componente cu `backdrop-blur`
+
+E o schimbare mare — dacă vrei să facem doar partea de perf Android fără bundling SPA, spune-mi și rămânem la lag-fix.
