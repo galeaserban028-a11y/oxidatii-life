@@ -621,7 +621,8 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
-    overscroll-behavior-y: none;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
     text-rendering: optimizeSpeed;
   }
 

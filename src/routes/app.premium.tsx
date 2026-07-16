@@ -231,7 +231,7 @@ function PremiumPage() {
 
   return (
     <div
-      className="relative min-h-screen pb-32 bg-background text-foreground antialiased overflow-hidden"
+      className="relative min-h-screen pb-32 bg-background text-foreground antialiased"
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingLeft: "env(safe-area-inset-left)",
