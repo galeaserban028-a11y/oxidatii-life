@@ -1413,9 +1413,7 @@ html[data-perf="low"] .oxi-frame-metallic,
 html[data-perf="low"] [data-perf-decorative] {
   animation: none !important;
 }
-html[data-perf="low"] * {
-  /* Drop-shadow filters on animated elements are the most expensive per-pixel
-     GPU op in Chromium; strip them wholesale on low perf. */
+html[data-perf="low"] [data-perf-decorative] {
   filter: none !important;
 }
 
