@@ -12,7 +12,10 @@
 import { supabase } from "@/integrations/supabase/client";
 import { isNative, getNativePlatform } from "./native";
 
-const NATIVE_PUSH_ENABLED = false;
+// Native push is ENABLED. Requires the installed AAB to contain
+// android/app/google-services.json (Firebase) so PushNotifications.register()
+// doesn't crash on Android. iOS also needs GoogleService-Info.plist + APNs.
+const NATIVE_PUSH_ENABLED = true;
 
 let registered = false;
 
