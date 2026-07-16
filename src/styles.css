@@ -1405,3 +1405,22 @@ main.oxi-compact .h-72 {
 .oxi-frame-metallic {
   animation: oxi-frame-spin 14s linear infinite;
 }
+
+/* Low-perf overrides: freeze decorative continuous animations to save CPU/GPU
+   on native WebView and low-end devices. Components already gate the heavy
+   ones via usePerfLevel, this catches SVG/CSS-only ornaments. */
+html[data-perf="low"] .oxi-frame-metallic,
+html[data-perf="low"] [data-perf-decorative] {
+  animation: none !important;
+}
+html[data-perf="low"] * {
+  /* Drop-shadow filters on animated elements are the most expensive per-pixel
+     GPU op in Chromium; strip them wholesale on low perf. */
+  filter: none !important;
+}
+
+/* Snappier scroll on native WebView: rubber-band contained to the scroll
+   container, avoid propagating to body → cheaper composite. */
+main, [data-page-root] {
+  overscroll-behavior: contain;
+}
