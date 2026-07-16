@@ -109,7 +109,7 @@ export function SwipeNavigator({ children }: { children: ReactNode }) {
   }, [navigate]);
 
   return (
-    <div ref={ref} style={{ touchAction: swipeDisabled ? "auto" : "pan-y" }}>
+    <div ref={ref} className="min-w-0" style={{ touchAction: swipeDisabled ? "auto" : "pan-y" }}>
       {children}
     </div>
   );

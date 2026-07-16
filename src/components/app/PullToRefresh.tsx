@@ -105,7 +105,10 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
       // exponential resistance — same shape, platform-tuned damping
       const eased = MAX * (1 - Math.exp(-dy / DAMP));
       pullRef.current = eased;
-      if (raw > START_OFFSET && window.scrollY <= 0 && e.cancelable) e.preventDefault();
+      // Only block the native scroll when the pull is real: we are at the very
+      // top AND the eased displacement is beyond a small threshold. This avoids
+      // killing normal scroll on Android WebView on tiny downward jitters.
+      if (eased > 12 && window.scrollY <= 0 && e.cancelable) e.preventDefault();
       scheduleApply();
     };
 
