@@ -1,6 +1,7 @@
 import webpush from "web-push";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { VAPID_PUBLIC_KEY, VAPID_SUBJECT } from "./push-config";
+import { sendFcmToTokens } from "./fcm.server";
 
 let configured = false;
 function configure() {
@@ -32,8 +33,11 @@ export async function sendPushToUsers(
     .select("id, endpoint, p256dh, auth")
     .in("user_id", userIds);
   if (error) throw new Error(error.message);
-  const webSubs = (subs ?? []).filter((s) => !s.endpoint.startsWith("native:"));
-  if (!webSubs.length) return { sent: 0, failed: 0 };
+  const allSubs = subs ?? [];
+  const webSubs = allSubs.filter((s) => !s.endpoint.startsWith("native:"));
+  const fcmTokens = allSubs
+    .filter((s) => s.endpoint.startsWith("native:fcm:"))
+    .map((s) => s.endpoint.slice("native:fcm:".length));
 
   const body = JSON.stringify(payload);
   const deadIds: string[] = [];
@@ -55,6 +59,17 @@ export async function sendPushToUsers(
       }
     }),
   );
+
+  if (fcmTokens.length) {
+    try {
+      const fcm = await sendFcmToTokens(fcmTokens, payload);
+      sent += fcm.sent;
+      failed += fcm.failed;
+    } catch (err) {
+      console.warn("[push] FCM send failed", err);
+      failed += fcmTokens.length;
+    }
+  }
 
   if (deadIds.length) {
     await supabaseAdmin.from("push_subscriptions").delete().in("id", deadIds);
