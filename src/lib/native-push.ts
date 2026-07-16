@@ -12,6 +12,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { isNative, getNativePlatform } from "./native";
 
+const NATIVE_PUSH_ENABLED = false;
+
 let registered = false;
 
 export async function registerNativePush(): Promise<{ ok: boolean; reason?: string }> {
