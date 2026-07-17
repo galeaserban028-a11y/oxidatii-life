@@ -50,6 +50,7 @@ function AppLayout() {
 
   const { user, profile, loading } = useAuth();
   const { compact } = useCompactMode();
+  const perf = usePerfLevel();
   const mainRef = useRef<HTMLElement>(null);
   const outletRef = useRef<HTMLDivElement>(null);
   const [headerColor, setHeaderColor] = useState("var(--background)");
