@@ -25,6 +25,13 @@ const serverFnBase =
   process.env.SERVER_FN_BASE_URL ?? (isSpaBuild ? "https://oxidatii.life/_serverFn" : "/_serverFn");
 
 export default defineConfig({
+  // For SPA build we need a Node-runnable server bundle at
+  // dist/server/server.js so the TanStack prerender step can boot a local
+  // preview server and render `_shell.html`. Cloudflare preset emits
+  // `index.mjs` and prerender can't find it. `node-server` produces the
+  // expected layout. This override only applies outside a Lovable Cloud
+  // build (see wrapper docs — Lovable forces cloudflare in-editor).
+  ...(isSpaBuild ? { nitro: { preset: "node-server" as const } } : {}),
   tanstackStart: {
     server: { entry: "server" },
     serverFns: { base: serverFnBase },
@@ -36,6 +43,7 @@ export default defineConfig({
         }
       : {}),
   },
+
   vite: {
     resolve: {
       alias: [
