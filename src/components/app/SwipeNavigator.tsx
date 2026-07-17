@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { usePerfLevel } from "@/hooks/usePerfLevel";
 
 // Same order as the bottom tab bar so swipe matches what the user sees.
 const TAB_ORDER = ["/app", "/app/map", "/app/top", "/app/squad", "/app/inbox", "/app/me"];
