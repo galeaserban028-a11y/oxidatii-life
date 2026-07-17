@@ -69,6 +69,11 @@ function AppLayout() {
   }, [pathname, loading, updateHeaderColor]);
 
   useEffect(() => {
+    // On low-perf devices (Android WebView, low RAM, reduced motion) the
+    // MutationObserver + getComputedStyle every 120ms is a top jank source.
+    // The layout-effect above already updates on every pathname change, which
+    // covers 99% of cases; skip the observer entirely on low perf.
+    if (perf === "low") return;
     const outlet = outletRef.current;
     if (!outlet) return;
     // Debounce so we don't re-read computed styles on every child mutation
@@ -97,7 +102,7 @@ function AppLayout() {
       if (timer) clearTimeout(timer);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [pathname, loading, updateHeaderColor]);
+  }, [pathname, loading, updateHeaderColor, perf]);
 
 
   useEffect(() => {
