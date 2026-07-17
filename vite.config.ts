@@ -30,11 +30,9 @@ export default defineConfig({
     serverFns: { base: serverFnBase },
     ...(isSpaBuild
       ? {
-          spa: {
-            enabled: true,
-            maskPath: "/",
-            prerender: { outputPath: "/index" },
-          },
+          // Emits dist/client/_shell.html — postbuild-spa.mjs renames it to
+          // dist/spa/index.html for Capacitor.
+          spa: { enabled: true, maskPath: "/" },
         }
       : {}),
   },
