@@ -40,10 +40,15 @@ jobs:
       - name: Install web deps
         run: bun install --frozen-lockfile
 
-      - name: Build web bundle
-        run: bun run build
+      - name: Build SPA bundle for Android APK
+        env:
+          BUILD_MODE: spa
+          SERVER_FN_BASE_URL: https://oxidatii.life/_serverFn
+        run: bun run build:spa
 
-      - name: Capacitor sync android
+      - name: Capacitor sync android (uses dist/spa/)
+        env:
+          CAP_PLATFORM: android
         run: bunx cap sync android
 
       - name: Decode google-services.json (optional)
