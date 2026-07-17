@@ -16,9 +16,27 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const serverEnv = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), "");
 Object.assign(process.env, serverEnv);
 
+// SPA build mode: `BUILD_MODE=spa` enables TanStack Start SPA shell generation
+// for the Android APK bundle. All `createServerFn` calls point to the absolute
+// SERVER_FN_BASE_URL (default https://oxidatii.life/_serverFn) so the offline
+// app still reaches production backend.
+const isSpaBuild = process.env.BUILD_MODE === "spa";
+const serverFnBase =
+  process.env.SERVER_FN_BASE_URL ?? (isSpaBuild ? "https://oxidatii.life/_serverFn" : "/_serverFn");
+
 export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
+    serverFns: { base: serverFnBase },
+    ...(isSpaBuild
+      ? {
+          spa: {
+            enabled: true,
+            maskPath: "/",
+            prerender: { outputPath: "/index" },
+          },
+        }
+      : {}),
   },
   vite: {
     resolve: {
