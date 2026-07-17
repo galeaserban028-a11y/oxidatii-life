@@ -25,6 +25,14 @@ const serverFnBase =
   process.env.SERVER_FN_BASE_URL ?? (isSpaBuild ? "https://oxidatii.life/_serverFn" : "/_serverFn");
 
 export default defineConfig({
+  // For SPA build we disable nitro entirely so TanStack Start emits its own
+  // `dist/server/server.js` bundle (matching the entry name in
+  // `tanstackStart.server.entry`). Nitro's cloudflare preset emits
+  // `dist/server/index.mjs`, which the TanStack prerender step can't find
+  // when it boots a local preview server to render `_shell.html`.
+  // This override only applies outside a Lovable Cloud build (see wrapper docs).
+  ...(isSpaBuild ? { nitro: false as const } : {}),
+
   tanstackStart: {
     server: { entry: "server" },
     serverFns: { base: serverFnBase },
@@ -36,6 +44,7 @@ export default defineConfig({
         }
       : {}),
   },
+
   vite: {
     resolve: {
       alias: [
