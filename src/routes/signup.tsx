@@ -120,7 +120,7 @@ function SignupPage() {
 
   return (
     <main
-      className="min-h-[100dvh] overflow-y-auto bg-background text-foreground px-6 py-6"
+      className="h-[100dvh] overflow-y-auto bg-background text-foreground px-6 py-6"
       style={{ WebkitOverflowScrolling: "touch", overscrollBehaviorY: "contain" }}
     >
       <div className="flex items-center justify-between mb-4">
