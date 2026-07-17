@@ -113,10 +113,14 @@ export function SwipeNavigator({ children }: { children: ReactNode }) {
       el.removeEventListener("touchend", onEnd);
       el.removeEventListener("touchcancel", reset);
     };
-  }, [navigate]);
+  }, [navigate, perf]);
 
   return (
-    <div ref={ref} className="min-w-0" style={{ touchAction: swipeDisabled ? "auto" : "pan-y" }}>
+    <div
+      ref={ref}
+      className="min-w-0"
+      style={{ touchAction: swipeDisabled || perf === "low" ? "auto" : "pan-y" }}
+    >
       {children}
     </div>
   );
