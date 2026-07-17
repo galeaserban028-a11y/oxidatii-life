@@ -20,13 +20,17 @@ if (!existsSync(clientDir)) {
 rmSync(spaDir, { recursive: true, force: true });
 cpSync(clientDir, spaDir, { recursive: true });
 
-const shell = join(spaDir, "_shell.html");
+const shellCandidates = [
+  join(spaDir, "_shell.html"),
+  join(spaDir, "_shell", "index.html"),
+];
+const shell = shellCandidates.find((p) => existsSync(p));
 const indexHtml = join(spaDir, "index.html");
-if (existsSync(shell)) {
+if (shell) {
   if (existsSync(indexHtml)) rmSync(indexHtml, { force: true });
   renameSync(shell, indexHtml);
 } else if (!existsSync(indexHtml)) {
-  console.error(`[postbuild-spa] Neither _shell.html nor index.html found under ${spaDir}`);
+  console.error(`[postbuild-spa] No shell HTML found under ${spaDir}`);
   console.error("Contents:", readdirSync(spaDir));
   process.exit(1);
 }
