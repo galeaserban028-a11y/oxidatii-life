@@ -26,6 +26,7 @@ function currentTabIndex(pathname: string): number {
 export function SwipeNavigator({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const perf = usePerfLevel();
   const ref = useRef<HTMLDivElement | null>(null);
   const swipeDisabled = DISABLED_PREFIXES.some((d) => pathname === d || pathname.startsWith(d));
 
@@ -34,8 +35,13 @@ export function SwipeNavigator({ children }: { children: ReactNode }) {
   pathRef.current = pathname;
 
   useEffect(() => {
+    // On low-perf devices (Android WebView, low RAM), horizontal-swipe detection
+    // adds touch listener overhead on every scroll gesture. Skip it entirely —
+    // users can still tap tabs. This is the single biggest Android scroll win.
+    if (perf === "low") return;
     const el = ref.current;
     if (!el) return;
+
 
     let startX = 0;
     let startY = 0;
