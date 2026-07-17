@@ -162,11 +162,14 @@ Info "Instalez dependențe web"
 bun install
 if ($LASTEXITCODE -ne 0) { Fail "bun install a eșuat." }
 
-Info "Construiesc aplicația web"
-bun run build
-if ($LASTEXITCODE -ne 0) { Fail "bun run build a eșuat. Rezolvă eroarea afișată mai sus." }
+Info "Construiesc aplicația Android locală (SPA, fără server.url / web extern)"
+if (-not $env:SERVER_FN_BASE_URL) { $env:SERVER_FN_BASE_URL = "https://oxidatii.life/_serverFn" }
+$env:BUILD_MODE = "spa"
+bun run build:spa
+if ($LASTEXITCODE -ne 0) { Fail "bun run build:spa a eșuat. Rezolvă eroarea afișată mai sus." }
 
 Info "Sincronizez Capacitor Android"
+$env:CAP_PLATFORM = "android"
 bunx cap sync android
 if ($LASTEXITCODE -ne 0) { Fail "cap sync android a eșuat." }
 
