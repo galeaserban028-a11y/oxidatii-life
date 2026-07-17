@@ -1,36 +1,24 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
-// Capacitor wraps the LIVE published Lovable site — the app is TanStack Start SSR
-// on Cloudflare, so there is no static `index.html` to bundle offline. `webDir`
-// points to a tiny stub folder that only exists to satisfy `cap sync`; the real
-// UI is served from `server.url`. Override with CAP_SERVER_URL for local dev.
-// OAuth returns to an HTTPS callback on this domain, which then opens the
-// registered `oxidatii://oauth` native scheme.
+// Two runtime modes controlled by env at `cap sync` time:
+//
+//   CAP_PLATFORM=android → Android bundles dist/spa/ locally (no server.url).
+//                          The webview loads index.html from the APK; every
+//                          createServerFn/API call goes to https://oxidatii.life
+//                          via absolute URLs baked in at build time.
+//
+//   default (iOS / dev)  → uses server.url pointing at the live site. Works
+//                          today, no reason to change it.
+//
+// Override the remote URL locally with CAP_SERVER_URL.
 const PUBLISHED_URL = "https://oxidatii.life";
 const devServerUrl = process.env.CAP_SERVER_URL ?? PUBLISHED_URL;
+const targetAndroid = process.env.CAP_PLATFORM === "android";
 
-const config: CapacitorConfig = {
+const baseConfig: CapacitorConfig = {
   appId: "com.oxidatii.app",
   appName: "OXIDAȚII",
-  webDir: "capacitor-www",
-  server: {
-    url: devServerUrl,
-    cleartext: false,
-    // Hosts that the remote WebView may navigate to. OAuth itself is opened
-    // deliberately in a secure system Custom Tab / Safari view.
-    allowNavigation: [
-      "oxidatii.life",
-      "*.oxidatii.life",
-      "*.lovable.app",
-      "*.lovable.dev",
-      "accounts.google.com",
-      "*.google.com",
-      "*.googleusercontent.com",
-      "appleid.apple.com",
-      "*.apple.com",
-      "*.supabase.co",
-    ],
-  },
+  webDir: targetAndroid ? "dist/spa" : "capacitor-www",
   ios: {
     contentInset: "always",
     allowsLinkPreview: false,
@@ -41,6 +29,9 @@ const config: CapacitorConfig = {
   android: {
     backgroundColor: "#1a120c",
     allowMixedContent: false,
+    // Use https scheme so cookies + fetch to https://oxidatii.life behave like
+    // a normal secure origin (Origin header = https://localhost).
+    ...(targetAndroid ? { androidScheme: "https" as const } : {}),
   },
   plugins: {
     SplashScreen: {
@@ -61,14 +52,33 @@ const config: CapacitorConfig = {
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"],
     },
-    Geolocation: {
-      // iOS Info.plist + Android manifest descriptions still need
-      // to be set per platform; see ios/App/App/Info.plist & AndroidManifest.xml.
-    },
-    Camera: {
-      // Same: descriptions live in platform manifests.
-    },
+    Geolocation: {},
+    Camera: {},
   },
 };
+
+// Only set server.url on non-Android builds. Android must load the local
+// bundle; a server.url here would send it back to the web app.
+const config: CapacitorConfig = targetAndroid
+  ? baseConfig
+  : {
+      ...baseConfig,
+      server: {
+        url: devServerUrl,
+        cleartext: false,
+        allowNavigation: [
+          "oxidatii.life",
+          "*.oxidatii.life",
+          "*.lovable.app",
+          "*.lovable.dev",
+          "accounts.google.com",
+          "*.google.com",
+          "*.googleusercontent.com",
+          "appleid.apple.com",
+          "*.apple.com",
+          "*.supabase.co",
+        ],
+      },
+    };
 
 export default config;
