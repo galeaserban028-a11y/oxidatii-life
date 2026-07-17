@@ -39,8 +39,13 @@ export default defineConfig({
     ...(isSpaBuild
       ? {
           // Emits dist/client/_shell.html — postbuild-spa.mjs renames it to
-          // dist/spa/index.html for Capacitor.
+          // dist/spa/index.html for Capacitor. Only prerender the shell mask;
+          // don't crawl links, otherwise the prerender attempts to render
+          // authenticated/route-loader pages during CI and dumps a raw
+          // Request object before exiting non-zero.
           spa: { enabled: true, maskPath: "/" },
+          pages: [{ path: "/" }],
+          prerender: { enabled: true, crawlLinks: false, failOnError: false },
         }
       : {}),
   },
