@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { usePerfLevel } from "@/hooks/usePerfLevel";
 
 // Same order as the bottom tab bar so swipe matches what the user sees.
 const TAB_ORDER = ["/app", "/app/map", "/app/top", "/app/squad", "/app/inbox", "/app/me"];
@@ -25,6 +26,7 @@ function currentTabIndex(pathname: string): number {
 export function SwipeNavigator({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const perf = usePerfLevel();
   const ref = useRef<HTMLDivElement | null>(null);
   const swipeDisabled = DISABLED_PREFIXES.some((d) => pathname === d || pathname.startsWith(d));
 
@@ -33,8 +35,13 @@ export function SwipeNavigator({ children }: { children: ReactNode }) {
   pathRef.current = pathname;
 
   useEffect(() => {
+    // On low-perf devices (Android WebView, low RAM), horizontal-swipe detection
+    // adds touch listener overhead on every scroll gesture. Skip it entirely —
+    // users can still tap tabs. This is the single biggest Android scroll win.
+    if (perf === "low") return;
     const el = ref.current;
     if (!el) return;
+
 
     let startX = 0;
     let startY = 0;
@@ -106,10 +113,14 @@ export function SwipeNavigator({ children }: { children: ReactNode }) {
       el.removeEventListener("touchend", onEnd);
       el.removeEventListener("touchcancel", reset);
     };
-  }, [navigate]);
+  }, [navigate, perf]);
 
   return (
-    <div ref={ref} className="min-w-0" style={{ touchAction: swipeDisabled ? "auto" : "pan-y" }}>
+    <div
+      ref={ref}
+      className="min-w-0"
+      style={{ touchAction: swipeDisabled || perf === "low" ? "auto" : "pan-y" }}
+    >
       {children}
     </div>
   );
