@@ -36,22 +36,19 @@ function corsHeadersFor(origin: string | null): Record<string, string> {
   };
 }
 
-const corsMiddleware = createMiddleware().server(async ({ next, request }) => {
-  const origin = request?.headers?.get("origin") ?? null;
+const corsMiddleware = createMiddleware().server(async ({ next }) => {
+  const request = getRequest();
+  const origin = request?.headers.get("origin") ?? null;
   const headers = corsHeadersFor(origin);
+  const hasCors = Object.keys(headers).length > 0;
 
-  // Short-circuit CORS preflight before it hits the router / serverFn dispatch.
-  if (request?.method === "OPTIONS" && origin && Object.keys(headers).length > 0) {
+  // Short-circuit CORS preflight before the router / serverFn dispatches.
+  if (request?.method === "OPTIONS" && hasCors) {
     return new Response(null, { status: 204, headers });
   }
 
-  const response = await next();
-  if (response instanceof Response && Object.keys(headers).length > 0) {
-    for (const [k, v] of Object.entries(headers)) {
-      response.headers.set(k, v);
-    }
-  }
-  return response;
+  if (hasCors) setResponseHeaders(headers);
+  return await next();
 });
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
