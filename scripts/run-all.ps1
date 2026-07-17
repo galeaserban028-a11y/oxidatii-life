@@ -85,14 +85,18 @@ if (-not (Test-Path $ksFile)) {
   Ok "Keystore generat. Parolele sunt in android/keystore.properties (nu commit-a!)"
 }
 
-# --- 3. Deps + build web ---
+# --- 3. Deps + Android SPA bundle ---
 if (-not (Test-Path "node_modules")) { Info "bun install"; bun install }
-Info "bun run build"; bun run build
-if ($LASTEXITCODE -ne 0) { Die "Build web esuat" }
+Info "bun run build:spa"
+if (-not $env:SERVER_FN_BASE_URL) { $env:SERVER_FN_BASE_URL = "https://oxidatii.life/_serverFn" }
+$env:BUILD_MODE = "spa"
+bun run build:spa
+if ($LASTEXITCODE -ne 0) { Die "Build SPA esuat" }
 
 # --- 4. Capacitor sync ---
-Info "npx cap sync android"
-npx cap sync android
+Info "cap sync android"
+$env:CAP_PLATFORM = "android"
+bunx cap sync android
 if ($LASTEXITCODE -ne 0) { Die "cap sync esuat" }
 
 # --- 5. Bundle release (auto-bump versionCode based on epoch minutes, fits Play 2.1e9) ---

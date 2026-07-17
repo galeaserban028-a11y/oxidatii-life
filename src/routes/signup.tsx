@@ -119,7 +119,10 @@ function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col bg-background text-foreground px-6 py-10">
+    <main
+      className="h-[100dvh] overflow-y-auto bg-background text-foreground px-6 py-6"
+      style={{ WebkitOverflowScrolling: "touch", overscrollBehaviorY: "contain" }}
+    >
       <div className="flex items-center justify-between mb-4">
         <Link
           to="/"
@@ -134,7 +137,7 @@ function SignupPage() {
           OXIDAȚII
         </Link>
       </div>
-      <div className="flex-1 flex items-center">
+      <div className="min-h-[calc(100dvh-6.5rem)] flex items-center py-4">
         <div className="w-full max-w-sm mx-auto space-y-6">
           <div>
             <h1 className="font-display font-black text-3xl">Intră în haos.</h1>

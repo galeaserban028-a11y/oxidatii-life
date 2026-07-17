@@ -57,12 +57,12 @@ EOF
   ok "Keystore generat -> $KP (nu commit-a!)"
 fi
 
-# 3. deps + web
+# 3. deps + Android SPA bundle
 [ -d node_modules ] || { info "bun install"; bun install; }
-info "bun run build"; bun run build
+info "bun run build:spa"; BUILD_MODE=spa SERVER_FN_BASE_URL="${SERVER_FN_BASE_URL:-https://oxidatii.life/_serverFn}" bun run build:spa
 
 # 4. cap sync
-info "npx cap sync android"; npx cap sync android
+info "cap sync android"; CAP_PLATFORM=android bunx cap sync android
 
 # 5. bundle release (auto-bump versionCode based on epoch minutes, fits Play limit 2.1e9)
 if [ -z "${ANDROID_VERSION_CODE:-}" ]; then

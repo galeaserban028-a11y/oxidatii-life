@@ -101,11 +101,11 @@ rm -rf android/build android/.gradle android/app/build android/capacitor-cordova
 info "Instalez dependențe web"
 bun install
 
-info "Construiesc aplicația web"
-bun run build
+info "Construiesc aplicația Android locală (SPA, fără server.url / web extern)"
+BUILD_MODE=spa SERVER_FN_BASE_URL="${SERVER_FN_BASE_URL:-https://oxidatii.life/_serverFn}" bun run build:spa
 
 info "Sincronizez Capacitor Android"
-bunx cap sync android
+CAP_PLATFORM=android bunx cap sync android
 
 if [[ -z "${ANDROID_VERSION_CODE:-}" ]]; then
   export ANDROID_VERSION_CODE="$(( $(date -u +%s) / 60 ))"

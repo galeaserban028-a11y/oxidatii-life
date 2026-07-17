@@ -74,7 +74,8 @@ export async function bootstrapNative(): Promise<void> {
         lastHandledUrl = url;
         try {
           const u = new URL(url);
-          const isOAuthScheme = u.protocol === "oxidatii:" && u.host === "oauth";
+          const isOAuthScheme =
+            u.protocol === "oxidatii:" && (u.host === "oauth" || u.host === "oauth-callback");
           const isKnownWebHost =
             u.protocol === "https:" &&
             (u.host === "oxidatii.life" ||

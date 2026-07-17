@@ -14,9 +14,8 @@
  *      https://oxidatii.life/~oauth/initiate.
  *   2. `Browser.open()` opens it in a Custom Tab / Safari view — a real
  *      Chromium instance, so Google is happy.
- *   3. The broker returns to /auth/callback. That HTTPS page forwards the
- *      response to `oxidatii://oauth`, which launches the native app without
- *      relying on Android App Links or iOS Universal Links.
+ *   3. The broker returns directly to `oxidatii://oauth`, which launches the
+ *      native app without relying on Android App Links or an intermediate web page.
  *   4. The global `App.addListener("appUrlOpen")` in src/lib/native.ts
  *      validates the OAuth response and hydrates the Supabase session.
  *   5. We close the Custom Tab.
@@ -25,7 +24,7 @@
 import { isNative } from "./native";
 
 const OAUTH_BROKER_URL = "https://oxidatii.life/~oauth/initiate";
-const NATIVE_REDIRECT_URI = "https://oxidatii.life/auth/callback";
+const NATIVE_REDIRECT_URI = "oxidatii://oauth";
 
 export const NATIVE_OAUTH_FINISHED_EVENT = "native-oauth-finished";
 
