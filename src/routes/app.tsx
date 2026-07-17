@@ -11,6 +11,7 @@ import { SwipeNavigator } from "@/components/app/SwipeNavigator";
 import { useLiveLocation } from "@/hooks/useLiveLocation";
 import { TutorialOverlay } from "@/components/app/TutorialOverlay";
 import { useCompactMode } from "@/lib/compactMode";
+import { usePerfLevel } from "@/hooks/usePerfLevel";
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
