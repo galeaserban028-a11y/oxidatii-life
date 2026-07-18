@@ -24,6 +24,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as UHandleRouteImport } from './routes/u.$handle'
+import { Route as DebugOauthRouteImport } from './routes/debug.oauth'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AppWrappedRouteImport } from './routes/app.wrapped'
 import { Route as AppTopRouteImport } from './routes/app.top'
@@ -154,6 +155,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const UHandleRoute = UHandleRouteImport.update({
   id: '/u/$handle',
   path: '/u/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DebugOauthRoute = DebugOauthRouteImport.update({
+  id: '/debug/oauth',
+  path: '/debug/oauth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
@@ -483,6 +489,7 @@ export interface FileRoutesByFullPath {
   '/app/top': typeof AppTopRoute
   '/app/wrapped': typeof AppWrappedRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/debug/oauth': typeof DebugOauthRoute
   '/u/$handle': typeof UHandleRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
@@ -554,6 +561,7 @@ export interface FileRoutesByTo {
   '/app/top': typeof AppTopRoute
   '/app/wrapped': typeof AppWrappedRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/debug/oauth': typeof DebugOauthRoute
   '/u/$handle': typeof UHandleRoute
   '/app': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
@@ -628,6 +636,7 @@ export interface FileRoutesById {
   '/app/top': typeof AppTopRoute
   '/app/wrapped': typeof AppWrappedRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/debug/oauth': typeof DebugOauthRoute
   '/u/$handle': typeof UHandleRoute
   '/app/': typeof AppIndexRoute
   '/app/admin/businesses': typeof AppAdminBusinessesRoute
@@ -703,6 +712,7 @@ export interface FileRouteTypes {
     | '/app/top'
     | '/app/wrapped'
     | '/auth/callback'
+    | '/debug/oauth'
     | '/u/$handle'
     | '/app/'
     | '/app/admin/businesses'
@@ -774,6 +784,7 @@ export interface FileRouteTypes {
     | '/app/top'
     | '/app/wrapped'
     | '/auth/callback'
+    | '/debug/oauth'
     | '/u/$handle'
     | '/app'
     | '/app/admin/businesses'
@@ -847,6 +858,7 @@ export interface FileRouteTypes {
     | '/app/top'
     | '/app/wrapped'
     | '/auth/callback'
+    | '/debug/oauth'
     | '/u/$handle'
     | '/app/'
     | '/app/admin/businesses'
@@ -896,6 +908,7 @@ export interface RootRouteChildren {
   DotwellKnownAppleAppSiteAssociationRoute: typeof DotwellKnownAppleAppSiteAssociationRoute
   DotwellKnownAssetlinksDotjsonRoute: typeof DotwellKnownAssetlinksDotjsonRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  DebugOauthRoute: typeof DebugOauthRoute
   UHandleRoute: typeof UHandleRoute
   ApiPublicCronHeatAlertsRoute: typeof ApiPublicCronHeatAlertsRoute
   ApiPublicCronStreakRiskRoute: typeof ApiPublicCronStreakRiskRoute
@@ -1010,6 +1023,13 @@ declare module '@tanstack/react-router' {
       path: '/u/$handle'
       fullPath: '/u/$handle'
       preLoaderRoute: typeof UHandleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/debug/oauth': {
+      id: '/debug/oauth'
+      path: '/debug/oauth'
+      fullPath: '/debug/oauth'
+      preLoaderRoute: typeof DebugOauthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
@@ -1549,6 +1569,7 @@ const rootRouteChildren: RootRouteChildren = {
     DotwellKnownAppleAppSiteAssociationRoute,
   DotwellKnownAssetlinksDotjsonRoute: DotwellKnownAssetlinksDotjsonRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  DebugOauthRoute: DebugOauthRoute,
   UHandleRoute: UHandleRoute,
   ApiPublicCronHeatAlertsRoute: ApiPublicCronHeatAlertsRoute,
   ApiPublicCronStreakRiskRoute: ApiPublicCronStreakRiskRoute,
