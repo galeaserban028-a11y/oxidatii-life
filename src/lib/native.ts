@@ -68,10 +68,12 @@ export async function bootstrapNative(): Promise<void> {
     // Deep linking + OAuth return. The same handler is used for warm resumes
     // (`appUrlOpen`) and cold starts (`getLaunchUrl`).
     try {
+      const { oauthDebug } = await import("./oauth-debug");
       let lastHandledUrl: string | null = null;
       const handleNativeUrl = async (url: string) => {
         if (url === lastHandledUrl) return;
         lastHandledUrl = url;
+        oauthDebug("info", "deep-link.received", { url });
         try {
           const u = new URL(url);
           const isOAuthScheme =
