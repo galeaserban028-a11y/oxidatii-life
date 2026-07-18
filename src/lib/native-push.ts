@@ -24,25 +24,36 @@ export async function registerNativePush(): Promise<{ ok: boolean; reason?: stri
   if (!isNative()) return { ok: false, reason: "Not native" };
   if (registered) return { ok: true };
 
+  // GUARD: on Android, PushNotifications.register() crashes the WebView process
+  // when google-services.json isn't bundled with the APK/AAB (no Firebase init).
+  // Enable Android push only when the build explicitly opts in via
+  // VITE_ANDROID_PUSH_ENABLED=true — set that flag in the CI build once
+  // google-services.json is committed under android/app/.
+  if (getNativePlatform() === "android") {
+    const androidOptIn = import.meta.env.VITE_ANDROID_PUSH_ENABLED === "true";
+    if (!androidOptIn) {
+      return { ok: false, reason: "Android push disabled (Firebase not bundled)" };
+    }
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, reason: "Not authenticated" };
 
   try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (!Capacitor.isPluginAvailable("PushNotifications")) {
+      return { ok: false, reason: "PushNotifications plugin not available" };
+    }
+
     const { PushNotifications } = await import("@capacitor/push-notifications");
 
-    const perm = await PushNotifications.checkPermissions();
-    let granted = perm.receive === "granted";
-    if (!granted) {
-      const req = await PushNotifications.requestPermissions();
-      granted = req.receive === "granted";
-    }
-    if (!granted) return { ok: false, reason: "Permission denied" };
-
-    await PushNotifications.register();
-
-    PushNotifications.addListener("registration", async (token) => {
+    // IMPORTANT: attach listeners BEFORE calling register(). On Android without
+    // a valid Firebase setup, register() emits `registrationError` synchronously
+    // and any listener added after that point never fires — the app appears to
+    // "crash silently" when the user grants permission.
+    await PushNotifications.addListener("registration", async (token) => {
       const channel = getNativePlatform() === "ios" ? "apns" : "fcm";
       try {
         await supabase.from("push_subscriptions").upsert(
@@ -60,11 +71,11 @@ export async function registerNativePush(): Promise<{ ok: boolean; reason?: stri
       }
     });
 
-    PushNotifications.addListener("registrationError", (err) => {
+    await PushNotifications.addListener("registrationError", (err) => {
       console.warn("[native-push] registration error", err);
     });
 
-    PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+    await PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
       const url = (action.notification.data as { url?: string } | null)?.url;
       if (url && typeof window !== "undefined") {
         try {
@@ -86,9 +97,30 @@ export async function registerNativePush(): Promise<{ ok: boolean; reason?: stri
       }
     });
 
+    const perm = await PushNotifications.checkPermissions();
+    let granted = perm.receive === "granted";
+    if (!granted) {
+      const req = await PushNotifications.requestPermissions();
+      granted = req.receive === "granted";
+    }
+    if (!granted) return { ok: false, reason: "Permission denied" };
+
+    // Wrap register() so any native-side exception bubbles as a JS error
+    // instead of tearing down the WebView.
+    try {
+      await PushNotifications.register();
+    } catch (regErr) {
+      console.warn("[native-push] register() threw", regErr);
+      return {
+        ok: false,
+        reason: regErr instanceof Error ? regErr.message : String(regErr),
+      };
+    }
+
     registered = true;
     return { ok: true };
   } catch (err) {
+    console.warn("[native-push] init failed", err);
     return { ok: false, reason: err instanceof Error ? err.message : String(err) };
   }
 }
