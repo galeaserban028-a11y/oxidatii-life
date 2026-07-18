@@ -26,8 +26,8 @@ const baseConfig: CapacitorConfig = {
         server: {
           hostname: "localhost",
           // Must live under `server`, not `android`: Capacitor reads the local
-          // WebView origin from `server.androidScheme`. This keeps the Android
-          // app on bundled assets at https://localhost instead of remote web.
+          // WebView origin from `server.androidScheme`. This keeps Android on
+          // the bundled app assets at https://localhost instead of the remote site.
           androidScheme: "https" as const,
         },
       }
