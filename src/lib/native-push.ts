@@ -68,7 +68,20 @@ export async function registerNativePush(): Promise<{ ok: boolean; reason?: stri
       const url = (action.notification.data as { url?: string } | null)?.url;
       if (url && typeof window !== "undefined") {
         try {
-          window.location.assign(url);
+          const target = new URL(url, window.location.origin);
+          const internalHosts = new Set([
+            "oxidatii.life",
+            "www.oxidatii.life",
+            "oxidatii-life.lovable.app",
+            window.location.hostname,
+          ]);
+          if (internalHosts.has(target.hostname)) {
+            const path = `${target.pathname}${target.search}${target.hash}` || "/";
+            window.history.pushState({}, "", path);
+            window.dispatchEvent(new PopStateEvent("popstate"));
+          } else {
+            window.location.assign(target.toString());
+          }
         } catch { /* noop */ }
       }
     });

@@ -120,8 +120,12 @@ function SignupPage() {
 
   return (
     <main
-      className="h-[100dvh] overflow-y-auto bg-background text-foreground px-6 py-6"
-      style={{ WebkitOverflowScrolling: "touch", overscrollBehaviorY: "contain" }}
+      className="min-h-[100dvh] overflow-y-auto bg-background text-foreground px-6 py-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
+      style={{
+        WebkitOverflowScrolling: "touch",
+        overscrollBehaviorY: "contain",
+        touchAction: "pan-y",
+      }}
     >
       <div className="flex items-center justify-between mb-4">
         <Link
@@ -137,7 +141,7 @@ function SignupPage() {
           OXIDAȚII
         </Link>
       </div>
-      <div className="min-h-[calc(100dvh-6.5rem)] flex items-center py-4">
+      <div className="min-h-[calc(100dvh-6.5rem)] flex items-start sm:items-center py-4">
         <div className="w-full max-w-sm mx-auto space-y-6">
           <div>
             <h1 className="font-display font-black text-3xl">Intră în haos.</h1>
