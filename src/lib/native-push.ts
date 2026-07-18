@@ -24,6 +24,18 @@ export async function registerNativePush(): Promise<{ ok: boolean; reason?: stri
   if (!isNative()) return { ok: false, reason: "Not native" };
   if (registered) return { ok: true };
 
+  // GUARD: on Android, PushNotifications.register() crashes the WebView process
+  // when google-services.json isn't bundled with the APK/AAB (no Firebase init).
+  // Enable Android push only when the build explicitly opts in via
+  // VITE_ANDROID_PUSH_ENABLED=true — set that flag in the CI build once
+  // google-services.json is committed under android/app/.
+  if (getNativePlatform() === "android") {
+    const androidOptIn = import.meta.env.VITE_ANDROID_PUSH_ENABLED === "true";
+    if (!androidOptIn) {
+      return { ok: false, reason: "Android push disabled (Firebase not bundled)" };
+    }
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
