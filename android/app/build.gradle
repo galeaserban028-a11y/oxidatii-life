@@ -96,7 +96,7 @@ try {
     if (servicesJSON.exists() && servicesJSON.text.trim()) {
         def servicesConfig = new groovy.json.JsonSlurper().parse(servicesJSON)
         def expectedPackageName = android.defaultConfig.applicationId
-        def packageNames = servicesConfig.client.collect {
+        def packageNames = (servicesConfig.client ?: []).collect {
             it.client_info?.android_client_info?.package_name
         }.findAll { it }
 
