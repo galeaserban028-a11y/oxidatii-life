@@ -68,10 +68,12 @@ export async function bootstrapNative(): Promise<void> {
     // Deep linking + OAuth return. The same handler is used for warm resumes
     // (`appUrlOpen`) and cold starts (`getLaunchUrl`).
     try {
+      const { oauthDebug } = await import("./oauth-debug");
       let lastHandledUrl: string | null = null;
       const handleNativeUrl = async (url: string) => {
         if (url === lastHandledUrl) return;
         lastHandledUrl = url;
+        oauthDebug("info", "deep-link.received", { url });
         try {
           const u = new URL(url);
           const isOAuthScheme =
@@ -123,8 +125,12 @@ export async function bootstrapNative(): Promise<void> {
               } else {
                 throw new Error("Brokerul OAuth nu a returnat tokenurile sesiunii.");
               }
+              oauthDebug("info", "session.hydrated", {
+                via: accessToken && refreshToken ? "tokens" : "code",
+              });
             } catch (e) {
               error = e instanceof Error ? e : new Error(String(e));
+              oauthDebug("error", "session.hydrate.failed", error);
               console.warn("[native] OAuth session hydration failed", e);
             }
 
@@ -144,9 +150,10 @@ export async function bootstrapNative(): Promise<void> {
           }
 
           const path = `${u.pathname}${u.search}${u.hash}` || "/";
+          oauthDebug("info", "deep-link.route", { path });
           window.history.pushState({}, "", path);
           window.dispatchEvent(new PopStateEvent("popstate"));
-        } catch { /* noop */ }
+        } catch (e) { oauthDebug("warn", "deep-link.handler.error", e); }
       };
 
       await App.addListener("appUrlOpen", ({ url }) => {
@@ -154,7 +161,15 @@ export async function bootstrapNative(): Promise<void> {
       });
 
       const launch = await App.getLaunchUrl();
-      if (launch?.url) await handleNativeUrl(launch.url);
+      if (launch?.url) {
+        oauthDebug("info", "deep-link.launch", { url: launch.url });
+        await handleNativeUrl(launch.url);
+      }
+
+      // Kick off deep-link config validation (async, non-blocking).
+      import("./deep-link-validator")
+        .then((m) => m.validateDeepLinkConfig())
+        .catch(() => {});
     } catch { /* noop */ }
 
     // Try to register native push (no-op if not yet authenticated; can be

@@ -22,6 +22,7 @@
  */
 
 import { isNative } from "./native";
+import { oauthDebug } from "./oauth-debug";
 
 const OAUTH_BROKER_URL = "https://oxidatii.life/~oauth/initiate";
 const NATIVE_REDIRECT_URI = "https://oxidatii.life/auth/callback";
@@ -42,39 +43,40 @@ function generateState(): string {
 export async function signInWithOAuthNative(
   provider: "google" | "apple",
 ): Promise<{ error: Error | null; started: boolean }> {
-  if (!isNative()) return { error: null, started: false };
+  if (!isNative()) {
+    oauthDebug("info", "start.skip", { reason: "not-native" });
+    return { error: null, started: false };
+  }
 
+  oauthDebug("info", "start", { provider });
   try {
     const { Browser } = await import("@capacitor/browser");
     const state = generateState();
     try {
-      // localStorage survives a WebView process restart while the user is in
-      // the system browser; sessionStorage may not.
       localStorage.setItem("lovable_oauth_state", state);
-    } catch {
-      /* noop */
-    }
+    } catch { /* noop */ }
 
     const url = new URL(OAUTH_BROKER_URL);
     url.searchParams.set("provider", provider);
     url.searchParams.set("redirect_uri", NATIVE_REDIRECT_URI);
     url.searchParams.set("state", state);
+    oauthDebug("info", "broker.url", { url: url.toString() });
 
     if (removeBrowserFinishedListener) {
       await removeBrowserFinishedListener().catch(() => {});
       removeBrowserFinishedListener = null;
     }
     const listener = await Browser.addListener("browserFinished", () => {
+      oauthDebug("info", "browser.finished");
       window.dispatchEvent(new Event(NATIVE_OAUTH_FINISHED_EVENT));
     });
     removeBrowserFinishedListener = () => listener.remove();
 
-    await Browser.open({
-      url: url.toString(),
-      presentationStyle: "fullscreen",
-    });
+    await Browser.open({ url: url.toString(), presentationStyle: "fullscreen" });
+    oauthDebug("info", "browser.opened");
     return { error: null, started: true };
   } catch (e) {
+    oauthDebug("error", "start.failed", e);
     return {
       error: e instanceof Error ? e : new Error(String(e)),
       started: false,
