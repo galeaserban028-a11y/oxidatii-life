@@ -13,12 +13,25 @@ import type { CapacitorConfig } from "@capacitor/cli";
 // Override the remote URL locally with CAP_SERVER_URL.
 const PUBLISHED_URL = "https://oxidatii.life";
 const devServerUrl = process.env.CAP_SERVER_URL ?? PUBLISHED_URL;
-const targetAndroid = process.env.CAP_PLATFORM === "android";
+const targetAndroid =
+  process.env.CAP_PLATFORM === "android" ||
+  process.argv.some((arg) => arg.toLowerCase() === "android");
 
 const baseConfig: CapacitorConfig = {
   appId: "com.oxidatii.app",
   appName: "OXIDAȚII",
   webDir: targetAndroid ? "dist/spa" : "capacitor-www",
+  ...(targetAndroid
+    ? {
+        server: {
+          hostname: "localhost",
+          // Must live under `server`, not `android`: Capacitor reads the local
+          // WebView origin from `server.androidScheme`. This keeps Android on
+          // the bundled app assets at https://localhost instead of the remote site.
+          androidScheme: "https" as const,
+        },
+      }
+    : {}),
   ios: {
     contentInset: "always",
     allowsLinkPreview: false,
@@ -29,9 +42,6 @@ const baseConfig: CapacitorConfig = {
   android: {
     backgroundColor: "#1a120c",
     allowMixedContent: false,
-    // Use https scheme so cookies + fetch to https://oxidatii.life behave like
-    // a normal secure origin (Origin header = https://localhost).
-    ...(targetAndroid ? { androidScheme: "https" as const } : {}),
   },
   plugins: {
     SplashScreen: {

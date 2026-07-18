@@ -33,9 +33,13 @@ function NativeOAuthCallback() {
       forwarded.set("error_description", "Răspunsul de autentificare este incomplet.");
     }
 
-    const url = `oxidatii://oauth?${forwarded.toString()}`;
-    setDeepLink(url);
-    window.location.replace(url);
+    const queryString = forwarded.toString();
+    const url = `oxidatii://oauth?${queryString}`;
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const androidIntentUrl = `intent://oauth?${queryString}#Intent;scheme=oxidatii;package=com.oxidatii.app;end`;
+    const openAppUrl = isAndroid ? androidIntentUrl : url;
+    setDeepLink(openAppUrl);
+    window.location.replace(openAppUrl);
   }, []);
 
   return (
