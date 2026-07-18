@@ -40,22 +40,37 @@ jobs:
       - name: Install web deps
         run: bun install --frozen-lockfile
 
+      - name: Decode google-services.json (optional)
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        if: ${{ env.GOOGLE_SERVICES_JSON_BASE64 != '' }}
+        run: |
+          echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > android/app/google-services.json
+          python3 - <<'PY'
+          import json, pathlib, sys
+          path = pathlib.Path('android/app/google-services.json')
+          data = json.loads(path.read_text())
+          packages = [
+              client.get('client_info', {}).get('android_client_info', {}).get('package_name')
+              for client in data.get('client', [])
+          ]
+          if 'com.oxidatii.app' not in packages:
+              print(f"::error::google-services.json must contain package_name com.oxidatii.app, found: {packages}")
+              sys.exit(1)
+          PY
+
       - name: Build SPA bundle for Android APK
         env:
           BUILD_MODE: spa
           SERVER_FN_BASE_URL: https://oxidatii.life/_serverFn
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+          VITE_ANDROID_PUSH_ENABLED: ${{ env.GOOGLE_SERVICES_JSON_BASE64 != '' && 'true' || 'false' }}
         run: bun run build:spa
 
       - name: Capacitor sync android (uses dist/spa/)
         env:
           CAP_PLATFORM: android
         run: bunx cap sync android
-
-      - name: Decode google-services.json (optional)
-        env:
-          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
-        if: ${{ env.GOOGLE_SERVICES_JSON_BASE64 != '' }}
-        run: echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > android/app/google-services.json
 
       - name: Build debug APK
         working-directory: android
