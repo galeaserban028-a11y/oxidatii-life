@@ -16,6 +16,8 @@
     "cap:android": "cap open android",
     "cap:ios": "cap open ios",
     "android:setup": "powershell -ExecutionPolicy Bypass -File scripts/android-setup.ps1",
+    "android:resync": "powershell -ExecutionPolicy Bypass -File scripts/android-resync.ps1",
+    "android:resync:release": "powershell -ExecutionPolicy Bypass -File scripts/android-resync.ps1 -BundleRelease",
     "android:release": "powershell -ExecutionPolicy Bypass -File scripts/android-play-release.ps1",
     "android:play": "powershell -ExecutionPolicy Bypass -File scripts/android-play-release.ps1",
     "android:release:mac": "bash scripts/android-play-release.sh",
