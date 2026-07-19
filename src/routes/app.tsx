@@ -156,7 +156,7 @@ function AppLayout() {
       <div className={`mx-auto w-full min-w-0 ${isNative() ? "max-w-none" : "max-w-[480px]"}`}>
         {!isFullscreen && !isNative() && <InstallBanner />}
         {!isFullscreen && <AppHeader />}
-        {isReels ? (
+        {isReels || isMap ? (
           <div ref={outletRef} className="contents" data-page-root>
             <Outlet />
           </div>

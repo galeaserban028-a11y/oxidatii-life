@@ -43,6 +43,7 @@ import {
   getCurrentPosition,
   getPrecisePosition,
   watchPosition,
+  type OxiPosition,
 } from "@/lib/native-geo";
 
 export const Route = createFileRoute("/app/map")({
@@ -281,6 +282,10 @@ function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+function distanceMeters(aLat: number, aLng: number, bLat: number, bLng: number) {
+  return distanceKm(aLat, aLng, bLat, bLng) * 1000;
+}
+
 function cleanVenueName(name: unknown) {
   const cleaned = String(name ?? "")
     .replace(/\s+/g, " ")
@@ -326,26 +331,47 @@ function MapPage() {
   );
   const lastGeoSampleRef = useRef<GeoSample | null>(null);
   const lastPublishedAtRef = useRef(0);
+  const lastUiGeoAtRef = useRef(0);
 
-  const acceptGeo = useCallback((lat: number, lng: number, accuracy: number | null | undefined) => {
-    const sample: GeoSample = {
-      lat,
-      lng,
-      accuracy: accuracy ?? null,
-      at: Date.now(),
-    };
-    // Always show *something* for the first fix — Android coarse GPS is often
-    // 200–800m and used to be rejected, so the "me" pin never appeared.
-    if (!lastGeoSampleRef.current) {
+  const acceptGeo = useCallback(
+    (lat: number, lng: number, accuracy: number | null | undefined, force = false) => {
+      const now = Date.now();
+      const sample: GeoSample = {
+        lat,
+        lng,
+        accuracy: accuracy ?? null,
+        at: now,
+      };
+      const prev = lastGeoSampleRef.current;
+      // Always show *something* for the first fix — Android coarse GPS is often
+      // 200–800m and used to be rejected, so the "me" pin never appeared.
+      if (!prev) {
+        lastGeoSampleRef.current = sample;
+        lastUiGeoAtRef.current = now;
+        setGeo({ lat, lng, accuracy: sample.accuracy });
+        return true;
+      }
+      if (!force && rejectGeoSample(sample, prev)) return false;
+
+      const moved = distanceMeters(prev.lat, prev.lng, lat, lng);
+      const improvedAccuracy =
+        prev.accuracy != null && sample.accuracy != null ? prev.accuracy - sample.accuracy : 0;
+      // Native GPS can emit many near-identical samples per second. Updating
+      // React/MapLibre for each one makes Android look like the map is
+      // constantly refreshing. Keep precision, but update UI only for real
+      // movement, clear accuracy improvement, or a slow heartbeat.
+      if (!force && moved < 10 && improvedAccuracy < 12 && now - lastUiGeoAtRef.current < 12_000) {
+        lastGeoSampleRef.current = sample;
+        return true;
+      }
+
       lastGeoSampleRef.current = sample;
+      lastUiGeoAtRef.current = now;
       setGeo({ lat, lng, accuracy: sample.accuracy });
       return true;
-    }
-    if (rejectGeoSample(sample, lastGeoSampleRef.current)) return false;
-    lastGeoSampleRef.current = sample;
-    setGeo({ lat, lng, accuracy: sample.accuracy });
-    return true;
-  }, []);
+    },
+    [],
+  );
   const [visible, setVisible] = useState(40);
   const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(
     null,
@@ -704,7 +730,7 @@ function MapPage() {
       const accuracy = pos.coords.accuracy ?? null;
       const now = Date.now();
       if (!ensureLive && now - lastPublishedAtRef.current < 15_000) return;
-      if (!acceptGeo(lat, lng, accuracy) && !ensureLive) return;
+      if (!acceptGeo(lat, lng, accuracy, ensureLive) && !ensureLive) return;
       if (ensureLive) {
         // Explicit user tap — force-accept even if the filter was cold.
         lastGeoSampleRef.current = { lat, lng, accuracy, at: Date.now() };
@@ -826,7 +852,7 @@ function MapPage() {
         const pos = asGeolocationPosition(oxi);
 
         // Always place the local me-pin + camera on GPS (not home city).
-        acceptGeo(lat, lng, accuracy);
+        acceptGeo(lat, lng, accuracy, true);
         setFocusCity({ lat, lng, zoom: 16 });
 
         if (user) {
@@ -850,25 +876,27 @@ function MapPage() {
   }, [publishPosition]);
 
   const userId = user?.id;
+  const watchHandleRef = useRef<{ clear: () => void } | null>(null);
+  const watchStartingRef = useRef(false);
 
 
   useEffect(() => {
     let cancelled = false;
-    let clear: (() => void) | null = null;
     let recentered = false;
-    let watchKey = 0;
+    let retrying = false;
 
     const startWatch = async () => {
-      watchKey += 1;
-      const myKey = watchKey;
-      clear?.();
-      clear = null;
+      if (watchHandleRef.current || watchStartingRef.current) return;
+      watchStartingRef.current = true;
       // Ask once so Android permission is granted before the watch starts.
       await ensureLocationPermission(true);
-      if (cancelled || myKey !== watchKey) return;
-      watchPosition(
-        (pos) => {
-          if (cancelled || myKey !== watchKey) return;
+      if (cancelled) {
+        watchStartingRef.current = false;
+        return;
+      }
+      const handle = await watchPosition(
+        (pos: OxiPosition) => {
+          if (cancelled) return;
           const acc = pos.coords.accuracy ?? null;
           if (acc != null && acc > 2000) return;
           if (acc != null && acc > MAX_MAP_ACCURACY_M && lastGeoSampleRef.current) {
@@ -882,33 +910,37 @@ function MapPage() {
             recentered = true;
             setFocusCity({ lat, lng, zoom: 16 });
           }
-          if (accepted && userId) {
-            publishPositionRef.current(asGeolocationPosition(pos), false, false).catch(() => {});
-          }
+          // Do not publish every watch sample. Local pin stays precise via geo;
+          // backend live row is refreshed on first locate / explicit button only.
         },
         () => {
           /* silent — retry on next visibility */
         },
-        { enableHighAccuracy: true, maximumAge: 8_000, timeout: 30_000, promptPermission: true },
-      ).then((h) => {
-        if (cancelled || myKey !== watchKey) {
-          h.clear();
-          return;
-        }
-        clear = h.clear;
-      });
+        { enableHighAccuracy: true, maximumAge: 10_000, timeout: 30_000, promptPermission: false },
+      );
+      watchStartingRef.current = false;
+      if (cancelled) {
+        handle.clear();
+        return;
+      }
+      watchHandleRef.current = handle;
     };
 
     const retryLocate = async () => {
+      if (retrying) return;
+      retrying = true;
       const ok = await ensureLocationPermission(true);
-      if (!ok || cancelled) return;
+      if (!ok || cancelled) {
+        retrying = false;
+        return;
+      }
       try {
         const oxi = await getCurrentPosition({
           enableHighAccuracy: true,
           maximumAge: 2_000,
           timeout: 15_000,
         });
-        acceptGeo(oxi.coords.latitude, oxi.coords.longitude, oxi.coords.accuracy);
+        acceptGeo(oxi.coords.latitude, oxi.coords.longitude, oxi.coords.accuracy, true);
         if (!recentered) {
           recentered = true;
           setFocusCity({
@@ -923,7 +955,8 @@ function MapPage() {
       } catch {
         /* keep watching */
       }
-      startWatch();
+      retrying = false;
+      void startWatch();
     };
 
     const onVisibility = () => {
@@ -951,7 +984,9 @@ function MapPage() {
       cancelled = true;
       document.removeEventListener("visibilitychange", onVisibility);
       removeAppListener?.();
-      clear?.();
+      watchHandleRef.current?.clear();
+      watchHandleRef.current = null;
+      watchStartingRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [acceptGeo, userId]);
