@@ -522,6 +522,7 @@ function MapPage() {
     const ch = supabase
       .channel(channelName)
       .on("postgres_changes", { event: "*", schema: "public", table: "check_ins" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_locations" }, refresh)
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
@@ -878,6 +879,17 @@ function MapPage() {
         if (user) {
           publishPosition(pos, true, false).catch(() => {});
         }
+
+        // Refine precision in the background so the me-pin snaps to exact GPS.
+        getPrecisePosition()
+          .then((precise) => {
+            const plat = precise.coords.latitude;
+            const plng = precise.coords.longitude;
+            const pacc = precise.coords.accuracy;
+            acceptGeo(plat, plng, pacc, true);
+            if (user) publishPosition(precise, true, true).catch(() => {});
+          })
+          .catch(() => {});
       } catch {
         fallbackToCity();
       }
