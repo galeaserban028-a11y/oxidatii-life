@@ -4,6 +4,7 @@ import maplibregl from "maplibre-gl";
 import type { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Crosshair, Plus, Minus } from "lucide-react";
+import logoOx from "@/assets/logo-oxidatii.png";
 
 type City = {
   id: string;
@@ -546,6 +547,7 @@ export function RomaniaMap3D({
   promotedMeta = {},
   heatNowCells = [],
   onCenterChange,
+  onLocateMe,
 }: {
   cities: City[];
   venues?: Venue[];
@@ -556,6 +558,7 @@ export function RomaniaMap3D({
   promotedMeta?: Record<string, { theme: string; cover: string | null; campaignId?: string }>;
   heatNowCells?: HeatNowCell[];
   onCenterChange?: (lat: number, lng: number, zoom: number) => void;
+  onLocateMe?: () => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MlMap | null>(null);
@@ -618,6 +621,12 @@ export function RomaniaMap3D({
     let contextWasLost = false;
     let disposed = false;
     const isSmall = typeof window !== "undefined" && window.innerWidth < 720;
+    const isAndroidWv =
+      typeof navigator !== "undefined" &&
+      (/; wv\)/.test(navigator.userAgent) ||
+        !!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor
+          ?.isNativePlatform?.());
+    const lowGpu = isSmall || isAndroidWv;
     const initialCenter = INITIAL_MAP_CENTER;
     const initialZoom = isSmall ? INITIAL_MAP_ZOOM.compact : INITIAL_MAP_ZOOM.desktop;
     const markFirstPaint = () => {
@@ -637,22 +646,20 @@ export function RomaniaMap3D({
         attributionControl: false,
         cooperativeGestures: false,
         renderWorldCopies: false,
-        fadeDuration: isSmall ? 0 : 80,
+        fadeDuration: 0,
         refreshExpiredTiles: false,
-        maxPitch: isSmall ? 45 : 60,
-        pixelRatio: isSmall
-          ? Math.min(window.devicePixelRatio || 1, 1)
-          : Math.min(window.devicePixelRatio || 1, 1.75),
-        antialias: !isSmall,
-        maxTileCacheSize: isSmall ? 40 : 80,
+        maxPitch: lowGpu ? 0 : 45,
+        pixelRatio: Math.min(window.devicePixelRatio || 1, lowGpu ? 1 : 1.5),
+        antialias: !lowGpu,
+        maxTileCacheSize: lowGpu ? 24 : 80,
         canvasContextAttributes: {
-          alpha: false,
-          antialias: !isSmall,
+          antialias: !lowGpu,
+          powerPreference: lowGpu ? "low-power" : "high-performance",
           failIfMajorPerformanceCaveat: false,
-          powerPreference: "high-performance",
           preserveDrawingBuffer: false,
+          alpha: false,
         },
-      } as any);
+      } as ConstructorParameters<typeof maplibregl.Map>[0]);
     } catch (error) {
       console.warn("Map init failed", error);
       setMapFailed(true);
@@ -661,7 +668,7 @@ export function RomaniaMap3D({
 
     map.touchZoomRotate.disableRotation();
     map.dragRotate.disable();
-    compactMapRef.current = isSmall;
+    compactMapRef.current = isSmall || isAndroidWv;
     if (typeof ResizeObserver !== "undefined" && containerRef.current) {
       resizeObserver = new ResizeObserver(() => {
         requestAnimationFrame(() => {
@@ -1417,15 +1424,21 @@ export function RomaniaMap3D({
   }, [cities, retryKey, mapReadyTick]);
 
   // FOCUS city programmatically. easeTo is lighter than flyTo on mobile GPUs.
+  // Skip identical targets — parent GPS loops used to spam new {lat,lng} objects
+  // and the map looked like it was constantly reloading.
+  const lastFocusKeyRef = useRef<string | null>(null);
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !focusCity) return;
+    const key = `${mapReadyTick}:${focusCity.lat.toFixed(5)},${focusCity.lng.toFixed(5)},${focusCity.zoom ?? 12.4}`;
+    if (lastFocusKeyRef.current === key) return;
+    lastFocusKeyRef.current = key;
     map.easeTo({
       center: [focusCity.lng, focusCity.lat],
       zoom: focusCity.zoom ?? 12.4,
-      pitch: compactMapRef.current ? 0 : 35,
+      pitch: 0,
       bearing: 0,
-      duration: compactMapRef.current ? 500 : 850,
+      duration: compactMapRef.current ? 280 : 500,
       essential: true,
     });
   }, [focusCity, mapReadyTick]);
@@ -1489,6 +1502,16 @@ export function RomaniaMap3D({
           fromLat = cur.lat;
         const toLng = f.lng,
           toLat = f.lat;
+        // Large corrections (GPS refine) — snap "me" instead of sliding across town.
+        const jumpM =
+          Math.hypot((toLat - fromLat) * 111000, (toLng - fromLng) * 111000 * Math.cos((toLat * Math.PI) / 180));
+        if (f.is_me && jumpM > 280) {
+          const prev = friendAnims.current.get(f.user_id);
+          if (prev) cancelAnimationFrame(prev);
+          friendAnims.current.delete(f.user_id);
+          existing.setLngLat([toLng, toLat]);
+          continue;
+        }
         const dur = 1200;
         const start = performance.now();
         const prev = friendAnims.current.get(f.user_id);
@@ -1506,25 +1529,29 @@ export function RomaniaMap3D({
 
       const wrap = document.createElement("div");
       wrap.style.cssText =
-        "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:translateY(-50%);z-index:10;";
+        "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:10;";
 
       const accent = f.is_me ? "#ff3d8b" : "#00e5ff";
       const ringSize = f.is_me ? 56 : 44;
       const pulseSize = f.is_me ? 68 : 54;
 
       const pulse = document.createElement("div");
-      pulse.style.cssText = `position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:${pulseSize}px;height:${pulseSize}px;border-radius:9999px;background:${accent};opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;`;
-      wrap.appendChild(pulse);
+      // Skip pulse animation on compact/Android — big GPU cost while panning.
+      if (!compactMapRef.current) {
+        pulse.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${pulseSize}px;height:${pulseSize}px;border-radius:9999px;background:${accent};opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;`;
+        wrap.appendChild(pulse);
+      }
 
       const ring = document.createElement("div");
-      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:9999px;border:2px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3d8b,#c724ff);box-shadow:0 0 14px ${accent},0 4px 12px rgba(0,0,0,0.55);aspect-ratio:1/1;animation:oxi-marker-pop 0.32s cubic-bezier(0.22,1,0.36,1) both;`;
+      ring.style.cssText = `position:relative;width:${ringSize}px;height:${ringSize}px;border-radius:9999px;border:2.5px solid ${accent};overflow:hidden;background:linear-gradient(135deg,#ff3d8b,#c724ff);box-shadow:0 0 16px ${accent},0 4px 12px rgba(0,0,0,0.55);aspect-ratio:1/1;`;
 
-      if (f.avatar_url) {
+      const avatarSrc = f.avatar_url || (f.is_me ? logoOx : null);
+      if (avatarSrc) {
         const img = document.createElement("img");
-        img.src = f.avatar_url;
+        img.src = avatarSrc;
         img.alt = "";
         img.style.cssText =
-          "width:100%;height:100%;object-fit:cover;object-position:center center;display:block;aspect-ratio:1/1;background:transparent;";
+          "width:100%;height:100%;object-fit:cover;object-position:center center;display:block;aspect-ratio:1/1;background:#050510;";
         ring.appendChild(img);
       } else {
         const ini = document.createElement("div");
@@ -1543,7 +1570,7 @@ export function RomaniaMap3D({
         const crown = document.createElement("div");
         crown.textContent = "TU";
         crown.style.cssText =
-          "position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:1px 5px;border-radius:9999px;background:#ff3d8b;color:#fff;font-family:'DM Sans',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.08em;border:1.5px solid #06070a;box-shadow:0 0 8px #ff3d8b;";
+          "position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:1px 6px;border-radius:9999px;background:#ff3d8b;color:#fff;font-family:'DM Sans',sans-serif;font-weight:900;font-size:8px;letter-spacing:0.08em;border:1.5px solid #06070a;box-shadow:0 0 8px #ff3d8b;z-index:2;";
         wrap.appendChild(crown);
       }
 
@@ -1557,7 +1584,10 @@ export function RomaniaMap3D({
         e.stopPropagation();
         navRef.current({ to: "/app/user/$id", params: { id: f.user_id } });
       };
-      const marker = new maplibregl.Marker({ element: wrap, anchor: "bottom" })
+      const marker = new maplibregl.Marker({
+        element: wrap,
+        anchor: "center",
+      })
         .setLngLat([f.lng, f.lat])
         .addTo(map);
       friendMarkers.current.set(f.user_id, marker);
@@ -1580,9 +1610,18 @@ export function RomaniaMap3D({
 
   const handleRecenter = useCallback(() => {
     const map = mapRef.current;
-    if (!map || !mePin) return;
-    map.easeTo({ center: [mePin.lng, mePin.lat], zoom: 13.5, duration: 550, essential: true });
-  }, [mePin]);
+    if (mePin && map) {
+      map.easeTo({
+        center: [mePin.lng, mePin.lat],
+        zoom: 16,
+        duration: compactMapRef.current ? 280 : 450,
+        essential: true,
+        pitch: 0,
+      });
+      return;
+    }
+    onLocateMe?.();
+  }, [mePin, onLocateMe]);
 
   return (
     <div
@@ -1591,7 +1630,7 @@ export function RomaniaMap3D({
       className="relative w-full h-[54vh] min-h-[400px] max-h-[560px] overflow-hidden bg-[#0d0b1e]"
     >
       <style>{`
-        @keyframes oxi-pulse-strong { 0% { transform: translateX(-50%) scale(0.6); opacity: 0.7; } 80% { transform: translateX(-50%) scale(1.5); opacity: 0; } 100% { opacity: 0; } }
+        @keyframes oxi-pulse-strong { 0% { transform: translate(-50%,-50%) scale(0.6); opacity: 0.7; } 80% { transform: translate(-50%,-50%) scale(1.5); opacity: 0; } 100% { opacity: 0; } }
         @keyframes oxi-scan { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
         @keyframes oxi-radar-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes oxi-aurora-drift {
@@ -1697,15 +1736,17 @@ export function RomaniaMap3D({
             <Minus size={18} />
           </button>
         </div>
-        {mePin && (
           <button
             onClick={handleRecenter}
             aria-label="Re-centrează pe poziția mea"
-            className="h-10 w-10 grid place-items-center rounded-full bg-black/60 border border-white/15 text-white/90 active:scale-95 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 hover:border-white/25 will-change-transform shadow-lg shadow-black/40"
+            className={`h-10 w-10 grid place-items-center rounded-full border active:scale-95 transition-all duration-200 ease-out shadow-lg shadow-black/40 ${
+              mePin
+                ? "bg-gradient-to-tr from-[#ff3d8b] to-[#c724ff] border-transparent text-white"
+                : "bg-black/60 border-white/15 text-white/90 hover:bg-black/70"
+            }`}
           >
             <Crosshair size={18} />
           </button>
-        )}
       </div>
 
       {/* Subtle edge fade only; keep streets and venue pins visible. */}
