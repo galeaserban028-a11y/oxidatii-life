@@ -494,7 +494,6 @@ function MapPage() {
     const ch = supabase
       .channel(channelName)
       .on("postgres_changes", { event: "*", schema: "public", table: "check_ins" }, refresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "live_locations" }, refresh)
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
@@ -702,7 +701,7 @@ function MapPage() {
         lastGeoSampleRef.current = { lat, lng, accuracy, at: Date.now() };
         setGeo({ lat, lng, accuracy });
       }
-      if (recenter || ensureLive) setFocusCity({ lat, lng, zoom: 16 });
+      if (recenter) setFocusCity({ lat, lng, zoom: 16 });
       if (!user) return;
 
       if (ensureLive) {
@@ -720,7 +719,6 @@ function MapPage() {
       // Ghost mode or fully hidden → wipe and skip publishing.
       if (s?.map_ghost || s?.map_visibility === "nobody") {
         await supabase.from("live_locations").delete().eq("user_id", user.id);
-        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
         return;
       }
       // Inside a private location → skip.
@@ -730,7 +728,6 @@ function MapPage() {
       });
       if (inPrivate) {
         await supabase.from("live_locations").delete().eq("user_id", user.id);
-        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
         return;
       }
       // Apply precision.
@@ -748,7 +745,6 @@ function MapPage() {
         },
         { onConflict: "user_id" },
       );
-      qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
     },
     [
       acceptGeo,
@@ -824,7 +820,7 @@ function MapPage() {
         setFocusCity({ lat, lng, zoom: 16 });
 
         if (user) {
-          publishPosition(pos, true, true).catch(() => {});
+          publishPosition(pos, true, false).catch(() => {});
         }
       } catch {
         fallbackToCity();
@@ -909,7 +905,7 @@ function MapPage() {
           });
         }
         if (userId) {
-          publishPositionRef.current(asGeolocationPosition(oxi), true, true).catch(() => {});
+          publishPositionRef.current(asGeolocationPosition(oxi), true, false).catch(() => {});
         }
       } catch {
         /* keep watching */
