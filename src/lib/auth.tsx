@@ -263,9 +263,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // While we have a user, we are still "loading" until the profile fetch settles —
-  // prevents redirects from firing before we know if the user is onboarded.
-  const loading = initializing || (!!user && profileLoading);
+  // Block the app only during the first profile load. Later profile refreshes
+  // must not blank/remount active routes (the map looked like it refreshed and
+  // lost the “TU” pin whenever GPS/settings touched the profile).
+  const loading = initializing || (!!user && !profile && profileLoading);
 
   return (
     <AuthCtx.Provider

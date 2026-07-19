@@ -1529,6 +1529,7 @@ export function RomaniaMap3D({
       }
 
       const wrap = document.createElement("div");
+      wrap.dataset.oxiMe = f.is_me ? "1" : "0";
       wrap.style.cssText =
         "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:10;";
 
@@ -1594,8 +1595,13 @@ export function RomaniaMap3D({
       friendMarkers.current.set(f.user_id, marker);
     }
     // remove markers (and cancel anims) for friends no longer present
+    const nextHasMe = friends.some((f) => f.is_me);
     for (const [id, marker] of friendMarkers.current) {
       if (!seen.has(id)) {
+        // Keep the last local “TU” marker during transient friend-pin refetches.
+        // Otherwise React Query can briefly pass a list without self and the
+        // map looks like it refreshes / loses the user position on Android.
+        if (!nextHasMe && marker.getElement().dataset.oxiMe === "1") continue;
         const a = friendAnims.current.get(id);
         if (a) {
           cancelAnimationFrame(a);
