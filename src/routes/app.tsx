@@ -62,6 +62,7 @@ function AppLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isMe = pathname === "/app/me" || pathname.startsWith("/app/me/");
   const isReels = pathname === "/app/reels" || pathname.startsWith("/app/reels/");
+  const isMap = pathname === "/app/map";
   const isFullscreen = isMe || isReels;
 
   const { user, profile, loading } = useAuth();
@@ -71,7 +72,7 @@ function AppLayout() {
   const outletRef = useRef<HTMLDivElement>(null);
   const [headerColor, setHeaderColor] = useState("var(--background)");
 
-  useLiveLocation(user?.id ?? null, !!profile?.location_consent);
+  useLiveLocation(user?.id ?? null, !!profile?.location_consent && !isMap);
 
   const updateHeaderColor = useCallback(() => {
     const next = resolvePageBackgroundColor();
