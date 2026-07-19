@@ -92,7 +92,7 @@ export async function checkLocationPermission(): Promise<LocationPermissionState
 export async function ensureLocationPermission(prompt = true): Promise<boolean> {
   const state = await checkLocationPermission();
   if (state === "granted") return true;
-  if (!prompt) return state === "granted";
+  if (!prompt) return false;
 
   if (isNative() || typeof (window as unknown as { Capacitor?: unknown }).Capacitor !== "undefined") {
     try {
