@@ -522,6 +522,7 @@ function MapPage() {
     const ch = supabase
       .channel(channelName)
       .on("postgres_changes", { event: "*", schema: "public", table: "check_ins" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_locations" }, refresh)
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
