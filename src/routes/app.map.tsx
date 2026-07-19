@@ -316,7 +316,7 @@ function normalizeMapVenues(rows: Venue[]) {
 }
 
 function MapPage() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile } = useAuth();
   const search = Route.useSearch();
 
   // filter state
@@ -764,7 +764,6 @@ function MapPage() {
           .from("profiles")
           .update({ location_consent: true, map_ghost: false, map_precision: "exact" })
           .eq("id", user.id);
-        await refreshProfile();
         qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
       }
 
@@ -807,7 +806,6 @@ function MapPage() {
       privacyQ.data?.privateLocs,
       privacyQ.data?.settings,
       qc,
-      refreshProfile,
       user,
     ],
   );
