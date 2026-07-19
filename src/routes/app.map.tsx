@@ -325,6 +325,7 @@ function MapPage() {
     null,
   );
   const lastGeoSampleRef = useRef<GeoSample | null>(null);
+  const lastPublishedAtRef = useRef(0);
 
   const acceptGeo = useCallback((lat: number, lng: number, accuracy: number | null | undefined) => {
     const sample: GeoSample = {
@@ -494,7 +495,6 @@ function MapPage() {
     const ch = supabase
       .channel(channelName)
       .on("postgres_changes", { event: "*", schema: "public", table: "check_ins" }, refresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "live_locations" }, refresh)
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
@@ -541,6 +541,8 @@ function MapPage() {
       .map(([code, count]) => ({ code, count, label: NAMES[code] ?? code }));
   }, [cities, venues]);
 
+  const geoForFilter = maxKm > 0 ? geo : null;
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     let list = venues.filter((v) => {
@@ -556,22 +558,26 @@ function MapPage() {
         )
           return false;
       }
-      if (maxKm > 0 && geo && v.lat != null && v.lng != null) {
-        if (distanceKm(geo.lat, geo.lng, v.lat, v.lng) > maxKm) return false;
+      if (maxKm > 0 && geoForFilter && v.lat != null && v.lng != null) {
+        if (distanceKm(geoForFilter.lat, geoForFilter.lng, v.lat, v.lng) > maxKm) return false;
       }
       return true;
     });
-    if (geo) {
+    if (geoForFilter) {
       list = [...list].sort((a, b) => {
         const da =
-          a.lat != null && a.lng != null ? distanceKm(geo.lat, geo.lng, a.lat, a.lng) : 1e9;
+          a.lat != null && a.lng != null
+            ? distanceKm(geoForFilter.lat, geoForFilter.lng, a.lat, a.lng)
+            : 1e9;
         const db =
-          b.lat != null && b.lng != null ? distanceKm(geo.lat, geo.lng, b.lat, b.lng) : 1e9;
+          b.lat != null && b.lng != null
+            ? distanceKm(geoForFilter.lat, geoForFilter.lng, b.lat, b.lng)
+            : 1e9;
         return da - db;
       });
     }
     return list;
-  }, [venues, query, type, country, cityId, maxKm, geo, cityMap]);
+  }, [venues, query, type, country, cityId, maxKm, geoForFilter, cityMap]);
 
   // Cities scoped to selected country (for map markers + fit bounds)
   const citiesScoped = useMemo(
@@ -696,14 +702,17 @@ function MapPage() {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
       const accuracy = pos.coords.accuracy ?? null;
+      const now = Date.now();
+      if (!ensureLive && now - lastPublishedAtRef.current < 15_000) return;
       if (!acceptGeo(lat, lng, accuracy) && !ensureLive) return;
       if (ensureLive) {
         // Explicit user tap — force-accept even if the filter was cold.
         lastGeoSampleRef.current = { lat, lng, accuracy, at: Date.now() };
         setGeo({ lat, lng, accuracy });
       }
-      if (recenter || ensureLive) setFocusCity({ lat, lng, zoom: 16 });
+      if (recenter) setFocusCity({ lat, lng, zoom: 16 });
       if (!user) return;
+      lastPublishedAtRef.current = now;
 
       if (ensureLive) {
         await supabase
@@ -720,7 +729,6 @@ function MapPage() {
       // Ghost mode or fully hidden → wipe and skip publishing.
       if (s?.map_ghost || s?.map_visibility === "nobody") {
         await supabase.from("live_locations").delete().eq("user_id", user.id);
-        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
         return;
       }
       // Inside a private location → skip.
@@ -730,7 +738,6 @@ function MapPage() {
       });
       if (inPrivate) {
         await supabase.from("live_locations").delete().eq("user_id", user.id);
-        qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
         return;
       }
       // Apply precision.
@@ -748,7 +755,6 @@ function MapPage() {
         },
         { onConflict: "user_id" },
       );
-      qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
     },
     [
       acceptGeo,
@@ -824,7 +830,7 @@ function MapPage() {
         setFocusCity({ lat, lng, zoom: 16 });
 
         if (user) {
-          publishPosition(pos, true, true).catch(() => {});
+          publishPosition(pos, true, false).catch(() => {});
         }
       } catch {
         fallbackToCity();
@@ -876,6 +882,9 @@ function MapPage() {
             recentered = true;
             setFocusCity({ lat, lng, zoom: 16 });
           }
+          if (accepted && userId) {
+            publishPositionRef.current(asGeolocationPosition(pos), false, false).catch(() => {});
+          }
         },
         () => {
           /* silent — retry on next visibility */
@@ -909,7 +918,7 @@ function MapPage() {
           });
         }
         if (userId) {
-          publishPositionRef.current(asGeolocationPosition(oxi), true, true).catch(() => {});
+          publishPositionRef.current(asGeolocationPosition(oxi), true, false).catch(() => {});
         }
       } catch {
         /* keep watching */
