@@ -53,6 +53,10 @@
 :root {
   --radius: 1rem;
 
+  /* Single chrome for status / header / floating tab bar (matches original nav) */
+  --oxi-chrome: #0f0d1c;
+  --oxi-hairline: rgba(255, 255, 255, 0.08);
+
   /* Electric Night — deep midnight ink with neon glow */
   --background: oklch(0.13 0.03 290);
   --foreground: oklch(0.98 0.01 280);
@@ -606,6 +610,8 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     /* No `touch-action: manipulation` on <html>: pe unele WebView-uri Android
        face scroll-ul să pară „lipit". Îl aplicăm doar pe elemente interactive. */
   }
@@ -615,15 +621,37 @@ html[data-perf="low"] .oxi-avatar-frame:hover { transform: none; }
     background-image:
       radial-gradient(ellipse 80% 50% at 20% 0%, oklch(0.3 0.18 310 / 0.25), transparent 60%),
       radial-gradient(ellipse 70% 40% at 80% 100%, oklch(0.32 0.2 215 / 0.2), transparent 60%);
-    background-attachment: fixed;
+    /* `background-attachment: fixed` jank-uiește scroll-ul pe Android WebView —
+       îl păstrăm doar pe pointer fin (desktop). */
+    background-attachment: scroll;
     color: var(--foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    overflow-y: auto;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
     text-rendering: optimizeSpeed;
+    /* Ensure document can scroll on Capacitor WebView */
+    min-height: 100%;
+    height: auto;
+  }
+
+  html.oxi-native-android,
+  html.oxi-native-android body {
+    /* Prefer free document scroll; avoid nested scroll traps.
+       Do NOT set touch-action here — it fights child controls and MapLibre. */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    body {
+      background-attachment: fixed;
+    }
   }
 
   html.light,
@@ -1417,8 +1445,9 @@ html[data-perf="low"] [data-perf-decorative] {
   filter: none !important;
 }
 
-/* Snappier scroll on native WebView: rubber-band contained to the scroll
-   container, avoid propagating to body → cheaper composite. */
-main, [data-page-root] {
-  overscroll-behavior: contain;
+/* Contain sideways overscroll on native WebView; leave Y free so document
+   scroll isn't fighting nested scrollers (and map can still pan-x). */
+main,
+[data-page-root] {
+  overscroll-behavior-x: none;
 }

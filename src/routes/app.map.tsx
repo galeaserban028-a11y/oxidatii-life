@@ -31,6 +31,19 @@ import {
 } from "@/components/app/map/PromoBanner";
 
 import { venueNickname } from "@/lib/venueNickname";
+import {
+  MAX_MAP_ACCURACY_M,
+  rejectGeoSample,
+  stableApproxOffset,
+  type GeoSample,
+} from "@/lib/geo-filter";
+import {
+  asGeolocationPosition,
+  ensureLocationPermission,
+  getCurrentPosition,
+  getPrecisePosition,
+  watchPosition,
+} from "@/lib/native-geo";
 
 export const Route = createFileRoute("/app/map")({
   head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
@@ -89,12 +102,9 @@ function applyLocationPrivacy(
   cityCenter: { lat: number; lng: number } | null | undefined,
 ) {
   if (settings.map_precision === "approx") {
-    const j = 0.0018;
-    return {
-      lat: lat + (Math.random() * 2 - 1) * j,
-      lng: lng + (Math.random() * 2 - 1) * j,
-      exact: false,
-    };
+    // Deterministic offset — Math.random() made the pin jump on every publish.
+    const o = stableApproxOffset(lat, lng, 160);
+    return { lat: o.lat, lng: o.lng, exact: false };
   }
   if (settings.map_precision === "city" && cityCenter) {
     return { lat: cityCenter.lat, lng: cityCenter.lng, exact: false };
@@ -184,64 +194,34 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
   const userIds = new Set<string>([...liveMap.keys(), ...checkinMap.keys()]);
   const pins: FriendPin[] = [];
 
-  // Fallback for self: use only a previous GPS/live row or a check-in.
-  // Never place "tu ești aici" on the city center — it feels imprecise.
+  // Fallback for self: only a *non-expired* live row. Never revive stale GPS
+  // or an old venue check-in as "tu ești aici" — that teleports the pin.
   if (!userIds.has(userId)) {
-    const [{ data: lastLive }, { data: lastCheckin }] = await Promise.all([
-      supabase
-        .from("live_locations")
-        .select("lat, lng")
-        .eq("user_id", userId)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("check_ins")
-        .select("venue_id, lat, lng")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
-    let lat: number | null = null,
-      lng: number | null = null;
+    const { data: lastLive } = await supabase
+      .from("live_locations")
+      .select("lat, lng")
+      .eq("user_id", userId)
+      .gt("expires_at", nowIso)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
     if (lastLive) {
       const ll = lastLive as { lat: number | string; lng: number | string };
-      lat = Number(ll.lat);
-      lng = Number(ll.lng);
-    } else if (lastCheckin) {
-      const ck = lastCheckin as {
-        lat: number | string | null;
-        lng: number | string | null;
-        venue_id: string | null;
-      };
-      if (ck.lat != null && ck.lng != null) {
-        lat = Number(ck.lat);
-        lng = Number(ck.lng);
-      } else if (ck.venue_id) {
-        const { data: v } = await supabase
-          .from("venues")
-          .select("lat,lng")
-          .eq("id", ck.venue_id)
-          .maybeSingle();
-        if (v?.lat != null && v?.lng != null) {
-          lat = Number(v.lat);
-          lng = Number(v.lng);
-        }
+      const lat = Number(ll.lat);
+      const lng = Number(ll.lng);
+      if (isFinite(lat) && isFinite(lng)) {
+        const me = profMap.get(userId);
+        pins.push({
+          user_id: userId,
+          handle: me?.handle ?? null,
+          display_name: me?.display_name ?? "tu",
+          avatar_url: me?.avatar_url ?? null,
+          lat,
+          lng,
+          venue_name: "tu ești aici",
+          is_me: true,
+        });
       }
-    }
-    if (lat != null && lng != null && isFinite(lat) && isFinite(lng)) {
-      const me = profMap.get(userId);
-      pins.push({
-        user_id: userId,
-        handle: me?.handle ?? null,
-        display_name: me?.display_name ?? "tu",
-        avatar_url: me?.avatar_url ?? null,
-        lat,
-        lng,
-        venue_name: "tu ești aici",
-        is_me: true,
-      });
     }
   }
 
@@ -249,11 +229,32 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
     const live = liveMap.get(uid);
     const c = checkinMap.get(uid);
     const venue = c && c.venue_id ? venueMap.get(c.venue_id) : null;
-    const lat = Number(live?.lat ?? c?.lat ?? venue?.lat);
-    const lng = Number(live?.lng ?? c?.lng ?? venue?.lng);
-    if (!isFinite(lat) || !isFinite(lng)) continue;
-    const p = profMap.get(uid);
     const isMe = uid === userId;
+    // For self, prefer live GPS only. Check-in/venue coords can be across town
+    // from where the user actually is while looking at the map.
+    const lat = Number(isMe ? live?.lat : (live?.lat ?? c?.lat ?? venue?.lat));
+    const lng = Number(isMe ? live?.lng : (live?.lng ?? c?.lng ?? venue?.lng));
+    if (!isFinite(lat) || !isFinite(lng)) {
+      if (isMe && c) {
+        // Still show self at an active check-in, but label the venue — not GPS.
+        const vLat = Number(c.lat ?? venue?.lat);
+        const vLng = Number(c.lng ?? venue?.lng);
+        if (!isFinite(vLat) || !isFinite(vLng)) continue;
+        const p = profMap.get(uid);
+        pins.push({
+          user_id: uid,
+          handle: p?.handle ?? null,
+          display_name: p?.display_name ?? "tu",
+          avatar_url: p?.avatar_url ?? null,
+          lat: vLat,
+          lng: vLng,
+          venue_name: venue?.name ?? "check-in",
+          is_me: true,
+        });
+      }
+      continue;
+    }
+    const p = profMap.get(uid);
     pins.push({
       user_id: uid,
       handle: p?.handle ?? null,
@@ -261,68 +262,13 @@ async function loadFriendPins(userId: string): Promise<FriendPin[]> {
       avatar_url: p?.avatar_url ?? null,
       lat,
       lng,
-      venue_name: isMe ? "tu ești aici" : (venue?.name ?? (live ? "în mișcare" : null)),
+      venue_name: isMe
+        ? "tu ești aici"
+        : (venue?.name ?? (live ? "în mișcare" : null)),
       is_me: isMe,
     });
   }
   return pins;
-}
-
-function getPrecisePosition(): Promise<GeolocationPosition> {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error("Browser-ul tău n-are GPS."));
-      return;
-    }
-
-    let best: GeolocationPosition | null = null;
-    let settled = false;
-    let watchId: number | null = null;
-    let timeoutId: number | null = null;
-    const maxAcceptedAccuracy = 80;
-
-    const cleanup = () => {
-      if (watchId != null) navigator.geolocation.clearWatch(watchId);
-      if (timeoutId != null) window.clearTimeout(timeoutId);
-    };
-
-    const fail = (error: GeolocationPositionError | Error) => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      reject(error);
-    };
-
-    const finish = (pos?: GeolocationPosition) => {
-      if (settled) return;
-      const candidate = pos ?? best;
-      if (!candidate) {
-        fail(new Error("Nu am putut citi locația."));
-        return;
-      }
-      if (candidate.coords.accuracy > maxAcceptedAccuracy) {
-        fail(new Error("GPS-ul încă e prea aproximativ. Ieși lângă geam și încearcă din nou."));
-        return;
-      }
-      settled = true;
-      cleanup();
-      resolve(candidate);
-    };
-
-    watchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        if (!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
-        if (pos.coords.accuracy <= 35) finish(pos);
-      },
-      (error) => {
-        if (best) finish(best);
-        else fail(error);
-      },
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 30_000 },
-    );
-
-    timeoutId = window.setTimeout(() => finish(), 25_000);
-  });
 }
 
 function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
@@ -375,7 +321,30 @@ function MapPage() {
   const [cityId, setCityId] = useState<string | "all">("all");
   const [maxKm, setMaxKm] = useState(0);
   const [heatNowCells, setHeatNowCells] = useState<HeatNowCell[]>([]);
-  const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null);
+  const [geo, setGeo] = useState<{ lat: number; lng: number; accuracy?: number | null } | null>(
+    null,
+  );
+  const lastGeoSampleRef = useRef<GeoSample | null>(null);
+
+  const acceptGeo = useCallback((lat: number, lng: number, accuracy: number | null | undefined) => {
+    const sample: GeoSample = {
+      lat,
+      lng,
+      accuracy: accuracy ?? null,
+      at: Date.now(),
+    };
+    // Always show *something* for the first fix — Android coarse GPS is often
+    // 200–800m and used to be rejected, so the "me" pin never appeared.
+    if (!lastGeoSampleRef.current) {
+      lastGeoSampleRef.current = sample;
+      setGeo({ lat, lng, accuracy: sample.accuracy });
+      return true;
+    }
+    if (rejectGeoSample(sample, lastGeoSampleRef.current)) return false;
+    lastGeoSampleRef.current = sample;
+    setGeo({ lat, lng, accuracy: sample.accuracy });
+    return true;
+  }, []);
   const [visible, setVisible] = useState(40);
   const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(
     null,
@@ -692,13 +661,10 @@ function MapPage() {
   const mapFriendPins = useMemo(() => {
     if (!user) return friendPins;
     const me = friendPins.find((f) => f.is_me);
-    const pos =
-      geo ??
-      (me ? { lat: me.lat, lng: me.lng } : null) ??
-      (privacyQ.data?.cityCenter
-        ? { lat: privacyQ.data.cityCenter.lat, lng: privacyQ.data.cityCenter.lng }
-        : null);
-    if (!pos) return friendPins;
+    // Live GPS wins. Never fall back to city center for the pin — that placed
+    // "tu" kilometres away from the real spot.
+    const pos = geo ?? (me ? { lat: me.lat, lng: me.lng } : null);
+    if (!pos) return friendPins.filter((f) => !f.is_me);
     return [
       {
         ...(me ?? {
@@ -707,9 +673,11 @@ function MapPage() {
           display_name: profile?.display_name ?? "tu",
           avatar_url: profile?.avatar_url ?? null,
         }),
+        // Prefer profile photo; RomaniaMap3D falls back to OX logo for is_me.
+        avatar_url: profile?.avatar_url ?? me?.avatar_url ?? null,
         lat: pos.lat,
         lng: pos.lng,
-        venue_name: geo ? "tu ești aici" : "în oraș",
+        venue_name: geo ? "tu ești aici" : (me?.venue_name ?? "tu ești aici"),
         is_me: true,
       },
       ...friendPins.filter((f) => f.user_id !== user.id),
@@ -717,7 +685,6 @@ function MapPage() {
   }, [
     friendPins,
     geo,
-    privacyQ.data?.cityCenter,
     profile?.avatar_url,
     profile?.display_name,
     profile?.handle,
@@ -728,7 +695,13 @@ function MapPage() {
     async (pos: GeolocationPosition, ensureLive = false, recenter = false) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
-      setGeo({ lat, lng });
+      const accuracy = pos.coords.accuracy ?? null;
+      if (!acceptGeo(lat, lng, accuracy) && !ensureLive) return;
+      if (ensureLive) {
+        // Explicit user tap — force-accept even if the filter was cold.
+        lastGeoSampleRef.current = { lat, lng, accuracy, at: Date.now() };
+        setGeo({ lat, lng, accuracy });
+      }
       if (recenter || ensureLive) setFocusCity({ lat, lng, zoom: 16 });
       if (!user) return;
 
@@ -778,6 +751,7 @@ function MapPage() {
       qc.invalidateQueries({ queryKey: ["friend-pins", user.id] });
     },
     [
+      acceptGeo,
       privacyQ.data?.cityCenter,
       privacyQ.data?.privateLocs,
       privacyQ.data?.settings,
@@ -788,74 +762,178 @@ function MapPage() {
   );
 
   const requestGeo = () => {
-    getPrecisePosition()
-      .then((pos) => publishPosition(pos, true, true))
-      .catch((error) =>
-        alert(
+    void (async () => {
+      try {
+        await ensureLocationPermission(true);
+        // Fast fix first so the pin appears immediately.
+        const quick = await getCurrentPosition({
+          enableHighAccuracy: true,
+          maximumAge: 5_000,
+          timeout: 20_000,
+        });
+        await publishPosition(asGeolocationPosition(quick), true, true);
+        // Then refine accuracy in the background.
+        getPrecisePosition()
+          .then((precise) => publishPosition(precise, true, true))
+          .catch(() => {});
+      } catch (error) {
+        // Offer Settings when permission is the blocker.
+        const msg =
           error instanceof Error
             ? error.message
-            : "Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul.",
-        ),
-      );
+            : "Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul.";
+        if (/oprită|Setări|permisiun/i.test(msg)) {
+          const { openAppLocationSettings } = await import("@/lib/native-geo");
+          await openAppLocationSettings().catch(() => {});
+        }
+        alert(msg);
+      }
+    })();
   };
 
   useEffect(() => {
     if (autoLocated) return;
     setAutoLocated(true);
 
-    // Only auto-trigger the OS prompt when permission is already granted.
-    // Otherwise we'd re-pop the iOS "Allow Location" dialog on every map visit
-    // until the user picks "Always Allow". When status is `prompt`/`denied`
-    // we wait for an explicit tap on the live-OFF banner / consent button.
     const start = async () => {
+      const fallbackToCity = () => {
+        const fallback = privacyQ.data?.cityCenter;
+        if (fallback)
+          setFocusCity((prev) => prev ?? { lat: fallback.lat, lng: fallback.lng, zoom: 12.5 });
+      };
       try {
-        const perms = (
-          navigator as Navigator & {
-            permissions?: { query?: (d: PermissionDescriptor) => Promise<PermissionStatus> };
-          }
-        ).permissions;
-        const status = perms?.query
-          ? await perms.query({ name: "geolocation" as PermissionName }).catch(() => null)
-          : null;
-        const fallbackToCity = () => {
-          const fallback = privacyQ.data?.cityCenter;
-          if (fallback)
-            setFocusCity((prev) => prev ?? { lat: fallback.lat, lng: fallback.lng, zoom: 12.5 });
-        };
-        if (status && status.state !== "granted") {
+        // Always prompt on map — otherwise first open never asks and falls back to city.
+        const granted = await ensureLocationPermission(true);
+        if (!granted) {
           fallbackToCity();
           return;
         }
 
-        // Cheap, cached read — no prompt, no high-accuracy spin-up.
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            setGeo({ lat, lng });
-            setFocusCity((prev) => prev ?? { lat, lng, zoom: 14 });
-            if (
-              user &&
-              profile?.location_consent &&
-              !privacyQ.data?.settings?.map_ghost &&
-              privacyQ.data?.settings?.map_visibility !== "nobody"
-            ) {
-              publishPosition(pos).catch(() => {});
-            }
-          },
-          () => fallbackToCity(),
-          { enableHighAccuracy: false, maximumAge: 60_000, timeout: 8_000 },
-        );
+        const oxi = await getCurrentPosition({
+          enableHighAccuracy: true,
+          maximumAge: 8_000,
+          timeout: 25_000,
+        });
+        const lat = oxi.coords.latitude;
+        const lng = oxi.coords.longitude;
+        const accuracy = oxi.coords.accuracy;
+        const pos = asGeolocationPosition(oxi);
+
+        // Always place the local me-pin + camera on GPS (not home city).
+        acceptGeo(lat, lng, accuracy);
+        setFocusCity({ lat, lng, zoom: 16 });
+
+        if (user) {
+          publishPosition(pos, true, true).catch(() => {});
+        }
       } catch {
-        /* silent */
+        fallbackToCity();
       }
     };
     start();
-    // Auto-locate runs once per mount; guarded by `autoLocated` above.
-    // Keep deps minimal to avoid re-triggering when query data refs change
-    // (caused a render loop on /app/map).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoLocated]);
+
+  // Keep refining the local "me" pin while the map is open.
+  // DB broadcast stays in useLiveLocation (throttled) — avoid double upserts here.
+  // Restart watch when the tab becomes visible again (permission may have been
+  // granted in Settings after the first denied attempt).
+  useEffect(() => {
+    let cancelled = false;
+    let clear: (() => void) | null = null;
+    let recentered = false;
+    let watchKey = 0;
+
+    const startWatch = async () => {
+      watchKey += 1;
+      const myKey = watchKey;
+      clear?.();
+      clear = null;
+      // Ask once so Android permission is granted before the watch starts.
+      await ensureLocationPermission(true);
+      if (cancelled || myKey !== watchKey) return;
+      watchPosition(
+        (pos) => {
+          if (cancelled || myKey !== watchKey) return;
+          const acc = pos.coords.accuracy ?? null;
+          if (acc != null && acc > 2000) return;
+          if (acc != null && acc > MAX_MAP_ACCURACY_M && lastGeoSampleRef.current) {
+            const prev = lastGeoSampleRef.current.accuracy;
+            if (prev != null && acc >= prev - 10) return;
+          }
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const accepted = acceptGeo(lat, lng, acc);
+          if (accepted && !recentered) {
+            recentered = true;
+            setFocusCity({ lat, lng, zoom: 16 });
+          }
+        },
+        () => {
+          /* silent — retry on next visibility */
+        },
+        { enableHighAccuracy: true, maximumAge: 8_000, timeout: 30_000, promptPermission: true },
+      ).then((h) => {
+        if (cancelled || myKey !== watchKey) {
+          h.clear();
+          return;
+        }
+        clear = h.clear;
+      });
+    };
+
+    const retryLocate = async () => {
+      const ok = await ensureLocationPermission(true);
+      if (!ok || cancelled) return;
+      try {
+        const oxi = await getCurrentPosition({
+          enableHighAccuracy: true,
+          maximumAge: 2_000,
+          timeout: 15_000,
+        });
+        acceptGeo(oxi.coords.latitude, oxi.coords.longitude, oxi.coords.accuracy);
+        setFocusCity({
+          lat: oxi.coords.latitude,
+          lng: oxi.coords.longitude,
+          zoom: 16,
+        });
+        if (user) {
+          publishPosition(asGeolocationPosition(oxi), true, true).catch(() => {});
+        }
+      } catch {
+        /* keep watching */
+      }
+      startWatch();
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void retryLocate();
+    };
+
+    startWatch();
+    document.addEventListener("visibilitychange", onVisibility);
+
+    let removeAppListener: (() => void) | undefined;
+    import("@capacitor/app")
+      .then(({ App }) =>
+        App.addListener("appStateChange", ({ isActive }) => {
+          if (isActive) void retryLocate();
+        }),
+      )
+      .then((handle) => {
+        removeAppListener = () => {
+          handle.remove().catch(() => {});
+        };
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisibility);
+      removeAppListener?.();
+      clear?.();
+    };
+  }, [acceptGeo, publishPosition, user]);
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
   const [tab, setTab] = useState<"locatii" | "live">("locatii");
@@ -1050,11 +1128,7 @@ function MapPage() {
             their pin never broadcasts. One-tap fix right here. */}
         {user && (!profile?.location_consent || privacyQ.data?.settings?.map_ghost) && (
           <button
-            onClick={async () => {
-              if (!navigator.geolocation) {
-                alert("Browser-ul tău n-are GPS.");
-                return;
-              }
+            onClick={() => {
               getPrecisePosition()
                 .then((pos) => publishPosition(pos, true, true))
                 .catch((error) =>
@@ -1092,6 +1166,7 @@ function MapPage() {
             focusCity={focusCity}
             fitBounds={fitBounds}
             heatNowCells={heatNowCells}
+            onLocateMe={requestGeo}
             onCityClick={(c) => {
               setCityId(c.id);
               // Zoom past the venue minzoom (13) so the small venue bottles
@@ -1197,18 +1272,18 @@ function MapPage() {
             onClick={() => setTab("live")}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold transition ${tab === "live" ? "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white shadow-lg shadow-[#ff3d8b]/25" : "text-white/50"}`}
           >
-            <Users size={11} /> live · {friendPins.length}
+            <Users size={11} /> live · {mapFriendPins.length}
           </button>
         </div>
 
         {tab === "live" && (
           <section className="space-y-2">
-            {friendPins.length === 0 ? (
+            {mapFriendPins.length === 0 ? (
               <div className="py-10 text-center text-[11px] uppercase tracking-widest text-white/40 font-bold">
                 niciun oxidat live acum.
               </div>
             ) : (
-              friendPins.map((f) => (
+              mapFriendPins.map((f) => (
                 <Link
                   key={f.user_id}
                   to="/app/user/$id"
@@ -1224,7 +1299,7 @@ function MapPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-semibold truncate text-white">
-                      @{f.handle ?? f.display_name}
+                      {f.is_me ? "tu" : `@${f.handle ?? f.display_name}`}
                     </div>
                     <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate font-bold mt-0.5">
                       📍 {f.venue_name ?? "în oraș"}

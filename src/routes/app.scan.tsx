@@ -1,22 +1,48 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, Search, X, Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, X, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { errorMessage } from "@/lib/errors";
+import { detectMediaKind, mediaContentType, mediaFileExt } from "@/lib/media-file";
+import { SnapCapture } from "@/components/app/SnapCapture";
 
 export const Route = createFileRoute("/app/scan")({
   head: () => ({ meta: [{ title: "Pune un șpriț · OXIDAȚII" }] }),
   component: ScanPage,
 });
 
+/** Start of "today" in Europe/Bucharest as ISO (UTC). */
+function bucharestDayStartIso(): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Bucharest",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const y = parts.find((p) => p.type === "year")?.value;
+  const m = parts.find((p) => p.type === "month")?.value;
+  const d = parts.find((p) => p.type === "day")?.value;
+  // Probe both EET (+02) and EEST (+03); pick the one whose Bucharest calendar day matches.
+  for (const offset of ["+03:00", "+02:00"] as const) {
+    const candidate = new Date(`${y}-${m}-${d}T00:00:00${offset}`);
+    const check = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/Bucharest",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(candidate);
+    if (check === `${y}-${m}-${d}`) return candidate.toISOString();
+  }
+  return new Date(`${y}-${m}-${d}T00:00:00+03:00`).toISOString();
+}
+
 function ScanPage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const qc = useQueryClient();
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
@@ -58,24 +84,24 @@ function ScanPage() {
   async function submit() {
     if (!user) return toast.error("Trebuie să fii logat.");
     if (!file) return toast.error("Alege o poză sau un clip.");
-    if (!selectedVenue) return toast.error("Alege locația.");
+    if (!selectedVenue) return toast.error("Alege locația (clubul/barul) unde ești.");
     setUploading(true);
     try {
-      const isVideo = file.type.startsWith("video/");
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? (isVideo ? "mp4" : "jpg");
+      const kind = detectMediaKind(file);
+      const isVideo = kind === "video";
+      const ext = mediaFileExt(file, kind);
       const path = `${user.id}/${selectedVenue.id}/${Date.now()}.${ext}`;
 
-      // For Spritz posts: enforce 1/day in Top
+      // For Spritz posts: enforce 1/day in Top (Bucharest calendar day)
       if (postType === "spritz") {
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
         const { count } = await supabase
           .from("sprit_proofs")
           .select("id", { count: "exact", head: true })
           .eq("user_id", user.id)
-          .gte("created_at", startOfDay.toISOString());
+          .gte("created_at", bucharestDayStartIso());
         if ((count ?? 0) > 0) {
-          toast.error("Ai postat deja Șprițul zilei. Revino mâine 🥃");
+          toast.error("Ai postat deja Șprițul zilei. Poți posta pe profil (nu în Top).");
+          setPostType("normal");
           setUploading(false);
           return;
         }
@@ -83,30 +109,28 @@ function ScanPage() {
 
       const { error: upErr } = await supabase.storage
         .from("venue-photos")
-        .upload(path, file, { contentType: file.type });
+        .upload(path, file, { contentType: mediaContentType(file, kind), upsert: false });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("venue-photos").getPublicUrl(path);
 
-      // Always post to profile gallery (the user explicitly chose to share something)
       const { error: insErr } = await supabase.from("venue_photos").insert({
         venue_id: selectedVenue.id,
         user_id: user.id,
         photo_url: pub.publicUrl,
-        media_type: isVideo ? "video" : "image",
+        media_type: kind,
         caption: caption.trim() || null,
       });
       if (insErr) throw insErr;
 
-      // Only Spritz posts go into sprit_proofs (live feed + Top "Șprițul zilei")
       if (postType === "spritz") {
         const { error: proofErr } = await supabase.from("sprit_proofs").insert({
           user_id: user.id,
           venue_id: selectedVenue.id,
           photo_url: pub.publicUrl,
-          media_type: isVideo ? "video" : "image",
+          media_type: kind,
           ai_verified: true,
         });
-        if (proofErr) console.warn("sprit_proofs insert failed", proofErr);
+        if (proofErr) throw proofErr;
       }
 
       toast.success(
@@ -178,57 +202,22 @@ function ScanPage() {
         </Link>
       </header>
 
-      {/* Hidden picker */}
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*,video/*"
-        capture="environment"
-        className="hidden"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-      />
-
       {!file ? (
-        /* STEP 1 — camera only, full-bleed prompt */
+        /* STEP 1 — Snap-style in-app camera */
         <div className="space-y-3">
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="block w-full aspect-[3/4] rounded-3xl overflow-hidden bg-card border border-border active:scale-[0.99] transition relative"
-          >
-            <div className="h-full w-full flex flex-col items-center justify-center text-muted-foreground gap-4">
-              <div
-                className="h-20 w-20 rounded-full flex items-center justify-center shadow-[var(--shadow-elevated)]"
-                style={{ background: "var(--gradient-sunset)" }}
-              >
-                <Camera size={34} className="text-white" />
-              </div>
-              <div className="text-center space-y-1">
-                <div className="font-display font-bold text-foreground text-xl">
-                  fă o poză sau un clip
-                </div>
-                <div className="text-xs">apasă să deschizi camera</div>
-              </div>
-            </div>
-          </button>
-          <button
-            onClick={() => fileRef.current?.click()}
-            className="w-full py-3 rounded-2xl text-white font-semibold shadow-[var(--shadow-elevated)] active:scale-[0.98] transition"
-            style={{ background: "var(--gradient-sunset)" }}
-          >
-            deschide camera
-          </button>
+          <SnapCapture onCapture={setFile} />
           <p className="text-center text-[11px] text-muted-foreground">
-            după ce faci poza alegi locul și postezi.
+            după poză/clip alegi locul și postezi.
           </p>
         </div>
       ) : (
         /* STEP 2 — preview + venue + caption + submit */
         <>
           <button
-            onClick={() => fileRef.current?.click()}
+            onClick={() => setFile(null)}
             className="block w-full aspect-square rounded-3xl overflow-hidden bg-card border border-border active:scale-[0.99] transition relative"
           >
-            {file.type.startsWith("video/") ? (
+            {detectMediaKind(file) === "video" ? (
               <video
                 src={previewUrl ?? undefined}
                 className="h-full w-full object-cover"
@@ -241,10 +230,10 @@ function ScanPage() {
               <img src={previewUrl ?? undefined} alt="" className="h-full w-full object-cover" />
             )}
             <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-black/70 text-white text-[10px] font-mono uppercase tracking-widest">
-              {file.type.startsWith("video/") ? "▶ clip" : "📷 poză"}
+              {detectMediaKind(file) === "video" ? "▶ clip" : "📷 poză"}
             </div>
             <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-full bg-black/60 text-white text-xs">
-              schimbă
+              refă
             </div>
           </button>
 

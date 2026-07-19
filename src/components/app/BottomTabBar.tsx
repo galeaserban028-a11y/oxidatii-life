@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, memo } from "react";
+import { useEffect, useMemo, useState, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { MapPin, Camera, User, MessageCircle, Radio, Trophy, Flame, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -146,7 +146,7 @@ const TabItem = memo(function TabItem({ tab, active, shrunk, iconSize, badge = 0
   const showDot = badge > 0;
   return (
     <Link
-      to={tab.to as any}
+      to={tab.to as "/app"}
       className="tab-press flex flex-col items-center justify-center flex-1 min-w-0"
       style={{
         color: active ? "#ff3d8b" : "#8e8c99",
@@ -256,7 +256,7 @@ export function BottomTabBar() {
     <nav
       className="fixed inset-x-0 z-50 flex flex-col items-center pointer-events-none"
       style={{
-        bottom: `calc(${shrunk ? 10 : 16}px + env(safe-area-inset-bottom))`,
+        bottom: `calc(${shrunk ? 4 : 6}px + var(--oxi-bottom-inset, env(safe-area-inset-bottom, 0px)))`,
         transition: "bottom 0.3s cubic-bezier(0.4,0,0.2,1)",
         contain: "layout",
       }}
@@ -287,7 +287,7 @@ export function BottomTabBar() {
           gap: shrunk ? 2 : 4,
           padding: shrunk ? "6px 10px" : "8px 12px",
           width: "min(98%, 600px)",
-          background: "rgba(15, 13, 28, 0.96)",
+          background: "var(--oxi-chrome, rgba(15, 13, 28, 0.96))",
           backdropFilter: "none",
           WebkitBackdropFilter: "none",
           borderRadius: shrunk ? 22 : 28,
@@ -302,7 +302,7 @@ export function BottomTabBar() {
           <TabItem
             key={t.to}
             tab={t}
-            active={activeMap[t.to]}
+            active={!!activeMap[t.to]}
             shrunk={shrunk}
             iconSize={iconSize}
           />
@@ -343,7 +343,7 @@ export function BottomTabBar() {
           <TabItem
             key={t.to}
             tab={t}
-            active={activeMap[t.to]}
+            active={!!activeMap[t.to]}
             shrunk={shrunk}
             iconSize={iconSize}
             badge={t.badgeKey === "inbox" ? unread : 0}
