@@ -325,6 +325,7 @@ function MapPage() {
     null,
   );
   const lastGeoSampleRef = useRef<GeoSample | null>(null);
+  const lastPublishedAtRef = useRef(0);
 
   const acceptGeo = useCallback((lat: number, lng: number, accuracy: number | null | undefined) => {
     const sample: GeoSample = {
@@ -709,6 +710,10 @@ function MapPage() {
       }
       if (recenter) setFocusCity({ lat, lng, zoom: 16 });
       if (!user) return;
+
+      const now = Date.now();
+      if (!ensureLive && now - lastPublishedAtRef.current < 15_000) return;
+      lastPublishedAtRef.current = now;
 
       if (ensureLive) {
         await supabase
