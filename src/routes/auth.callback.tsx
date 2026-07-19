@@ -34,12 +34,13 @@ function NativeOAuthCallback() {
     }
 
     const queryString = forwarded.toString();
+    // Use custom scheme on all platforms. `intent://` triggers Play Store
+    // interception inside Chrome Custom Tabs ("Finsky: incorrect referrer URI"),
+    // sending the app TO_BACK. The `oxidatii://` intent-filter in
+    // AndroidManifest.xml handles the return reliably.
     const url = `oxidatii://oauth?${queryString}`;
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    const androidIntentUrl = `intent://oauth?${queryString}#Intent;scheme=oxidatii;package=com.oxidatii.app;end`;
-    const openAppUrl = isAndroid ? androidIntentUrl : url;
-    setDeepLink(openAppUrl);
-    window.location.replace(openAppUrl);
+    setDeepLink(url);
+    window.location.replace(url);
   }, []);
 
   return (
