@@ -933,9 +933,7 @@ function MapPage() {
       removeAppListener?.();
       clear?.();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
-
+  }, [acceptGeo, publishPosition, user]);
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
   const [tab, setTab] = useState<"locatii" | "live">("locatii");
@@ -1168,7 +1166,7 @@ function MapPage() {
             focusCity={focusCity}
             fitBounds={fitBounds}
             heatNowCells={heatNowCells}
-            
+            onLocateMe={requestGeo}
             onCityClick={(c) => {
               setCityId(c.id);
               // Zoom past the venue minzoom (13) so the small venue bottles

@@ -147,9 +147,11 @@ export async function bootstrapNative(): Promise<void> {
             const oauth = await import("./native-oauth");
             // Close tab first (marks flow settled) then notify UI with typed status.
             await oauth.closeNativeOAuthBrowser().catch(() => {});
-            window.dispatchEvent(new Event(oauth.NATIVE_OAUTH_FINISHED_EVENT));
-            if (error) console.warn("[native] OAuth finished with error", error.message);
-
+            oauth.emitNativeOAuthFinished(
+              error
+                ? { status: "error", error: error.message, provider: null }
+                : { status: "success", error: null, provider: null },
+            );
 
             if (!error) {
               // Land on signup so the auth effect can route with visible feedback.
