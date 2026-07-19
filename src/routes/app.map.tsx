@@ -540,6 +540,8 @@ function MapPage() {
       .map(([code, count]) => ({ code, count, label: NAMES[code] ?? code }));
   }, [cities, venues]);
 
+  const geoForFilter = maxKm > 0 ? geo : null;
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     let list = venues.filter((v) => {
@@ -555,22 +557,26 @@ function MapPage() {
         )
           return false;
       }
-      if (maxKm > 0 && geo && v.lat != null && v.lng != null) {
-        if (distanceKm(geo.lat, geo.lng, v.lat, v.lng) > maxKm) return false;
+      if (maxKm > 0 && geoForFilter && v.lat != null && v.lng != null) {
+        if (distanceKm(geoForFilter.lat, geoForFilter.lng, v.lat, v.lng) > maxKm) return false;
       }
       return true;
     });
-    if (geo) {
+    if (geoForFilter) {
       list = [...list].sort((a, b) => {
         const da =
-          a.lat != null && a.lng != null ? distanceKm(geo.lat, geo.lng, a.lat, a.lng) : 1e9;
+          a.lat != null && a.lng != null
+            ? distanceKm(geoForFilter.lat, geoForFilter.lng, a.lat, a.lng)
+            : 1e9;
         const db =
-          b.lat != null && b.lng != null ? distanceKm(geo.lat, geo.lng, b.lat, b.lng) : 1e9;
+          b.lat != null && b.lng != null
+            ? distanceKm(geoForFilter.lat, geoForFilter.lng, b.lat, b.lng)
+            : 1e9;
         return da - db;
       });
     }
     return list;
-  }, [venues, query, type, country, cityId, maxKm, geo, cityMap]);
+  }, [venues, query, type, country, cityId, maxKm, geoForFilter, cityMap]);
 
   // Cities scoped to selected country (for map markers + fit bounds)
   const citiesScoped = useMemo(
