@@ -702,6 +702,8 @@ function MapPage() {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
       const accuracy = pos.coords.accuracy ?? null;
+      const now = Date.now();
+      if (!ensureLive && now - lastPublishedAtRef.current < 15_000) return;
       if (!acceptGeo(lat, lng, accuracy) && !ensureLive) return;
       if (ensureLive) {
         // Explicit user tap — force-accept even if the filter was cold.
@@ -710,9 +712,6 @@ function MapPage() {
       }
       if (recenter) setFocusCity({ lat, lng, zoom: 16 });
       if (!user) return;
-
-      const now = Date.now();
-      if (!ensureLive && now - lastPublishedAtRef.current < 15_000) return;
       lastPublishedAtRef.current = now;
 
       if (ensureLive) {
@@ -882,6 +881,9 @@ function MapPage() {
           if (accepted && !recentered) {
             recentered = true;
             setFocusCity({ lat, lng, zoom: 16 });
+          }
+          if (accepted && userId) {
+            publishPositionRef.current(asGeolocationPosition(pos), false, false).catch(() => {});
           }
         },
         () => {
