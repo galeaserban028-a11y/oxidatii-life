@@ -843,6 +843,9 @@ function MapPage() {
     publishPositionRef.current = publishPosition;
   }, [publishPosition]);
 
+  const userId = user?.id;
+
+
   useEffect(() => {
     let cancelled = false;
     let clear: (() => void) | null = null;
