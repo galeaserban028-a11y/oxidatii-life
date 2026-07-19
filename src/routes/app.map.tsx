@@ -692,7 +692,22 @@ function MapPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const mapFriendPins = useMemo(() => {
-    if (!user) return friendPins;
+    if (!user) {
+      if (!geo) return friendPins;
+      return [
+        {
+          user_id: "local-me",
+          handle: null,
+          display_name: "tu",
+          avatar_url: null,
+          lat: geo.lat,
+          lng: geo.lng,
+          venue_name: "tu ești aici",
+          is_me: true,
+        },
+        ...friendPins,
+      ];
+    }
     const me = friendPins.find((f) => f.is_me);
     // Live GPS wins. Never fall back to city center for the pin — that placed
     // "tu" kilometres away from the real spot.
