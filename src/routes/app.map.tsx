@@ -933,7 +933,9 @@ function MapPage() {
       removeAppListener?.();
       clear?.();
     };
-  }, [acceptGeo, publishPosition, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
   const [tab, setTab] = useState<"locatii" | "live">("locatii");
