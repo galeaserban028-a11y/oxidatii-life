@@ -126,28 +126,32 @@ export async function openAppLocationSettings(): Promise<void> {
   const pkg = "com.oxidatii.app";
   try {
     if (isNative() || !!(window as unknown as { Capacitor?: unknown }).Capacitor) {
-      const { App } = await import("@capacitor/app");
+      const AppMod = (await import("@capacitor/app")) as unknown as {
+        App: { openUrl?: (opts: { url: string }) => Promise<unknown> };
+      };
+      const openUrl = AppMod.App.openUrl?.bind(AppMod.App);
+      const tryOpen = async (url: string) => {
+        if (openUrl) {
+          await openUrl({ url });
+          return true;
+        }
+        if (typeof window !== "undefined") {
+          window.open(url, "_system");
+          return true;
+        }
+        return false;
+      };
       try {
-        await App.openUrl({
-          url: `intent:#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;data=package:${pkg};end`,
-        });
-        return;
-      } catch {
-        /* try package: URI */
-      }
+        if (await tryOpen(`intent:#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;data=package:${pkg};end`)) return;
+      } catch { /* fall through */ }
       try {
-        await App.openUrl({ url: `package:${pkg}` });
-        return;
-      } catch {
-        /* fall through */
-      }
+        if (await tryOpen(`package:${pkg}`)) return;
+      } catch { /* fall through */ }
       try {
-        await App.openUrl({ url: "app-settings:" });
-        return;
-      } catch {
-        /* fall through */
-      }
+        if (await tryOpen("app-settings:")) return;
+      } catch { /* fall through */ }
     }
+
   } catch {
     /* fall through */
   }
