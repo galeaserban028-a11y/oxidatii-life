@@ -879,6 +879,17 @@ function MapPage() {
         if (user) {
           publishPosition(pos, true, false).catch(() => {});
         }
+
+        // Refine precision in the background so the me-pin snaps to exact GPS.
+        getPrecisePosition()
+          .then((precise) => {
+            const plat = precise.coords.latitude;
+            const plng = precise.coords.longitude;
+            const pacc = precise.coords.accuracy;
+            acceptGeo(plat, plng, pacc, true);
+            if (user) publishPosition(precise, true, true).catch(() => {});
+          })
+          .catch(() => {});
       } catch {
         fallbackToCity();
       }
