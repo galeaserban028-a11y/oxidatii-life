@@ -12,15 +12,19 @@ type CapacitorGlobal = {
 let _isNative: boolean | null = null;
 
 export function isNative(): boolean {
-  if (_isNative !== null) return _isNative;
+  // Never permanently cache `false` — Capacitor may inject after the first
+  // render. Caching false left PullToRefresh / page transforms active and
+  // broke Android scroll (only header/tab bar could start a gesture).
+  if (_isNative === true) return true;
   if (typeof window === "undefined") return false;
   try {
     const cap = (window as unknown as { Capacitor?: CapacitorGlobal }).Capacitor;
-    _isNative = !!(cap && typeof cap.isNativePlatform === "function" && cap.isNativePlatform());
+    const now = !!(cap && typeof cap.isNativePlatform === "function" && cap.isNativePlatform());
+    if (now) _isNative = true;
+    return now;
   } catch {
-    _isNative = false;
+    return false;
   }
-  return _isNative;
 }
 
 export function getNativePlatform(): "ios" | "android" | "web" {
@@ -46,7 +50,13 @@ export async function bootstrapNative(): Promise<void> {
     try {
       await StatusBar.setStyle({ style: Style.Dark });
       if (getNativePlatform() === "android") {
-        await StatusBar.setBackgroundColor({ color: "#1a120c" });
+        // Match floating tab bar / header chrome (#0f0d1c).
+        await StatusBar.setBackgroundColor({ color: "#0f0d1c" });
+        await StatusBar.setOverlaysWebView({ overlay: false });
+        // Lift above 3-button nav, but keep the tab bar low — 48px floated it too high.
+        document.documentElement.style.setProperty("--oxi-bottom-inset", "20px");
+        document.documentElement.classList.add("oxi-native-android");
+        document.documentElement.style.setProperty("--oxi-chrome", "#0f0d1c");
       }
     } catch { /* noop */ }
 
@@ -135,16 +145,19 @@ export async function bootstrapNative(): Promise<void> {
             }
 
             const oauth = await import("./native-oauth");
+            // Close tab first (marks flow settled) then notify UI with typed status.
             await oauth.closeNativeOAuthBrowser().catch(() => {});
-            window.dispatchEvent(
-              new CustomEvent(oauth.NATIVE_OAUTH_FINISHED_EVENT, {
-                detail: { error: error?.message ?? null },
-              }),
-            );
+            window.dispatchEvent(new Event(oauth.NATIVE_OAUTH_FINISHED_EVENT));
+            if (error) console.warn("[native] OAuth finished with error", error.message);
+
 
             if (!error) {
-              window.history.replaceState({}, "", "/signup");
-              window.dispatchEvent(new PopStateEvent("popstate"));
+              // Land on signup so the auth effect can route with visible feedback.
+              const path = window.location.pathname;
+              if (path !== "/signup" && path !== "/login" && path !== "/onboarding") {
+                window.history.replaceState({}, "", "/signup");
+                window.dispatchEvent(new PopStateEvent("popstate"));
+              }
             }
             return;
           }
@@ -177,6 +190,12 @@ export async function bootstrapNative(): Promise<void> {
     try {
       const { registerNativePush } = await import("./native-push");
       registerNativePush().catch(() => {});
+    } catch { /* noop */ }
+
+    // Ensure any session keys that landed only in localStorage are mirrored.
+    try {
+      const { migrateLegacyAuthKeys } = await import("@/integrations/supabase/auth-storage");
+      await migrateLegacyAuthKeys();
     } catch { /* noop */ }
   } catch (err) {
     console.warn("[native] bootstrap failed", err);

@@ -11,6 +11,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { warmAuthStorage } from "@/integrations/supabase/auth-storage";
 
 type Profile = {
   id: string;
@@ -137,10 +138,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     mountedRef.current = true;
+    // Until bootstrap finishes, ignore null INITIAL_SESSION — Preferences may
+    // still be hydrating and a premature null would bounce the user to /login.
+    const bootDoneRef = { current: false };
 
-    // Single listener. Filter to identity transitions only — avoids
-    // refetch/router-invalidation storms on TOKEN_REFRESHED/INITIAL_SESSION.
-    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
+    const applySession = (sess: Session | null, event?: string) => {
+      if (!bootDoneRef.current && !sess?.user && event !== "SIGNED_OUT") {
+        return;
+      }
       setSession(sess);
       setUser(sess?.user ?? null);
 
@@ -151,7 +156,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (sess?.user) {
         if (identityChanged) {
-          // defer to escape the auth callback
           setTimeout(() => {
             void loadProfile(sess.user.id);
           }, 0);
@@ -160,49 +164,101 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
         setProfileLoading(false);
       }
+    };
 
-      // Only act on real identity transitions, not silent token refreshes.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
+      applySession(sess, event);
+
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         router.invalidate();
-        // On SIGNED_IN there is nothing meaningful cached yet — invalidating
-        // would fire a storm of parallel refetches that compete with the
-        // profile load and make login feel slow. Skip it; individual pages
-        // will trigger their own queries as they mount.
         if (event === "USER_UPDATED") qc.invalidateQueries();
       }
     });
 
-    // Bootstrap the session once.
     let cancelled = false;
     const fallbackTimer = window.setTimeout(() => {
+      bootDoneRef.current = true;
       if (mountedRef.current) setInitializing(false);
-    }, 3500);
+    }, 8000);
 
-    supabase.auth
-      .getSession()
-      .then(async ({ data }) => {
+    const restoreSession = async (): Promise<Session | null> => {
+      await warmAuthStorage();
+      let { data } = await supabase.auth.getSession();
+      if (data.session) return data.session;
+
+      // Retry with backoff — cold Android starts often miss the first read.
+      for (const wait of [200, 450, 800]) {
+        await new Promise((r) => setTimeout(r, wait));
+        if (cancelled) return null;
+        await warmAuthStorage();
+        ({ data } = await supabase.auth.getSession());
+        if (data.session) return data.session;
+      }
+
+      // Last resort: force refresh from stored refresh_token.
+      try {
+        const refreshed = await supabase.auth.refreshSession();
+        if (refreshed.data.session) return refreshed.data.session;
+      } catch {
+        /* noop */
+      }
+      return null;
+    };
+
+    (async () => {
+      try {
+        const sess = await restoreSession();
         if (cancelled) return;
-        setSession(data.session);
-        setUser(data.session?.user ?? null);
-        lastUserIdRef.current = data.session?.user?.id ?? null;
-        if (data.session?.user) await loadProfile(data.session.user.id);
-      })
-      .catch((error) => {
+        bootDoneRef.current = true;
+        applySession(sess, sess ? "SIGNED_IN" : undefined);
+        if (sess?.user) await loadProfile(sess.user.id);
+      } catch (error) {
         console.error("Could not restore session", error);
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-      })
-      .finally(() => {
+        bootDoneRef.current = true;
+        if (!cancelled) {
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+        }
+      } finally {
         window.clearTimeout(fallbackTimer);
         if (!cancelled && mountedRef.current) setInitializing(false);
-      });
+      }
+    })();
+
+    // On resume, re-hydrate from Preferences and refresh tokens.
+    let removeResume: (() => void) | undefined;
+    (async () => {
+      try {
+        const { App } = await import("@capacitor/app");
+        const handle = await App.addListener("appStateChange", ({ isActive }) => {
+          if (!isActive) return;
+          void (async () => {
+            await warmAuthStorage();
+            const { data } = await supabase.auth.getSession();
+            if (data.session) {
+              applySession(data.session);
+              await supabase.auth.refreshSession().catch(() => null);
+            } else {
+              const again = await restoreSession();
+              if (again) applySession(again, "SIGNED_IN");
+            }
+          })();
+        });
+        removeResume = () => {
+          void handle.remove();
+        };
+      } catch {
+        /* web / plugin missing */
+      }
+    })();
 
     return () => {
       cancelled = true;
       mountedRef.current = false;
       window.clearTimeout(fallbackTimer);
       sub.subscription.unsubscribe();
+      removeResume?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
