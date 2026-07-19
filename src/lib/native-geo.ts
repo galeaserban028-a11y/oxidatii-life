@@ -92,7 +92,7 @@ export async function checkLocationPermission(): Promise<LocationPermissionState
 export async function ensureLocationPermission(prompt = true): Promise<boolean> {
   const state = await checkLocationPermission();
   if (state === "granted") return true;
-  if (!prompt) return state === "granted";
+  if (!prompt) return false;
 
   if (isNative() || typeof (window as unknown as { Capacitor?: unknown }).Capacitor !== "undefined") {
     try {
@@ -125,7 +125,9 @@ export async function openAppLocationSettings(): Promise<void> {
   const pkg = "com.oxidatii.app";
   try {
     if (isNative() || !!(window as unknown as { Capacitor?: unknown }).Capacitor) {
-      const { App } = await import("@capacitor/app");
+      const { App } = (await import("@capacitor/app")) as unknown as {
+        App: { openUrl: (opts: { url: string }) => Promise<unknown> };
+      };
       try {
         await App.openUrl({
           url: `intent:#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;data=package:${pkg};end`,
