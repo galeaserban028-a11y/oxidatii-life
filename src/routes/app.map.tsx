@@ -838,6 +838,11 @@ function MapPage() {
   // DB broadcast stays in useLiveLocation (throttled) — avoid double upserts here.
   // Restart watch when the tab becomes visible again (permission may have been
   // granted in Settings after the first denied attempt).
+  const publishPositionRef = useRef(publishPosition);
+  useEffect(() => {
+    publishPositionRef.current = publishPosition;
+  }, [publishPosition]);
+
   useEffect(() => {
     let cancelled = false;
     let clear: (() => void) | null = null;
@@ -892,13 +897,16 @@ function MapPage() {
           timeout: 15_000,
         });
         acceptGeo(oxi.coords.latitude, oxi.coords.longitude, oxi.coords.accuracy);
-        setFocusCity({
-          lat: oxi.coords.latitude,
-          lng: oxi.coords.longitude,
-          zoom: 16,
-        });
-        if (user) {
-          publishPosition(asGeolocationPosition(oxi), true, true).catch(() => {});
+        if (!recentered) {
+          recentered = true;
+          setFocusCity({
+            lat: oxi.coords.latitude,
+            lng: oxi.coords.longitude,
+            zoom: 16,
+          });
+        }
+        if (userId) {
+          publishPositionRef.current(asGeolocationPosition(oxi), true, true).catch(() => {});
         }
       } catch {
         /* keep watching */
@@ -933,7 +941,9 @@ function MapPage() {
       removeAppListener?.();
       clear?.();
     };
-  }, [acceptGeo, publishPosition, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [acceptGeo, userId]);
+
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
   const [tab, setTab] = useState<"locatii" | "live">("locatii");
