@@ -332,6 +332,7 @@ function MapPage() {
   const lastGeoSampleRef = useRef<GeoSample | null>(null);
   const lastPublishedAtRef = useRef(0);
   const lastUiGeoAtRef = useRef(0);
+  const hasCenteredOnGpsRef = useRef(false);
 
   const acceptGeo = useCallback(
     (lat: number, lng: number, accuracy: number | null | undefined, force = false) => {
@@ -729,7 +730,9 @@ function MapPage() {
       const lng = pos.coords.longitude;
       const accuracy = pos.coords.accuracy ?? null;
       const now = Date.now();
-      if (!ensureLive && now - lastPublishedAtRef.current < 15_000) return;
+      // The local “TU” pin must appear even if the backend/profile publish is
+      // throttled or slow. Previously we returned before acceptGeo(), so Android
+      // could keep refreshing/loading while never drawing the user pin.
       if (!acceptGeo(lat, lng, accuracy, ensureLive) && !ensureLive) return;
       if (ensureLive) {
         // Explicit user tap — force-accept even if the filter was cold.
@@ -738,6 +741,7 @@ function MapPage() {
       }
       if (recenter) setFocusCity({ lat, lng, zoom: 16 });
       if (!user) return;
+      if (!ensureLive && now - lastPublishedAtRef.current < 15_000) return;
       lastPublishedAtRef.current = now;
 
       if (ensureLive) {
@@ -853,7 +857,10 @@ function MapPage() {
 
         // Always place the local me-pin + camera on GPS (not home city).
         acceptGeo(lat, lng, accuracy, true);
-        setFocusCity({ lat, lng, zoom: 16 });
+        if (!hasCenteredOnGpsRef.current) {
+          hasCenteredOnGpsRef.current = true;
+          setFocusCity({ lat, lng, zoom: 16 });
+        }
 
         if (user) {
           publishPosition(pos, true, false).catch(() => {});
@@ -906,8 +913,9 @@ function MapPage() {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
           const accepted = acceptGeo(lat, lng, acc);
-          if (accepted && !recentered) {
+          if (accepted && !recentered && !hasCenteredOnGpsRef.current) {
             recentered = true;
+            hasCenteredOnGpsRef.current = true;
             setFocusCity({ lat, lng, zoom: 16 });
           }
           // Do not publish every watch sample. Local pin stays precise via geo;
@@ -941,8 +949,9 @@ function MapPage() {
           timeout: 15_000,
         });
         acceptGeo(oxi.coords.latitude, oxi.coords.longitude, oxi.coords.accuracy, true);
-        if (!recentered) {
+        if (!recentered && !hasCenteredOnGpsRef.current) {
           recentered = true;
+          hasCenteredOnGpsRef.current = true;
           setFocusCity({
             lat: oxi.coords.latitude,
             lng: oxi.coords.longitude,
