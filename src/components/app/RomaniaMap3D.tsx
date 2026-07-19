@@ -4,7 +4,8 @@ import maplibregl from "maplibre-gl";
 import type { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Crosshair, Plus, Minus } from "lucide-react";
-import logoOx from "@/assets/logo-oxidatii.png";
+import logoOxAsset from "@/assets/logo-oxidatii.png.asset.json";
+const logoOx = logoOxAsset.url;
 
 type City = {
   id: string;
