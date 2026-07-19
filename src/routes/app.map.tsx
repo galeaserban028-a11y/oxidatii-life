@@ -1166,7 +1166,7 @@ function MapPage() {
             focusCity={focusCity}
             fitBounds={fitBounds}
             heatNowCells={heatNowCells}
-            onLocateMe={requestGeo}
+            
             onCityClick={(c) => {
               setCityId(c.id);
               // Zoom past the venue minzoom (13) so the small venue bottles
