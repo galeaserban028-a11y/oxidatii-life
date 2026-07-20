@@ -40,7 +40,7 @@ const TYPE_COLOR: Record<string, string> = {
   bar: "#ffea00",
   pub: "#ff3d8b",
   terasa: "#00e5ff",
-  teras─â: "#00e5ff",
+  terasă: "#00e5ff",
   after: "#ff3d8b",
 };
 
@@ -818,7 +818,7 @@ export function RomaniaMap3D({
             "pin-bottle-v3-pub",
             "terasa",
             "pin-bottle-v3-terasa",
-            "teras─â",
+            "terasă",
             "pin-bottle-v3-terasa",
             "after",
             "pin-bottle-v3-after",
