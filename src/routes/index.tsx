@@ -1,10 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import i18n from "@/lib/i18n";
 import { AlcoholWarning } from "@/components/AlcoholWarning";
 import { SpritzIndexDial } from "@/components/app/SpritzIndexDial";
-import logoLight from "@/assets/logo-header.png";
-import { useAuth } from "@/lib/auth";
+import logoLight from "@/assets/logo-oxidatii.png.asset.json";
 import {
   MapPin,
   Flame,
@@ -72,21 +71,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const nav = useNavigate();
-  const { user, profile, loading, initializing } = useAuth();
   const [lang, setLang] = useState<"ro" | "en">("ro");
-
-  // Already logged in (cold start / reopen) → skip marketing homepage.
-  useEffect(() => {
-    if (loading || initializing) return;
-    if (!user) return;
-    if (profile?.onboarded === false) {
-      void nav({ to: "/onboarding", replace: true });
-      return;
-    }
-    void nav({ to: "/app", replace: true });
-  }, [user, profile, loading, initializing, nav]);
-
   useEffect(() => {
     try {
       const ref = new URLSearchParams(window.location.search).get("ref");
@@ -170,13 +155,6 @@ function Index() {
           addSpot: "Adaugă spot",
           legal: "Alcoolul dăunează grav sănătății. Consumați responsabil.",
         };
-
-  // Only blank the marketing page when redirecting a known logged-in user.
-  // Do NOT blank during auth bootstrap — that froze Lovable / web preview.
-  if (user) {
-    return <main className="min-h-[100svh] bg-[#050510]" aria-busy="true" />;
-  }
-
   return (
     <main className="relative min-h-[100svh] mx-auto max-w-md flex flex-col overflow-hidden bg-[#050510] text-white">
       {/* ambient glows */}
@@ -187,9 +165,9 @@ function Index() {
       <header className="relative z-10 flex items-center justify-between px-6 py-6">
         <div className="flex items-center gap-3">
           <img
-            src={logoLight}
+            src={logoLight.url}
             alt="Logo OXIDAȚII"
-            className="w-14 h-14 object-contain drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]"
+            className="w-11 h-11 object-contain drop-shadow-[0_4px_14px_rgba(255,49,88,0.45)]"
           />
           <div>
             <h1 className="text-sm font-extrabold tracking-widest uppercase">Oxidații</h1>

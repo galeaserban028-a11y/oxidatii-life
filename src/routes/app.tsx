@@ -8,11 +8,11 @@ import { PageTransition } from "@/components/app/PageTransition";
 import { PullToRefresh } from "@/components/app/PullToRefresh";
 import { SwipeNavigator } from "@/components/app/SwipeNavigator";
 
+import { useLiveLocation } from "@/hooks/useLiveLocation";
 import { TutorialOverlay } from "@/components/app/TutorialOverlay";
 import { useCompactMode } from "@/lib/compactMode";
 import { usePerfLevel } from "@/hooks/usePerfLevel";
-import { isNative, setNativeChromeColor } from "@/lib/native";
-import { saveLastAppPath } from "@/integrations/supabase/auth-storage";
+import { isNative } from "@/lib/native";
 
 export const Route = createFileRoute("/app")({
   component: AppLayout,
@@ -24,27 +24,9 @@ function isTransparent(color: string) {
   return (m[4] ? parseFloat(m[4]) : 1) === 0;
 }
 
-/** Prefer near-black for main tabs so Android nav never stays gray-violet. */
-function routeFallbackHex(pathname: string): string {
-  if (
-    pathname === "/app" ||
-    pathname === "/app/" ||
-    pathname.startsWith("/app/map") ||
-    pathname.startsWith("/app/top") ||
-    pathname.startsWith("/app/squad") ||
-    pathname.startsWith("/app/inbox") ||
-    pathname.startsWith("/app/me") ||
-    pathname.startsWith("/app/feed") ||
-    pathname.startsWith("/app/reels")
-  ) {
-    return "#050505";
-  }
-  return "#050505";
-}
-
-/** Read the active page background so status/nav bars match that page. */
-function resolvePageBackgroundColor(pathname: string): string {
-  if (typeof document === "undefined") return routeFallbackHex(pathname);
+/** Read the active page background so status bar + header match that page. */
+function resolvePageBackgroundColor(): string {
+  if (typeof document === "undefined") return "var(--background)";
   const outlet = document.querySelector("[data-page-root]");
   const pageRoot = outlet?.firstElementChild as HTMLElement | null;
   const explicit = pageRoot?.getAttribute("data-header-bg");
@@ -58,19 +40,10 @@ function resolvePageBackgroundColor(pathname: string): string {
     const bg = getComputedStyle(main).backgroundColor;
     if (bg && !isTransparent(bg)) return bg;
   }
-  // Resolve theme --background to a real rgb() (var() alone can't set Android bars).
-  const probe = document.createElement("div");
-  probe.style.backgroundColor = "var(--background)";
-  probe.style.position = "fixed";
-  probe.style.left = "-9999px";
-  document.body.appendChild(probe);
-  const resolvedBg = getComputedStyle(probe).backgroundColor;
-  probe.remove();
-  if (resolvedBg && !isTransparent(resolvedBg)) return resolvedBg;
-  return routeFallbackHex(pathname);
+  return "var(--background)";
 }
 
-/** Convert css rgb()/rgba()/#hex to #rrggbb for Capacitor / Android chrome. */
+/** Convert css rgb()/rgba()/#hex to #rrggbb for Capacitor StatusBar. */
 function toHexColor(cssColor: string): string | null {
   if (!cssColor || cssColor.startsWith("var(")) return null;
   if (/^#[0-9a-fA-F]{6}$/.test(cssColor)) return cssColor.toLowerCase();
@@ -89,6 +62,7 @@ function AppLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isMe = pathname === "/app/me" || pathname.startsWith("/app/me/");
   const isReels = pathname === "/app/reels" || pathname.startsWith("/app/reels/");
+  const isMap = pathname === "/app/map";
   const isFullscreen = isMe || isReels;
 
   const { user, profile, loading } = useAuth();
@@ -96,21 +70,23 @@ function AppLayout() {
   const perf = usePerfLevel();
   const mainRef = useRef<HTMLElement>(null);
   const outletRef = useRef<HTMLDivElement>(null);
-  const [headerColor, setHeaderColor] = useState("#050505");
-  const lastChromeRef = useRef<string>("");
+  const [headerColor, setHeaderColor] = useState("var(--background)");
+
+  useLiveLocation(user?.id ?? null, !!profile?.location_consent && !isMap);
 
   const updateHeaderColor = useCallback(() => {
-    const next = resolvePageBackgroundColor(pathname);
+    const next = resolvePageBackgroundColor();
     setHeaderColor(next);
-    // Keep Android status + 3-button nav bar in sync with the page (no gray strip).
+    // Keep Android status bar in sync with the page (no wrong-color strip).
     if (isNative()) {
-      const hex = toHexColor(next) ?? routeFallbackHex(pathname);
-      if (hex && hex !== lastChromeRef.current) {
-        lastChromeRef.current = hex;
-        void setNativeChromeColor(hex);
+      const hex = toHexColor(next);
+      if (hex) {
+        import("@capacitor/status-bar")
+          .then(({ StatusBar }) => StatusBar.setBackgroundColor({ color: hex }))
+          .catch(() => {});
       }
     }
-  }, [pathname]);
+  }, []);
 
   useLayoutEffect(() => {
     updateHeaderColor();
@@ -154,12 +130,6 @@ function AppLayout() {
     else if (profile && profile.onboarded === false) nav({ to: "/onboarding", replace: true });
   }, [user, profile, loading, nav]);
 
-  // Remember last in-app screen so reopen lands inside the app, not marketing home.
-  useEffect(() => {
-    if (!user || loading) return;
-    if (pathname.startsWith("/app")) void saveLastAppPath(pathname);
-  }, [pathname, user, loading]);
-
   if (loading || !user) {
     return <main className="min-h-screen bg-background" />;
   }
@@ -186,7 +156,7 @@ function AppLayout() {
       <div className={`mx-auto w-full min-w-0 ${isNative() ? "max-w-none" : "max-w-[480px]"}`}>
         {!isFullscreen && !isNative() && <InstallBanner />}
         {!isFullscreen && <AppHeader />}
-        {isReels ? (
+        {isReels || isMap ? (
           <div ref={outletRef} className="contents" data-page-root>
             <Outlet />
           </div>
