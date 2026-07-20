@@ -84,3 +84,13 @@ export function stableApproxOffset(
     lng: lng + (b * 2 - 1) * (j / lngScale),
   };
 }
+
+/** Map zoom level from GPS accuracy — coarse fixes stay pulled back. */
+export function zoomForAccuracy(accuracy: number | null | undefined): number {
+  const acc = accuracy ?? 400;
+  if (acc > 500) return 13.2;
+  if (acc > 200) return 13.8;
+  if (acc > 80) return 14.4;
+  if (acc > 40) return 15;
+  return 15.4;
+}
