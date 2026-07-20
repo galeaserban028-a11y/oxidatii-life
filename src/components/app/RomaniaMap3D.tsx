@@ -3,9 +3,8 @@ import { useNavigate } from "@tanstack/react-router";
 import maplibregl from "maplibre-gl";
 import type { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Crosshair, Plus, Minus } from "lucide-react";
-import logoOxAsset from "@/assets/logo-oxidatii.png.asset.json";
-const logoOx = logoOxAsset.url;
+import { Plus, Minus } from "lucide-react";
+import logoOx from "@/assets/logo-oxidatii.png";
 
 type City = {
   id: string;
@@ -554,7 +553,7 @@ export function RomaniaMap3D({
   venues?: Venue[];
   friends?: FriendPin[];
   onCityClick?: (city: City) => void;
-  focusCity?: { lat: number; lng: number; zoom?: number } | null;
+  focusCity?: { lat: number; lng: number; zoom?: number; nonce?: number } | null;
   fitBounds?: [[number, number], [number, number]] | null;
   promotedMeta?: Record<string, { theme: string; cover: string | null; campaignId?: string }>;
   heatNowCells?: HeatNowCell[];
@@ -1431,12 +1430,12 @@ export function RomaniaMap3D({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !focusCity) return;
-    const key = `${mapReadyTick}:${focusCity.lat.toFixed(5)},${focusCity.lng.toFixed(5)},${focusCity.zoom ?? 12.4}`;
+    const key = `${mapReadyTick}:${focusCity.nonce ?? 0}:${focusCity.lat.toFixed(5)},${focusCity.lng.toFixed(5)},${focusCity.zoom ?? 12.4}`;
     if (lastFocusKeyRef.current === key) return;
     lastFocusKeyRef.current = key;
     map.easeTo({
       center: [focusCity.lng, focusCity.lat],
-      zoom: focusCity.zoom ?? 12.4,
+      zoom: focusCity.zoom ?? 14.2,
       pitch: 0,
       bearing: 0,
       duration: compactMapRef.current ? 280 : 500,
@@ -1511,6 +1510,18 @@ export function RomaniaMap3D({
           if (prev) cancelAnimationFrame(prev);
           friendAnims.current.delete(f.user_id);
           existing.setLngLat([toLng, toLat]);
+          // Keep me-pin on screen after a large GPS refine.
+          try {
+            if (!map.isMoving()) {
+              map.easeTo({
+                center: [toLng, toLat],
+                duration: 420,
+                essential: true,
+              });
+            }
+          } catch {
+            /* noop */
+          }
           continue;
         }
         const dur = 1200;
@@ -1529,7 +1540,6 @@ export function RomaniaMap3D({
       }
 
       const wrap = document.createElement("div");
-      wrap.dataset.oxiMe = f.is_me ? "1" : "0";
       wrap.style.cssText =
         "position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;z-index:10;";
 
@@ -1595,13 +1605,8 @@ export function RomaniaMap3D({
       friendMarkers.current.set(f.user_id, marker);
     }
     // remove markers (and cancel anims) for friends no longer present
-    const nextHasMe = friends.some((f) => f.is_me);
     for (const [id, marker] of friendMarkers.current) {
       if (!seen.has(id)) {
-        // Keep the last local “TU” marker during transient friend-pin refetches.
-        // Otherwise React Query can briefly pass a list without self and the
-        // map looks like it refreshes / loses the user position on Android.
-        if (!nextHasMe && marker.getElement().dataset.oxiMe === "1") continue;
         const a = friendAnims.current.get(id);
         if (a) {
           cancelAnimationFrame(a);
@@ -1612,23 +1617,6 @@ export function RomaniaMap3D({
       }
     }
   }, [friends, retryKey, mapReadyTick]);
-
-  const mePin = friends.find((f) => f.is_me);
-
-  const handleRecenter = useCallback(() => {
-    const map = mapRef.current;
-    if (mePin && map) {
-      map.easeTo({
-        center: [mePin.lng, mePin.lat],
-        zoom: 16,
-        duration: compactMapRef.current ? 280 : 450,
-        essential: true,
-        pitch: 0,
-      });
-      return;
-    }
-    onLocateMe?.();
-  }, [mePin, onLocateMe]);
 
   return (
     <div
@@ -1743,17 +1731,6 @@ export function RomaniaMap3D({
             <Minus size={18} />
           </button>
         </div>
-          <button
-            onClick={handleRecenter}
-            aria-label="Re-centrează pe poziția mea"
-            className={`h-10 w-10 grid place-items-center rounded-full border active:scale-95 transition-all duration-200 ease-out shadow-lg shadow-black/40 ${
-              mePin
-                ? "bg-gradient-to-tr from-[#ff3d8b] to-[#c724ff] border-transparent text-white"
-                : "bg-black/60 border-white/15 text-white/90 hover:bg-black/70"
-            }`}
-          >
-            <Crosshair size={18} />
-          </button>
       </div>
 
       {/* Subtle edge fade only; keep streets and venue pins visible. */}

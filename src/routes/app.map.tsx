@@ -3,12 +3,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { throttle } from "@/lib/throttle";
 import { RomaniaMap3D, type FriendPin, type HeatNowCell } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
 import {
-  UserPlus,
-  Users,
   MapPin,
   Clock,
   X,
@@ -22,28 +19,18 @@ import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilter
 import { AddVenueSheet } from "@/components/app/AddVenueSheet";
 import { MapSettingsSheet } from "@/components/app/MapSettingsSheet";
 import { HeatNowButton } from "@/components/app/HeatNowSheet";
-import { FadeIn } from "@/components/app/FadeIn";
 import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
-import {
-  PromoBanner,
-  BusinessVisibilityCTA,
-  type PromoMeta,
-} from "@/components/app/map/PromoBanner";
+import { type PromoMeta } from "@/components/app/map/PromoBanner";
 
 import { venueNickname } from "@/lib/venueNickname";
 import {
-  MAX_MAP_ACCURACY_M,
   rejectGeoSample,
-  stableApproxOffset,
+  zoomForAccuracy,
   type GeoSample,
 } from "@/lib/geo-filter";
 import {
-  asGeolocationPosition,
   ensureLocationPermission,
   getCurrentPosition,
-  getPrecisePosition,
-  watchPosition,
-  type OxiPosition,
 } from "@/lib/native-geo";
 
 export const Route = createFileRoute("/app/map")({
@@ -96,182 +83,6 @@ function normalizeMapSettings(settings: RawMapSettings | null | undefined) {
   };
 }
 
-function applyLocationPrivacy(
-  lat: number,
-  lng: number,
-  settings: ReturnType<typeof normalizeMapSettings>,
-  cityCenter: { lat: number; lng: number } | null | undefined,
-) {
-  if (settings.map_precision === "approx") {
-    // Deterministic offset — Math.random() made the pin jump on every publish.
-    const o = stableApproxOffset(lat, lng, 160);
-    return { lat: o.lat, lng: o.lng, exact: false };
-  }
-  if (settings.map_precision === "city" && cityCenter) {
-    return { lat: cityCenter.lat, lng: cityCenter.lng, exact: false };
-  }
-  return { lat, lng, exact: true };
-}
-
-type FriendshipRow = { requester_id: string; addressee_id: string; status: string };
-type LiveLocRow = { user_id: string; lat: number | string; lng: number | string };
-type CheckinRow = {
-  user_id: string;
-  venue_id: string | null;
-  lat: number | string | null;
-  lng: number | string | null;
-  created_at: string;
-};
-type ProfileRow = {
-  id: string;
-  handle: string | null;
-  display_name: string | null;
-  avatar_url: string | null;
-};
-type VenueLite = {
-  id: string;
-  name: string;
-  lat: number | string | null;
-  lng: number | string | null;
-};
-
-async function loadFriendPins(userId: string): Promise<FriendPin[]> {
-  const { data: rows } = await supabase
-    .from("friendships")
-    .select("requester_id, addressee_id, status")
-    .eq("status", "accepted")
-    .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
-  const friendIds = ((rows ?? []) as FriendshipRow[]).map((r) =>
-    r.requester_id === userId ? r.addressee_id : r.requester_id,
-  );
-
-  // Always include the current user so they see their own pin on the map.
-  const allIds = Array.from(new Set<string>([userId, ...friendIds]));
-
-  const nowIso = new Date().toISOString();
-  const [{ data: lives }, { data: checkins }] = await Promise.all([
-    supabase
-      .from("live_locations")
-      .select("user_id, lat, lng, updated_at, expires_at")
-      .in("user_id", allIds)
-      .gt("expires_at", nowIso),
-    supabase
-      .from("check_ins")
-      .select("user_id, venue_id, lat, lng, expires_at, created_at")
-      .in("user_id", allIds)
-      .gt("expires_at", nowIso)
-      .order("created_at", { ascending: false }),
-  ]);
-
-  const liveMap = new Map<string, { lat: number; lng: number }>();
-  for (const l of (lives ?? []) as LiveLocRow[]) {
-    liveMap.set(l.user_id, { lat: Number(l.lat), lng: Number(l.lng) });
-  }
-
-  const seen = new Set<string>();
-  const latestCheckin = ((checkins ?? []) as CheckinRow[]).filter((c) => {
-    if (seen.has(c.user_id)) return false;
-    seen.add(c.user_id);
-    return true;
-  });
-  const checkinMap = new Map<string, CheckinRow>(latestCheckin.map((c) => [c.user_id, c]));
-
-  const venueIds = Array.from(
-    new Set(latestCheckin.map((c) => c.venue_id).filter((v): v is string => Boolean(v))),
-  );
-  const [{ data: profiles }, { data: venues }] = await Promise.all([
-    supabase.from("profiles").select("id, handle, display_name, avatar_url").in("id", allIds),
-    venueIds.length
-      ? supabase.from("venues").select("id, name, lat, lng").in("id", venueIds)
-      : Promise.resolve({ data: [] as VenueLite[] }),
-  ]);
-  const profMap = new Map<string, ProfileRow>(
-    ((profiles ?? []) as ProfileRow[]).map((p) => [p.id, p]),
-  );
-  const venueMap = new Map<string, VenueLite>(
-    ((venues ?? []) as VenueLite[]).map((v) => [v.id, v]),
-  );
-
-  const userIds = new Set<string>([...liveMap.keys(), ...checkinMap.keys()]);
-  const pins: FriendPin[] = [];
-
-  // Fallback for self: only a *non-expired* live row. Never revive stale GPS
-  // or an old venue check-in as "tu ești aici" — that teleports the pin.
-  if (!userIds.has(userId)) {
-    const { data: lastLive } = await supabase
-      .from("live_locations")
-      .select("lat, lng")
-      .eq("user_id", userId)
-      .gt("expires_at", nowIso)
-      .order("updated_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (lastLive) {
-      const ll = lastLive as { lat: number | string; lng: number | string };
-      const lat = Number(ll.lat);
-      const lng = Number(ll.lng);
-      if (isFinite(lat) && isFinite(lng)) {
-        const me = profMap.get(userId);
-        pins.push({
-          user_id: userId,
-          handle: me?.handle ?? null,
-          display_name: me?.display_name ?? "tu",
-          avatar_url: me?.avatar_url ?? null,
-          lat,
-          lng,
-          venue_name: "tu ești aici",
-          is_me: true,
-        });
-      }
-    }
-  }
-
-  for (const uid of userIds) {
-    const live = liveMap.get(uid);
-    const c = checkinMap.get(uid);
-    const venue = c && c.venue_id ? venueMap.get(c.venue_id) : null;
-    const isMe = uid === userId;
-    // For self, prefer live GPS only. Check-in/venue coords can be across town
-    // from where the user actually is while looking at the map.
-    const lat = Number(isMe ? live?.lat : (live?.lat ?? c?.lat ?? venue?.lat));
-    const lng = Number(isMe ? live?.lng : (live?.lng ?? c?.lng ?? venue?.lng));
-    if (!isFinite(lat) || !isFinite(lng)) {
-      if (isMe && c) {
-        // Still show self at an active check-in, but label the venue — not GPS.
-        const vLat = Number(c.lat ?? venue?.lat);
-        const vLng = Number(c.lng ?? venue?.lng);
-        if (!isFinite(vLat) || !isFinite(vLng)) continue;
-        const p = profMap.get(uid);
-        pins.push({
-          user_id: uid,
-          handle: p?.handle ?? null,
-          display_name: p?.display_name ?? "tu",
-          avatar_url: p?.avatar_url ?? null,
-          lat: vLat,
-          lng: vLng,
-          venue_name: venue?.name ?? "check-in",
-          is_me: true,
-        });
-      }
-      continue;
-    }
-    const p = profMap.get(uid);
-    pins.push({
-      user_id: uid,
-      handle: p?.handle ?? null,
-      display_name: p?.display_name ?? (isMe ? "tu" : null),
-      avatar_url: p?.avatar_url ?? null,
-      lat,
-      lng,
-      venue_name: isMe
-        ? "tu ești aici"
-        : (venue?.name ?? (live ? "în mișcare" : null)),
-      is_me: isMe,
-    });
-  }
-  return pins;
-}
-
 function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
   const R = 6371;
   const dLat = ((bLat - aLat) * Math.PI) / 180;
@@ -280,10 +91,6 @@ function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
   const lat2 = (bLat * Math.PI) / 180;
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
-}
-
-function distanceMeters(aLat: number, aLng: number, bLat: number, bLng: number) {
-  return distanceKm(aLat, aLng, bLat, bLng) * 1000;
 }
 
 function cleanVenueName(name: unknown) {
@@ -316,7 +123,7 @@ function normalizeMapVenues(rows: Venue[]) {
 }
 
 function MapPage() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const search = Route.useSearch();
 
   // filter state
@@ -330,57 +137,55 @@ function MapPage() {
     null,
   );
   const lastGeoSampleRef = useRef<GeoSample | null>(null);
-  const lastPublishedAtRef = useRef(0);
-  const lastUiGeoAtRef = useRef(0);
-  const hasCenteredOnGpsRef = useRef(false);
 
-  const acceptGeo = useCallback(
-    (lat: number, lng: number, accuracy: number | null | undefined, force = false) => {
-      const now = Date.now();
-      const sample: GeoSample = {
-        lat,
-        lng,
-        accuracy: accuracy ?? null,
-        at: now,
-      };
-      const prev = lastGeoSampleRef.current;
-      // Always show *something* for the first fix — Android coarse GPS is often
-      // 200–800m and used to be rejected, so the "me" pin never appeared.
-      if (!prev) {
-        lastGeoSampleRef.current = sample;
-        lastUiGeoAtRef.current = now;
-        setGeo({ lat, lng, accuracy: sample.accuracy });
-        return true;
-      }
-      if (!force && rejectGeoSample(sample, prev)) return false;
-
-      const moved = distanceMeters(prev.lat, prev.lng, lat, lng);
-      const improvedAccuracy =
-        prev.accuracy != null && sample.accuracy != null ? prev.accuracy - sample.accuracy : 0;
-      // Native GPS can emit many near-identical samples per second. Updating
-      // React/MapLibre for each one makes Android look like the map is
-      // constantly refreshing. Keep precision, but update UI only for real
-      // movement, clear accuracy improvement, or a slow heartbeat.
-      if (!force && moved < 10 && improvedAccuracy < 12 && now - lastUiGeoAtRef.current < 12_000) {
-        lastGeoSampleRef.current = sample;
-        return true;
-      }
-
+  const acceptGeo = useCallback((lat: number, lng: number, accuracy: number | null | undefined) => {
+    const sample: GeoSample = {
+      lat,
+      lng,
+      accuracy: accuracy ?? null,
+      at: Date.now(),
+    };
+    // Always show *something* for the first fix — Android coarse GPS is often
+    // 200–800m and used to be rejected, so the "me" pin never appeared.
+    if (!lastGeoSampleRef.current) {
       lastGeoSampleRef.current = sample;
-      lastUiGeoAtRef.current = now;
       setGeo({ lat, lng, accuracy: sample.accuracy });
       return true;
-    },
-    [],
-  );
+    }
+    if (rejectGeoSample(sample, lastGeoSampleRef.current)) return false;
+    lastGeoSampleRef.current = sample;
+    setGeo({ lat, lng, accuracy: sample.accuracy });
+    return true;
+  }, []);
   const [visible, setVisible] = useState(40);
-  const [focusCity, setFocusCity] = useState<{ lat: number; lng: number; zoom?: number } | null>(
-    null,
-  );
+  const [focusCity, setFocusCity] = useState<{
+    lat: number;
+    lng: number;
+    zoom?: number;
+    nonce?: number;
+  } | null>(null);
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
   const [autoLocated, setAutoLocated] = useState(false);
   const focusedFromSearchRef = useRef<string | null>(null);
   const previousCountryRef = useRef<string | "all">("all");
+  /** After a solid GPS focus, ignore further auto-recenter (stops map reload loop). */
+  const cameraLockedRef = useRef(false);
+  /** City fallback may show until first real GPS — then we unlock once. */
+  const cityFallbackOnlyRef = useRef(false);
+  const focusNonceRef = useRef(0);
+
+  const focusOnce = useCallback((lat: number, lng: number, accuracy?: number | null) => {
+    if (cameraLockedRef.current && !cityFallbackOnlyRef.current) return;
+    cityFallbackOnlyRef.current = false;
+    cameraLockedRef.current = true;
+    focusNonceRef.current += 1;
+    setFocusCity({
+      lat,
+      lng,
+      zoom: zoomForAccuracy(accuracy),
+      nonce: focusNonceRef.current,
+    });
+  }, []);
 
   const { data: citiesData, isLoading } = useQuery({
     queryKey: ["cities"],
@@ -502,32 +307,8 @@ function MapPage() {
     refetchInterval: 60_000,
   });
 
-  const { data: friendPins = [] } = useQuery({
-    queryKey: ["friend-pins", user?.id],
-    queryFn: () => loadFriendPins(user!.id),
-    enabled: !!user,
-    refetchInterval: 30_000,
-  });
-
-  // Realtime: refresh on check-ins AND live GPS updates from friends
+  // Venues-only map: no me/friends live pins (keeps the map smooth).
   const qc = useQueryClient();
-  useEffect(() => {
-    if (!user?.id) return;
-    const userId = user.id;
-    const channelName = `live-presence:${userId}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
-    // Throttle: under heavy load (many global check-ins) coalesce to 1 refetch / 2s
-    const refresh = throttle(() => {
-      qc.invalidateQueries({ queryKey: ["friend-pins", userId] });
-    }, 2000);
-    const ch = supabase
-      .channel(channelName)
-      .on("postgres_changes", { event: "*", schema: "public", table: "check_ins" }, refresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "live_locations" }, refresh)
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
-  }, [user?.id, qc]);
 
 
   // Country chip list (sorted by venue count desc)
@@ -569,8 +350,6 @@ function MapPage() {
       .map(([code, count]) => ({ code, count, label: NAMES[code] ?? code }));
   }, [cities, venues]);
 
-  const geoForFilter = maxKm > 0 ? geo : null;
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     let list = venues.filter((v) => {
@@ -586,26 +365,22 @@ function MapPage() {
         )
           return false;
       }
-      if (maxKm > 0 && geoForFilter && v.lat != null && v.lng != null) {
-        if (distanceKm(geoForFilter.lat, geoForFilter.lng, v.lat, v.lng) > maxKm) return false;
+      if (maxKm > 0 && geo && v.lat != null && v.lng != null) {
+        if (distanceKm(geo.lat, geo.lng, v.lat, v.lng) > maxKm) return false;
       }
       return true;
     });
-    if (geoForFilter) {
+    if (geo) {
       list = [...list].sort((a, b) => {
         const da =
-          a.lat != null && a.lng != null
-            ? distanceKm(geoForFilter.lat, geoForFilter.lng, a.lat, a.lng)
-            : 1e9;
+          a.lat != null && a.lng != null ? distanceKm(geo.lat, geo.lng, a.lat, a.lng) : 1e9;
         const db =
-          b.lat != null && b.lng != null
-            ? distanceKm(geoForFilter.lat, geoForFilter.lng, b.lat, b.lng)
-            : 1e9;
+          b.lat != null && b.lng != null ? distanceKm(geo.lat, geo.lng, b.lat, b.lng) : 1e9;
         return da - db;
       });
     }
     return list;
-  }, [venues, query, type, country, cityId, maxKm, geoForFilter, cityMap]);
+  }, [venues, query, type, country, cityId, maxKm, geo, cityMap]);
 
   // Cities scoped to selected country (for map markers + fit bounds)
   const citiesScoped = useMemo(
@@ -692,146 +467,35 @@ function MapPage() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const mapFriendPins = useMemo(() => {
-    if (!user) {
-      if (!geo) return friendPins;
-      return [
-        {
-          user_id: "local-me",
-          handle: null,
-          display_name: "tu",
-          avatar_url: null,
-          lat: geo.lat,
-          lng: geo.lng,
-          venue_name: "tu ești aici",
-          is_me: true,
-        },
-        ...friendPins,
-      ];
-    }
-    const me = friendPins.find((f) => f.is_me);
-    // Live GPS wins. Never fall back to city center for the pin — that placed
-    // "tu" kilometres away from the real spot.
-    const pos = geo ?? (me ? { lat: me.lat, lng: me.lng } : null);
-    if (!pos) return friendPins.filter((f) => !f.is_me);
-    return [
-      {
-        ...(me ?? {
-          user_id: user.id,
-          handle: profile?.handle ?? null,
-          display_name: profile?.display_name ?? "tu",
-          avatar_url: profile?.avatar_url ?? null,
-        }),
-        // Prefer profile photo; RomaniaMap3D falls back to OX logo for is_me.
-        avatar_url: profile?.avatar_url ?? me?.avatar_url ?? null,
-        lat: pos.lat,
-        lng: pos.lng,
-        venue_name: geo ? "tu ești aici" : (me?.venue_name ?? "tu ești aici"),
-        is_me: true,
-      },
-      ...friendPins.filter((f) => f.user_id !== user.id),
-    ];
-  }, [
-    friendPins,
-    geo,
-    profile?.avatar_url,
-    profile?.display_name,
-    profile?.handle,
-    user,
-  ]);
+  // Stable refs for one-shot distance GPS.
+  const privacyDataRef = useRef(privacyQ.data);
+  privacyDataRef.current = privacyQ.data;
+  const acceptGeoRef = useRef(acceptGeo);
+  acceptGeoRef.current = acceptGeo;
 
-  const publishPosition = useCallback(
-    async (pos: GeolocationPosition, ensureLive = false, recenter = false) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      const accuracy = pos.coords.accuracy ?? null;
-      const now = Date.now();
-      // The local “TU” pin must appear even if the backend/profile publish is
-      // throttled or slow. Previously we returned before acceptGeo(), so Android
-      // could keep refreshing/loading while never drawing the user pin.
-      if (!acceptGeo(lat, lng, accuracy, ensureLive) && !ensureLive) return;
-      if (ensureLive) {
-        // Explicit user tap — force-accept even if the filter was cold.
-        lastGeoSampleRef.current = { lat, lng, accuracy, at: Date.now() };
-        setGeo({ lat, lng, accuracy });
-      }
-      if (recenter) setFocusCity({ lat, lng, zoom: 16 });
-      if (!user) return;
-      if (!ensureLive && now - lastPublishedAtRef.current < 15_000) return;
-      lastPublishedAtRef.current = now;
-
-      if (ensureLive) {
-        await supabase
-          .from("profiles")
-          .update({ location_consent: true, map_ghost: false, map_precision: "exact" })
-          .eq("id", user.id);
-        qc.invalidateQueries({ queryKey: ["map-privacy", user.id] });
-      }
-
-      const s = ensureLive
-        ? normalizeMapSettings({ map_precision: "exact", map_auto_ghost_hours: 8 })
-        : normalizeMapSettings(privacyQ.data?.settings);
-      // Ghost mode or fully hidden → wipe and skip publishing.
-      if (s?.map_ghost || s?.map_visibility === "nobody") {
-        await supabase.from("live_locations").delete().eq("user_id", user.id);
-        return;
-      }
-      // Inside a private location → skip.
-      const inPrivate = (privacyQ.data?.privateLocs ?? []).some((pl) => {
-        const dKm = distanceKm(lat, lng, Number(pl.lat), Number(pl.lng));
-        return dKm * 1000 <= pl.radius_m;
-      });
-      if (inPrivate) {
-        await supabase.from("live_locations").delete().eq("user_id", user.id);
-        return;
-      }
-      // Apply precision.
-      const out = applyLocationPrivacy(lat, lng, s, privacyQ.data?.cityCenter);
-      const hours = Math.max(1, Math.min(24, s?.map_auto_ghost_hours ?? 8));
-      await supabase.from("live_locations").upsert(
-        {
-          user_id: user.id,
-          lat: out.lat,
-          lng: out.lng,
-          accuracy: out.exact ? (pos.coords.accuracy ?? null) : null,
-          heading: out.exact ? (pos.coords.heading ?? null) : null,
-          updated_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + hours * 60 * 60_000).toISOString(),
-        },
-        { onConflict: "user_id" },
-      );
-    },
-    [
-      acceptGeo,
-      privacyQ.data?.cityCenter,
-      privacyQ.data?.privateLocs,
-      privacyQ.data?.settings,
-      qc,
-      user,
-    ],
-  );
+  // No friend/me pins on the map anymore.
+  const mapFriendPins: FriendPin[] = [];
 
   const requestGeo = () => {
+    // One-shot GPS for distance sorting only — never publish / show me-pin.
     void (async () => {
       try {
         await ensureLocationPermission(true);
-        // Fast fix first so the pin appears immediately.
         const quick = await getCurrentPosition({
           enableHighAccuracy: true,
           maximumAge: 5_000,
           timeout: 20_000,
         });
-        await publishPosition(asGeolocationPosition(quick), true, true);
-        // Then refine accuracy in the background.
-        getPrecisePosition()
-          .then((precise) => publishPosition(precise, true, true))
-          .catch(() => {});
+        const lat = quick.coords.latitude;
+        const lng = quick.coords.longitude;
+        const accuracy = quick.coords.accuracy ?? null;
+        acceptGeoRef.current(lat, lng, accuracy);
+        focusOnce(lat, lng, accuracy);
       } catch (error) {
-        // Offer Settings when permission is the blocker.
         const msg =
           error instanceof Error
             ? error.message
-            : "Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul.";
+            : "Nu am putut citi locația. Verifică permisiunile și pornește GPS-ul.";
         if (/oprită|Setări|permisiun/i.test(msg)) {
           const { openAppLocationSettings } = await import("@/lib/native-geo");
           await openAppLocationSettings().catch(() => {});
@@ -841,193 +505,18 @@ function MapPage() {
     })();
   };
 
+  // No continuous GPS watch / live publish on map (venues-only, less lag).
   useEffect(() => {
     if (autoLocated) return;
     setAutoLocated(true);
-
-    const start = async () => {
-      const fallbackToCity = () => {
-        const fallback = privacyQ.data?.cityCenter;
-        if (fallback)
-          setFocusCity((prev) => prev ?? { lat: fallback.lat, lng: fallback.lng, zoom: 12.5 });
-      };
-      try {
-        // Always prompt on map — otherwise first open never asks and falls back to city.
-        const granted = await ensureLocationPermission(true);
-        if (!granted) {
-          fallbackToCity();
-          return;
-        }
-
-        const oxi = await getCurrentPosition({
-          enableHighAccuracy: true,
-          maximumAge: 8_000,
-          timeout: 25_000,
-        });
-        const lat = oxi.coords.latitude;
-        const lng = oxi.coords.longitude;
-        const accuracy = oxi.coords.accuracy;
-        const pos = asGeolocationPosition(oxi);
-
-        // Always place the local me-pin + camera on GPS (not home city).
-        acceptGeo(lat, lng, accuracy, true);
-        if (!hasCenteredOnGpsRef.current) {
-          hasCenteredOnGpsRef.current = true;
-          setFocusCity({ lat, lng, zoom: 16 });
-        }
-
-        if (user) {
-          publishPosition(pos, true, false).catch(() => {});
-        }
-
-        // Refine precision in the background so the me-pin snaps to exact GPS.
-        getPrecisePosition()
-          .then((precise) => {
-            const plat = precise.coords.latitude;
-            const plng = precise.coords.longitude;
-            const pacc = precise.coords.accuracy;
-            acceptGeo(plat, plng, pacc, true);
-            if (user) publishPosition(precise, true, true).catch(() => {});
-          })
-          .catch(() => {});
-      } catch {
-        fallbackToCity();
-      }
-    };
-    start();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const fallback = privacyDataRef.current?.cityCenter;
+    if (fallback && !cameraLockedRef.current) {
+      cityFallbackOnlyRef.current = true;
+      setFocusCity({ lat: fallback.lat, lng: fallback.lng, zoom: 12.5 });
+    }
   }, [autoLocated]);
 
-  // Keep refining the local "me" pin while the map is open.
-  // DB broadcast stays in useLiveLocation (throttled) — avoid double upserts here.
-  // Restart watch when the tab becomes visible again (permission may have been
-  // granted in Settings after the first denied attempt).
-  const publishPositionRef = useRef(publishPosition);
-  useEffect(() => {
-    publishPositionRef.current = publishPosition;
-  }, [publishPosition]);
-
-  const userId = user?.id;
-  const watchHandleRef = useRef<{ clear: () => void } | null>(null);
-  const watchStartingRef = useRef(false);
-
-
-  useEffect(() => {
-    let cancelled = false;
-    let recentered = false;
-    let retrying = false;
-
-    const startWatch = async () => {
-      if (watchHandleRef.current || watchStartingRef.current) return;
-      watchStartingRef.current = true;
-      // Ask once so Android permission is granted before the watch starts.
-      await ensureLocationPermission(true);
-      if (cancelled) {
-        watchStartingRef.current = false;
-        return;
-      }
-      const handle = await watchPosition(
-        (pos: OxiPosition) => {
-          if (cancelled) return;
-          const acc = pos.coords.accuracy ?? null;
-          if (acc != null && acc > 2000) return;
-          if (acc != null && acc > MAX_MAP_ACCURACY_M && lastGeoSampleRef.current) {
-            const prev = lastGeoSampleRef.current.accuracy;
-            if (prev != null && acc >= prev - 10) return;
-          }
-          const lat = pos.coords.latitude;
-          const lng = pos.coords.longitude;
-          const accepted = acceptGeo(lat, lng, acc);
-          if (accepted && !recentered && !hasCenteredOnGpsRef.current) {
-            recentered = true;
-            hasCenteredOnGpsRef.current = true;
-            setFocusCity({ lat, lng, zoom: 16 });
-          }
-          // Do not publish every watch sample. Local pin stays precise via geo;
-          // backend live row is refreshed on first locate / explicit button only.
-        },
-        () => {
-          /* silent — retry on next visibility */
-        },
-        { enableHighAccuracy: true, maximumAge: 10_000, timeout: 30_000, promptPermission: false },
-      );
-      watchStartingRef.current = false;
-      if (cancelled) {
-        handle.clear();
-        return;
-      }
-      watchHandleRef.current = handle;
-    };
-
-    const retryLocate = async () => {
-      if (retrying) return;
-      retrying = true;
-      const ok = await ensureLocationPermission(true);
-      if (!ok || cancelled) {
-        retrying = false;
-        return;
-      }
-      try {
-        const oxi = await getCurrentPosition({
-          enableHighAccuracy: true,
-          maximumAge: 2_000,
-          timeout: 15_000,
-        });
-        acceptGeo(oxi.coords.latitude, oxi.coords.longitude, oxi.coords.accuracy, true);
-        if (!recentered && !hasCenteredOnGpsRef.current) {
-          recentered = true;
-          hasCenteredOnGpsRef.current = true;
-          setFocusCity({
-            lat: oxi.coords.latitude,
-            lng: oxi.coords.longitude,
-            zoom: 16,
-          });
-        }
-        if (userId) {
-          publishPositionRef.current(asGeolocationPosition(oxi), true, false).catch(() => {});
-        }
-      } catch {
-        /* keep watching */
-      }
-      retrying = false;
-      void startWatch();
-    };
-
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") void retryLocate();
-    };
-
-    startWatch();
-    document.addEventListener("visibilitychange", onVisibility);
-
-    let removeAppListener: (() => void) | undefined;
-    import("@capacitor/app")
-      .then(({ App }) =>
-        App.addListener("appStateChange", ({ isActive }) => {
-          if (isActive) void retryLocate();
-        }),
-      )
-      .then((handle) => {
-        removeAppListener = () => {
-          handle.remove().catch(() => {});
-        };
-      })
-      .catch(() => {});
-
-    return () => {
-      cancelled = true;
-      document.removeEventListener("visibilitychange", onVisibility);
-      removeAppListener?.();
-      watchHandleRef.current?.clear();
-      watchHandleRef.current = null;
-      watchStartingRef.current = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [acceptGeo, userId]);
-
-
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
-  const [tab, setTab] = useState<"locatii" | "live">("locatii");
 
   // Hotspots — top venues by live check-ins right now (public, not just friends)
   const { data: hotspots = [] } = useQuery({
@@ -1065,7 +554,7 @@ function MapPage() {
   const instrument = { fontFamily: '"Instrument Serif", serif', letterSpacing: "-0.02em" } as const;
 
   return (
-    <div className="pb-32 bg-[#050505] min-h-screen text-white">
+    <div className="pb-32 bg-[#050505] min-h-screen text-white" data-header-bg="#050505">
       {/* Sticky header — cinema bento */}
       <header className="sticky top-0 z-30 px-4 pt-5 pb-3 bg-[#050505]/85 border-b border-white/5">
         <div className="flex items-end justify-between gap-3">
@@ -1080,24 +569,8 @@ function MapPage() {
                   {venues.length} locuri
                 </span>
               </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff3d8b] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff3d8b]" />
-                </span>
-                <span className="text-[10px] font-bold tracking-[0.18em] text-[#ff3d8b] uppercase">
-                  {friendPins.length} live
-                </span>
-              </span>
             </div>
           </div>
-          <button
-            onClick={requestGeo}
-            aria-label="Locația mea"
-            className={`h-10 w-10 grid place-items-center rounded-full border active:scale-95 transition ${geo ? "border-transparent text-white bg-gradient-to-tr from-[#ff3d8b] to-[#c724ff] shadow-lg shadow-[#ff3d8b]/30" : "border-white/10 text-white/70 bg-white/5"}`}
-          >
-            <Navigation size={16} />
-          </button>
         </div>
       </header>
 
@@ -1215,39 +688,7 @@ function MapPage() {
           </div>
         )}
 
-        {/* Live OFF banner — when user hasn't consented to GPS or is in ghost mode,
-            their pin never broadcasts. One-tap fix right here. */}
-        {user && (!profile?.location_consent || privacyQ.data?.settings?.map_ghost) && (
-          <button
-            onClick={() => {
-              getPrecisePosition()
-                .then((pos) => publishPosition(pos, true, true))
-                .catch((error) =>
-                  alert(
-                    error instanceof Error
-                      ? error.message
-                      : "Nu am putut citi locația precisă. Verifică permisiunile și pornește GPS-ul.",
-                  ),
-                );
-            }}
-            className="w-full flex items-center gap-3 rounded-2xl border border-[#ff3d8b]/40 bg-gradient-to-r from-[#ff3d8b]/15 to-[#c724ff]/10 px-4 py-3 text-left active:scale-[0.99] transition"
-          >
-            <span className="h-9 w-9 grid place-items-center rounded-xl bg-gradient-to-tr from-[#ff3d8b] to-[#c724ff] shrink-0 shadow-lg shadow-[#ff3d8b]/30">
-              <Navigation size={16} className="text-white" />
-            </span>
-            <span className="flex-1 min-w-0">
-              <span className="block uppercase text-sm leading-tight text-white font-bold tracking-tight">
-                {privacyQ.data?.settings?.map_ghost ? "ești în ghost mode" : "live-ul e oprit"}
-              </span>
-              <span className="block text-[10px] uppercase tracking-[0.2em] text-white/50 mt-0.5 font-bold">
-                apasă ca să apari pe hartă pentru prieteni
-              </span>
-            </span>
-            <span className="text-[#ff3d8b] text-xl font-bold">→</span>
-          </button>
-        )}
-
-        {/* Map block — clean reference-style map, no dashboard chrome over it. */}
+        {/* Map block — venues only (no me / friends live pins). */}
         <div className="relative overflow-hidden border-y border-white/10 bg-[#080a12] -mx-4">
           <RomaniaMap3D
             cities={citiesScoped}
@@ -1263,8 +704,6 @@ function MapPage() {
               // appear immediately without the user having to pinch-zoom again.
               setFocusCity({ lat: c.lat, lng: c.lng, zoom: 13.6 });
             }}
-
-            
           />
 
           {activeCity && (
@@ -1329,155 +768,82 @@ function MapPage() {
           onAdded={() => qc.invalidateQueries({ queryKey: ["map-venues-all"] })}
         />
 
-        {/* Friends CTA */}
-        <Link
-          to="/app/friends"
-          className="group block rounded-2xl p-[1.5px] bg-gradient-to-r from-[#ff3d8b] via-[#ffea00] to-[#c724ff] active:scale-[0.99] transition shadow-lg shadow-[#ff3d8b]/20"
-        >
-          <div className="rounded-[14px] bg-[#0a0a0a] px-3.5 py-3 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#ff3d8b] to-[#c724ff] grid place-items-center shrink-0 shadow-lg shadow-[#ff3d8b]/30">
-              <UserPlus className="text-white" size={18} strokeWidth={2.6} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="uppercase text-sm leading-tight text-white font-bold tracking-tight">
-                cheamă oxidații
-              </div>
-              <div className="text-[9px] uppercase tracking-[0.2em] text-white/50 mt-0.5 font-bold">
-                adaugă prieteni → vezi-i pe hartă
-              </div>
-            </div>
-            <span className="text-[#ff3d8b] text-xl font-bold">→</span>
-          </div>
-        </Link>
-
-        {/* Tabs */}
-        <div className="flex items-center gap-1 p-1 rounded-full bg-white/5 border border-white/10">
-          <button
-            onClick={() => setTab("locatii")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold transition ${tab === "locatii" ? "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white shadow-lg shadow-[#ff3d8b]/25" : "text-white/50"}`}
-          >
-            <List size={11} /> locații · {filtered.length}
-          </button>
-          <button
-            onClick={() => setTab("live")}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold transition ${tab === "live" ? "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white shadow-lg shadow-[#ff3d8b]/25" : "text-white/50"}`}
-          >
-            <Users size={11} /> live · {mapFriendPins.length}
-          </button>
+        {/* Venue list under the map */}
+        <div className="flex items-center gap-1.5 py-2 px-1 text-[10px] uppercase tracking-widest font-bold text-white/50">
+          <List size={11} /> locații · {filtered.length}
         </div>
 
-        {tab === "live" && (
-          <section className="space-y-2">
-            {mapFriendPins.length === 0 ? (
-              <div className="py-10 text-center text-[11px] uppercase tracking-widest text-white/40 font-bold">
-                niciun oxidat live acum.
-              </div>
-            ) : (
-              mapFriendPins.map((f) => (
-                <Link
-                  key={f.user_id}
-                  to="/app/user/$id"
-                  params={{ id: f.user_id }}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-[#111] border border-white/10 active:scale-[0.99] transition"
-                >
-                  <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center text-sm font-bold shrink-0 text-white">
-                    {f.avatar_url ? (
-                      <img src={f.avatar_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      (f.handle ?? "?")[0]?.toUpperCase()
+        <section className="space-y-2">
+          {geo && (
+            <div className="text-[9px] uppercase tracking-[0.18em] text-[#ff3d8b] flex items-center gap-1 font-bold">
+              <Navigation size={10} /> sortat după distanță
+            </div>
+          )}
+          {filtered.length === 0 ? (
+            <div className="py-10 text-center text-[11px] uppercase tracking-widest text-white/40 font-bold">
+              zero locații. dă reset la filtre.
+            </div>
+          ) : (
+            <>
+              {filtered.slice(0, visible).map((v) => {
+                const city = cityMap.get(v.city_id);
+                const dist =
+                  geo && v.lat != null && v.lng != null
+                    ? distanceKm(geo.lat, geo.lng, v.lat, v.lng)
+                    : null;
+                const openState = isOpenNow(v.opening_hours);
+                const nextOpen = openState === false ? nextOpenLabel(v.opening_hours) : null;
+                return (
+                  <div
+                    key={v.id}
+                    className="flex items-center gap-3 p-3 rounded-2xl bg-[#111] border border-white/10"
+                  >
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#ff3d8b]/20 to-[#c724ff]/10 border border-[#ff3d8b]/30 flex items-center justify-center shrink-0 text-[#ff3d8b]">
+                      <Beer size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <div className="font-semibold text-sm truncate text-white">{v.name}</div>
+                        {openState === true && (
+                          <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#ff3d8b]/15 border border-[#ff3d8b]/40 text-[8px] uppercase tracking-wider text-[#ff3d8b] font-bold">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#ff3d8b] animate-pulse" />{" "}
+                            open
+                          </span>
+                        )}
+                        {openState === false && (
+                          <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#c724ff]/15 border border-[#c724ff]/40 text-[8px] uppercase tracking-wider text-[#c724ff] font-bold">
+                            <Clock size={8} /> {nextOpen ? nextOpen : "închis"}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-[#ff3d8b]/70 truncate mt-0.5">
+                        // {venueNickname(v.name, v.type)}
+                      </div>
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate flex items-center gap-1 font-bold mt-0.5">
+                        <MapPin size={9} /> {city?.name ?? "?"}
+                        {v.address ? ` · ${v.address}` : ""}
+                      </div>
+                    </div>
+                    {dist != null && (
+                      <div className="text-[10px] uppercase tracking-widest text-[#ffea00] shrink-0 font-bold">
+                        {dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`}
+                      </div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold truncate text-white">
-                      {f.is_me ? "tu" : `@${f.handle ?? f.display_name}`}
-                    </div>
-                    <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate font-bold mt-0.5">
-                      📍 {f.venue_name ?? "în oraș"}
-                    </div>
-                  </div>
-                  <span className="relative inline-flex h-2 w-2">
-                    <span className="absolute inset-0 rounded-full bg-[#ff3d8b] animate-ping opacity-75" />
-                    <span className="relative h-2 w-2 rounded-full bg-[#ff3d8b]" />
-                  </span>
-                </Link>
-              ))
-            )}
-          </section>
-        )}
-
-        {tab === "locatii" && (
-          <section className="space-y-2">
-            {geo && (
-              <div className="text-[9px] uppercase tracking-[0.18em] text-[#ff3d8b] flex items-center gap-1 font-bold">
-                <Navigation size={10} /> sortat după distanță
-              </div>
-            )}
-            {filtered.length === 0 ? (
-              <div className="py-10 text-center text-[11px] uppercase tracking-widest text-white/40 font-bold">
-                zero locații. dă reset la filtre.
-              </div>
-            ) : (
-              <>
-                {filtered.slice(0, visible).map((v) => {
-                  const city = cityMap.get(v.city_id);
-                  const dist =
-                    geo && v.lat != null && v.lng != null
-                      ? distanceKm(geo.lat, geo.lng, v.lat, v.lng)
-                      : null;
-                  const openState = isOpenNow(v.opening_hours);
-                  const nextOpen = openState === false ? nextOpenLabel(v.opening_hours) : null;
-                  return (
-                    <div
-                      key={v.id}
-                      className="flex items-center gap-3 p-3 rounded-2xl bg-[#111] border border-white/10"
-                    >
-                      <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#ff3d8b]/20 to-[#c724ff]/10 border border-[#ff3d8b]/30 flex items-center justify-center shrink-0 text-[#ff3d8b]">
-                        <Beer size={16} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <div className="font-semibold text-sm truncate text-white">{v.name}</div>
-                          {openState === true && (
-                            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#ff3d8b]/15 border border-[#ff3d8b]/40 text-[8px] uppercase tracking-wider text-[#ff3d8b] font-bold">
-                              <span className="h-1.5 w-1.5 rounded-full bg-[#ff3d8b] animate-pulse" />{" "}
-                              open
-                            </span>
-                          )}
-                          {openState === false && (
-                            <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#c724ff]/15 border border-[#c724ff]/40 text-[8px] uppercase tracking-wider text-[#c724ff] font-bold">
-                              <Clock size={8} /> {nextOpen ? nextOpen : "închis"}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[9px] font-mono uppercase tracking-[0.22em] text-[#ff3d8b]/70 truncate mt-0.5">
-                          // {venueNickname(v.name, v.type)}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate flex items-center gap-1 font-bold mt-0.5">
-                          <MapPin size={9} /> {city?.name ?? "?"}
-                          {v.address ? ` · ${v.address}` : ""}
-                        </div>
-                      </div>
-                      {dist != null && (
-                        <div className="text-[10px] uppercase tracking-widest text-[#ffea00] shrink-0 font-bold">
-                          {dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                {visible < filtered.length && (
-                  <button
-                    onClick={() => setVisible((v) => v + 60)}
-                    className="w-full mt-2 py-3 rounded-2xl border border-[#ff3d8b]/40 text-[#ff3d8b] text-[11px] uppercase tracking-widest active:scale-[0.98] font-bold"
-                  >
-                    + arată încă {Math.min(60, filtered.length - visible)} (din{" "}
-                    {filtered.length - visible})
-                  </button>
-                )}
-              </>
-            )}
-          </section>
-        )}
+                );
+              })}
+              {visible < filtered.length && (
+                <button
+                  onClick={() => setVisible((v) => v + 60)}
+                  className="w-full mt-2 py-3 rounded-2xl border border-[#ff3d8b]/40 text-[#ff3d8b] text-[11px] uppercase tracking-widest active:scale-[0.98] font-bold"
+                >
+                  + arată încă {Math.min(60, filtered.length - visible)} (din{" "}
+                  {filtered.length - visible})
+                </button>
+              )}
+            </>
+          )}
+        </section>
       </div>
     </div>
   );

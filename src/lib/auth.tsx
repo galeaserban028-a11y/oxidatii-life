@@ -11,7 +11,12 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { warmAuthStorage } from "@/integrations/supabase/auth-storage";
+import {
+  ensureAuthStorageReady,
+  flushAuthSessionToPreferences,
+  readLastAppPath,
+  warmAuthStorage,
+} from "@/integrations/supabase/auth-storage";
 
 type Profile = {
   id: string;
@@ -141,6 +146,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Until bootstrap finishes, ignore null INITIAL_SESSION — Preferences may
     // still be hydrating and a premature null would bounce the user to /login.
     const bootDoneRef = { current: false };
+    let cancelled = false;
+    let removeResume: (() => void) | undefined;
+    let sub: { subscription: { unsubscribe: () => void } } | null = null;
 
     const applySession = (sess: Session | null, event?: string) => {
       if (!bootDoneRef.current && !sess?.user && event !== "SIGNED_OUT") {
@@ -166,28 +174,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
-      applySession(sess, event);
-
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-        router.invalidate();
-        if (event === "USER_UPDATED") qc.invalidateQueries();
-      }
-    });
-
-    let cancelled = false;
     const fallbackTimer = window.setTimeout(() => {
       bootDoneRef.current = true;
       if (mountedRef.current) setInitializing(false);
-    }, 8000);
+    }, 12000);
 
     const restoreSession = async (): Promise<Session | null> => {
-      await warmAuthStorage();
+      await ensureAuthStorageReady();
       let { data } = await supabase.auth.getSession();
       if (data.session) return data.session;
 
       // Retry with backoff — cold Android starts often miss the first read.
-      for (const wait of [200, 450, 800]) {
+      for (const wait of [150, 350, 700, 1200]) {
         await new Promise((r) => setTimeout(r, wait));
         if (cancelled) return null;
         await warmAuthStorage();
@@ -207,11 +205,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     (async () => {
       try {
+        // CRITICAL: warm Preferences BEFORE any auth subscription / getSession.
+        await ensureAuthStorageReady();
+        if (cancelled) return;
+
+        const { data: authSub } = supabase.auth.onAuthStateChange((event, sess) => {
+          applySession(sess, event);
+
+          if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+            void flushAuthSessionToPreferences();
+          }
+
+          if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+            router.invalidate();
+            if (event === "USER_UPDATED") qc.invalidateQueries();
+          }
+        });
+        sub = authSub;
+
         const sess = await restoreSession();
         if (cancelled) return;
         bootDoneRef.current = true;
         applySession(sess, sess ? "SIGNED_IN" : undefined);
-        if (sess?.user) await loadProfile(sess.user.id);
+        if (sess?.user) {
+          await flushAuthSessionToPreferences();
+          await loadProfile(sess.user.id);
+          // Cold start often opens on "/" — send user back into the app.
+          try {
+            const rawHash = window.location.hash.replace(/^#/, "");
+            const path = (rawHash.split("?")[0] || window.location.pathname).replace(/\/$/, "") || "/";
+            if (!path.startsWith("/app") && path !== "/onboarding" && path !== "/signup") {
+              const last = await readLastAppPath();
+              const target = last || "/app";
+              // history.replace accepts any in-app path (incl. /app/chat/:id).
+              router.history.replace(target);
+            }
+          } catch {
+            /* noop */
+          }
+        }
       } catch (error) {
         console.error("Could not restore session", error);
         bootDoneRef.current = true;
@@ -227,21 +259,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
 
     // On resume, re-hydrate from Preferences and refresh tokens.
-    let removeResume: (() => void) | undefined;
     (async () => {
       try {
         const { App } = await import("@capacitor/app");
         const handle = await App.addListener("appStateChange", ({ isActive }) => {
-          if (!isActive) return;
+          if (!isActive) {
+            // App going to background — flush tokens so kill/reopen keeps login.
+            void flushAuthSessionToPreferences();
+            return;
+          }
           void (async () => {
             await warmAuthStorage();
             const { data } = await supabase.auth.getSession();
             if (data.session) {
               applySession(data.session);
+              await flushAuthSessionToPreferences();
               await supabase.auth.refreshSession().catch(() => null);
             } else {
               const again = await restoreSession();
-              if (again) applySession(again, "SIGNED_IN");
+              if (again) {
+                applySession(again, "SIGNED_IN");
+                await flushAuthSessionToPreferences();
+              }
             }
           })();
         });
@@ -257,16 +296,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       mountedRef.current = false;
       window.clearTimeout(fallbackTimer);
-      sub.subscription.unsubscribe();
+      sub?.subscription.unsubscribe();
       removeResume?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Block the app only during the first profile load. Later profile refreshes
-  // must not blank/remount active routes (the map looked like it refreshed and
-  // lost the “TU” pin whenever GPS/settings touched the profile).
-  const loading = initializing || (!!user && !profile && profileLoading);
+  // While we have a user, we are still "loading" until the profile fetch settles —
+  // prevents redirects from firing before we know if the user is onboarded.
+  const loading = initializing || (!!user && profileLoading);
 
   return (
     <AuthCtx.Provider

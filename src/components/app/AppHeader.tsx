@@ -35,22 +35,36 @@ export function AppHeader() {
             <ChevronLeft size={22} className="text-white" strokeWidth={1.75} />
           </button>
         )}
-        <span className="h-5 w-5 shrink-0 overflow-hidden rounded-[5px] inline-flex">
-          <img
-            src={logoBanner}
-            alt="OXIDAȚII"
-            width={20}
-            height={20}
-            decoding="async"
-            className="h-full w-full object-cover"
-          />
-        </span>
-        {isHome && (
-          <span
-            className="font-display font-semibold text-[15px] tracking-tight text-white truncate"
-            style={{ letterSpacing: "-0.02em" }}
-          >
-            OXIDAȚII
+        {/* Home: brand visible. Other pages: tiny, quiet mark only. */}
+        {isHome ? (
+          <>
+            <span className="h-7 w-7 shrink-0 overflow-hidden rounded-md inline-flex">
+              <img
+                src={logoBanner}
+                alt="OXIDAȚII"
+                width={28}
+                height={28}
+                decoding="async"
+                className="h-full w-full object-contain"
+              />
+            </span>
+            <span
+              className="font-display font-semibold text-[15px] tracking-tight text-white truncate"
+              style={{ letterSpacing: "-0.02em" }}
+            >
+              OXIDAȚII
+            </span>
+          </>
+        ) : (
+          <span className="h-4 w-4 shrink-0 overflow-hidden rounded-[4px] inline-flex opacity-45">
+            <img
+              src={logoBanner}
+              alt=""
+              width={16}
+              height={16}
+              decoding="async"
+              className="h-full w-full object-contain"
+            />
           </span>
         )}
       </div>

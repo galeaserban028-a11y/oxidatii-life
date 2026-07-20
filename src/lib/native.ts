@@ -37,6 +37,28 @@ export function getNativePlatform(): "ios" | "android" | "web" {
   return "web";
 }
 
+/** Sync Android status + 3-button navigation bar with the active page color.
+ * Does NOT change --oxi-chrome (floating tab bar stays Electric Night). */
+export async function setNativeChromeColor(hex: string): Promise<void> {
+  if (!isNative() || getNativePlatform() !== "android") return;
+  const color = /^#[0-9a-fA-F]{6}$/.test(hex) ? hex.toLowerCase() : "#050505";
+  try {
+    const { registerPlugin } = await import("@capacitor/core");
+    const OxiChrome = registerPlugin<{
+      setChromeColor: (opts: { color: string }) => Promise<void>;
+    }>("OxiChrome");
+    await OxiChrome.setChromeColor({ color });
+  } catch {
+    /* plugin missing in web / older builds */
+  }
+  try {
+    const { StatusBar } = await import("@capacitor/status-bar");
+    await StatusBar.setBackgroundColor({ color });
+  } catch {
+    /* noop */
+  }
+}
+
 /** Hide splash, lock status bar, wire back button, register push if native. */
 export async function bootstrapNative(): Promise<void> {
   if (!isNative()) return;
@@ -50,13 +72,14 @@ export async function bootstrapNative(): Promise<void> {
     try {
       await StatusBar.setStyle({ style: Style.Dark });
       if (getNativePlatform() === "android") {
-        // Match floating tab bar / header chrome (#0f0d1c).
-        await StatusBar.setBackgroundColor({ color: "#0f0d1c" });
+        // Near-black default — page sync overrides via setNativeChromeColor.
+        await StatusBar.setBackgroundColor({ color: "#050505" });
         await StatusBar.setOverlaysWebView({ overlay: false });
-        // Lift above 3-button nav, but keep the tab bar low — 48px floated it too high.
         document.documentElement.style.setProperty("--oxi-bottom-inset", "20px");
         document.documentElement.classList.add("oxi-native-android");
+        // Floating tab bar chrome — keep original Electric Night, not page black.
         document.documentElement.style.setProperty("--oxi-chrome", "#0f0d1c");
+        await setNativeChromeColor("#050505");
       }
     } catch { /* noop */ }
 
@@ -147,29 +170,36 @@ export async function bootstrapNative(): Promise<void> {
             const oauth = await import("./native-oauth");
             // Close tab first (marks flow settled) then notify UI with typed status.
             await oauth.closeNativeOAuthBrowser().catch(() => {});
-            window.dispatchEvent(
-              new CustomEvent(oauth.NATIVE_OAUTH_FINISHED_EVENT, {
-                detail: error
-                  ? { status: "error", error: error.message, provider: null }
-                  : { status: "success", error: null, provider: null },
-              }),
+            oauth.emitNativeOAuthFinished(
+              error
+                ? { status: "error", error: error.message, provider: null }
+                : { status: "success", error: null, provider: null },
             );
 
             if (!error) {
               // Land on signup so the auth effect can route with visible feedback.
-              const path = window.location.pathname;
-              if (path !== "/signup" && path !== "/login" && path !== "/onboarding") {
-                window.history.replaceState({}, "", "/signup");
-                window.dispatchEvent(new PopStateEvent("popstate"));
+              const hashPath = (window.location.hash || "").replace(/^#/, "");
+              if (
+                hashPath !== "/signup" &&
+                hashPath !== "/login" &&
+                hashPath !== "/onboarding"
+              ) {
+                window.location.hash = "/signup";
               }
             }
             return;
           }
 
-          const path = `${u.pathname}${u.search}${u.hash}` || "/";
+          const path = `${u.pathname}${u.search}` || "/";
           oauthDebug("info", "deep-link.route", { path });
-          window.history.pushState({}, "", path);
-          window.dispatchEvent(new PopStateEvent("popstate"));
+          // Native uses hash history — put the route in the hash so Capacitor
+          // never tries to load /app/chat/... as a missing file (Not Found).
+          const hashPath = path.startsWith("/") ? path : `/${path}`;
+          if (window.location.hash !== `#${hashPath}`) {
+            window.location.hash = hashPath;
+          } else {
+            window.dispatchEvent(new HashChangeEvent("hashchange"));
+          }
         } catch (e) { oauthDebug("warn", "deep-link.handler.error", e); }
       };
 
