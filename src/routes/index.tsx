@@ -171,8 +171,9 @@ function Index() {
           legal: "Alcoolul dăunează grav sănătății. Consumați responsabil.",
         };
 
-  // While restoring session / redirecting logged-in users, don't flash marketing.
-  if (initializing || loading || user) {
+  // Only blank the marketing page when redirecting a known logged-in user.
+  // Do NOT blank during auth bootstrap — that froze Lovable / web preview.
+  if (user) {
     return <main className="min-h-[100svh] bg-[#050510]" aria-busy="true" />;
   }
 

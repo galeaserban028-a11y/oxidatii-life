@@ -184,7 +184,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       let { data } = await supabase.auth.getSession();
       if (data.session) return data.session;
 
-      // Retry with backoff — cold Android starts often miss the first read.
+      // Extra retries only on native — web/Lovable would just delay preview.
+      const native =
+        typeof window !== "undefined" &&
+        (!!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor
+          ?.isNativePlatform?.() ||
+          /; wv\)/.test(navigator.userAgent ?? ""));
+      if (!native) return null;
+
       for (const wait of [150, 350, 700, 1200]) {
         await new Promise((r) => setTimeout(r, wait));
         if (cancelled) return null;

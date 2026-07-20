@@ -38,7 +38,7 @@ function webRemove(key: string): void {
   }
 }
 
-/** Prefer Preferences whenever we might be inside Capacitor — don't wait for bridge. */
+/** Prefer Preferences only on real native / Android WebView — never on Lovable web preview. */
 export function shouldUsePreferences(): boolean {
   if (typeof window === "undefined") return false;
   try {
@@ -47,8 +47,9 @@ export function shouldUsePreferences(): boolean {
         Capacitor?: { isNativePlatform?: () => boolean };
       }
     ).Capacitor;
-    if (cap?.isNativePlatform?.()) return true;
-    if (cap) return true;
+    // Must be actually native. A bare Capacitor object on web must NOT trigger Preferences
+    // (that hung Lovable preview / auth bootstrap).
+    if (cap?.isNativePlatform?.() === true) return true;
     if (/; wv\)/.test(navigator.userAgent)) return true;
     if (document.documentElement.classList.contains("oxi-native-android")) return true;
   } catch {
@@ -68,12 +69,20 @@ function loadPreferences() {
 
 async function waitForCapacitorBridge(timeoutMs = 2500): Promise<void> {
   if (typeof window === "undefined") return;
+  try {
+    const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+      .Capacitor;
+    // Web / Lovable: Capacitor may exist as a stub — don't wait.
+    if (cap && typeof cap.isNativePlatform === "function" && !cap.isNativePlatform()) return;
+  } catch {
+    /* noop */
+  }
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
       const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
         .Capacitor;
-      if (cap?.isNativePlatform?.()) return;
+      if (cap?.isNativePlatform?.() === true) return;
     } catch {
       /* noop */
     }
