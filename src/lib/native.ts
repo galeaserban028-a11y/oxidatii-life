@@ -1,5 +1,5 @@
-/**
- * Native (Capacitor) helpers — safe to import from the web app.
+﻿/**
+ * Native (Capacitor) helpers ΓÇö safe to import from the web app.
  * All functions are no-ops when running in a browser, so the same code
  * works in PWA and native builds.
  */
@@ -12,7 +12,7 @@ type CapacitorGlobal = {
 let _isNative: boolean | null = null;
 
 export function isNative(): boolean {
-  // Never permanently cache `false` — Capacitor may inject after the first
+  // Never permanently cache `false` ΓÇö Capacitor may inject after the first
   // render. Caching false left PullToRefresh / page transforms active and
   // broke Android scroll (only header/tab bar could start a gesture).
   if (_isNative === true) return true;
@@ -72,12 +72,12 @@ export async function bootstrapNative(): Promise<void> {
     try {
       await StatusBar.setStyle({ style: Style.Dark });
       if (getNativePlatform() === "android") {
-        // Near-black default — page sync overrides via setNativeChromeColor.
+        // Near-black default ΓÇö page sync overrides via setNativeChromeColor.
         await StatusBar.setBackgroundColor({ color: "#050505" });
         await StatusBar.setOverlaysWebView({ overlay: false });
         document.documentElement.style.setProperty("--oxi-bottom-inset", "20px");
         document.documentElement.classList.add("oxi-native-android");
-        // Floating tab bar chrome — keep original Electric Night, not page black.
+        // Floating tab bar chrome ΓÇö keep original Electric Night, not page black.
         document.documentElement.style.setProperty("--oxi-chrome", "#0f0d1c");
         await setNativeChromeColor("#050505");
       }
@@ -134,13 +134,13 @@ export async function bootstrapNative(): Promise<void> {
               const returnedState = getOAuthParam("state");
               const expectedState = localStorage.getItem("lovable_oauth_state");
               if (!expectedState || returnedState !== expectedState) {
-                throw new Error("Răspuns OAuth invalid (state diferit). Încearcă din nou.");
+                throw new Error("R─âspuns OAuth invalid (state diferit). ├Äncearc─â din nou.");
               }
               localStorage.removeItem("lovable_oauth_state");
 
               if (oauthError) {
                 throw new Error(
-                  getOAuthParam("error_description") ?? "Autentificarea a fost anulată.",
+                  getOAuthParam("error_description") ?? "Autentificarea a fost anulat─â.",
                 );
               }
 
@@ -194,7 +194,7 @@ export async function bootstrapNative(): Promise<void> {
 
           const path = `${u.pathname}${u.search}` || "/";
           oauthDebug("info", "deep-link.route", { path });
-          // Native uses hash history — put the route in the hash so Capacitor
+          // Native uses hash history ΓÇö put the route in the hash so Capacitor
           // never tries to load /app/chat/... as a missing file (Not Found).
           const hashPath = path.startsWith("/") ? path : `/${path}`;
           if (window.location.hash !== `#${hashPath}`) {

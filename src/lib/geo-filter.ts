@@ -1,5 +1,5 @@
-/**
- * Shared GPS sanity checks — reject cell-tower / cached jumps that teleport
+﻿/**
+ * Shared GPS sanity checks ΓÇö reject cell-tower / cached jumps that teleport
  * the user pin across the city.
  */
 
@@ -28,7 +28,7 @@ export type GeoSample = {
 
 /** Max horizontal accuracy (meters) we'll treat as a usable "you are here" fix. */
 export const MAX_MAP_ACCURACY_M = 200;
-/** First fix can be loose while GPS warms up — Android coarse is often 200–1500m. */
+/** First fix can be loose while GPS warms up ΓÇö Android coarse is often 200ΓÇô1500m. */
 export const MAX_FIRST_FIX_ACCURACY_M = 2000;
 /** Reject teleports larger than this unless the new fix is clearly better. */
 export const MAX_JUMP_M = 450;
@@ -67,7 +67,7 @@ export function rejectGeoSample(
   return null;
 }
 
-/** Stable ~150m privacy offset (no Math.random → no pin jitter each publish). */
+/** Stable ~150m privacy offset (no Math.random ΓåÆ no pin jitter each publish). */
 export function stableApproxOffset(
   lat: number,
   lng: number,
@@ -85,7 +85,7 @@ export function stableApproxOffset(
   };
 }
 
-/** Map zoom level from GPS accuracy — coarse fixes stay pulled back. */
+/** Map zoom level from GPS accuracy ΓÇö coarse fixes stay pulled back. */
 export function zoomForAccuracy(accuracy: number | null | undefined): number {
   const acc = accuracy ?? 400;
   if (acc > 500) return 13.2;
