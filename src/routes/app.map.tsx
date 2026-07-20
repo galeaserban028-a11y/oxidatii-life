@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+﻿import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { useCallback, useMemo, useState, useEffect, useRef } from "react";
@@ -34,7 +34,7 @@ import {
 } from "@/lib/native-geo";
 
 export const Route = createFileRoute("/app/map")({
-  head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
+  head: () => ({ meta: [{ title: "Hart─â ┬╖ OXIDA╚ÜII" }] }),
   validateSearch: (search: Record<string, unknown>): { venue?: string } => ({
     venue: typeof search.venue === "string" ? search.venue : undefined,
   }),
@@ -145,8 +145,8 @@ function MapPage() {
       accuracy: accuracy ?? null,
       at: Date.now(),
     };
-    // Always show *something* for the first fix — Android coarse GPS is often
-    // 200–800m and used to be rejected, so the "me" pin never appeared.
+    // Always show *something* for the first fix ΓÇö Android coarse GPS is often
+    // 200ΓÇô800m and used to be rejected, so the "me" pin never appeared.
     if (!lastGeoSampleRef.current) {
       lastGeoSampleRef.current = sample;
       setGeo({ lat, lng, accuracy: sample.accuracy });
@@ -170,7 +170,7 @@ function MapPage() {
   const previousCountryRef = useRef<string | "all">("all");
   /** After a solid GPS focus, ignore further auto-recenter (stops map reload loop). */
   const cameraLockedRef = useRef(false);
-  /** City fallback may show until first real GPS — then we unlock once. */
+  /** City fallback may show until first real GPS ΓÇö then we unlock once. */
   const cityFallbackOnlyRef = useRef(false);
   const focusNonceRef = useRef(0);
 
@@ -251,7 +251,7 @@ function MapPage() {
     }
   }, [search.venue, venues]);
 
-  // Active venue-linked promo campaigns → "shining" pins on the map.
+  // Active venue-linked promo campaigns ΓåÆ "shining" pins on the map.
   // Pulls only the data needed to recognize a promoted venue + tint its halo
   // and show the brand logo in place of the bottle silhouette.
   const { data: promotedMeta = {} } = useQuery({
@@ -314,29 +314,29 @@ function MapPage() {
   // Country chip list (sorted by venue count desc)
   const countries = useMemo(() => {
     const NAMES: Record<string, string> = {
-      RO: "🇷🇴 RO",
-      GB: "🇬🇧 UK",
-      FR: "🇫🇷 FR",
-      DE: "🇩🇪 DE",
-      ES: "🇪🇸 ES",
-      IT: "🇮🇹 IT",
-      NL: "🇳🇱 NL",
-      BE: "🇧🇪 BE",
-      AT: "🇦🇹 AT",
-      CZ: "🇨🇿 CZ",
-      PL: "🇵🇱 PL",
-      HU: "🇭🇺 HU",
-      GR: "🇬🇷 GR",
-      PT: "🇵🇹 PT",
-      IE: "🇮🇪 IE",
-      DK: "🇩🇰 DK",
-      SE: "🇸🇪 SE",
-      NO: "🇳🇴 NO",
-      CH: "🇨🇭 CH",
-      BG: "🇧🇬 BG",
-      HR: "🇭🇷 HR",
-      RS: "🇷🇸 RS",
-      TR: "🇹🇷 TR",
+      RO: "≡ƒç╖≡ƒç┤ RO",
+      GB: "≡ƒç¼≡ƒçº UK",
+      FR: "≡ƒç½≡ƒç╖ FR",
+      DE: "≡ƒç⌐≡ƒç¬ DE",
+      ES: "≡ƒç¬≡ƒç╕ ES",
+      IT: "≡ƒç«≡ƒç╣ IT",
+      NL: "≡ƒç│≡ƒç▒ NL",
+      BE: "≡ƒçº≡ƒç¬ BE",
+      AT: "≡ƒçª≡ƒç╣ AT",
+      CZ: "≡ƒç¿≡ƒç┐ CZ",
+      PL: "≡ƒç╡≡ƒç▒ PL",
+      HU: "≡ƒç¡≡ƒç║ HU",
+      GR: "≡ƒç¼≡ƒç╖ GR",
+      PT: "≡ƒç╡≡ƒç╣ PT",
+      IE: "≡ƒç«≡ƒç¬ IE",
+      DK: "≡ƒç⌐≡ƒç░ DK",
+      SE: "≡ƒç╕≡ƒç¬ SE",
+      NO: "≡ƒç│≡ƒç┤ NO",
+      CH: "≡ƒç¿≡ƒç¡ CH",
+      BG: "≡ƒçº≡ƒç¼ BG",
+      HR: "≡ƒç¡≡ƒç╖ HR",
+      RS: "≡ƒç╖≡ƒç╕ RS",
+      TR: "≡ƒç╣≡ƒç╖ TR",
     };
     const cityCountryMap = new Map(cities.map((c) => [c.id, c.country as string]));
     const counts = new Map<string, number>();
@@ -477,7 +477,7 @@ function MapPage() {
   const mapFriendPins: FriendPin[] = [];
 
   const requestGeo = () => {
-    // One-shot GPS for distance sorting only — never publish / show me-pin.
+    // One-shot GPS for distance sorting only ΓÇö never publish / show me-pin.
     void (async () => {
       try {
         await ensureLocationPermission(true);
@@ -495,8 +495,8 @@ function MapPage() {
         const msg =
           error instanceof Error
             ? error.message
-            : "Nu am putut citi locația. Verifică permisiunile și pornește GPS-ul.";
-        if (/oprită|Setări|permisiun/i.test(msg)) {
+            : "Nu am putut citi loca╚¢ia. Verific─â permisiunile ╚Öi porne╚Öte GPS-ul.";
+        if (/oprit─â|Set─âri|permisiun/i.test(msg)) {
           const { openAppLocationSettings } = await import("@/lib/native-geo");
           await openAppLocationSettings().catch(() => {});
         }
@@ -518,7 +518,7 @@ function MapPage() {
 
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
 
-  // Hotspots — top venues by live check-ins right now (public, not just friends)
+  // Hotspots ΓÇö top venues by live check-ins right now (public, not just friends)
   const { data: hotspots = [] } = useQuery({
     queryKey: ["map-hotspots"],
     queryFn: async () => {
@@ -555,12 +555,12 @@ function MapPage() {
 
   return (
     <div className="pb-32 bg-[#050505] min-h-screen text-white" data-header-bg="#050505">
-      {/* Sticky header — cinema bento */}
+      {/* Sticky header ΓÇö cinema bento */}
       <header className="sticky top-0 z-30 px-4 pt-5 pb-3 bg-[#050505]/85 border-b border-white/5">
         <div className="flex items-end justify-between gap-3">
           <div>
             <h1 className="text-[34px] leading-none tracking-tight" style={instrument}>
-              HARTĂ<span className="text-[#ffea00]">.</span>
+              HART─é<span className="text-[#ffea00]">.</span>
             </h1>
             <div className="mt-1.5 flex items-center gap-3 flex-wrap">
               <span className="inline-flex items-center gap-1.5">
@@ -603,7 +603,7 @@ function MapPage() {
               }}
               className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === "all" ? "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white border-transparent shadow-lg shadow-[#ff3d8b]/25" : "bg-white/5 border-white/10 text-white/60"}`}
             >
-              🌍 toate
+              ≡ƒîì toate
             </button>
             {countries.map((c) => (
               <button
@@ -672,12 +672,12 @@ function MapPage() {
                             {venue.name}
                           </div>
                           <div className="text-[9px] uppercase tracking-widest text-white/40 mt-0.5 truncate">
-                            {cityMap.get(venue.city_id)?.name ?? "—"}
+                            {cityMap.get(venue.city_id)?.name ?? "ΓÇö"}
                           </div>
                         </div>
                         <div className="shrink-0 bg-black/40 border border-white/10 rounded-full px-2 py-0.5 flex items-center gap-0.5">
                           <span className="text-[10px] font-bold text-[#ff3d8b]">{count}</span>
-                          <span className="text-[9px]">🔥</span>
+                          <span className="text-[9px]">≡ƒöÑ</span>
                         </div>
                       </div>
                     </button>
@@ -688,7 +688,7 @@ function MapPage() {
           </div>
         )}
 
-        {/* Map block — venues only (no me / friends live pins). */}
+        {/* Map block ΓÇö venues only (no me / friends live pins). */}
         <div className="relative overflow-hidden border-y border-white/10 bg-[#080a12] -mx-4">
           <RomaniaMap3D
             cities={citiesScoped}
@@ -720,25 +720,25 @@ function MapPage() {
                 params={{ slug: activeCity.slug }}
                 className="shrink-0 text-[9px] uppercase tracking-widest text-[#ff3d8b] border border-[#ff3d8b]/40 rounded-full px-2 py-0.5 font-bold"
               >
-                străzi →
+                str─âzi ΓåÆ
               </Link>
               <button
                 onClick={() => {
                   setCityId("all");
                   setFocusCity(null);
                 }}
-                aria-label="Șterge filtru"
+                aria-label="╚ÿterge filtru"
                 className="shrink-0 h-6 w-6 grid place-items-center rounded-full border border-white/15 text-white/60 bg-black/60"
               >
                 <X size={11} />
               </button>
             </div>
           )}
-          {/* Map settings button — top-right (safe-area aware) */}
+          {/* Map settings button ΓÇö top-right (safe-area aware) */}
           {user && (
             <button
               onClick={() => setSettingsOpen(true)}
-              aria-label="Setări hartă"
+              aria-label="Set─âri hart─â"
               style={{
                 top: "0.5rem",
                 right: "0.5rem",
@@ -770,18 +770,18 @@ function MapPage() {
 
         {/* Venue list under the map */}
         <div className="flex items-center gap-1.5 py-2 px-1 text-[10px] uppercase tracking-widest font-bold text-white/50">
-          <List size={11} /> locații · {filtered.length}
+          <List size={11} /> loca╚¢ii ┬╖ {filtered.length}
         </div>
 
         <section className="space-y-2">
           {geo && (
             <div className="text-[9px] uppercase tracking-[0.18em] text-[#ff3d8b] flex items-center gap-1 font-bold">
-              <Navigation size={10} /> sortat după distanță
+              <Navigation size={10} /> sortat dup─â distan╚¢─â
             </div>
           )}
           {filtered.length === 0 ? (
             <div className="py-10 text-center text-[11px] uppercase tracking-widest text-white/40 font-bold">
-              zero locații. dă reset la filtre.
+              zero loca╚¢ii. d─â reset la filtre.
             </div>
           ) : (
             <>
@@ -812,7 +812,7 @@ function MapPage() {
                         )}
                         {openState === false && (
                           <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#c724ff]/15 border border-[#c724ff]/40 text-[8px] uppercase tracking-wider text-[#c724ff] font-bold">
-                            <Clock size={8} /> {nextOpen ? nextOpen : "închis"}
+                            <Clock size={8} /> {nextOpen ? nextOpen : "├«nchis"}
                           </span>
                         )}
                       </div>
@@ -821,7 +821,7 @@ function MapPage() {
                       </div>
                       <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate flex items-center gap-1 font-bold mt-0.5">
                         <MapPin size={9} /> {city?.name ?? "?"}
-                        {v.address ? ` · ${v.address}` : ""}
+                        {v.address ? ` ┬╖ ${v.address}` : ""}
                       </div>
                     </div>
                     {dist != null && (
@@ -837,7 +837,7 @@ function MapPage() {
                   onClick={() => setVisible((v) => v + 60)}
                   className="w-full mt-2 py-3 rounded-2xl border border-[#ff3d8b]/40 text-[#ff3d8b] text-[11px] uppercase tracking-widest active:scale-[0.98] font-bold"
                 >
-                  + arată încă {Math.min(60, filtered.length - visible)} (din{" "}
+                  + arat─â ├«nc─â {Math.min(60, filtered.length - visible)} (din{" "}
                   {filtered.length - visible})
                 </button>
               )}

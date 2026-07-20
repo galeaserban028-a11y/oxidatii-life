@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+﻿import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import maplibregl from "maplibre-gl";
 import type { Map as MlMap, Marker } from "maplibre-gl";
@@ -40,7 +40,7 @@ const TYPE_COLOR: Record<string, string> = {
   bar: "#ffea00",
   pub: "#ff3d8b",
   terasa: "#00e5ff",
-  terasă: "#00e5ff",
+  teras─â: "#00e5ff",
   after: "#ff3d8b",
 };
 
@@ -266,7 +266,7 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
     "source-layer": "water",
     paint: { "fill-color": "#05030f", "fill-outline-color": "#2a1145" },
   });
-  // Road glow — narrower/less blurred on mobile to keep frame budget healthy
+  // Road glow ΓÇö narrower/less blurred on mobile to keep frame budget healthy
   layers.push({
     id: "roads-glow",
     type: "line",
@@ -372,7 +372,7 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
       },
     });
   }
-  // Country labels — visible when zoomed out over Europe.
+  // Country labels ΓÇö visible when zoomed out over Europe.
   layers.push({
     id: "place-country-labels",
     type: "symbol",
@@ -459,7 +459,7 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
           "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
         ],
         tileSize: 256,
-        attribution: "© OpenStreetMap © CARTO",
+        attribution: "┬⌐ OpenStreetMap ┬⌐ CARTO",
       },
       openmaptiles: {
         type: "vector",
@@ -595,7 +595,7 @@ export function RomaniaMap3D({
 
     // Defer init until the container has real dimensions. When the map is
     // mounted inside a route transition / animation the container can be
-    // 0×0 for a frame or two — creating maplibre at that instant makes it
+    // 0├ù0 for a frame or two ΓÇö creating maplibre at that instant makes it
     // fetch tiles for the wrong viewport, and the user then has to zoom
     // in/out to force a correct re-fetch. Wait for a real size first.
     const initialRect = containerRef.current.getBoundingClientRect();
@@ -681,7 +681,7 @@ export function RomaniaMap3D({
       });
       resizeObserver.observe(containerRef.current);
     }
-    // dragPan + scrollZoom rămân activate ca să se poată naviga și da zoom
+    // dragPan + scrollZoom r─âm├ón activate ca s─â se poat─â naviga ╚Öi da zoom
 
     // As soon as the style JSON is parsed (fires well before "load"), force
     // an immediate resize so the tile fetcher requests tiles for the real
@@ -701,8 +701,8 @@ export function RomaniaMap3D({
       () => {
         if (loadedRef.current) return;
         // On iPhone/Safari the native WebGL + glyph pipeline can be late even
-        // though the map is about to paint. Do not tear the map down here — the
-        // retry loop itself was causing the endless "se încarcă harta" state.
+        // though the map is about to paint. Do not tear the map down here ΓÇö the
+        // retry loop itself was causing the endless "se ├«ncarc─â harta" state.
         setupInteractiveLayers();
         markFirstPaint();
       },
@@ -717,8 +717,8 @@ export function RomaniaMap3D({
           type: "geojson",
           data: { type: "FeatureCollection", features: [] },
           cluster: true,
-          // Grupăm agresiv doar la zoom foarte mic; de la zoom mediu în sus,
-          // fiecare local apare cu propria sticluță de vin (nu bulinuțe).
+          // Grup─âm agresiv doar la zoom foarte mic; de la zoom mediu ├«n sus,
+          // fiecare local apare cu propria sticlu╚¢─â de vin (nu bulinu╚¢e).
           clusterRadius: 22,
           clusterMaxZoom: 7,
 
@@ -796,9 +796,9 @@ export function RomaniaMap3D({
 
       // Venue clusters are intentionally hidden. Cities are represented by
       // DOM bottle markers with city-name labels below, so users see
-      // "sticluță + oraș" instead of abstract dots.
+      // "sticlu╚¢─â + ora╚Ö" instead of abstract dots.
 
-      // unclustered points → clear wine-bottle pins (no venue name floating above).
+      // unclustered points ΓåÆ clear wine-bottle pins (no venue name floating above).
       // City markers are the main visual; individual venues show only when zoomed in close.
       map.addLayer({
         id: "venues-points",
@@ -818,7 +818,7 @@ export function RomaniaMap3D({
             "pin-bottle-v3-pub",
             "terasa",
             "pin-bottle-v3-terasa",
-            "terasă",
+            "teras─â",
             "pin-bottle-v3-terasa",
             "after",
             "pin-bottle-v3-after",
@@ -848,7 +848,7 @@ export function RomaniaMap3D({
         paint: {},
       });
 
-      // click → navigate to venue
+      // click ΓåÆ navigate to venue
       map.on("click", "venues-points", (e) => {
         const f = e.features?.[0];
         if (!f) return;
@@ -867,7 +867,7 @@ export function RomaniaMap3D({
             <div style="display:inline-block;padding:1px 6px;border-radius:9999px;background:${typeColor}22;color:${typeColor};border:1px solid ${typeColor}55;font-family:'DM Sans',sans-serif;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">${p.type ?? "loc"}</div>
             <div style="font-family:'DM Sans',sans-serif;font-weight:900;font-size:14px;line-height:1.15;">${p.name}</div>
             ${addr}
-            <a href="/app/venue/${p.id}" data-oxi-venue="${p.id}" style="margin-top:8px;display:block;text-align:center;padding:6px 10px;border-radius:8px;background:${typeColor};color:#06070a;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;text-decoration:none;">detalii →</a>
+            <a href="/app/venue/${p.id}" data-oxi-venue="${p.id}" style="margin-top:8px;display:block;text-align:center;padding:6px 10px;border-radius:8px;background:${typeColor};color:#06070a;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;text-decoration:none;">detalii ΓåÆ</a>
           </div>
         </div>`;
         const popup = new maplibregl.Popup({
@@ -898,7 +898,7 @@ export function RomaniaMap3D({
         });
       }
 
-      // HEAT NOW overlay — live hotspots fed from get_heat_now RPC. Rendered as
+      // HEAT NOW overlay ΓÇö live hotspots fed from get_heat_now RPC. Rendered as
       // pulsing glow + score circle so users see WHERE the night is happening.
       map.addSource("heat-now-src", {
         type: "geojson",
@@ -974,7 +974,7 @@ export function RomaniaMap3D({
       setMapReadyTick((tick) => tick + 1);
     };
 
-    // Add OXIDAȚII overlays as soon as the style exists, not on full map
+    // Add OXIDA╚ÜII overlays as soon as the style exists, not on full map
     // "load". Full load can wait on slow vector tiles/glyphs on mobile, which
     // caused the first seconds to show a different/empty map until zooming.
     map.once("style.load", setupInteractiveLayers);
@@ -1101,7 +1101,7 @@ export function RomaniaMap3D({
     };
   }, [retryKey]);
 
-  // VENUES → GeoJSON (GPU layer)
+  // VENUES ΓåÆ GeoJSON (GPU layer)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -1149,12 +1149,12 @@ export function RomaniaMap3D({
     else map.once("load", apply);
   }, [venues, promotedMeta, retryKey, mapReadyTick]);
 
-  // Heatmap pulse intentionally removed — it called setPaintProperty every
+  // Heatmap pulse intentionally removed ΓÇö it called setPaintProperty every
   // 120ms which forced a full WebGL repaint and dropped the whole map below
   // 60fps even when nothing else was happening. The base heatmap layer
   // already looks alive thanks to the cluster glow + DOM pulse animations.
 
-  // HEAT NOW → live hot zones (overlay circles)
+  // HEAT NOW ΓåÆ live hot zones (overlay circles)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -1176,7 +1176,7 @@ export function RomaniaMap3D({
     else map.once("load", apply);
   }, [heatNowCells, retryKey, mapReadyTick]);
 
-  // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
+  // PROMOTED VENUES ΓåÆ DOM markers with the brand cover/logo inside a glowing
   // halo. Replaces the bottle silhouette so paying businesses are instantly
   // recognizable on the map. Diff-only: only re-creates markers when the set
   // of promoted venues or their coordinates change.
@@ -1249,7 +1249,7 @@ export function RomaniaMap3D({
         const close = document.createElement("button");
         close.type = "button";
         close.setAttribute("aria-label", "Ascunde reclama");
-        close.textContent = "×";
+        close.textContent = "├ù";
         close.style.cssText = `position:absolute;top:1px;right:1px;width:18px;height:18px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'DM Sans',sans-serif;font-weight:900;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.82;box-shadow:0 2px 8px rgba(0,0,0,.55);`;
         close.onclick = (e) => {
           e.stopPropagation();
@@ -1296,7 +1296,7 @@ export function RomaniaMap3D({
     else map.once("load", build);
   }, [venues, promotedMeta, retryKey, mapReadyTick]);
 
-  // CITIES → only the hottest cities get a tiny label; the basemap provides
+  // CITIES ΓåÆ only the hottest cities get a tiny label; the basemap provides
   // the clean city/country typography, avoiding the previous label pile-up.
   useEffect(() => {
     const map = mapRef.current;
@@ -1425,7 +1425,7 @@ export function RomaniaMap3D({
   }, [cities, retryKey, mapReadyTick]);
 
   // FOCUS city programmatically. easeTo is lighter than flyTo on mobile GPUs.
-  // Skip identical targets — parent GPS loops used to spam new {lat,lng} objects
+  // Skip identical targets ΓÇö parent GPS loops used to spam new {lat,lng} objects
   // and the map looked like it was constantly reloading.
   const lastFocusKeyRef = useRef<string | null>(null);
   useEffect(() => {
@@ -1444,7 +1444,7 @@ export function RomaniaMap3D({
     });
   }, [focusCity, mapReadyTick]);
 
-  // FIT BOUNDS — used for country/region zoom
+  // FIT BOUNDS ΓÇö used for country/region zoom
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !fitBounds) return;
@@ -1463,7 +1463,7 @@ export function RomaniaMap3D({
     else map.once("load", fit);
   }, [fitBounds, mapReadyTick]);
 
-  // FRIENDS → diff-only DOM markers. When a friend's coords change, smoothly
+  // FRIENDS ΓåÆ diff-only DOM markers. When a friend's coords change, smoothly
   // tween the marker between the old and new positions so it looks like they
   // are walking, not teleporting.
   const friendAnims = useRef<Map<string, number>>(new Map());
@@ -1503,7 +1503,7 @@ export function RomaniaMap3D({
           fromLat = cur.lat;
         const toLng = f.lng,
           toLat = f.lat;
-        // Large corrections (GPS refine) — snap "me" instead of sliding across town.
+        // Large corrections (GPS refine) ΓÇö snap "me" instead of sliding across town.
         const jumpM =
           Math.hypot((toLat - fromLat) * 111000, (toLng - fromLng) * 111000 * Math.cos((toLat * Math.PI) / 180));
         if (f.is_me && jumpM > 280) {
@@ -1549,7 +1549,7 @@ export function RomaniaMap3D({
       const pulseSize = f.is_me ? 68 : 54;
 
       const pulse = document.createElement("div");
-      // Skip pulse animation on compact/Android — big GPU cost while panning.
+      // Skip pulse animation on compact/Android ΓÇö big GPU cost while panning.
       if (!compactMapRef.current) {
         pulse.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${pulseSize}px;height:${pulseSize}px;border-radius:9999px;background:${accent};opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;`;
         wrap.appendChild(pulse);
@@ -1664,7 +1664,7 @@ export function RomaniaMap3D({
 
       <div ref={containerRef} className="absolute inset-0" style={{ touchAction: "pan-x pan-y" }} />
 
-      {/* Loading skeleton — removed from DOM after first paint so it cannot cover the map in PWA. */}
+      {/* Loading skeleton ΓÇö removed from DOM after first paint so it cannot cover the map in PWA. */}
       {!firstPaintDone && !mapFailed && (
         <div
           className="absolute inset-0 z-10 pointer-events-none grid place-items-center overflow-hidden transition-opacity duration-300"
@@ -1688,7 +1688,7 @@ export function RomaniaMap3D({
               <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#ff3d8b] animate-spin" />
             </div>
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
-              se încarcă harta
+              se ├«ncarc─â harta
             </div>
           </div>
         </div>
@@ -1697,9 +1697,9 @@ export function RomaniaMap3D({
       {mapFailed && (
         <div className="absolute inset-0 z-20 grid place-items-center bg-background/95 px-6 text-center">
           <div>
-            <div className="font-display font-black text-xl">harta se reîncarcă</div>
+            <div className="font-display font-black text-xl">harta se re├«ncarc─â</div>
             <div className="mt-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              telefonul a pierdut randarea hărții
+              telefonul a pierdut randarea h─âr╚¢ii
             </div>
             <button
               onClick={() => {
@@ -1708,13 +1708,13 @@ export function RomaniaMap3D({
               }}
               className="mt-4 rounded-lg border border-neon-green/40 px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-neon-green"
             >
-              reîncarcă
+              re├«ncarc─â
             </button>
           </div>
         </div>
       )}
 
-      {/* Zoom + recenter controls — stacked bottom-right */}
+      {/* Zoom + recenter controls ΓÇö stacked bottom-right */}
       <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-2">
         <div className="flex flex-col rounded-full overflow-hidden bg-black/60 border border-white/15 shadow-lg shadow-black/40 transition-colors hover:border-white/25">
           <button
@@ -1726,7 +1726,7 @@ export function RomaniaMap3D({
           </button>
           <button
             onClick={() => mapRef.current?.zoomOut({ duration: 220 })}
-            aria-label="Depărtează harta"
+            aria-label="Dep─ârteaz─â harta"
             className="h-10 w-10 grid place-items-center text-white/90 active:scale-95 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 will-change-transform"
           >
             <Minus size={18} />
