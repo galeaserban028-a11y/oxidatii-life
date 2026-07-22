@@ -2,6 +2,9 @@
  * Snap-style capture for OXIDAȚII.
  * Native (Capacitor): uses Camera.getPhoto / recordVideo — reliable on Android.
  * Web: live preview with tap=photo / hold=video when getUserMedia works.
+ *
+ * Gallery / “Fișier din telefon” is optional and must stay OFF for Top Șpriț
+ * (allowGallery=false). Gallery media is only for normal profile posts.
  */
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Camera, Image as ImageIcon, SwitchCamera, Video } from "lucide-react";
@@ -10,7 +13,9 @@ import { haptic, isNative } from "@/lib/native";
 import { uriToFile } from "@/lib/native-media";
 
 type Props = {
-  onCapture: (file: File) => void;
+  onCapture: (file: File, meta?: { fromGallery: boolean }) => void;
+  /** When false (Top Șpriț), camera/video only — no gallery / file picker. */
+  allowGallery?: boolean;
 };
 
 const HOLD_MS = 320;
@@ -40,7 +45,7 @@ async function fileFromPhotoResult(photo: {
   return uriToFile(path, "photo.jpg", "image/jpeg");
 }
 
-export function SnapCapture({ onCapture }: Props) {
+export function SnapCapture({ onCapture, allowGallery = false }: Props) {
   const native = isNative() || /; wv\)/.test(navigator.userAgent);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -57,6 +62,10 @@ export function SnapCapture({ onCapture }: Props) {
   const [facing, setFacing] = useState<"environment" | "user">("environment");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  function emitCapture(file: File, fromGallery: boolean) {
+    onCapture(file, { fromGallery });
+  }
 
   function stopStream() {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -86,7 +95,11 @@ export function SnapCapture({ onCapture }: Props) {
       setReady(true);
     } catch (e) {
       console.warn("web camera failed", e);
-      setError("Camera live indisponibilă — folosește butoanele de mai jos.");
+      setError(
+        allowGallery
+          ? "Camera live indisponibilă — folosește galeria de mai jos."
+          : "Camera live indisponibilă — încearcă din nou sau folosește butoanele.",
+      );
       setReady(false);
     }
   }
@@ -131,7 +144,7 @@ export function SnapCapture({ onCapture }: Props) {
       });
       const file = await fileFromPhotoResult(photo);
       void haptic("medium");
-      onCapture(file);
+      emitCapture(file, false);
     } catch (e) {
       if (!isUserCancel(e)) toast.error("Nu am putut face poza. Încearcă din nou.");
       console.warn("nativePhoto", e);
@@ -156,7 +169,7 @@ export function SnapCapture({ onCapture }: Props) {
       if (!path) throw new Error("Fără fișier video");
       const file = await uriToFile(path, "clip.mp4", "video/mp4");
       void haptic("medium");
-      onCapture(file);
+      emitCapture(file, false);
     } catch (e) {
       if (!isUserCancel(e)) toast.error("Nu am putut filma. Încearcă din nou.");
       console.warn("nativeVideo", e);
@@ -168,6 +181,10 @@ export function SnapCapture({ onCapture }: Props) {
 
   /** Gallery via Capacitor — Photos source is more reliable than chooseFromGallery on Android. */
   async function nativeGallery() {
+    if (!allowGallery) {
+      toast.message("Galeria e doar pentru Postare (nu pentru Top Șpriț).");
+      return;
+    }
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
@@ -188,7 +205,7 @@ export function SnapCapture({ onCapture }: Props) {
         });
         const file = await fileFromPhotoResult(photo);
         void haptic("medium");
-        onCapture(file);
+        emitCapture(file, true);
         return;
       } catch (photosErr) {
         if (isUserCancel(photosErr)) return;
@@ -218,7 +235,7 @@ export function SnapCapture({ onCapture }: Props) {
         isVid ? "video/mp4" : "image/jpeg",
       );
       void haptic("medium");
-      onCapture(file);
+      emitCapture(file, true);
     } catch (e) {
       if (!isUserCancel(e)) {
         toast.error("Galerie indisponibilă — folosește „Fișier” de mai jos.");
@@ -231,10 +248,15 @@ export function SnapCapture({ onCapture }: Props) {
   }
 
   function onFilePicked(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!allowGallery) {
+      e.target.value = "";
+      toast.message("Galeria e doar pentru Postare (nu pentru Top Șpriț).");
+      return;
+    }
     const f = e.target.files?.[0];
     if (f) {
       void haptic("medium");
-      onCapture(f);
+      emitCapture(f, true);
     }
     e.target.value = "";
   }
@@ -254,7 +276,7 @@ export function SnapCapture({ onCapture }: Props) {
       (blob) => {
         if (!blob) return toast.error("Nu am putut face poza.");
         void haptic("medium");
-        onCapture(new File([blob], `spritz-${Date.now()}.jpg`, { type: "image/jpeg" }));
+        emitCapture(new File([blob], `spritz-${Date.now()}.jpg`, { type: "image/jpeg" }), false);
       },
       "image/jpeg",
       0.92,
@@ -299,7 +321,7 @@ export function SnapCapture({ onCapture }: Props) {
         chunksRef.current = [];
         if (blob.size < 1000) return toast.error("Clipul e prea scurt.");
         void haptic("medium");
-        onCapture(new File([blob], `spritz-${Date.now()}.${ext}`, { type }));
+        emitCapture(new File([blob], `spritz-${Date.now()}.${ext}`, { type }), false);
       };
       rec.start(200);
       setRecording(true);
@@ -348,6 +370,19 @@ export function SnapCapture({ onCapture }: Props) {
     modeRef.current = "idle";
   }
 
+  const galleryFallback = allowGallery ? (
+    <label className="px-3 py-1.5 rounded-full bg-black/45 text-white/90 text-[11px] font-medium active:scale-95 cursor-pointer">
+      Fișier din telefon
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*,video/*"
+        className="sr-only"
+        onChange={onFilePicked}
+      />
+    </label>
+  ) : null;
+
   if (native) {
     return (
       <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden bg-card border border-border flex flex-col">
@@ -366,21 +401,27 @@ export function SnapCapture({ onCapture }: Props) {
           </div>
           <div className="font-display font-bold text-xl text-foreground">fă o poză sau un clip</div>
           <p className="text-xs text-muted-foreground max-w-[16rem]">
-            apasă butonul mare = poză · ține apăsat = video (sau folosește butoanele de jos)
+            {allowGallery
+              ? "apasă butonul mare = poză · ține apăsat = video · galeria e ok pentru Postare"
+              : "Top Șpriț: doar cameră / video live — fără galerie"}
           </p>
         </div>
 
         <div className="absolute bottom-5 inset-x-0 flex flex-col items-center gap-3 z-10">
           <div className="flex items-center gap-5">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void nativeGallery()}
-              className="h-11 w-11 rounded-full bg-black/55 text-white flex items-center justify-center disabled:opacity-40"
-              aria-label="Galerie"
-            >
-              <ImageIcon size={18} />
-            </button>
+            {allowGallery ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void nativeGallery()}
+                className="h-11 w-11 rounded-full bg-black/55 text-white flex items-center justify-center disabled:opacity-40"
+                aria-label="Galerie"
+              >
+                <ImageIcon size={18} />
+              </button>
+            ) : (
+              <span className="h-11 w-11" aria-hidden />
+            )}
 
             <button
               type="button"
@@ -405,16 +446,7 @@ export function SnapCapture({ onCapture }: Props) {
               <Video size={18} />
             </button>
           </div>
-          <label className="px-3 py-1.5 rounded-full bg-black/45 text-white/90 text-[11px] font-medium active:scale-95 cursor-pointer">
-            Fișier din telefon
-            <input
-              ref={galleryRef}
-              type="file"
-              accept="image/*,video/*"
-              className="sr-only"
-              onChange={onFilePicked}
-            />
-          </label>
+          {galleryFallback}
         </div>
       </div>
     );
@@ -433,16 +465,18 @@ export function SnapCapture({ onCapture }: Props) {
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center text-white/80">
           <Camera size={36} className="opacity-70" />
           <p className="text-sm">{error ?? "Se deschide camera…"}</p>
-          <label className="mt-1 px-4 py-2 rounded-full bg-white text-black text-sm font-semibold cursor-pointer">
-            Galerie
-            <input
-              ref={galleryRef}
-              type="file"
-              accept="image/*,video/*"
-              className="sr-only"
-              onChange={onFilePicked}
-            />
-          </label>
+          {allowGallery && (
+            <label className="mt-1 px-4 py-2 rounded-full bg-white text-black text-sm font-semibold cursor-pointer">
+              Galerie
+              <input
+                ref={galleryRef}
+                type="file"
+                accept="image/*,video/*"
+                className="sr-only"
+                onChange={onFilePicked}
+              />
+            </label>
+          )}
         </div>
       )}
       {recording && (
@@ -466,12 +500,20 @@ export function SnapCapture({ onCapture }: Props) {
         </button>
       </div>
       <div className="absolute bottom-5 inset-x-0 flex flex-col items-center gap-3 z-10">
-        <p className="text-[11px] text-white/80">apasă = poză · ține = video</p>
+        <p className="text-[11px] text-white/80">
+          {allowGallery
+            ? "apasă = poză · ține = video · galerie = Postare"
+            : "Top Șpriț: apasă = poză · ține = video (fără galerie)"}
+        </p>
         <div className="flex items-center gap-8">
-          <label className="h-11 w-11 rounded-full bg-black/50 text-white flex items-center justify-center cursor-pointer">
-            <ImageIcon size={18} />
-            <input type="file" accept="image/*,video/*" className="sr-only" onChange={onFilePicked} />
-          </label>
+          {allowGallery ? (
+            <label className="h-11 w-11 rounded-full bg-black/50 text-white flex items-center justify-center cursor-pointer">
+              <ImageIcon size={18} />
+              <input type="file" accept="image/*,video/*" className="sr-only" onChange={onFilePicked} />
+            </label>
+          ) : (
+            <span className="h-11 w-11" aria-hidden />
+          )}
           <button
             type="button"
             disabled={!ready}
@@ -488,15 +530,6 @@ export function SnapCapture({ onCapture }: Props) {
           <span className="h-11 w-11" />
         </div>
       </div>
-      {ready && (
-        <input
-          ref={galleryRef}
-          type="file"
-          accept="image/*,video/*"
-          className="hidden"
-          onChange={onFilePicked}
-        />
-      )}
     </div>
   );
 }

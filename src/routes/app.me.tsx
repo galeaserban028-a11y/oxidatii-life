@@ -44,7 +44,6 @@ import { ReputationCard } from "@/components/app/ReputationCard";
 import { PremiumBadge } from "@/components/app/PremiumBadge";
 import { ProfileBoostCard } from "@/components/app/ProfileBoostCard";
 import { PremiumExtrasCard } from "@/components/app/PremiumExtrasCard";
-import { FadeIn } from "@/components/app/FadeIn";
 import { getTheme } from "@/lib/premium-themes";
 import { ThemeAtmosphere } from "@/components/app/ThemeAtmosphere";
 import { AvatarAura } from "@/components/app/AvatarAura";
@@ -59,6 +58,8 @@ import {
 } from "@/components/app/StreakFlexSheet";
 import { repairInstalledPwa } from "@/lib/pwa";
 import { errorMessage } from "@/lib/errors";
+import { isNative } from "@/lib/native";
+import { usePerfLevel } from "@/hooks/usePerfLevel";
 
 export const Route = createFileRoute("/app/me")({
   head: () => ({ meta: [{ title: "Profil · OXIDAȚII" }] }),
@@ -76,6 +77,12 @@ const RANK_LABELS: Record<string, string> = {
 };
 
 function MePage() {
+  const perf = usePerfLevel();
+  const lightProfile =
+    perf === "low" ||
+    isNative() ||
+    (typeof document !== "undefined" &&
+      document.documentElement.classList.contains("oxi-native-android"));
   const nav = useNavigate();
   const { user, profile, signOut, refreshProfile } = useAuth();
   const ent = useEntitlements();
@@ -359,14 +366,24 @@ function MePage() {
           >
             Reîncearcă
           </button>
-          <button
-            onClick={() => {
-              repairInstalledPwa({ reload: true });
-            }}
-            className="inline-flex items-center justify-center rounded-md border border-foreground/20 px-4 py-2 text-sm"
-          >
-            Forțează update PWA
-          </button>
+          {!isNative() && (
+            <button
+              onClick={() => {
+                repairInstalledPwa({ reload: true });
+              }}
+              className="inline-flex items-center justify-center rounded-md border border-foreground/20 px-4 py-2 text-sm"
+            >
+              Forțează update PWA
+            </button>
+          )}
+          {isNative() && (
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center justify-center rounded-md border border-foreground/20 px-4 py-2 text-sm"
+            >
+              Reîncarcă aplicația
+            </button>
+          )}
         </div>
       </div>
     );
@@ -409,7 +426,8 @@ function MePage() {
   const theme = getTheme(profile?.profile_theme_id);
   const activeFrameId = profile.active_frame_id ?? null;
   const bgUrl = profile?.profile_bg_url as string | undefined;
-  const isVideoBg = bgUrl ? /\.(mp4|webm|mov)$/i.test(bgUrl) : false;
+  // Signed URLs end with ?token=… — match extension before query/hash
+  const isVideoBg = bgUrl ? /\.(mp4|webm|mov)(?:$|[?#])/i.test(bgUrl) : false;
   const ti = profile?.theme_intensity ?? {};
   const iGradient = Math.max(0, Math.min(1.5, ti.gradient ?? 1));
   const iAurora = Math.max(0, Math.min(1.5, ti.aurora ?? 1));
@@ -418,27 +436,34 @@ function MePage() {
   const iVignette = Math.max(0, Math.min(1.5, ti.vignette ?? 1));
 
   return (
-    <div className="relative pb-3 bg-[#050505] min-h-screen text-white overflow-hidden">
-      {/* Animated profile background (Pro+) */}
+    <div className="relative pb-3 bg-[#050505] min-h-screen text-white overflow-hidden" data-header-bg="#050505">
+      {/* Profile background (Pro+) — on native show video still/first frame (no heavy loop) */}
       {bgUrl &&
         (isVideoBg ? (
           <video
             src={bgUrl}
-            autoPlay
-            loop
+            autoPlay={!lightProfile}
+            loop={!lightProfile}
             muted
             playsInline
-            className="fixed inset-0 w-full h-full object-cover opacity-40 pointer-events-none z-0"
+            preload="metadata"
+            className={`fixed inset-0 w-full h-full object-cover pointer-events-none z-0 ${
+              lightProfile ? "opacity-25" : "opacity-40"
+            }`}
           />
         ) : (
           <div
-            className="fixed inset-0 bg-cover bg-center opacity-40 pointer-events-none z-0"
+            className={`fixed inset-0 bg-cover bg-center pointer-events-none z-0 ${
+              lightProfile ? "opacity-25" : "opacity-40"
+            }`}
             style={{ backgroundImage: `url(${bgUrl})` }}
           />
         ))}
-      {/* Premium themed atmosphere — WOW edition (shared) */}
-      {theme && <ThemeAtmosphere theme={theme} intensity={profile?.theme_intensity} />}
-      {theme && profile?.handle && (
+      {/* Premium themed atmosphere — skip on native/low-perf (heavy GPU) */}
+      {theme && !lightProfile && (
+        <ThemeAtmosphere theme={theme} intensity={profile?.theme_intensity} />
+      )}
+      {theme && profile?.handle && !lightProfile && (
         <SignatureReveal
           theme={theme}
           handle={profile.handle}
@@ -638,7 +663,7 @@ function MePage() {
               className={`relative shrink-0 active:scale-95 transition ${activeFrameId ? "h-[92px] w-[92px]" : theme ? "" : "h-[92px] w-[92px] rounded-full p-[2.5px] bg-gradient-to-br from-[#ff3d8b] via-[#ffea00] to-[#c724ff] shadow-[0_0_28px_rgba(199,36,255,0.4)]"}`}
               aria-label="Schimbă poza de profil"
             >
-              {activeFrameId ? (
+              {activeFrameId && !lightProfile ? (
                 <AvatarFrame
                   frameId={activeFrameId}
                   className="h-full w-full"
@@ -651,12 +676,21 @@ function MePage() {
                     (profile.handle ?? "?")[0].toUpperCase()
                   )}
                 </AvatarFrame>
-              ) : theme ? (
+              ) : activeFrameId && lightProfile ? (
+                <div className="h-full w-full rounded-full overflow-hidden bg-[#0a0a0a] flex items-center justify-center text-3xl ring-2 ring-white/20">
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    (profile.handle ?? "?")[0].toUpperCase()
+                  )}
+                </div>
+              ) : theme && !lightProfile ? (
                 <AvatarAura theme={theme} size={92}>
                   {profile.avatar_url ? (
                     <img
                       src={profile.avatar_url}
                       alt=""
+                      decoding="async"
                       className="h-full w-full object-cover rounded-full"
                     />
                   ) : (
@@ -744,7 +778,7 @@ function MePage() {
               to="/app/premium"
               className="mt-8 relative flex items-center gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-[#ff3d8b]/15 via-[#c724ff]/10 to-transparent p-4 active:scale-[0.99] transition group overflow-hidden"
             >
-              <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-[#c724ff]/20 blur-2xl pointer-events-none" />
+              <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-[#c724ff]/20 pointer-events-none" />
               <div className="relative h-11 w-11 rounded-xl bg-gradient-to-br from-[#ff3d8b] to-[#c724ff] flex items-center justify-center shadow-[0_0_20px_rgba(199,36,255,0.4)]">
                 <Gem size={18} className="text-white" />
               </div>
@@ -982,10 +1016,12 @@ function MePage() {
           )}
         </div>
 
-        {/* Stories */}
-        <div className="mt-10">
-          <StoriesStrip />
-        </div>
+        {/* Stories — skip on native/low-perf profile (heavy DOM + network). */}
+        {!lightProfile && (
+          <div className="mt-10">
+            <StoriesStrip />
+          </div>
+        )}
 
         <div className="mt-6 border-t border-white/5" />
 
@@ -1031,7 +1067,7 @@ function MePage() {
           </button>
         </div>
 
-        <FadeIn key={tab} y={10}>
+        <div key={tab}>
           {tab === "spritz" && (
             <div className="mx-4 mt-3 px-3 py-2 rounded-xl border border-[#ffea00]/20 bg-[#ffea00]/5 text-[10px] font-mono uppercase tracking-widest text-[#ffea00]/80 flex items-center gap-2">
               <Lock size={11} /> doar tu vezi istoricul tău de șprițuri
@@ -1105,26 +1141,15 @@ function MePage() {
                             muted
                             playsInline
                             preload="metadata"
-                            crossOrigin="anonymous"
+                            className="absolute inset-0 h-full w-full object-cover bg-black"
                             onLoadedMetadata={(e) => {
-                              const v = e.currentTarget as HTMLVideoElement;
+                              const v = e.currentTarget;
                               try {
-                                v.currentTime = 0.5;
-                              } catch { /* noop */ }
+                                if (v.currentTime < 0.1) v.currentTime = 0.35;
+                              } catch {
+                                /* noop */
+                              }
                             }}
-                            onLoadedData={(e) => {
-                              const v = e.currentTarget as HTMLVideoElement;
-                              // Force a paint of the first frame on Safari/Chrome
-                              v.play()
-                                .then(() => {
-                                  try {
-                                    v.pause();
-                                    v.currentTime = 0.5;
-                                  } catch { /* noop */ }
-                                })
-                                .catch(() => {});
-                            }}
-                            className="absolute inset-0 h-full w-full object-cover bg-black group-active:scale-105 transition"
                           />
                           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40 pointer-events-none" />
                           <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded-md bg-black/60 border border-white/20 flex items-center gap-1">
@@ -1140,8 +1165,9 @@ function MePage() {
                         <img
                           src={url}
                           alt={m.caption ?? ""}
-                          className="absolute inset-0 h-full w-full object-cover group-active:scale-105 transition"
+                          className="absolute inset-0 h-full w-full object-cover"
                           loading="lazy"
+                          decoding="async"
                         />
                       )}
                       {isProof && (
@@ -1185,7 +1211,7 @@ function MePage() {
               })}
             </div>
           )}
-        </FadeIn>
+        </div>
 
         <p className="text-[10px] font-mono text-center text-white/30 pt-4">
           OXIDAȚII · construit pe oameni reali · made in Balcani

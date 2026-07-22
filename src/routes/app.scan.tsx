@@ -47,6 +47,8 @@ function ScanPage() {
   const qc = useQueryClient();
 
   const [file, setFile] = useState<File | null>(null);
+  /** Gallery media can never enter Top Șpriț — locked to normal posts. */
+  const [fromGallery, setFromGallery] = useState(false);
   const [caption, setCaption] = useState("");
   const [venueQuery, setVenueQuery] = useState("");
   type VenueLite = { id: string; name: string; city?: { name: string } | null };
@@ -85,10 +87,35 @@ function ScanPage() {
     },
   });
 
+  function choosePostType(next: "spritz" | "normal") {
+    if (next === "spritz" && fromGallery) {
+      toast.message("Media din galerie nu intră în Top Șpriț — e Postare pe profil.");
+      setPostType("normal");
+      return;
+    }
+    setPostType(next);
+  }
+
+  function onSnapCapture(f: File, meta?: { fromGallery: boolean }) {
+    const gallery = !!meta?.fromGallery;
+    setFile(f);
+    setFromGallery(gallery);
+    if (gallery) {
+      setPostType("normal");
+      toast.message("Din galerie → Postare pe profil (nu Top Șpriț).");
+    }
+  }
+
   async function submit() {
     if (!user) return toast.error("Trebuie să fii logat.");
     if (!file) return toast.error("Alege o poză sau un clip.");
     if (!selectedVenue) return toast.error("Alege locația (clubul/barul) unde ești.");
+    // Hard rule: gallery media never enters Top Șpriț
+    const effectiveType = fromGallery ? "normal" : postType;
+    if (fromGallery && postType === "spritz") {
+      setPostType("normal");
+      toast.message("Media din galerie e doar Postare — nu Top Șpriț.");
+    }
     setUploading(true);
     try {
       const kind = detectMediaKind(file);
@@ -97,7 +124,7 @@ function ScanPage() {
       const path = `${user.id}/${selectedVenue.id}/${Date.now()}.${ext}`;
 
       // For Spritz posts: enforce 1/day in Top (Bucharest calendar day)
-      if (postType === "spritz") {
+      if (effectiveType === "spritz") {
         const { count } = await supabase
           .from("sprit_proofs")
           .select("id", { count: "exact", head: true })
@@ -126,7 +153,7 @@ function ScanPage() {
       });
       if (insErr) throw insErr;
 
-      if (postType === "spritz") {
+      if (effectiveType === "spritz") {
         const { error: proofErr } = await supabase.from("sprit_proofs").insert({
           user_id: user.id,
           venue_id: selectedVenue.id,
@@ -138,7 +165,7 @@ function ScanPage() {
       }
 
       toast.success(
-        postType === "spritz"
+        effectiveType === "spritz"
           ? isVideo
             ? "Clipul tău e Șprițul zilei."
             : "Șprițul zilei e live."
@@ -149,7 +176,7 @@ function ScanPage() {
       qc.invalidateQueries({ queryKey: ["app-private-feed"] });
       qc.invalidateQueries({ queryKey: ["spritz-of-the-day"] });
       qc.invalidateQueries({ queryKey: ["venue", selectedVenue.id] });
-      nav({ to: postType === "spritz" ? "/app/top" : "/app/me" });
+      nav({ to: effectiveType === "spritz" ? "/app/top" : "/app/me" });
     } catch (e) {
       toast.error(errorMessage(e, "Nu s-a putut încărca"));
     } finally {
@@ -232,18 +259,67 @@ function ScanPage() {
       </header>
 
       {!file ? (
-        /* STEP 1 — Snap-style in-app camera */
+        /* STEP 1 — tip + Snap-style camera (gallery only for Postare) */
         <div className="space-y-3">
-          <SnapCapture onCapture={setFile} />
+          <div className="space-y-1.5">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
+              tip postare
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => choosePostType("spritz")}
+                className={`p-3 rounded-2xl border text-left transition active:scale-[0.98] ${
+                  postType === "spritz"
+                    ? "border-transparent text-white shadow-[var(--shadow-elevated)]"
+                    : "bg-card border-border text-foreground"
+                }`}
+                style={postType === "spritz" ? { background: "var(--gradient-sunset)" } : undefined}
+              >
+                <div className="text-sm font-display font-bold flex items-center gap-1.5">
+                  🥃 Șpriț
+                </div>
+                <div
+                  className={`text-[10px] mt-0.5 ${postType === "spritz" ? "text-white/85" : "text-muted-foreground"}`}
+                >
+                  Topul zilei · doar cameră
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => choosePostType("normal")}
+                className={`p-3 rounded-2xl border text-left transition active:scale-[0.98] ${
+                  postType === "normal"
+                    ? "bg-foreground text-background border-transparent"
+                    : "bg-card border-border text-foreground"
+                }`}
+              >
+                <div className="text-sm font-display font-bold flex items-center gap-1.5">
+                  📷 Postare
+                </div>
+                <div
+                  className={`text-[10px] mt-0.5 ${postType === "normal" ? "text-background/70" : "text-muted-foreground"}`}
+                >
+                  Profil · poți alege din galerie
+                </div>
+              </button>
+            </div>
+          </div>
+          <SnapCapture onCapture={onSnapCapture} allowGallery={postType === "normal"} />
           <p className="text-center text-[11px] text-muted-foreground">
-            după poză/clip alegi locul și postezi.
+            {postType === "spritz"
+              ? "Top Șpriț = cameră / video live. Galeria e doar pentru Postare."
+              : "după poză/clip alegi locul și postezi pe profil."}
           </p>
         </div>
       ) : (
         /* STEP 2 — preview + venue + caption + submit */
         <>
           <button
-            onClick={() => setFile(null)}
+            onClick={() => {
+              setFile(null);
+              setFromGallery(false);
+            }}
             className="block w-full aspect-square rounded-3xl overflow-hidden bg-card border border-border active:scale-[0.99] transition relative"
           >
             {detectMediaKind(file) === "video" ? (
@@ -422,8 +498,9 @@ function ScanPage() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setPostType("spritz")}
-                className={`p-3 rounded-2xl border text-left transition active:scale-[0.98] ${
+                onClick={() => choosePostType("spritz")}
+                disabled={fromGallery}
+                className={`p-3 rounded-2xl border text-left transition active:scale-[0.98] disabled:opacity-45 ${
                   postType === "spritz"
                     ? "border-transparent text-white shadow-[var(--shadow-elevated)]"
                     : "bg-card border-border text-foreground"
@@ -436,12 +513,12 @@ function ScanPage() {
                 <div
                   className={`text-[10px] mt-0.5 ${postType === "spritz" ? "text-white/85" : "text-muted-foreground"}`}
                 >
-                  Intri în Topul zilei · max 1/zi
+                  {fromGallery ? "indisponibil din galerie" : "Intri în Topul zilei · max 1/zi"}
                 </div>
               </button>
               <button
                 type="button"
-                onClick={() => setPostType("normal")}
+                onClick={() => choosePostType("normal")}
                 className={`p-3 rounded-2xl border text-left transition active:scale-[0.98] ${
                   postType === "normal"
                     ? "bg-foreground text-background border-transparent"
@@ -461,9 +538,11 @@ function ScanPage() {
           </div>
 
           <p className="text-[10px] text-center text-muted-foreground">
-            {postType === "spritz"
-              ? "șprițul apare în story-ul zilei din Top și pe profilul tău."
-              : "postarea apare doar pe profilul tău, nu intră în Top."}
+            {fromGallery
+              ? "media din galerie apare doar pe profil — nu intră în Top Șpriț."
+              : postType === "spritz"
+                ? "șprițul apare în story-ul zilei din Top și pe profilul tău."
+                : "postarea apare doar pe profilul tău, nu intră în Top."}
           </p>
 
           {/* Submit */}

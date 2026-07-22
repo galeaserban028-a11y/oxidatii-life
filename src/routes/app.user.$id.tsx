@@ -46,6 +46,8 @@ import { SignatureReveal } from "@/components/app/SignatureReveal";
 import { AvatarFrame } from "@/components/app/AvatarFrame";
 import { TipCreatorButton, CreatorEarningsBadge } from "@/components/app/TipCreatorDialog";
 import { errorMessage } from "@/lib/errors";
+import { isNative } from "@/lib/native";
+import { usePerfLevel } from "@/hooks/usePerfLevel";
 
 type ProfilePartial = {
   id: string;
@@ -137,6 +139,12 @@ function UserPage() {
   const { user } = useAuth();
   const nav = useNavigate();
   const [opening, setOpening] = useState(false);
+  const perf = usePerfLevel();
+  const lightProfile =
+    perf === "low" ||
+    isNative() ||
+    (typeof document !== "undefined" &&
+      document.documentElement.classList.contains("oxi-native-android"));
 
   const { data, isLoading } = useQuery({
     queryKey: ["user-detail", slug],
@@ -269,13 +277,13 @@ function UserPage() {
 
   return (
     <div className="relative min-h-screen">
-      {pageTheme && (
+      {pageTheme && !lightProfile && (
         <ThemeAtmosphere
           theme={pageTheme}
           intensity={(profile?.theme_intensity ?? undefined) as never}
         />
       )}
-      {pageTheme && profile?.handle && (
+      {pageTheme && profile?.handle && !lightProfile && (
         <SignatureReveal
           theme={pageTheme}
           handle={profile.handle}
@@ -303,7 +311,7 @@ function UserPage() {
               const bgUrl: string | null = isPremium ? (profile.profile_bg_url ?? null) : null;
               const activeFrameId = profile.active_frame_id ?? null;
 
-              const isVideo = bgUrl ? /\.(mp4|webm|mov)$/i.test(bgUrl) : false;
+              const isVideo = bgUrl ? /\.(mp4|webm|mov)(?:$|[?#])/i.test(bgUrl) : false;
               return (
                 <div
                   className="relative rounded-3xl border p-5 shadow-[var(--shadow-card)] overflow-hidden"

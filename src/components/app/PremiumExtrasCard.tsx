@@ -1,3 +1,7 @@
+/**
+ * Premium customization: profile theme (VIP+), music clip (Pro+), animated bg (Pro+).
+ * Gated by useEntitlements() — expired subscriptions are treated as no tier.
+ */
 import { useAuth } from "@/lib/auth";
 import { useEntitlements } from "@/lib/entitlements";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,11 +11,29 @@ import { Music, Image as ImageIcon, Palette, Trash2, Loader2, Check } from "luci
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { errorMessage } from "@/lib/errors";
+import { isNative } from "@/lib/native";
+import { uriToFile } from "@/lib/native-media";
 
-/**
- * Premium customization: profile theme (VIP+), music clip (Pro+), animated bg (Pro+).
- * Gated by useEntitlements() — expired subscriptions are treated as no tier.
- */
+function guessExt(file: File, field: "music_clip_url" | "profile_bg_url"): string {
+  const fromName = file.name.split(".").pop()?.toLowerCase();
+  if (fromName && /^[a-z0-9]{2,5}$/.test(fromName)) return fromName;
+  if (field === "music_clip_url") {
+    if (file.type.includes("mpeg") || file.type.includes("mp3")) return "mp3";
+    if (file.type.includes("wav")) return "wav";
+    if (file.type.includes("aac")) return "aac";
+    if (file.type.includes("ogg")) return "ogg";
+    return "mp3";
+  }
+  if (file.type.includes("mp4")) return "mp4";
+  if (file.type.includes("webm")) return "webm";
+  if (file.type.includes("quicktime") || file.type.includes("mov")) return "mov";
+  if (file.type.includes("gif")) return "gif";
+  if (file.type.includes("webp")) return "webp";
+  if (file.type.includes("png")) return "png";
+  if (file.type.includes("jpeg") || file.type.includes("jpg")) return "jpg";
+  return "bin";
+}
+
 export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
   const { user, profile, refreshProfile } = useAuth();
   const { tier, isVipPlus, isPro } = useEntitlements();
@@ -52,7 +74,7 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
           a.onloadedmetadata = () => {
             const d = a.duration;
             URL.revokeObjectURL(url);
-            res(d);
+            res(Number.isFinite(d) ? d : 0);
           };
           a.onerror = () => {
             URL.revokeObjectURL(url);
@@ -66,29 +88,88 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
           return;
         }
       }
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "bin";
+      const ext = guessExt(file, field);
       const path = `${user.id}/${field}-${Date.now()}.${ext}`;
+      const contentType =
+        file.type ||
+        (field === "music_clip_url"
+          ? "audio/mpeg"
+          : ext === "mp4"
+            ? "video/mp4"
+            : ext === "gif"
+              ? "image/gif"
+              : ext === "webp"
+                ? "image/webp"
+                : ext === "png"
+                  ? "image/png"
+                  : "image/jpeg");
       const { error: upErr } = await supabase.storage
         .from("profile-media")
-        .upload(path, file, { upsert: true, contentType: file.type });
+        .upload(path, file, { upsert: true, contentType });
       if (upErr) throw upErr;
       // Bucket is private — use a long-lived signed URL (10 years)
       const { data: signed, error: signErr } = await supabase.storage
         .from("profile-media")
         .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
       if (signErr) throw signErr;
+      if (!signed?.signedUrl) throw new Error("Nu am putut genera URL-ul media");
       const { error } = await supabase
         .from("profiles")
         .update({ [field]: signed.signedUrl } as any)
         .eq("id", user.id);
       if (error) throw error;
       toast.success(`${kind} actualizat`);
-      refreshProfile();
+      await refreshProfile();
     } catch (e) {
-      toast.error(errorMessage(e, "Eroare"));
+      toast.error(errorMessage(e, "Eroare la încărcare"));
     } finally {
       setBusy(null);
     }
+  }
+
+  async function pickBackgroundNative() {
+    if (!user || busy) return;
+    try {
+      const {
+        Camera: CapCamera,
+        CameraResultType,
+        CameraSource,
+      } = await import("@capacitor/camera");
+      const photo = await CapCamera.getPhoto({
+        quality: 92,
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Photos,
+        correctOrientation: true,
+      });
+      let file: File;
+      if (photo.dataUrl) {
+        const res = await fetch(photo.dataUrl);
+        const blob = await res.blob();
+        const format = photo.format || "jpeg";
+        file = new File([blob], `bg.${format === "png" ? "png" : "jpg"}`, {
+          type: blob.type || `image/${format === "png" ? "png" : "jpeg"}`,
+        });
+      } else {
+        const path = photo.webPath || photo.path;
+        if (!path) throw new Error("Nimic selectat");
+        file = await uriToFile(path, "bg.jpg", "image/jpeg");
+      }
+      await upload(file, "profile_bg_url", 10, "Background");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e ?? "");
+      if (/cancel|user|dismiss|abort|no image/i.test(msg)) return;
+      // Fall back to file input (works on web; sometimes on WebView too)
+      bgRef.current?.click();
+    }
+  }
+
+  function onBgButtonClick() {
+    if (busy === "profile_bg_url") return;
+    if (isNative() || /; wv\)/.test(navigator.userAgent)) {
+      void pickBackgroundNative();
+      return;
+    }
+    bgRef.current?.click();
   }
 
   async function clearField(
@@ -274,17 +355,21 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
                 music clip 15s · Pro
               </div>
             </div>
+            {/* sr-only (not display:none) — Android WebView often blocks click() on hidden inputs */}
             <input
               ref={musicRef}
               type="file"
-              accept="audio/*"
-              hidden
-              onChange={(e) =>
-                e.target.files?.[0] && upload(e.target.files[0], "music_clip_url", 5, "Music clip")
-              }
+              accept="audio/*,audio/mpeg,audio/mp4,audio/aac,audio/wav"
+              className="sr-only"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (f) void upload(f, "music_clip_url", 5, "Music clip");
+              }}
             />
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={() => musicRef.current?.click()}
                 disabled={busy === "music_clip_url"}
                 className="flex-1 h-10 rounded-full bg-foreground/10 text-xs font-mono uppercase tracking-widest flex items-center justify-center gap-2 active:scale-[0.98]"
@@ -298,6 +383,7 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
               </button>
               {profile?.music_clip_url && (
                 <button
+                  type="button"
                   onClick={() => clearField("music_clip_url", "Music clip")}
                   className="h-10 px-3 rounded-full border border-foreground/15 text-foreground/60 active:scale-95"
                 >
@@ -311,21 +397,27 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
             <div className="flex items-center gap-2 mb-2">
               <ImageIcon size={14} className="text-foreground/70" />
               <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-                background animat · Pro
+                background / cover · Pro
               </div>
             </div>
+            <p className="text-[11px] text-muted-foreground mb-2">
+              Poză (JPG/PNG/WebP/GIF) sau clip scurt (MP4). Funcționează și dacă ai deja music clip.
+            </p>
             <input
               ref={bgRef}
               type="file"
-              accept="video/mp4,image/gif,image/webp"
-              hidden
-              onChange={(e) =>
-                e.target.files?.[0] && upload(e.target.files[0], "profile_bg_url", 10, "Background")
-              }
+              accept="image/*,video/mp4,video/webm,video/quicktime,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp,.mp4,.mov"
+              className="sr-only"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (f) void upload(f, "profile_bg_url", 10, "Background");
+              }}
             />
             <div className="flex items-center gap-2">
               <button
-                onClick={() => bgRef.current?.click()}
+                type="button"
+                onClick={onBgButtonClick}
                 disabled={busy === "profile_bg_url"}
                 className="flex-1 h-10 rounded-full bg-foreground/10 text-xs font-mono uppercase tracking-widest flex items-center justify-center gap-2 active:scale-[0.98]"
               >
@@ -338,6 +430,7 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
               </button>
               {profile?.profile_bg_url && (
                 <button
+                  type="button"
                   onClick={() => clearField("profile_bg_url", "Background")}
                   className="h-10 px-3 rounded-full border border-foreground/15 text-foreground/60 active:scale-95"
                 >
@@ -349,7 +442,7 @@ export function PremiumExtrasCard({ onClose }: { onClose?: () => void } = {}) {
         </>
       ) : (
         <div className="text-xs text-muted-foreground italic">
-          Music clip și background animat: doar Pro și Elite.
+          Music clip și background/cover: doar Pro și Elite (abonament activ).
         </div>
       )}
     </div>
