@@ -11,8 +11,8 @@ android {
         // Google Play requires versionCode to strictly increase between uploads.
         def envVersionCode = System.getenv("ANDROID_VERSION_CODE")
         def envVersionName = System.getenv("ANDROID_VERSION_NAME")
-        versionCode envVersionCode ? envVersionCode.toInteger() : 1
-        versionName envVersionName ?: "1.0"
+        versionCode envVersionCode ? envVersionCode.toInteger() : 3
+        versionName envVersionName ?: "1.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -45,10 +45,15 @@ android {
             }
 
             if (keystorePath && keystorePassword && keyAliasEnv && keyPasswordEnv) {
-                storeFile file(keystorePath)
+                // Absolute Windows paths in .properties must use / — backslash is an escape.
+                // Also normalize any accidental \ so storeFile still resolves.
+                keystorePath = keystorePath.replace('\\', '/')
+                def kf = new File(keystorePath)
+                storeFile kf.isAbsolute() ? kf : rootProject.file(keystorePath)
                 storePassword keystorePassword
                 keyAlias keyAliasEnv
                 keyPassword keyPasswordEnv
+                logger.lifecycle("[oxidatii] Release signing: ${storeFile.absolutePath} alias=${keyAliasEnv}")
             } else {
                 logger.warn("[oxidatii] Release signing not configured. Set OXIDATII_KEYSTORE_* env vars or android/keystore.properties. Release build will use debug signing.")
             }

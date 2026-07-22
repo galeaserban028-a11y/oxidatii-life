@@ -1,5 +1,5 @@
--- Run in Supabase SQL Editor (project qzxvnjpumtujfylfofmg)
--- Lets logged-in users add a venue with GPS coords (spritz / map "add location").
+-- OXIDAȚII project only: qzxvnjpumtujfylfofmg
+-- https://supabase.com/dashboard/project/qzxvnjpumtujfylfofmg/sql/new
 
 CREATE OR REPLACE FUNCTION public.create_user_venue(
   _name text,
@@ -9,15 +9,18 @@ CREATE OR REPLACE FUNCTION public.create_user_venue(
   _lng double precision,
   _address text DEFAULT NULL
 )
-RETURNS public.venues
+RETURNS uuid
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v public.venues;
+  new_id uuid;
   s text;
 BEGIN
+  IF to_regclass('public.venues') IS NULL THEN
+    RAISE EXCEPTION 'venues_table_missing — open project qzxvnjpumtujfylfofmg';
+  END IF;
   IF auth.uid() IS NULL THEN
     RAISE EXCEPTION 'not_authenticated';
   END IF;
@@ -44,17 +47,16 @@ BEGIN
   s := left(s, 48) || '-' || substr(md5(random()::text || clock_timestamp()::text), 1, 6);
 
   INSERT INTO public.venues (name, slug, type, city_id, lat, lng, address)
-  VALUES (trim(_name), s, _type, _city_id, _lat, _lng, NULLIF(trim(_address), ''))
-  RETURNING * INTO v;
+  VALUES (trim(_name), s, _type::public.venue_type, _city_id, _lat, _lng, NULLIF(trim(_address), ''))
+  RETURNING id INTO new_id;
 
-  RETURN v;
+  RETURN new_id;
 END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.create_user_venue(text, text, uuid, double precision, double precision, text)
   TO authenticated;
 
--- Also allow direct inserts for authenticated users when lat/lng present (map sheet).
 DROP POLICY IF EXISTS "venues_auth_insert" ON public.venues;
 CREATE POLICY "venues_auth_insert"
   ON public.venues

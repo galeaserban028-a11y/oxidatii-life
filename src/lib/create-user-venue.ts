@@ -65,13 +65,15 @@ export async function createUserVenue(input: {
   });
 
   if (!rpcErr && rpcData) {
-    const row = rpcData as { id: string; name: string; city_id?: string };
-    let cityName: string | null = null;
-    if (row.city_id) {
-      const { data: city } = await supabase.from("cities").select("name").eq("id", row.city_id).maybeSingle();
-      cityName = city?.name ?? null;
-    }
-    return { id: row.id, name: row.name, city: cityName ? { name: cityName } : null };
+    const id = typeof rpcData === "string" ? rpcData : (rpcData as { id?: string }).id;
+    if (!id) throw rpcErr ?? new Error("create_user_venue returned empty id");
+    const { data: venue, error: fetchErr } = await supabase
+      .from("venues")
+      .select("id, name, city:cities(name)")
+      .eq("id", id)
+      .single();
+    if (fetchErr || !venue) throw fetchErr ?? new Error("Venue created but not readable");
+    return venue as unknown as CreatedVenue;
   }
 
   // Fallback if RPC not applied yet

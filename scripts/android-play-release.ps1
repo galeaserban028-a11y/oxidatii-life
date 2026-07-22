@@ -29,8 +29,18 @@ function Find-Keytool {
 
 function Get-JavaMajor($javaExe) {
   if (-not $javaExe -or -not (Test-Path $javaExe)) { return $null }
-  $output = & $javaExe -XshowSettings:properties -version 2>&1 | Out-String
+  # java -version writes to stderr; with $ErrorActionPreference=Stop that becomes a terminating error.
+  $prev = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    $output = & $javaExe -XshowSettings:properties -version 2>&1 | ForEach-Object { "$_" } | Out-String
+  } catch {
+    $output = "$_"
+  } finally {
+    $ErrorActionPreference = $prev
+  }
   if ($output -match 'java\.specification\.version\s*=\s*(\d+)') { return $Matches[1] }
+  if ($output -match 'version "(\d+)') { return $Matches[1] }
   return $null
 }
 
@@ -109,6 +119,21 @@ Write-Host "=== Oxidatii Android Release AAB ===" -ForegroundColor Cyan
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Set-Location $root
 
+# Prefer D: build caches when C: is full (common on this machine).
+if (-not $env:GRADLE_USER_HOME) {
+  $gradleHome = "D:\oxi-build\gradle-home"
+  New-Item -ItemType Directory -Force -Path $gradleHome | Out-Null
+  $env:GRADLE_USER_HOME = $gradleHome
+  Info "GRADLE_USER_HOME=$gradleHome"
+}
+if (-not $env:TEMP -or ((Get-PSDrive C).Free -lt 2GB)) {
+  $tmp = "D:\oxi-build\tmp"
+  New-Item -ItemType Directory -Force -Path $tmp | Out-Null
+  $env:TEMP = $tmp
+  $env:TMP = $tmp
+  Info "TEMP/TMP=$tmp (C: low space)"
+}
+
 if ($root -match '[\s\(\)]') {
   Warn "Calea proiectului are spații/paranteze: $root"
   Warn "Dacă Gradle dă erori ciudate, mută folderul în D:\oxidatii și rulează din nou. Scriptul continuă totuși."
@@ -128,28 +153,33 @@ $keystoreProps = "android\keystore.properties"
 $keystorePath = $env:OXIDATII_KEYSTORE_PATH
 $hasEnvSigning = $env:OXIDATII_KEYSTORE_PATH -and $env:OXIDATII_KEYSTORE_PASSWORD -and $env:OXIDATII_KEY_ALIAS -and $env:OXIDATII_KEY_PASSWORD
 
+# Never auto-overwrite an existing keystore.properties (user/Play keystore).
 if (-not $hasEnvSigning -and -not (Test-Path $keystoreProps)) {
-  Info "Nu există semnare release. Generez automat android\oxidatii-release.jks + android\keystore.properties"
+  Info "Nu exista semnare release. Generez automat android\oxidatii-release.jks + android\keystore.properties"
   $keytool = Find-Keytool
-  if (-not $keytool) { Fail "Nu găsesc keytool. Instalează JDK 21 sau setează JAVA_HOME către JDK 21 / Android Studio jbr." }
+  if (-not $keytool) { Fail "Nu gasesc keytool. Instaleaza JDK 21 sau seteaza JAVA_HOME catre JDK 21 / Android Studio jbr." }
 
   $storePass = New-Password
-  $keyPass = New-Password
+  # JDK 21 PKCS12 ignores separate keypass — must match store password.
+  $keyPass = $storePass
   $jks = (Join-Path $root "android\oxidatii-release.jks")
 
   & $keytool -genkeypair -v -keystore $jks -alias oxidatii -keyalg RSA -keysize 2048 -validity 10000 -storepass $storePass -keypass $keyPass -dname "CN=OXIDATII, OU=Mobile, O=OXIDATII, L=Bucharest, ST=Bucharest, C=RO"
   if ($LASTEXITCODE -ne 0) { Fail "keytool nu a putut genera keystore-ul." }
 
+  # storeFile MUST be relative to android/ — Java Properties treats \ as escape.
   @"
 # Generat automat de scripts/android-play-release.ps1
-# NU șterge și NU publica acest fișier. Ai nevoie de același keystore pentru update-uri în Google Play.
-storeFile=$jks
+# NU sterge si NU publica acest fisier. Ai nevoie de acelasi keystore pentru update-uri in Google Play.
+storeFile=oxidatii-release.jks
 storePassword=$storePass
 keyAlias=oxidatii
-keyPassword=$keyPass
-"@ | Set-Content -Encoding UTF8 $keystoreProps
+keyPassword=$storePass
+"@ | Set-Content -Encoding ascii $keystoreProps
 
-  Ok "Keystore release generat. Fă backup la android\oxidatii-release.jks și android\keystore.properties."
+  Ok "Keystore release generat. Fa backup la android\oxidatii-release.jks si android\keystore.properties."
+} elseif (Test-Path $keystoreProps) {
+  Ok "Folosesc keystore existent din android\keystore.properties (nu regenerat)."
 }
 
 Write-GoogleServicesJson
@@ -170,25 +200,71 @@ if ($LASTEXITCODE -ne 0) { Fail "bun run build:spa a eșuat. Rezolvă eroarea af
 
 Info "Sincronizez Capacitor Android"
 $env:CAP_PLATFORM = "android"
-bunx cap sync android
-if ($LASTEXITCODE -ne 0) { Fail "cap sync android a eșuat." }
+# Windows: bunx is often missing from PATH; "bun x" always works with Bun.
+bun x cap sync android
+if ($LASTEXITCODE -ne 0) { Fail "cap sync android a esuat." }
+
+# Guardrails: AAB must ship the SPA shell, never the Lovable redirect stub.
+$publicIndex = Join-Path $root "android\app\src\main\assets\public\index.html"
+$capCfg = Join-Path $root "android\app\src\main\assets\capacitor.config.json"
+if (-not (Test-Path $publicIndex)) { Fail "Lipsa assets/public/index.html dupa cap sync." }
+$indexText = Get-Content -Raw $publicIndex
+$hasLovableStub = ($indexText -match "oxidatii\.lovable\.app") -and ($indexText -notmatch "assets/")
+if ($hasLovableStub) {
+  Fail "index.html e stub-ul Lovable (location.replace). Ruleaza build:spa cu CAP_PLATFORM=android."
+}
+if ($indexText -notmatch "\./assets/") {
+  Fail "index.html nu are path-uri relative ./assets/ - postbuild-spa nu a rulat corect."
+}
+# Absolute import("/assets/...") breaks Capacitor WebView on some devices.
+if ([regex]::IsMatch($indexText, 'import\(["'']\/assets/')) {
+  Fail "index.html inca are import('/assets/...') absolut - WebView Play poate da 404."
+}
+if (-not (Test-Path $capCfg)) { Fail "Lipsa capacitor.config.json in assets." }
+$cfgText = Get-Content -Raw $capCfg
+if ([regex]::IsMatch($cfgText, '"url"\s*:')) {
+  Fail "capacitor.config.json contine server.url - AAB-ul ar incarca web remote, nu bundle-ul local."
+}
+
+# Same absolute /assets/ bug that made sideload APK "OK" and Play AAB broken (logo etc.).
+$publicAssets = Join-Path $root "android\app\src\main\assets\public"
+$absAssetHits = @()
+Get-ChildItem -Path $publicAssets -Recurse -Include *.js,*.css,*.html -ErrorAction SilentlyContinue | ForEach-Object {
+  if (-not $_.PSIsContainer -and $_.Length -gt 0) {
+    $txt = Get-Content -Raw -LiteralPath $_.FullName -ErrorAction SilentlyContinue
+    if ($txt -and [regex]::IsMatch($txt, '["''(=]/assets/')) {
+      $absAssetHits += $_.FullName.Substring($publicAssets.Length + 1)
+    }
+  }
+}
+if ($absAssetHits.Count -gt 0) {
+  $sample = ($absAssetHits | Select-Object -First 8) -join ", "
+  Fail "Bundle inca are path-uri absolute /assets/ (APK!=AAB pe Play): $sample"
+}
+Ok "SPA index.html + capacitor.config.json + zero /assets/ absolute - OK pentru Play/AAB"
 
 if (-not $env:ANDROID_VERSION_CODE) {
-  $env:ANDROID_VERSION_CODE = [string][int64](([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() / 60))
-  Info "ANDROID_VERSION_CODE auto = $($env:ANDROID_VERSION_CODE)"
+  $env:ANDROID_VERSION_CODE = "3"
+  Info "ANDROID_VERSION_CODE = $($env:ANDROID_VERSION_CODE)"
 }
-if (-not $env:ANDROID_VERSION_NAME) { $env:ANDROID_VERSION_NAME = "1.0.$(Get-Date -Format yyyyMMdd)" }
-Info "Construiesc AAB release semnat (versionCode=$($env:ANDROID_VERSION_CODE) name=$($env:ANDROID_VERSION_NAME))"
+if (-not $env:ANDROID_VERSION_NAME) {
+  $env:ANDROID_VERSION_NAME = "1.2"
+  Info "ANDROID_VERSION_NAME = $($env:ANDROID_VERSION_NAME)"
+}
+Info "Construiesc AAB + APK release semnate din ACELASI sync (versionCode=$($env:ANDROID_VERSION_CODE) name=$($env:ANDROID_VERSION_NAME))"
 Push-Location android
-.\gradlew.bat bundleRelease --no-daemon
+.\gradlew.bat bundleRelease assembleRelease --no-daemon
 $gradleExit = $LASTEXITCODE
 Pop-Location
-if ($gradleExit -ne 0) { Fail "Gradle bundleRelease a eșuat. Copiază ultimele 30 de linii din eroare și trimite-mi-le." }
+if ($gradleExit -ne 0) { Fail "Gradle bundleRelease/assembleRelease a eșuat. Copiază ultimele 30 de linii din eroare și trimite-mi-le." }
 
 $aab = Join-Path $root "android\app\build\outputs\bundle\release\app-release.aab"
+$apk = Join-Path $root "android\app\build\outputs\apk\release\app-release.apk"
 if (-not (Test-Path $aab)) { Fail "Build-ul a terminat, dar nu găsesc AAB-ul la $aab" }
+if (-not (Test-Path $apk)) { Fail "Build-ul a terminat, dar nu găsesc APK-ul la $apk" }
 
 Ok "AAB gata: $aab"
+Ok "APK gata (același web bundle): $apk"
 
 $playCredentials = Get-GooglePlayCredentialsFile
 if ($playCredentials) {
