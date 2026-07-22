@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, X, Plus } from "lucide-react";
+import { Search, X, Plus, MapPin, Loader2, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { errorMessage } from "@/lib/errors";
 import { detectMediaKind, mediaContentType, mediaFileExt } from "@/lib/media-file";
 import { SnapCapture } from "@/components/app/SnapCapture";
+import { getCurrentPosition } from "@/lib/native-geo";
+import { createUserVenue, nearestCityId } from "@/lib/create-user-venue";
 
 export const Route = createFileRoute("/app/scan")({
   head: () => ({ meta: [{ title: "Pune un șpriț · OXIDAȚII" }] }),
@@ -55,6 +57,8 @@ function ScanPage() {
   const [newVenueName, setNewVenueName] = useState("");
   const [newVenueType, setNewVenueType] = useState<"club" | "bar" | "terasa">("club");
   const [newVenueCityId, setNewVenueCityId] = useState<string>("");
+  const [newCoords, setNewCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoState, setGeoState] = useState<"idle" | "loading" | "ok" | "err">("idle");
   const [creating, setCreating] = useState(false);
   const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
   useEffect(() => {
@@ -63,9 +67,9 @@ function ScanPage() {
   }, [previewUrl]);
 
   const { data: cities = [] } = useQuery({
-    queryKey: ["all-cities"],
+    queryKey: ["all-cities-geo"],
     queryFn: async () => {
-      const { data } = await supabase.from("cities").select("id,name").order("name");
+      const { data } = await supabase.from("cities").select("id,name,lat,lng").order("name");
       return data ?? [];
     },
   });
@@ -153,36 +157,61 @@ function ScanPage() {
     }
   }
 
+  async function captureCoords() {
+    setGeoState("loading");
+    setNewCoords(null);
+    try {
+      const pos = await getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 20_000,
+        maximumAge: 5_000,
+      });
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      setNewCoords({ lat, lng });
+      setGeoState("ok");
+      const cityId = nearestCityId(lat, lng, cities);
+      if (cityId) setNewVenueCityId(cityId);
+    } catch (e) {
+      setGeoState("err");
+      toast.error(errorMessage(e, "Nu am putut citi GPS-ul"));
+    }
+  }
+
+  function openAddVenue() {
+    setAddOpen(true);
+    setNewVenueName(venueQuery.trim());
+    setNewVenueType("club");
+    setNewCoords(null);
+    setGeoState("idle");
+    void captureCoords();
+  }
+
+  function closeAddVenue() {
+    setAddOpen(false);
+    setNewVenueName("");
+    setNewCoords(null);
+    setGeoState("idle");
+  }
+
   async function createVenue() {
     if (!user) return toast.error("Trebuie să fii logat.");
     const name = newVenueName.trim();
     if (!name) return toast.error("Pune un nume.");
-    if (!newVenueCityId) return toast.error("Alege orașul.");
+    if (!newCoords) return toast.error("Mai întâi prinde coordonatele GPS.");
+    const cityId = newVenueCityId || nearestCityId(newCoords.lat, newCoords.lng, cities);
+    if (!cityId) return toast.error("Nu am găsit orașul. Alege unul.");
     setCreating(true);
     try {
-      const slug =
-        name
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "")
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, "") +
-        "-" +
-        Math.random().toString(36).slice(2, 6);
-      const { data, error } = await supabase
-        .from("venues")
-        .insert({
-          name,
-          slug,
-          type: newVenueType,
-          city_id: newVenueCityId,
-        })
-        .select("id, name, city:cities(name)")
-        .single();
-      if (error) throw error;
-      setSelectedVenue(data as unknown as VenueLite);
-      setAddOpen(false);
-      setNewVenueName("");
+      const data = await createUserVenue({
+        name,
+        type: newVenueType,
+        cityId,
+        lat: newCoords.lat,
+        lng: newCoords.lng,
+      });
+      setSelectedVenue(data);
+      closeAddVenue();
       toast.success("Locație adăugată.");
     } catch (e) {
       toast.error(errorMessage(e, "Nu s-a putut adăuga"));
@@ -283,35 +312,63 @@ function ScanPage() {
 
               {!addOpen ? (
                 <button
-                  onClick={() => {
-                    setAddOpen(true);
-                    setNewVenueName(venueQuery);
-                  }}
+                  onClick={openAddVenue}
                   className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-2xl border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/40 transition"
                 >
                   <Plus size={14} />{" "}
                   {venueQuery ? `adaugă „${venueQuery}"` : "nu găsești? adaugă o locație"}
                 </button>
               ) : (
-                <div className="p-3 rounded-2xl border border-primary/40 bg-card space-y-2">
+                <div className="p-3 rounded-2xl border border-primary/40 bg-card space-y-2.5">
                   <div className="flex items-center justify-between">
                     <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-medium">
                       Locație nouă
                     </div>
-                    <button onClick={() => setAddOpen(false)} className="text-muted-foreground">
+                    <button onClick={closeAddVenue} className="text-muted-foreground">
                       <X size={14} />
                     </button>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => void captureCoords()}
+                    disabled={geoState === "loading"}
+                    className="w-full p-3 rounded-xl border border-dashed border-primary/40 bg-secondary/60 flex flex-col items-center gap-1.5"
+                  >
+                    {geoState === "loading" ? (
+                      <Loader2 className="animate-spin text-primary" size={22} />
+                    ) : geoState === "ok" ? (
+                      <Check className="text-primary" size={22} />
+                    ) : (
+                      <MapPin className="text-primary" size={22} />
+                    )}
+                    <div className="text-xs font-medium">
+                      {geoState === "loading"
+                        ? "citesc GPS…"
+                        : geoState === "ok"
+                          ? "coordonate prinse"
+                          : geoState === "err"
+                            ? "reîncearcă GPS"
+                            : "permite locația"}
+                    </div>
+                    {newCoords && (
+                      <div className="font-mono text-[10px] text-muted-foreground">
+                        {newCoords.lat.toFixed(5)}, {newCoords.lng.toFixed(5)}
+                      </div>
+                    )}
+                  </button>
+
                   <input
                     value={newVenueName}
                     onChange={(e) => setNewVenueName(e.target.value)}
-                    placeholder="nume locație"
+                    placeholder="nume locație (club / bar…)"
                     className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
                   <div className="grid grid-cols-3 gap-1.5">
                     {(["club", "bar", "terasa"] as const).map((t) => (
                       <button
                         key={t}
+                        type="button"
                         onClick={() => setNewVenueType(t)}
                         className={`py-2 rounded-xl text-xs font-medium border transition ${
                           newVenueType === t
@@ -328,7 +385,7 @@ function ScanPage() {
                     onChange={(e) => setNewVenueCityId(e.target.value)}
                     className="w-full px-3 py-2.5 rounded-xl bg-secondary border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
-                    <option value="">alege orașul...</option>
+                    <option value="">oraș (auto din GPS)…</option>
                     {(cities as Array<{ id: string; name: string }>).map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
@@ -336,8 +393,9 @@ function ScanPage() {
                     ))}
                   </select>
                   <button
-                    onClick={createVenue}
-                    disabled={creating || !newVenueName.trim() || !newVenueCityId}
+                    type="button"
+                    onClick={() => void createVenue()}
+                    disabled={creating || !newVenueName.trim() || !newCoords}
                     className="w-full py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-40 active:scale-[0.98] transition"
                     style={{ background: "var(--gradient-sunset)" }}
                   >

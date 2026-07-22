@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Plus, MapPin, X, Loader2, Check } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { DAYS, type DayKey, type OpeningHours } from "@/lib/openingHours";
 import { toast } from "sonner";
+import { getCurrentPosition } from "@/lib/native-geo";
+import { createUserVenue, nearestCityId, type VenueType } from "@/lib/create-user-venue";
+import { errorMessage } from "@/lib/errors";
+import { supabase } from "@/integrations/supabase/client";
 
 type City = { id: string; name: string; lat: number; lng: number };
 
@@ -20,28 +23,6 @@ const TYPES = [
   { id: "after", label: "after" },
 ] as const;
 
-function slugify(s: string) {
-  return (
-    s
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "")
-      .slice(0, 60) || "loc"
-  );
-}
-
-function distKm(aLat: number, aLng: number, bLat: number, bLng: number) {
-  const R = 6371,
-    dLat = ((bLat - aLat) * Math.PI) / 180,
-    dLng = ((bLng - aLng) * Math.PI) / 180;
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((aLat * Math.PI) / 180) * Math.cos((bLat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
-
 export function AddVenueSheet({ cities, onAdded }: Props) {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -49,7 +30,7 @@ export function AddVenueSheet({ cities, onAdded }: Props) {
   const [geoState, setGeoState] = useState<"idle" | "loading" | "ok" | "err">("idle");
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [name, setName] = useState("");
-  const [type, setType] = useState<(typeof TYPES)[number]["id"]>("bar");
+  const [type, setType] = useState<VenueType>("bar");
   const [address, setAddress] = useState("");
   const [cityId, setCityId] = useState<string>("");
   const [phone, setPhone] = useState("");
@@ -73,29 +54,32 @@ export function AddVenueSheet({ cities, onAdded }: Props) {
     setCityId("");
   };
 
-  const requestLoc = () => {
-    if (!navigator.geolocation) {
-      setGeoState("err");
-      return;
-    }
+  const requestLoc = async () => {
     setGeoState("loading");
-    navigator.geolocation.getCurrentPosition(
-      (p) => {
-        const lat = p.coords.latitude,
-          lng = p.coords.longitude;
-        setCoords({ lat, lng });
-        setGeoState("ok");
-        // auto-pick closest city
-        if (cities.length) {
-          const closest = [...cities].sort(
-            (a, b) => distKm(lat, lng, a.lat, a.lng) - distKm(lat, lng, b.lat, b.lng),
-          )[0];
-          setCityId(closest.id);
-        }
-      },
-      () => setGeoState("err"),
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
+    try {
+      const pos = await getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 20_000,
+        maximumAge: 5_000,
+      });
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      setCoords({ lat, lng });
+      setGeoState("ok");
+      const closest = nearestCityId(lat, lng, cities);
+      if (closest) setCityId(closest);
+    } catch (e) {
+      setGeoState("err");
+      toast.error(errorMessage(e, "Nu am putut citi GPS-ul"));
+    }
+  };
+
+  const openSheet = () => {
+    setOpen(true);
+    setStep("loc");
+    setGeoState("idle");
+    setCoords(null);
+    void requestLoc();
   };
 
   const toggleDay = (k: DayKey) => {
@@ -118,32 +102,38 @@ export function AddVenueSheet({ cities, onAdded }: Props) {
       return;
     }
     setSaving(true);
-    const slug = `${slugify(name)}-${Date.now().toString(36).slice(-4)}`;
-    const { error } = await supabase.from("venues").insert({
-      name: name.trim(),
-      slug,
-      type,
-      city_id: cityId,
-      lat: coords.lat,
-      lng: coords.lng,
-      address: address.trim() || null,
-      phone: phone.trim() || null,
-      opening_hours: hours as any,
-    });
-    setSaving(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      const created = await createUserVenue({
+        name: name.trim(),
+        type,
+        cityId,
+        lat: coords.lat,
+        lng: coords.lng,
+        address: address.trim() || null,
+      });
+      if (phone.trim() || hours) {
+        await supabase
+          .from("venues")
+          .update({
+            phone: phone.trim() || null,
+            opening_hours: hours as never,
+          })
+          .eq("id", created.id);
+      }
+      toast.success("Local adăugat pe hartă");
+      onAdded?.();
+      reset();
+    } catch (e) {
+      toast.error(errorMessage(e, "Nu s-a putut adăuga"));
+    } finally {
+      setSaving(false);
     }
-    toast.success("Local adăugat pe hartă 🔥");
-    onAdded?.();
-    reset();
   };
 
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={openSheet}
         className="w-full flex items-center gap-3 p-3 rounded-2xl bg-gradient-to-r from-neon-purple/20 to-neon-crimson/20 border border-neon-purple/40 active:scale-[0.98] transition"
       >
         <div className="h-10 w-10 rounded-xl bg-neon-purple/20 border border-neon-purple/50 flex items-center justify-center">
@@ -185,7 +175,7 @@ export function AddVenueSheet({ cities, onAdded }: Props) {
                   Stai în fața localului? Apasă mai jos ca să prindem coordonatele exacte.
                 </p>
                 <button
-                  onClick={requestLoc}
+                  onClick={() => void requestLoc()}
                   disabled={geoState === "loading"}
                   className="w-full p-6 rounded-2xl border-2 border-dashed border-neon-green/50 bg-neon-green/5 flex flex-col items-center gap-3 active:scale-[0.98] transition"
                 >
@@ -355,7 +345,7 @@ export function AddVenueSheet({ cities, onAdded }: Props) {
                 ← înapoi
               </button>
               <button
-                onClick={save}
+                onClick={() => void save()}
                 disabled={saving}
                 className="flex-1 py-3 rounded-xl bg-neon-green text-background font-display font-black uppercase disabled:opacity-40 flex items-center justify-center gap-2"
               >

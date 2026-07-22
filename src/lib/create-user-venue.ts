@@ -1,0 +1,94 @@
+import { supabase } from "@/integrations/supabase/client";
+
+export type VenueType = "club" | "bar" | "terasa" | "after" | "pub";
+
+export type CreatedVenue = {
+  id: string;
+  name: string;
+  city?: { name: string } | null;
+};
+
+function distKm(aLat: number, aLng: number, bLat: number, bLng: number) {
+  const R = 6371;
+  const dLat = ((bLat - aLat) * Math.PI) / 180;
+  const dLng = ((bLng - aLng) * Math.PI) / 180;
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((aLat * Math.PI) / 180) * Math.cos((bLat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+export function nearestCityId(
+  lat: number,
+  lng: number,
+  cities: Array<{ id: string; lat: number | null; lng: number | null }>,
+): string | null {
+  const withCoords = cities.filter(
+    (c): c is { id: string; lat: number; lng: number } =>
+      typeof c.lat === "number" && typeof c.lng === "number",
+  );
+  if (!withCoords.length) return cities[0]?.id ?? null;
+  return [...withCoords].sort(
+    (a, b) => distKm(lat, lng, a.lat, a.lng) - distKm(lat, lng, b.lat, b.lng),
+  )[0].id;
+}
+
+function slugify(name: string) {
+  return (
+    name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
+      .slice(0, 48) || "loc"
+  );
+}
+
+/** Create a venue with GPS — prefers RPC, falls back to direct insert. */
+export async function createUserVenue(input: {
+  name: string;
+  type: VenueType;
+  cityId: string;
+  lat: number;
+  lng: number;
+  address?: string | null;
+}): Promise<CreatedVenue> {
+  const name = input.name.trim();
+  const { data: rpcData, error: rpcErr } = await supabase.rpc("create_user_venue", {
+    _name: name,
+    _type: input.type,
+    _city_id: input.cityId,
+    _lat: input.lat,
+    _lng: input.lng,
+    _address: input.address?.trim() || null,
+  });
+
+  if (!rpcErr && rpcData) {
+    const row = rpcData as { id: string; name: string; city_id?: string };
+    let cityName: string | null = null;
+    if (row.city_id) {
+      const { data: city } = await supabase.from("cities").select("name").eq("id", row.city_id).maybeSingle();
+      cityName = city?.name ?? null;
+    }
+    return { id: row.id, name: row.name, city: cityName ? { name: cityName } : null };
+  }
+
+  // Fallback if RPC not applied yet
+  const slug = `${slugify(name)}-${Math.random().toString(36).slice(2, 8)}`;
+  const { data, error } = await supabase
+    .from("venues")
+    .insert({
+      name,
+      slug,
+      type: input.type,
+      city_id: input.cityId,
+      lat: input.lat,
+      lng: input.lng,
+      address: input.address?.trim() || null,
+    })
+    .select("id, name, city:cities(name)")
+    .single();
+  if (error) throw rpcErr ?? error;
+  return data as unknown as CreatedVenue;
+}

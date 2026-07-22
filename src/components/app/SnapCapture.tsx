@@ -7,6 +7,7 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import { Camera, Image as ImageIcon, SwitchCamera, Video } from "lucide-react";
 import { toast } from "sonner";
 import { haptic, isNative } from "@/lib/native";
+import { uriToFile } from "@/lib/native-media";
 
 type Props = {
   onCapture: (file: File) => void;
@@ -15,20 +16,28 @@ type Props = {
 const HOLD_MS = 320;
 const MAX_VIDEO_MS = 15_000;
 
-async function uriToFile(path: string, fallbackName: string, fallbackType: string): Promise<File> {
-  const res = await fetch(path);
-  const blob = await res.blob();
-  const type = blob.type || fallbackType;
-  const ext = type.includes("mp4")
-    ? "mp4"
-    : type.includes("webm")
-      ? "webm"
-      : type.includes("png")
-        ? "png"
-        : type.includes("jpeg") || type.includes("jpg")
-          ? "jpg"
-          : fallbackName.split(".").pop() || "bin";
-  return new File([blob], `spritz-${Date.now()}.${ext}`, { type });
+function isUserCancel(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err ?? "");
+  return /cancel|user|dismiss|abort|no image/i.test(msg);
+}
+
+async function fileFromPhotoResult(photo: {
+  webPath?: string;
+  path?: string;
+  dataUrl?: string;
+  format?: string;
+}): Promise<File> {
+  if (photo.dataUrl) {
+    const res = await fetch(photo.dataUrl);
+    const blob = await res.blob();
+    const format = photo.format || "jpeg";
+    const type = blob.type || `image/${format === "png" ? "png" : "jpeg"}`;
+    const ext = type.includes("png") ? "png" : type.includes("webp") ? "webp" : "jpg";
+    return new File([blob], `spritz-${Date.now()}.${ext}`, { type });
+  }
+  const path = photo.webPath || photo.path;
+  if (!path) throw new Error("Fără fișier poză");
+  return uriToFile(path, "photo.jpg", "image/jpeg");
 }
 
 export function SnapCapture({ onCapture }: Props) {
@@ -84,7 +93,6 @@ export function SnapCapture({ onCapture }: Props) {
 
   useEffect(() => {
     if (native) {
-      // Native uses Capacitor Camera — no live stream required.
       setReady(true);
       setError(null);
       return;
@@ -113,7 +121,7 @@ export function SnapCapture({ onCapture }: Props) {
         CameraResultType,
         CameraSource,
       } = await import("@capacitor/camera");
-      await CapCamera.requestPermissions({ permissions: ["camera", "photos"] });
+      await CapCamera.requestPermissions({ permissions: ["camera"] });
       const photo = await CapCamera.getPhoto({
         quality: 92,
         resultType: CameraResultType.Uri,
@@ -121,14 +129,11 @@ export function SnapCapture({ onCapture }: Props) {
         correctOrientation: true,
         saveToGallery: false,
       });
-      const path = photo.webPath;
-      if (!path) throw new Error("Fără fișier poză");
-      const file = await uriToFile(path, "photo.jpg", "image/jpeg");
+      const file = await fileFromPhotoResult(photo);
       void haptic("medium");
       onCapture(file);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (!/cancel|user/i.test(msg)) toast.error("Nu am putut face poza. Încearcă din nou.");
+      if (!isUserCancel(e)) toast.error("Nu am putut face poza. Încearcă din nou.");
       console.warn("nativePhoto", e);
     } finally {
       busyRef.current = false;
@@ -149,20 +154,11 @@ export function SnapCapture({ onCapture }: Props) {
       });
       const path = result.webPath || result.uri;
       if (!path) throw new Error("Fără fișier video");
-      // Capacitor Android may return file:// — Capacitor.convertFileSrc if needed
-      let fetchPath = path;
-      try {
-        const { Capacitor } = await import("@capacitor/core");
-        if (path.startsWith("file:")) fetchPath = Capacitor.convertFileSrc(path);
-      } catch {
-        /* noop */
-      }
-      const file = await uriToFile(fetchPath, "clip.mp4", "video/mp4");
+      const file = await uriToFile(path, "clip.mp4", "video/mp4");
       void haptic("medium");
       onCapture(file);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (!/cancel|user/i.test(msg)) toast.error("Nu am putut filma. Încearcă din nou.");
+      if (!isUserCancel(e)) toast.error("Nu am putut filma. Încearcă din nou.");
       console.warn("nativeVideo", e);
     } finally {
       busyRef.current = false;
@@ -170,46 +166,77 @@ export function SnapCapture({ onCapture }: Props) {
     }
   }
 
+  /** Gallery via Capacitor — Photos source is more reliable than chooseFromGallery on Android. */
   async function nativeGallery() {
     if (busyRef.current) return;
     busyRef.current = true;
     setBusy(true);
     try {
-      const { Camera: CapCamera, MediaTypeSelection } = await import("@capacitor/camera");
-      await CapCamera.requestPermissions({ permissions: ["photos"] });
+      const {
+        Camera: CapCamera,
+        CameraResultType,
+        CameraSource,
+        MediaTypeSelection,
+      } = await import("@capacitor/camera");
+
+      try {
+        const photo = await CapCamera.getPhoto({
+          quality: 92,
+          resultType: CameraResultType.Uri,
+          source: CameraSource.Photos,
+          correctOrientation: true,
+        });
+        const file = await fileFromPhotoResult(photo);
+        void haptic("medium");
+        onCapture(file);
+        return;
+      } catch (photosErr) {
+        if (isUserCancel(photosErr)) return;
+        console.warn("getPhoto Photos failed, trying chooseFromGallery", photosErr);
+      }
+
+      try {
+        await CapCamera.requestPermissions({ permissions: ["photos"] });
+      } catch {
+        /* Android 13+ often works without explicit photos perm for picker */
+      }
+
       const picked = await CapCamera.chooseFromGallery({
         mediaType: MediaTypeSelection.All,
         allowMultipleSelection: false,
         limit: 1,
       });
-      const media = picked?.results?.[0];
-      const path = media?.webPath || media?.uri;
+      const media = picked?.results?.[0] as
+        | { webPath?: string; path?: string; uri?: string; type?: number }
+        | undefined;
+      const path = media?.webPath || media?.path || media?.uri;
       if (!path) throw new Error("Nimic selectat");
-      let fetchPath = path;
-      try {
-        const { Capacitor } = await import("@capacitor/core");
-        if (path.startsWith("file:")) fetchPath = Capacitor.convertFileSrc(path);
-      } catch {
-        /* noop */
-      }
       const isVid = media.type === 1 || /\.(mp4|mov|webm|m4v)(\?|$)/i.test(path);
       const file = await uriToFile(
-        fetchPath,
+        path,
         isVid ? "clip.mp4" : "photo.jpg",
         isVid ? "video/mp4" : "image/jpeg",
       );
+      void haptic("medium");
       onCapture(file);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      if (!/cancel|user/i.test(msg)) {
-        // Fallback HTML file input
-        galleryRef.current?.click();
+      if (!isUserCancel(e)) {
+        toast.error("Galerie indisponibilă — folosește „Fișier” de mai jos.");
       }
       console.warn("nativeGallery", e);
     } finally {
       busyRef.current = false;
       setBusy(false);
     }
+  }
+
+  function onFilePicked(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (f) {
+      void haptic("medium");
+      onCapture(f);
+    }
+    e.target.value = "";
   }
 
   function takeWebPhoto() {
@@ -321,13 +348,15 @@ export function SnapCapture({ onCapture }: Props) {
     modeRef.current = "idle";
   }
 
-  // —— Native UI: clear photo / video / gallery (most reliable on Android) ——
   if (native) {
     return (
       <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden bg-card border border-border flex flex-col">
         <div
           className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center"
-          style={{ background: "radial-gradient(circle at 50% 30%, rgba(255,80,120,0.18), transparent 60%), #0a0a12" }}
+          style={{
+            background:
+              "radial-gradient(circle at 50% 30%, rgba(255,80,120,0.18), transparent 60%), #0a0a12",
+          }}
         >
           <div
             className="h-20 w-20 rounded-full flex items-center justify-center shadow-[var(--shadow-elevated)]"
@@ -341,7 +370,7 @@ export function SnapCapture({ onCapture }: Props) {
           </p>
         </div>
 
-        <div className="absolute bottom-5 inset-x-0 flex flex-col items-center gap-4 z-10">
+        <div className="absolute bottom-5 inset-x-0 flex flex-col items-center gap-3 z-10">
           <div className="flex items-center gap-5">
             <button
               type="button"
@@ -376,25 +405,21 @@ export function SnapCapture({ onCapture }: Props) {
               <Video size={18} />
             </button>
           </div>
-          <p className="text-[10px] text-white/70">poză · video · galerie</p>
+          <label className="px-3 py-1.5 rounded-full bg-black/45 text-white/90 text-[11px] font-medium active:scale-95 cursor-pointer">
+            Fișier din telefon
+            <input
+              ref={galleryRef}
+              type="file"
+              accept="image/*,video/*"
+              className="sr-only"
+              onChange={onFilePicked}
+            />
+          </label>
         </div>
-
-        <input
-          ref={galleryRef}
-          type="file"
-          accept="image/*,video/*"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) onCapture(f);
-            e.target.value = "";
-          }}
-        />
       </div>
     );
   }
 
-  // —— Web live preview ——
   return (
     <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden bg-black border border-border">
       <video
@@ -408,13 +433,16 @@ export function SnapCapture({ onCapture }: Props) {
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center text-white/80">
           <Camera size={36} className="opacity-70" />
           <p className="text-sm">{error ?? "Se deschide camera…"}</p>
-          <button
-            type="button"
-            onClick={() => galleryRef.current?.click()}
-            className="mt-1 px-4 py-2 rounded-full bg-white text-black text-sm font-semibold"
-          >
+          <label className="mt-1 px-4 py-2 rounded-full bg-white text-black text-sm font-semibold cursor-pointer">
             Galerie
-          </button>
+            <input
+              ref={galleryRef}
+              type="file"
+              accept="image/*,video/*"
+              className="sr-only"
+              onChange={onFilePicked}
+            />
+          </label>
         </div>
       )}
       {recording && (
@@ -440,13 +468,10 @@ export function SnapCapture({ onCapture }: Props) {
       <div className="absolute bottom-5 inset-x-0 flex flex-col items-center gap-3 z-10">
         <p className="text-[11px] text-white/80">apasă = poză · ține = video</p>
         <div className="flex items-center gap-8">
-          <button
-            type="button"
-            onClick={() => galleryRef.current?.click()}
-            className="h-11 w-11 rounded-full bg-black/50 text-white flex items-center justify-center"
-          >
+          <label className="h-11 w-11 rounded-full bg-black/50 text-white flex items-center justify-center cursor-pointer">
             <ImageIcon size={18} />
-          </button>
+            <input type="file" accept="image/*,video/*" className="sr-only" onChange={onFilePicked} />
+          </label>
           <button
             type="button"
             disabled={!ready}
@@ -463,17 +488,15 @@ export function SnapCapture({ onCapture }: Props) {
           <span className="h-11 w-11" />
         </div>
       </div>
-      <input
-        ref={galleryRef}
-        type="file"
-        accept="image/*,video/*"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onCapture(f);
-          e.target.value = "";
-        }}
-      />
+      {ready && (
+        <input
+          ref={galleryRef}
+          type="file"
+          accept="image/*,video/*"
+          className="hidden"
+          onChange={onFilePicked}
+        />
+      )}
     </div>
   );
 }
