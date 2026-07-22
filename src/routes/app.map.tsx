@@ -1,9 +1,9 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { useCallback, useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { RomaniaMap3D, type FriendPin, type HeatNowCell } from "@/components/app/RomaniaMap3D";
+import { RomaniaMap3D, type FriendPin } from "@/components/app/RomaniaMap3D";
 import { useAuth } from "@/lib/auth";
 import {
   MapPin,
@@ -11,30 +11,19 @@ import {
   X,
   Beer,
   List,
-  Navigation,
   Settings,
   Ghost,
 } from "lucide-react";
 import { VenueFilters, type VenueTypeFilter } from "@/components/app/VenueFilters";
 import { AddVenueSheet } from "@/components/app/AddVenueSheet";
 import { MapSettingsSheet } from "@/components/app/MapSettingsSheet";
-import { HeatNowButton } from "@/components/app/HeatNowSheet";
 import { isOpenNow, nextOpenLabel, type OpeningHours } from "@/lib/openingHours";
 import { type PromoMeta } from "@/components/app/map/PromoBanner";
 
 import { venueNickname } from "@/lib/venueNickname";
-import {
-  rejectGeoSample,
-  zoomForAccuracy,
-  type GeoSample,
-} from "@/lib/geo-filter";
-import {
-  ensureLocationPermission,
-  getCurrentPosition,
-} from "@/lib/native-geo";
 
 export const Route = createFileRoute("/app/map")({
-  head: () => ({ meta: [{ title: "Hart─â ┬╖ OXIDA╚ÜII" }] }),
+  head: () => ({ meta: [{ title: "Hartă · OXIDAȚII" }] }),
   validateSearch: (search: Record<string, unknown>): { venue?: string } => ({
     venue: typeof search.venue === "string" ? search.venue : undefined,
   }),
@@ -83,16 +72,6 @@ function normalizeMapSettings(settings: RawMapSettings | null | undefined) {
   };
 }
 
-function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number) {
-  const R = 6371;
-  const dLat = ((bLat - aLat) * Math.PI) / 180;
-  const dLng = ((bLng - aLng) * Math.PI) / 180;
-  const lat1 = (aLat * Math.PI) / 180;
-  const lat2 = (bLat * Math.PI) / 180;
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
-  return 2 * R * Math.asin(Math.sqrt(h));
-}
-
 function cleanVenueName(name: unknown) {
   const cleaned = String(name ?? "")
     .replace(/\s+/g, " ")
@@ -131,32 +110,6 @@ function MapPage() {
   const [type, setType] = useState<VenueTypeFilter>("all");
   const [country, setCountry] = useState<string | "all">("all");
   const [cityId, setCityId] = useState<string | "all">("all");
-  const [maxKm, setMaxKm] = useState(0);
-  const [heatNowCells, setHeatNowCells] = useState<HeatNowCell[]>([]);
-  const [geo, setGeo] = useState<{ lat: number; lng: number; accuracy?: number | null } | null>(
-    null,
-  );
-  const lastGeoSampleRef = useRef<GeoSample | null>(null);
-
-  const acceptGeo = useCallback((lat: number, lng: number, accuracy: number | null | undefined) => {
-    const sample: GeoSample = {
-      lat,
-      lng,
-      accuracy: accuracy ?? null,
-      at: Date.now(),
-    };
-    // Always show *something* for the first fix ΓÇö Android coarse GPS is often
-    // 200ΓÇô800m and used to be rejected, so the "me" pin never appeared.
-    if (!lastGeoSampleRef.current) {
-      lastGeoSampleRef.current = sample;
-      setGeo({ lat, lng, accuracy: sample.accuracy });
-      return true;
-    }
-    if (rejectGeoSample(sample, lastGeoSampleRef.current)) return false;
-    lastGeoSampleRef.current = sample;
-    setGeo({ lat, lng, accuracy: sample.accuracy });
-    return true;
-  }, []);
   const [visible, setVisible] = useState(40);
   const [focusCity, setFocusCity] = useState<{
     lat: number;
@@ -165,27 +118,8 @@ function MapPage() {
     nonce?: number;
   } | null>(null);
   const [fitBounds, setFitBounds] = useState<[[number, number], [number, number]] | null>(null);
-  const [autoLocated, setAutoLocated] = useState(false);
   const focusedFromSearchRef = useRef<string | null>(null);
   const previousCountryRef = useRef<string | "all">("all");
-  /** After a solid GPS focus, ignore further auto-recenter (stops map reload loop). */
-  const cameraLockedRef = useRef(false);
-  /** City fallback may show until first real GPS ΓÇö then we unlock once. */
-  const cityFallbackOnlyRef = useRef(false);
-  const focusNonceRef = useRef(0);
-
-  const focusOnce = useCallback((lat: number, lng: number, accuracy?: number | null) => {
-    if (cameraLockedRef.current && !cityFallbackOnlyRef.current) return;
-    cityFallbackOnlyRef.current = false;
-    cameraLockedRef.current = true;
-    focusNonceRef.current += 1;
-    setFocusCity({
-      lat,
-      lng,
-      zoom: zoomForAccuracy(accuracy),
-      nonce: focusNonceRef.current,
-    });
-  }, []);
 
   const { data: citiesData, isLoading } = useQuery({
     queryKey: ["cities"],
@@ -246,12 +180,12 @@ function MapPage() {
     if (focusedFromSearchRef.current === id) return;
     const v = venues.find((x) => x.id === id);
     if (v && v.lat != null && v.lng != null) {
-      setFocusCity({ lat: Number(v.lat), lng: Number(v.lng), zoom: 16 });
+      setFocusCity({ lat: Number(v.lat), lng: Number(v.lng), zoom: 13.2 });
       focusedFromSearchRef.current = id;
     }
   }, [search.venue, venues]);
 
-  // Active venue-linked promo campaigns ΓåÆ "shining" pins on the map.
+  // Active venue-linked promo campaigns → "shining" pins on the map.
   // Pulls only the data needed to recognize a promoted venue + tint its halo
   // and show the brand logo in place of the bottle silhouette.
   const { data: promotedMeta = {} } = useQuery({
@@ -311,48 +245,51 @@ function MapPage() {
   const qc = useQueryClient();
 
 
-  // Country chip list (sorted by venue count desc)
+  // Country chips from cities (not only venues) — full names, no flag-emoji blanks on Android.
   const countries = useMemo(() => {
     const NAMES: Record<string, string> = {
-      RO: "≡ƒç╖≡ƒç┤ RO",
-      GB: "≡ƒç¼≡ƒçº UK",
-      FR: "≡ƒç½≡ƒç╖ FR",
-      DE: "≡ƒç⌐≡ƒç¬ DE",
-      ES: "≡ƒç¬≡ƒç╕ ES",
-      IT: "≡ƒç«≡ƒç╣ IT",
-      NL: "≡ƒç│≡ƒç▒ NL",
-      BE: "≡ƒçº≡ƒç¬ BE",
-      AT: "≡ƒçª≡ƒç╣ AT",
-      CZ: "≡ƒç¿≡ƒç┐ CZ",
-      PL: "≡ƒç╡≡ƒç▒ PL",
-      HU: "≡ƒç¡≡ƒç║ HU",
-      GR: "≡ƒç¼≡ƒç╖ GR",
-      PT: "≡ƒç╡≡ƒç╣ PT",
-      IE: "≡ƒç«≡ƒç¬ IE",
-      DK: "≡ƒç⌐≡ƒç░ DK",
-      SE: "≡ƒç╕≡ƒç¬ SE",
-      NO: "≡ƒç│≡ƒç┤ NO",
-      CH: "≡ƒç¿≡ƒç¡ CH",
-      BG: "≡ƒçº≡ƒç¼ BG",
-      HR: "≡ƒç¡≡ƒç╖ HR",
-      RS: "≡ƒç╖≡ƒç╕ RS",
-      TR: "≡ƒç╣≡ƒç╖ TR",
+      RO: "România",
+      GB: "UK",
+      FR: "Franța",
+      DE: "Germania",
+      ES: "Spania",
+      IT: "Italia",
+      NL: "Olanda",
+      BE: "Belgia",
+      AT: "Austria",
+      CZ: "Cehia",
+      PL: "Polonia",
+      HU: "Ungaria",
+      GR: "Grecia",
+      PT: "Portugalia",
+      IE: "Irlanda",
+      DK: "Danemarca",
+      SE: "Suedia",
+      NO: "Norvegia",
+      CH: "Elveția",
+      BG: "Bulgaria",
+      HR: "Croația",
+      RS: "Serbia",
+      TR: "Turcia",
     };
-    const cityCountryMap = new Map(cities.map((c) => [c.id, c.country as string]));
     const counts = new Map<string, number>();
+    for (const c of cities) {
+      if (!c.country) continue;
+      counts.set(c.country, (counts.get(c.country) ?? 0) + 1);
+    }
     for (const v of venues) {
-      const cc = cityCountryMap.get(v.city_id);
+      const cc = cityMap.get(v.city_id)?.country;
       if (!cc) continue;
-      counts.set(cc, (counts.get(cc) ?? 0) + 1);
+      if (!counts.has(cc)) counts.set(cc, 0);
     }
     return Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
       .map(([code, count]) => ({ code, count, label: NAMES[code] ?? code }));
-  }, [cities, venues]);
+  }, [cities, venues, cityMap]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let list = venues.filter((v) => {
+    return venues.filter((v) => {
       if (type !== "all" && v.type !== type) return false;
       if (country !== "all" && cityMap.get(v.city_id)?.country !== country) return false;
       if (cityId !== "all" && v.city_id !== cityId) return false;
@@ -365,27 +302,24 @@ function MapPage() {
         )
           return false;
       }
-      if (maxKm > 0 && geo && v.lat != null && v.lng != null) {
-        if (distanceKm(geo.lat, geo.lng, v.lat, v.lng) > maxKm) return false;
-      }
       return true;
     });
-    if (geo) {
-      list = [...list].sort((a, b) => {
-        const da =
-          a.lat != null && a.lng != null ? distanceKm(geo.lat, geo.lng, a.lat, a.lng) : 1e9;
-        const db =
-          b.lat != null && b.lng != null ? distanceKm(geo.lat, geo.lng, b.lat, b.lng) : 1e9;
-        return da - db;
-      });
-    }
-    return list;
-  }, [venues, query, type, country, cityId, maxKm, geo, cityMap]);
+  }, [venues, query, type, country, cityId, cityMap]);
 
   // Cities scoped to selected country (for map markers + fit bounds)
   const citiesScoped = useMemo(
     () => (country === "all" ? cities : cities.filter((c) => c.country === country)),
     [cities, country],
+  );
+
+  // Pass every filtered venue to the map. Clustering in RomaniaMap3D keeps FPS
+  // sane with ~4–5k points (web + Android) — do not slice here.
+  const mapVenues = filtered;
+
+  // All cities in scope — city markers are cheap DOM pins vs thousands of venues.
+  const mapCities = useMemo(
+    () => [...citiesScoped].sort((a, b) => b.chaos_level - a.chaos_level),
+    [citiesScoped],
   );
 
   // Fit bounds only when the user actually changes country. Do not auto-animate
@@ -432,9 +366,9 @@ function MapPage() {
 
   useEffect(() => {
     setVisible(40);
-  }, [query, type, country, cityId, maxKm]);
+  }, [query, type, country, cityId]);
 
-  // Load user's privacy settings + private locations so we can apply them when publishing the pin.
+  // Privacy settings for map ghost indicator / settings sheet.
   const privacyQ = useQuery({
     queryKey: ["map-privacy", user?.id],
     enabled: !!user,
@@ -448,77 +382,21 @@ function MapPage() {
         ? ((stateRes.data[0] ?? null) as RawMapSettings | null)
         : null;
       const merged = { ...(pRes.data ?? {}), ...(stateRow ?? {}) };
-      let cityCenter: { lat: number; lng: number } | null = null;
-      if (pRes.data?.city_id) {
-        const { data: c } = await supabase
-          .from("cities")
-          .select("lat, lng")
-          .eq("id", pRes.data.city_id)
-          .maybeSingle();
-        if (c) cityCenter = { lat: Number(c.lat), lng: Number(c.lng) };
-      }
       return {
         settings: normalizeMapSettings(merged),
         privateLocs: (locRes.data ?? []) as { lat: number; lng: number; radius_m: number }[],
-        cityCenter,
       };
     },
   });
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Stable refs for one-shot distance GPS.
-  const privacyDataRef = useRef(privacyQ.data);
-  privacyDataRef.current = privacyQ.data;
-  const acceptGeoRef = useRef(acceptGeo);
-  acceptGeoRef.current = acceptGeo;
-
   // No friend/me pins on the map anymore.
   const mapFriendPins: FriendPin[] = [];
 
-  const requestGeo = () => {
-    // One-shot GPS for distance sorting only ΓÇö never publish / show me-pin.
-    void (async () => {
-      try {
-        await ensureLocationPermission(true);
-        const quick = await getCurrentPosition({
-          enableHighAccuracy: true,
-          maximumAge: 5_000,
-          timeout: 20_000,
-        });
-        const lat = quick.coords.latitude;
-        const lng = quick.coords.longitude;
-        const accuracy = quick.coords.accuracy ?? null;
-        acceptGeoRef.current(lat, lng, accuracy);
-        focusOnce(lat, lng, accuracy);
-      } catch (error) {
-        const msg =
-          error instanceof Error
-            ? error.message
-            : "Nu am putut citi loca╚¢ia. Verific─â permisiunile ╚Öi porne╚Öte GPS-ul.";
-        if (/oprit─â|Set─âri|permisiun/i.test(msg)) {
-          const { openAppLocationSettings } = await import("@/lib/native-geo");
-          await openAppLocationSettings().catch(() => {});
-        }
-        alert(msg);
-      }
-    })();
-  };
-
-  // No continuous GPS watch / live publish on map (venues-only, less lag).
-  useEffect(() => {
-    if (autoLocated) return;
-    setAutoLocated(true);
-    const fallback = privacyDataRef.current?.cityCenter;
-    if (fallback && !cameraLockedRef.current) {
-      cityFallbackOnlyRef.current = true;
-      setFocusCity({ lat: fallback.lat, lng: fallback.lng, zoom: 12.5 });
-    }
-  }, [autoLocated]);
-
   const activeCity = cityId !== "all" ? cityMap.get(cityId) : null;
 
-  // Hotspots ΓÇö top venues by live check-ins right now (public, not just friends)
+  // Hotspots — top venues by live check-ins right now (public, not just friends)
   const { data: hotspots = [] } = useQuery({
     queryKey: ["map-hotspots"],
     queryFn: async () => {
@@ -555,12 +433,12 @@ function MapPage() {
 
   return (
     <div className="pb-32 bg-[#050505] min-h-screen text-white" data-header-bg="#050505">
-      {/* Sticky header ΓÇö cinema bento */}
-      <header className="sticky top-0 z-30 px-4 pt-5 pb-3 bg-[#050505]/85 border-b border-white/5">
+      {/* Sticky header — cinema bento */}
+      <header className="sticky top-0 z-30 px-4 pt-5 pb-3 bg-[#050505] border-b border-white/5">
         <div className="flex items-end justify-between gap-3">
           <div>
             <h1 className="text-[34px] leading-none tracking-tight" style={instrument}>
-              HART─é<span className="text-[#ffea00]">.</span>
+              HARTĂ<span className="text-[#ffea00]">.</span>
             </h1>
             <div className="mt-1.5 flex items-center gap-3 flex-wrap">
               <span className="inline-flex items-center gap-1.5">
@@ -586,10 +464,6 @@ function MapPage() {
           country={country}
           setCountry={setCountry}
           countries={countries}
-          maxKm={maxKm}
-          setMaxKm={setMaxKm}
-          hasGeo={!!geo}
-          requestGeo={requestGeo}
           count={filtered.length}
         />
 
@@ -603,7 +477,7 @@ function MapPage() {
               }}
               className={`shrink-0 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border transition ${country === "all" ? "bg-gradient-to-r from-[#ff3d8b] to-[#c724ff] text-white border-transparent shadow-lg shadow-[#ff3d8b]/25" : "bg-white/5 border-white/10 text-white/60"}`}
             >
-              ≡ƒîì toate
+              🌍 Toate
             </button>
             {countries.map((c) => (
               <button
@@ -630,7 +504,6 @@ function MapPage() {
                   Hotspots
                 </span>
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#c724ff] opacity-75" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#c724ff]" />
                 </span>
                 <span className="text-[10px] tracking-[0.18em] uppercase text-white/40 font-bold">
@@ -654,7 +527,7 @@ function MapPage() {
                           setFocusCity({
                             lat: Number(venue.lat),
                             lng: Number(venue.lng),
-                            zoom: 15,
+                            zoom: 13.2,
                           });
                         }
                       }}
@@ -672,12 +545,12 @@ function MapPage() {
                             {venue.name}
                           </div>
                           <div className="text-[9px] uppercase tracking-widest text-white/40 mt-0.5 truncate">
-                            {cityMap.get(venue.city_id)?.name ?? "ΓÇö"}
+                            {cityMap.get(venue.city_id)?.name ?? "—"}
                           </div>
                         </div>
                         <div className="shrink-0 bg-black/40 border border-white/10 rounded-full px-2 py-0.5 flex items-center gap-0.5">
                           <span className="text-[10px] font-bold text-[#ff3d8b]">{count}</span>
-                          <span className="text-[9px]">≡ƒöÑ</span>
+                          <span className="text-[9px]">🔥</span>
                         </div>
                       </div>
                     </button>
@@ -688,21 +561,20 @@ function MapPage() {
           </div>
         )}
 
-        {/* Map block ΓÇö venues only (no me / friends live pins). */}
+        {/* Map block — venues only (no me / friends live pins). */}
         <div className="relative overflow-hidden border-y border-white/10 bg-[#080a12] -mx-4">
           <RomaniaMap3D
-            cities={citiesScoped}
-            venues={filtered}
+            cities={mapCities}
+            venues={mapVenues}
             promotedMeta={promotedMeta}
             friends={mapFriendPins}
             focusCity={focusCity}
             fitBounds={fitBounds}
-            heatNowCells={heatNowCells}
+            heatNowCells={[]}
             onCityClick={(c) => {
               setCityId(c.id);
-              // Zoom past the venue minzoom (13) so the small venue bottles
-              // appear immediately without the user having to pinch-zoom again.
-              setFocusCity({ lat: c.lat, lng: c.lng, zoom: 13.6 });
+              // Gentle city zoom — venue bottles appear from minzoom ~7.
+              setFocusCity({ lat: c.lat, lng: c.lng, zoom: 11.8 });
             }}
           />
 
@@ -720,25 +592,25 @@ function MapPage() {
                 params={{ slug: activeCity.slug }}
                 className="shrink-0 text-[9px] uppercase tracking-widest text-[#ff3d8b] border border-[#ff3d8b]/40 rounded-full px-2 py-0.5 font-bold"
               >
-                str─âzi ΓåÆ
+                străzi →
               </Link>
               <button
                 onClick={() => {
                   setCityId("all");
                   setFocusCity(null);
                 }}
-                aria-label="╚ÿterge filtru"
+                aria-label="Șterge filtru"
                 className="shrink-0 h-6 w-6 grid place-items-center rounded-full border border-white/15 text-white/60 bg-black/60"
               >
                 <X size={11} />
               </button>
             </div>
           )}
-          {/* Map settings button ΓÇö top-right (safe-area aware) */}
+          {/* Map settings button — top-right (safe-area aware) */}
           {user && (
             <button
               onClick={() => setSettingsOpen(true)}
-              aria-label="Set─âri hart─â"
+              aria-label="Setări hartă"
               style={{
                 top: "0.5rem",
                 right: "0.5rem",
@@ -754,11 +626,7 @@ function MapPage() {
             </button>
           )}
 
-          <HeatNowButton
-            cityId={cityId === "all" ? null : cityId}
-            onFocus={(lat, lng) => setFocusCity({ lat, lng, zoom: 14.5 })}
-            onCellsChange={setHeatNowCells}
-          />
+          {/* Heat overlay disabled on the map page — costly blur on Android WebView. */}
         </div>
 
         <MapSettingsSheet open={settingsOpen} onOpenChange={setSettingsOpen} />
@@ -770,27 +638,20 @@ function MapPage() {
 
         {/* Venue list under the map */}
         <div className="flex items-center gap-1.5 py-2 px-1 text-[10px] uppercase tracking-widest font-bold text-white/50">
-          <List size={11} /> loca╚¢ii ┬╖ {filtered.length}
+          <List size={11} /> locații · {filtered.length}
         </div>
 
         <section className="space-y-2">
-          {geo && (
-            <div className="text-[9px] uppercase tracking-[0.18em] text-[#ff3d8b] flex items-center gap-1 font-bold">
-              <Navigation size={10} /> sortat dup─â distan╚¢─â
-            </div>
-          )}
           {filtered.length === 0 ? (
             <div className="py-10 text-center text-[11px] uppercase tracking-widest text-white/40 font-bold">
-              zero loca╚¢ii. d─â reset la filtre.
+              {query.trim()
+                ? "nimic găsit pentru căutare. încearcă alt nume sau dă reset."
+                : "zero locații. dă reset la filtre."}
             </div>
           ) : (
             <>
               {filtered.slice(0, visible).map((v) => {
                 const city = cityMap.get(v.city_id);
-                const dist =
-                  geo && v.lat != null && v.lng != null
-                    ? distanceKm(geo.lat, geo.lng, v.lat, v.lng)
-                    : null;
                 const openState = isOpenNow(v.opening_hours);
                 const nextOpen = openState === false ? nextOpenLabel(v.opening_hours) : null;
                 return (
@@ -812,7 +673,7 @@ function MapPage() {
                         )}
                         {openState === false && (
                           <span className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#c724ff]/15 border border-[#c724ff]/40 text-[8px] uppercase tracking-wider text-[#c724ff] font-bold">
-                            <Clock size={8} /> {nextOpen ? nextOpen : "├«nchis"}
+                            <Clock size={8} /> {nextOpen ? nextOpen : "închis"}
                           </span>
                         )}
                       </div>
@@ -821,14 +682,9 @@ function MapPage() {
                       </div>
                       <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 truncate flex items-center gap-1 font-bold mt-0.5">
                         <MapPin size={9} /> {city?.name ?? "?"}
-                        {v.address ? ` ┬╖ ${v.address}` : ""}
+                        {v.address ? ` · ${v.address}` : ""}
                       </div>
                     </div>
-                    {dist != null && (
-                      <div className="text-[10px] uppercase tracking-widest text-[#ffea00] shrink-0 font-bold">
-                        {dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`}
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -837,7 +693,7 @@ function MapPage() {
                   onClick={() => setVisible((v) => v + 60)}
                   className="w-full mt-2 py-3 rounded-2xl border border-[#ff3d8b]/40 text-[#ff3d8b] text-[11px] uppercase tracking-widest active:scale-[0.98] font-bold"
                 >
-                  + arat─â ├«nc─â {Math.min(60, filtered.length - visible)} (din{" "}
+                  + arată încă {Math.min(60, filtered.length - visible)} (din{" "}
                   {filtered.length - visible})
                 </button>
               )}

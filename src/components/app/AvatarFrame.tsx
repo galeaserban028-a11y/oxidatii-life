@@ -93,6 +93,13 @@ export const FRAME_STYLES: Record<string, FrameStyle> = {
     highlight: "linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0) 55%)",
     tier: "mythic",
   },
+  "founding-member": {
+    aura: "rgba(250,204,21,0.45)",
+    ringGlow: "rgba(251,191,36,0.8)",
+    bezel: "conic-gradient(from 20deg,#fff7c2,#f59e0b,#fde68a,#854d0e,#fbbf24,#f59e0b,#fff7c2)",
+    highlight: "linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0) 50%)",
+    tier: "mythic",
+  },
 };
 
 export const TIER_LABEL: Record<Tier, string> = {
@@ -129,6 +136,8 @@ function Ornament({ frameId, preview }: { frameId: string; preview: boolean }) {
       return <DiamondOrn />;
     case "legend":
       return <LegendOrn />;
+    case "founding-member":
+      return <GoldOrn />;
     default:
       return null;
   }

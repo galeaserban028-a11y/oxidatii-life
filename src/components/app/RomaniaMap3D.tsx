@@ -1,11 +1,10 @@
-﻿import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import maplibregl from "maplibre-gl";
 import type { Map as MlMap, Marker } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Plus, Minus } from "lucide-react";
-import logoOxAsset from "@/assets/logo-oxidatii.png.asset.json";
-const logoOx = logoOxAsset.url;
+import logoOx from "@/assets/logo-oxidatii.png";
 
 type City = {
   id: string;
@@ -221,8 +220,61 @@ function makePinImage(color: string, lowEnd = false): ImageData {
 }
 
 function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
-  const glowBlur = lowEnd ? 3 : 6;
-  const adminGlowBlur = lowEnd ? 3 : 6;
+  const cartoDark = {
+    type: "raster" as const,
+    tiles: [
+      "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+      "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+    ],
+    tileSize: 256,
+    attribution: "© OpenStreetMap © CARTO",
+  };
+
+  // Android / small screens: ONE raster basemap only — no dual vector+raster,
+  // no line-blur glows (those kill MapLibre FPS in WebView).
+  if (lowEnd) {
+    return {
+      version: 8,
+      glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+      sources: {
+        "carto-dark": cartoDark,
+        [NEON_BACKBONE_SRC]: {
+          type: "geojson",
+          data: NEON_BACKBONE_GEOJSON,
+        },
+      },
+      layers: [
+        { id: "background", type: "background", paint: { "background-color": "#0d0b1e" } },
+        {
+          id: "dark-raster-base",
+          type: "raster",
+          source: "carto-dark",
+          minzoom: 0,
+          maxzoom: 19,
+          paint: {
+            "raster-opacity": 0.92,
+            "raster-brightness-min": 0,
+            "raster-brightness-max": 0.62,
+            "raster-saturation": -0.35,
+            "raster-contrast": 0.18,
+            "raster-fade-duration": 0,
+          },
+        },
+        {
+          id: "oxi-backbone-core",
+          type: "line",
+          source: NEON_BACKBONE_SRC,
+          paint: {
+            "line-color": ["match", ["get", "kind"], "border", "#ff5cf0", "#39ffd2"],
+            "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.8, 7, 1.4, 12, 2.2],
+            "line-opacity": 0.75,
+          },
+        },
+      ],
+    } as unknown as maplibregl.StyleSpecification;
+  }
+
   const layers: any[] = [
     { id: "background", type: "background", paint: { "background-color": "#0d0b1e" } },
     {
@@ -232,69 +284,61 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
       minzoom: 0,
       maxzoom: 19,
       paint: {
-        "raster-opacity": lowEnd ? 0.62 : 0.54,
+        "raster-opacity": 0.54,
         "raster-brightness-min": 0,
         "raster-brightness-max": 0.58,
         "raster-saturation": -0.45,
         "raster-contrast": 0.25,
-        "raster-fade-duration": lowEnd ? 0 : 120,
+        "raster-fade-duration": 120,
       },
     },
-  ];
-  if (!lowEnd) {
-    layers.push(
-      {
-        id: "landcover",
-        type: "fill",
-        source: "openmaptiles",
-        "source-layer": "landcover",
-        paint: { "fill-color": "#15102a", "fill-opacity": 0.55 },
-      },
-      {
-        id: "park",
-        type: "fill",
-        source: "openmaptiles",
-        "source-layer": "park",
-        paint: { "fill-color": "#1a1430", "fill-opacity": 0.6 },
-      },
-    );
-  }
-  layers.push({
-    id: "water",
-    type: "fill",
-    source: "openmaptiles",
-    "source-layer": "water",
-    paint: { "fill-color": "#05030f", "fill-outline-color": "#2a1145" },
-  });
-  // Road glow ΓÇö narrower/less blurred on mobile to keep frame budget healthy
-  layers.push({
-    id: "roads-glow",
-    type: "line",
-    source: "openmaptiles",
-    "source-layer": "transportation",
-    filter: ["in", "class", "motorway", "trunk", "primary"],
-    minzoom: lowEnd ? 6 : 0,
-    paint: {
-      "line-color": "#ff3df0",
-      "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.2, 10, 3, 14, 7, 18, 18],
-      "line-blur": glowBlur,
-      "line-opacity": lowEnd ? 0.4 : 0.55,
+    {
+      id: "landcover",
+      type: "fill",
+      source: "openmaptiles",
+      "source-layer": "landcover",
+      paint: { "fill-color": "#15102a", "fill-opacity": 0.55 },
     },
-  });
-  layers.push({
-    id: "roads-major",
-    type: "line",
-    source: "openmaptiles",
-    "source-layer": "transportation",
-    filter: ["in", "class", "motorway", "trunk", "primary"],
-    paint: {
-      "line-color": "#ff5cf0",
-      "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 10, 1.4, 14, 3, 18, 7],
-      "line-opacity": 0.95,
+    {
+      id: "park",
+      type: "fill",
+      source: "openmaptiles",
+      "source-layer": "park",
+      paint: { "fill-color": "#1a1430", "fill-opacity": 0.6 },
     },
-  });
-  if (!lowEnd) {
-    layers.push({
+    {
+      id: "water",
+      type: "fill",
+      source: "openmaptiles",
+      "source-layer": "water",
+      paint: { "fill-color": "#05030f", "fill-outline-color": "#2a1145" },
+    },
+    {
+      id: "roads-glow",
+      type: "line",
+      source: "openmaptiles",
+      "source-layer": "transportation",
+      filter: ["in", "class", "motorway", "trunk", "primary"],
+      paint: {
+        "line-color": "#ff3df0",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 1.2, 10, 3, 14, 7, 18, 18],
+        "line-blur": 6,
+        "line-opacity": 0.55,
+      },
+    },
+    {
+      id: "roads-major",
+      type: "line",
+      source: "openmaptiles",
+      "source-layer": "transportation",
+      filter: ["in", "class", "motorway", "trunk", "primary"],
+      paint: {
+        "line-color": "#ff5cf0",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.5, 10, 1.4, 14, 3, 18, 7],
+        "line-opacity": 0.95,
+      },
+    },
+    {
       id: "roads-secondary",
       type: "line",
       source: "openmaptiles",
@@ -306,9 +350,7 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
         "line-width": ["interpolate", ["linear"], ["zoom"], 8, 0.4, 14, 1.4, 18, 4],
         "line-opacity": 0.75,
       },
-    });
-  }
-  layers.push(
+    },
     {
       id: "oxi-backbone-glow",
       type: "line",
@@ -316,8 +358,8 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
       paint: {
         "line-color": ["match", ["get", "kind"], "border", "#ff3df0", "#00e5ff"],
         "line-width": ["interpolate", ["linear"], ["zoom"], 3, 2.5, 7, 5, 12, 11],
-        "line-blur": lowEnd ? 3 : 6,
-        "line-opacity": lowEnd ? 0.38 : 0.46,
+        "line-blur": 6,
+        "line-opacity": 0.46,
       },
     },
     {
@@ -338,9 +380,9 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
       filter: ["<=", "admin_level", 2],
       paint: {
         "line-color": "#ff3df0",
-        "line-width": lowEnd ? 4 : 6,
-        "line-blur": adminGlowBlur,
-        "line-opacity": lowEnd ? 0.45 : 0.55,
+        "line-width": 6,
+        "line-blur": 6,
+        "line-opacity": 0.55,
       },
     },
     {
@@ -355,9 +397,7 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
         "line-opacity": 1,
       },
     },
-  );
-  if (!lowEnd) {
-    layers.push({
+    {
       id: "admin-region",
       type: "line",
       source: "openmaptiles",
@@ -370,65 +410,63 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
         "line-dasharray": [2, 2],
         "line-opacity": 0.7,
       },
-    });
-  }
-  // Country labels ΓÇö visible when zoomed out over Europe.
-  layers.push({
-    id: "place-country-labels",
-    type: "symbol",
-    source: "openmaptiles",
-    "source-layer": "place",
-    filter: ["==", "class", "country"],
-    minzoom: 2,
-    maxzoom: 6,
-    layout: {
-      "text-field": ["coalesce", ["get", "name:ro"], ["get", "name:en"], ["get", "name"]],
-      "text-font": ["Noto Sans Bold"],
-      "text-size": ["interpolate", ["linear"], ["zoom"], 2, 10, 5, 15],
-      "text-letter-spacing": 0.15,
-      "text-transform": "uppercase",
     },
-    paint: {
-      "text-color": "#ff9cf0",
-      "text-halo-color": "#0d0b1e",
-      "text-halo-width": 1.4,
-      "text-halo-blur": 1,
+    {
+      id: "place-country-labels",
+      type: "symbol",
+      source: "openmaptiles",
+      "source-layer": "place",
+      filter: ["==", "class", "country"],
+      minzoom: 2,
+      maxzoom: 6,
+      layout: {
+        "text-field": ["coalesce", ["get", "name:ro"], ["get", "name:en"], ["get", "name"]],
+        "text-font": ["Noto Sans Bold"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 2, 10, 5, 15],
+        "text-letter-spacing": 0.15,
+        "text-transform": "uppercase",
+      },
+      paint: {
+        "text-color": "#ff9cf0",
+        "text-halo-color": "#0d0b1e",
+        "text-halo-width": 1.4,
+        "text-halo-blur": 1,
+      },
     },
-  });
-  // City / town labels are now shown by our DOM bottle markers instead of
-  // the basemap, so we hide the default layer to avoid duplicate names.
-  layers.push({
-    id: "place-city-labels",
-    type: "symbol",
-    source: "openmaptiles",
-    "source-layer": "place",
-    filter: ["in", "class", "city", "town"],
-    minzoom: 4,
-    layout: {
-      "text-field": ["coalesce", ["get", "name:ro"], ["get", "name:en"], ["get", "name"]],
-      "text-font": ["Noto Sans Regular"],
-      "visibility": "none",
-      "text-size": [
-        "interpolate",
-        ["linear"],
-        ["zoom"],
-        4, 10,
-        7, ["case", ["==", ["get", "class"], "city"], 13, 10],
-        11, ["case", ["==", ["get", "class"], "city"], 17, 13],
-      ],
-      "text-anchor": "top",
-      "text-offset": [0, 0.6],
-      "symbol-sort-key": ["case", ["==", ["get", "class"], "city"], 0, 1],
+    {
+      id: "place-city-labels",
+      type: "symbol",
+      source: "openmaptiles",
+      "source-layer": "place",
+      filter: ["in", "class", "city", "town"],
+      minzoom: 4,
+      layout: {
+        "text-field": ["coalesce", ["get", "name:ro"], ["get", "name:en"], ["get", "name"]],
+        "text-font": ["Noto Sans Regular"],
+        visibility: "none",
+        "text-size": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          4,
+          10,
+          7,
+          ["case", ["==", ["get", "class"], "city"], 13, 10],
+          11,
+          ["case", ["==", ["get", "class"], "city"], 17, 13],
+        ],
+        "text-anchor": "top",
+        "text-offset": [0, 0.6],
+        "symbol-sort-key": ["case", ["==", ["get", "class"], "city"], 0, 1],
+      },
+      paint: {
+        "text-color": "#f5e8ff",
+        "text-halo-color": "#0d0b1e",
+        "text-halo-width": 1.6,
+        "text-halo-blur": 0.8,
+      },
     },
-    paint: {
-      "text-color": "#f5e8ff",
-      "text-halo-color": "#0d0b1e",
-      "text-halo-width": 1.6,
-      "text-halo-blur": 0.8,
-    },
-  });
-  if (!lowEnd) {
-    layers.push({
+    {
       id: "place-village-labels",
       type: "symbol",
       source: "openmaptiles",
@@ -445,22 +483,14 @@ function buildNeonStyle(lowEnd: boolean): maplibregl.StyleSpecification {
         "text-halo-color": "#0d0b1e",
         "text-halo-width": 1.3,
       },
-    });
-  }
+    },
+  ];
+
   return {
     version: 8,
     glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
     sources: {
-      "carto-dark": {
-        type: "raster",
-        tiles: [
-          "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-          "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-          "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        ],
-        tileSize: 256,
-        attribution: "┬⌐ OpenStreetMap ┬⌐ CARTO",
-      },
+      "carto-dark": cartoDark,
       openmaptiles: {
         type: "vector",
         url: "https://tiles.openfreemap.org/planet",
@@ -595,7 +625,7 @@ export function RomaniaMap3D({
 
     // Defer init until the container has real dimensions. When the map is
     // mounted inside a route transition / animation the container can be
-    // 0├ù0 for a frame or two ΓÇö creating maplibre at that instant makes it
+    // 0×0 for a frame or two — creating maplibre at that instant makes it
     // fetch tiles for the wrong viewport, and the user then has to zoom
     // in/out to force a correct re-fetch. Wait for a real size first.
     const initialRect = containerRef.current.getBoundingClientRect();
@@ -638,7 +668,7 @@ export function RomaniaMap3D({
       configureMapLibreRuntime();
       map = new maplibregl.Map({
         container: containerRef.current,
-        style: buildNeonStyle(isSmall),
+        style: buildNeonStyle(lowGpu),
         center: initialCenter,
         zoom: initialZoom,
         minZoom: isSmall ? 3.4 : 3.6,
@@ -652,7 +682,7 @@ export function RomaniaMap3D({
         maxPitch: lowGpu ? 0 : 45,
         pixelRatio: Math.min(window.devicePixelRatio || 1, lowGpu ? 1 : 1.5),
         antialias: !lowGpu,
-        maxTileCacheSize: lowGpu ? 24 : 80,
+        maxTileCacheSize: lowGpu ? 16 : 80,
         canvasContextAttributes: {
           antialias: !lowGpu,
           powerPreference: lowGpu ? "low-power" : "high-performance",
@@ -669,19 +699,23 @@ export function RomaniaMap3D({
 
     map.touchZoomRotate.disableRotation();
     map.dragRotate.disable();
-    compactMapRef.current = isSmall || isAndroidWv;
+    compactMapRef.current = lowGpu;
+    let resizeTimer: number | null = null;
     if (typeof ResizeObserver !== "undefined" && containerRef.current) {
       resizeObserver = new ResizeObserver(() => {
-        requestAnimationFrame(() => {
+        if (resizeTimer) window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => {
           try {
             map.resize();
             map.triggerRepaint();
-          } catch { /* noop */ }
-        });
+          } catch {
+            /* noop */
+          }
+        }, lowGpu ? 140 : 60);
       });
       resizeObserver.observe(containerRef.current);
     }
-    // dragPan + scrollZoom r─âm├ón activate ca s─â se poat─â naviga ╚Öi da zoom
+    // dragPan + scrollZoom rămân activate ca să se poată naviga și da zoom
 
     // As soon as the style JSON is parsed (fires well before "load"), force
     // an immediate resize so the tile fetcher requests tiles for the real
@@ -701,8 +735,8 @@ export function RomaniaMap3D({
       () => {
         if (loadedRef.current) return;
         // On iPhone/Safari the native WebGL + glyph pipeline can be late even
-        // though the map is about to paint. Do not tear the map down here ΓÇö the
-        // retry loop itself was causing the endless "se ├«ncarc─â harta" state.
+        // though the map is about to paint. Do not tear the map down here — the
+        // retry loop itself was causing the endless "se încarcă harta" state.
         setupInteractiveLayers();
         markFirstPaint();
       },
@@ -716,12 +750,10 @@ export function RomaniaMap3D({
         map.addSource(VENUES_SRC, {
           type: "geojson",
           data: { type: "FeatureCollection", features: [] },
+          // Always cluster — ~5k venues on Android WebView needs it for FPS.
           cluster: true,
-          // Grup─âm agresiv doar la zoom foarte mic; de la zoom mediu ├«n sus,
-          // fiecare local apare cu propria sticlu╚¢─â de vin (nu bulinu╚¢e).
-          clusterRadius: 22,
-          clusterMaxZoom: 7,
-
+          clusterRadius: lowGpu ? 36 : 28,
+          clusterMaxZoom: 8,
         });
       } catch {
         window.setTimeout(setupInteractiveLayers, 120);
@@ -735,17 +767,12 @@ export function RomaniaMap3D({
         loadWatchdog = null;
       }
       setMapFailed(false);
-      // Multiple staggered resizes: catches late layout shifts from the
-      // parent (sticky header, safe-area, address-bar collapse on mobile)
-      // without forcing extra visual changes.
       repaintMap(map);
-      window.setTimeout(() => repaintMap(map), 120);
-      window.setTimeout(() => repaintMap(map), 480);
-      window.setTimeout(markFirstPaint, isSmall ? 320 : 180);
+      window.setTimeout(markFirstPaint, lowGpu ? 280 : 180);
 
-      if (!isSmall) {
+      if (!lowGpu) {
         // Desktop-only heat layer. On mobile GPUs the heatmap blur competes
-        // with pan/zoom frames, so small screens use clustered pins only.
+        // with pan/zoom frames, so Android/small screens skip it.
         map.addSource(HEAT_SRC, {
           type: "geojson",
           data: { type: "FeatureCollection", features: [] },
@@ -790,21 +817,61 @@ export function RomaniaMap3D({
       for (const [name, color] of pinTypes) {
         try {
           if (map.hasImage(name)) map.removeImage(name);
-          map.addImage(name, makePinImage(color, isSmall), { pixelRatio: 2 });
+          map.addImage(name, makePinImage(color, lowGpu), { pixelRatio: lowGpu ? 1 : 2 });
         } catch { /* noop */ }
       }
 
-      // Venue clusters are intentionally hidden. Cities are represented by
-      // DOM bottle markers with city-name labels below, so users see
-      // "sticlu╚¢─â + ora╚Ö" instead of abstract dots.
+      // Cluster bubbles while zoomed out — keeps ~5k venues performant and visible.
+      map.addLayer({
+        id: "venues-clusters",
+        type: "circle",
+        source: VENUES_SRC,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": [
+            "step",
+            ["get", "point_count"],
+            "rgba(255,234,0,0.55)",
+            25,
+            "rgba(255,61,139,0.6)",
+            80,
+            "rgba(199,36,255,0.65)",
+          ],
+          "circle-radius": [
+            "step",
+            ["get", "point_count"],
+            lowGpu ? 14 : 16,
+            25,
+            lowGpu ? 18 : 22,
+            80,
+            lowGpu ? 24 : 28,
+          ],
+          "circle-stroke-width": 1.5,
+          "circle-stroke-color": "rgba(255,255,255,0.35)",
+        },
+      });
+      map.addLayer({
+        id: "venues-cluster-count",
+        type: "symbol",
+        source: VENUES_SRC,
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": ["get", "point_count_abbreviated"],
+          "text-size": lowGpu ? 11 : 12,
+          "text-font": ["Noto Sans Bold"],
+          "text-allow-overlap": true,
+        },
+        paint: {
+          "text-color": "#0a0a0a",
+        },
+      });
 
-      // unclustered points ΓåÆ clear wine-bottle pins (no venue name floating above).
-      // City markers are the main visual; individual venues show only when zoomed in close.
+      // Unclustered points → wine-bottle pins from mid zoom (not only city-close).
       map.addLayer({
         id: "venues-points",
         type: "symbol",
         source: VENUES_SRC,
-        minzoom: 13,
+        minzoom: 7,
         filter: ["!", ["has", "point_count"]],
         layout: {
           "icon-image": [
@@ -848,7 +915,7 @@ export function RomaniaMap3D({
         paint: {},
       });
 
-      // click ΓåÆ navigate to venue
+      // click → navigate to venue
       map.on("click", "venues-points", (e) => {
         const f = e.features?.[0];
         if (!f) return;
@@ -867,7 +934,7 @@ export function RomaniaMap3D({
             <div style="display:inline-block;padding:1px 6px;border-radius:9999px;background:${typeColor}22;color:${typeColor};border:1px solid ${typeColor}55;font-family:'DM Sans',sans-serif;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;">${p.type ?? "loc"}</div>
             <div style="font-family:'DM Sans',sans-serif;font-weight:900;font-size:14px;line-height:1.15;">${p.name}</div>
             ${addr}
-            <a href="/app/venue/${p.id}" data-oxi-venue="${p.id}" style="margin-top:8px;display:block;text-align:center;padding:6px 10px;border-radius:8px;background:${typeColor};color:#06070a;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;text-decoration:none;">detalii ΓåÆ</a>
+            <a href="#" data-oxi-venue="${p.id}" style="margin-top:8px;display:block;text-align:center;padding:6px 10px;border-radius:8px;background:${typeColor};color:#06070a;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;font-weight:700;text-decoration:none;">detalii →</a>
           </div>
         </div>`;
         const popup = new maplibregl.Popup({
@@ -885,11 +952,30 @@ export function RomaniaMap3D({
         if (link)
           link.addEventListener("click", (ev) => {
             ev.preventDefault();
+            ev.stopPropagation();
             popup.remove();
             navRef.current({ to: "/app/venue/$id", params: { id: p.id } });
           });
       });
-      for (const layer of ["venues-points"]) {
+      // Click cluster → zoom in to expand
+      map.on("click", "venues-clusters", (e) => {
+        const f = e.features?.[0];
+        if (!f) return;
+        const clusterId = (f.properties as { cluster_id?: number })?.cluster_id;
+        const src = map.getSource(VENUES_SRC) as maplibregl.GeoJSONSource | undefined;
+        if (clusterId == null || !src?.getClusterExpansionZoom) return;
+        const coords = (f.geometry as { coordinates: [number, number] }).coordinates.slice() as [
+          number,
+          number,
+        ];
+        src
+          .getClusterExpansionZoom(clusterId)
+          .then((zoom) => {
+            map.easeTo({ center: coords, zoom: Math.min(zoom + 0.4, 14) });
+          })
+          .catch(() => undefined);
+      });
+      for (const layer of ["venues-points", "venues-clusters"]) {
         map.on("mouseenter", layer, () => {
           map.getCanvas().style.cursor = "pointer";
         });
@@ -898,59 +984,58 @@ export function RomaniaMap3D({
         });
       }
 
-      // HEAT NOW overlay ΓÇö live hotspots fed from get_heat_now RPC. Rendered as
-      // pulsing glow + score circle so users see WHERE the night is happening.
-      map.addSource("heat-now-src", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
-      });
-      map.addLayer({
-        id: "heat-now-glow",
-        type: "circle",
-        source: "heat-now-src",
-        paint: {
-          "circle-color": [
-            "interpolate",
-            ["linear"],
-            ["get", "score"],
-            0,
-            "rgba(57,255,210,0.35)",
-            50,
-            "rgba(255,176,0,0.55)",
-            80,
-            "rgba(255,61,139,0.75)",
-            100,
-            "rgba(255,234,0,0.85)",
-          ],
-          "circle-radius": ["interpolate", ["linear"], ["get", "score"], 0, 18, 100, 56],
-          "circle-blur": 0.85,
-          "circle-opacity": 0.9,
-        },
-      });
-      map.addLayer({
-        id: "heat-now-core",
-        type: "circle",
-        source: "heat-now-src",
-        paint: {
-          "circle-color": "rgba(10,6,18,0.92)",
-          "circle-radius": ["interpolate", ["linear"], ["get", "score"], 0, 9, 100, 18],
-          "circle-stroke-width": 2,
-          "circle-stroke-color": [
-            "interpolate",
-            ["linear"],
-            ["get", "score"],
-            0,
-            "#39ffd2",
-            50,
-            "#ffb000",
-            80,
-            "#ff3d8b",
-            100,
-            "#ffea00",
-          ],
-        },
-      });
-      if (!isSmall) {
+      // HEAT NOW overlay — skip on Android/low GPU (map page already passes []).
+      if (!lowGpu) {
+        map.addSource("heat-now-src", {
+          type: "geojson",
+          data: { type: "FeatureCollection", features: [] },
+        });
+        map.addLayer({
+          id: "heat-now-glow",
+          type: "circle",
+          source: "heat-now-src",
+          paint: {
+            "circle-color": [
+              "interpolate",
+              ["linear"],
+              ["get", "score"],
+              0,
+              "rgba(57,255,210,0.35)",
+              50,
+              "rgba(255,176,0,0.55)",
+              80,
+              "rgba(255,61,139,0.75)",
+              100,
+              "rgba(255,234,0,0.85)",
+            ],
+            "circle-radius": ["interpolate", ["linear"], ["get", "score"], 0, 18, 100, 56],
+            "circle-blur": 0.85,
+            "circle-opacity": 0.9,
+          },
+        });
+        map.addLayer({
+          id: "heat-now-core",
+          type: "circle",
+          source: "heat-now-src",
+          paint: {
+            "circle-color": "rgba(10,6,18,0.92)",
+            "circle-radius": ["interpolate", ["linear"], ["get", "score"], 0, 9, 100, 18],
+            "circle-stroke-width": 2,
+            "circle-stroke-color": [
+              "interpolate",
+              ["linear"],
+              ["get", "score"],
+              0,
+              "#39ffd2",
+              50,
+              "#ffb000",
+              80,
+              "#ff3d8b",
+              100,
+              "#ffea00",
+            ],
+          },
+        });
         map.addLayer({
           id: "heat-now-label",
           type: "symbol",
@@ -974,7 +1059,7 @@ export function RomaniaMap3D({
       setMapReadyTick((tick) => tick + 1);
     };
 
-    // Add OXIDA╚ÜII overlays as soon as the style exists, not on full map
+    // Add OXIDAȚII overlays as soon as the style exists, not on full map
     // "load". Full load can wait on slow vector tiles/glyphs on mobile, which
     // caused the first seconds to show a different/empty map until zooming.
     map.once("style.load", setupInteractiveLayers);
@@ -995,10 +1080,12 @@ export function RomaniaMap3D({
     map.on("error", (event) => {
       console.warn("Map tile error", event.error);
     });
-    const refreshLabels = () =>
+    const refreshLabels = () => {
+      if (compactMapRef.current) return; // city labels stay as-is on Android — no O(n²) DOM work
       requestAnimationFrame(() =>
         resolveCityLabelCollisions(containerRef.current, compactMapRef.current),
       );
+    };
     let moveIdleTimer: number | null = null;
     const onMoveStart = () => {
       containerRef.current?.classList.add("oxi-map-moving");
@@ -1012,24 +1099,19 @@ export function RomaniaMap3D({
       moveIdleTimer = window.setTimeout(() => {
         containerRef.current?.classList.remove("oxi-map-moving");
       }, 120);
-      refreshLabels();
       const c = map.getCenter();
       onCenterChangeRef.current?.(c.lat, c.lng, map.getZoom());
     };
     map.on("movestart", onMoveStart);
     map.on("moveend", onMoveEnd);
-    // City marker scaling: only update at zoomend (not every zoom frame) to
-    // avoid touching ~200 DOM nodes per frame during pinch-zoom, which was
-    // the main source of map jank on mid-tier phones.
-    const updateCityZoom = () => {
+    map.on("zoomend", () => {
+      refreshLabels();
       const zoom = map.getZoom();
       const scale = getCityScaleForZoom(zoom, compactMapRef.current);
       containerRef.current
         ?.querySelectorAll<HTMLElement>(".oxi-city-marker")
         .forEach((m) => m.style.setProperty("--city-scale", String(scale)));
-    };
-    map.on("zoomend", updateCityZoom);
-    window.setTimeout(updateCityZoom, 0);
+    });
 
     const canvas = map.getCanvas();
     const onLost = (event: Event) => {
@@ -1066,11 +1148,8 @@ export function RomaniaMap3D({
     const reviveMap = () => {
       if (document.visibilityState === "hidden") return;
       repaintMap(map);
-      window.setTimeout(() => repaintMap(map), 180);
     };
     document.addEventListener("visibilitychange", reviveMap);
-    window.addEventListener("pageshow", reviveMap);
-    window.addEventListener("focus", reviveMap);
 
     mapRef.current = map;
     return () => {
@@ -1088,8 +1167,6 @@ export function RomaniaMap3D({
         if (restoreHealthTimer) window.clearTimeout(restoreHealthTimer);
         if (firstPaintTimer) window.clearTimeout(firstPaintTimer);
         document.removeEventListener("visibilitychange", reviveMap);
-        window.removeEventListener("pageshow", reviveMap);
-        window.removeEventListener("focus", reviveMap);
         canvas.removeEventListener("webglcontextlost", onLost as any);
         canvas.removeEventListener("webglcontextrestored", onRestored as any);
         map.remove();
@@ -1101,7 +1178,7 @@ export function RomaniaMap3D({
     };
   }, [retryKey]);
 
-  // VENUES ΓåÆ GeoJSON (GPU layer)
+  // VENUES → GeoJSON (GPU layer)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -1120,8 +1197,6 @@ export function RomaniaMap3D({
             id: v.id,
             name: v.name,
             type: v.type ?? "club",
-            address: v.address ?? "",
-            cover_url: v.cover_url ?? "",
           },
         })),
       });
@@ -1149,12 +1224,12 @@ export function RomaniaMap3D({
     else map.once("load", apply);
   }, [venues, promotedMeta, retryKey, mapReadyTick]);
 
-  // Heatmap pulse intentionally removed ΓÇö it called setPaintProperty every
+  // Heatmap pulse intentionally removed — it called setPaintProperty every
   // 120ms which forced a full WebGL repaint and dropped the whole map below
   // 60fps even when nothing else was happening. The base heatmap layer
   // already looks alive thanks to the cluster glow + DOM pulse animations.
 
-  // HEAT NOW ΓåÆ live hot zones (overlay circles)
+  // HEAT NOW → live hot zones (overlay circles)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -1176,7 +1251,7 @@ export function RomaniaMap3D({
     else map.once("load", apply);
   }, [heatNowCells, retryKey, mapReadyTick]);
 
-  // PROMOTED VENUES ΓåÆ DOM markers with the brand cover/logo inside a glowing
+  // PROMOTED VENUES → DOM markers with the brand cover/logo inside a glowing
   // halo. Replaces the bottle silhouette so paying businesses are instantly
   // recognizable on the map. Diff-only: only re-creates markers when the set
   // of promoted venues or their coordinates change.
@@ -1214,7 +1289,10 @@ export function RomaniaMap3D({
           "position:relative;width:58px;height:58px;cursor:pointer;transform:translateY(-50%);z-index:5;";
 
         const pulse = document.createElement("div");
-        pulse.style.cssText = `position:absolute;inset:-4px;border-radius:9999px;background:${theme};opacity:0.18;animation:oxi-pulse-strong 2.4s ease-out infinite;pointer-events:none;`;
+        // No infinite CSS pulse on Android — freezes compositing budget.
+        pulse.style.cssText = compactMapRef.current
+          ? `position:absolute;inset:-4px;border-radius:9999px;background:${theme};opacity:0.22;pointer-events:none;`
+          : `position:absolute;inset:-4px;border-radius:9999px;background:${theme};opacity:0.18;animation:oxi-pulse-strong 2.4s ease-out infinite;pointer-events:none;`;
         wrap.appendChild(pulse);
 
         const ring = document.createElement("div");
@@ -1249,7 +1327,7 @@ export function RomaniaMap3D({
         const close = document.createElement("button");
         close.type = "button";
         close.setAttribute("aria-label", "Ascunde reclama");
-        close.textContent = "├ù";
+        close.textContent = "×";
         close.style.cssText = `position:absolute;top:1px;right:1px;width:18px;height:18px;border-radius:9999px;background:#06070a;color:#fff;border:1px solid ${theme};font-family:'DM Sans',sans-serif;font-weight:900;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;z-index:6;opacity:.82;box-shadow:0 2px 8px rgba(0,0,0,.55);`;
         close.onclick = (e) => {
           e.stopPropagation();
@@ -1296,7 +1374,7 @@ export function RomaniaMap3D({
     else map.once("load", build);
   }, [venues, promotedMeta, retryKey, mapReadyTick]);
 
-  // CITIES ΓåÆ only the hottest cities get a tiny label; the basemap provides
+  // CITIES → only the hottest cities get a tiny label; the basemap provides
   // the clean city/country typography, avoiding the previous label pile-up.
   useEffect(() => {
     const map = mapRef.current;
@@ -1425,45 +1503,56 @@ export function RomaniaMap3D({
   }, [cities, retryKey, mapReadyTick]);
 
   // FOCUS city programmatically. easeTo is lighter than flyTo on mobile GPUs.
-  // Skip identical targets ΓÇö parent GPS loops used to spam new {lat,lng} objects
+  // Skip identical targets — parent GPS loops used to spam new {lat,lng} objects
   // and the map looked like it was constantly reloading.
   const lastFocusKeyRef = useRef<string | null>(null);
+  const lastFitKeyRef = useRef<string | null>(null);
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !focusCity) return;
-    const key = `${mapReadyTick}:${focusCity.nonce ?? 0}:${focusCity.lat.toFixed(5)},${focusCity.lng.toFixed(5)},${focusCity.zoom ?? 12.4}`;
+    // Do not re-ease when mapReadyTick alone changes — that fought pinch/pan.
+    const key = `${focusCity.nonce ?? 0}:${focusCity.lat.toFixed(5)},${focusCity.lng.toFixed(5)},${focusCity.zoom ?? 12.4}`;
     if (lastFocusKeyRef.current === key) return;
-    lastFocusKeyRef.current = key;
-    map.easeTo({
-      center: [focusCity.lng, focusCity.lat],
-      zoom: focusCity.zoom ?? 14.2,
-      pitch: 0,
-      bearing: 0,
-      duration: compactMapRef.current ? 280 : 500,
-      essential: true,
-    });
-  }, [focusCity, mapReadyTick]);
+    const apply = () => {
+      lastFocusKeyRef.current = key;
+      map.easeTo({
+        center: [focusCity.lng, focusCity.lat],
+        zoom: focusCity.zoom ?? 12.4,
+        pitch: 0,
+        bearing: 0,
+        duration: compactMapRef.current ? 320 : 560,
+        essential: true,
+      });
+    };
+    if (loadedRef.current) apply();
+    else map.once("load", apply);
+  }, [focusCity]);
 
-  // FIT BOUNDS ΓÇö used for country/region zoom
+  // FIT BOUNDS — used for country/region zoom (only when user picks a country chip)
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !fitBounds) return;
+    const boundsKey = `${fitBounds[0][0]},${fitBounds[0][1]},${fitBounds[1][0]},${fitBounds[1][1]}`;
+    if (lastFitKeyRef.current === boundsKey) return;
     const fit = () => {
+      lastFitKeyRef.current = boundsKey;
       try {
         map.fitBounds(fitBounds, {
-          padding: 60,
-          duration: compactMapRef.current ? 450 : 800,
+          padding: 56,
+          duration: compactMapRef.current ? 520 : 780,
           pitch: 0,
           bearing: 0,
-          maxZoom: 9,
+          maxZoom: 7.8,
         });
-      } catch { /* noop */ }
+      } catch {
+        /* noop */
+      }
     };
     if (loadedRef.current) fit();
     else map.once("load", fit);
-  }, [fitBounds, mapReadyTick]);
+  }, [fitBounds]);
 
-  // FRIENDS ΓåÆ diff-only DOM markers. When a friend's coords change, smoothly
+  // FRIENDS → diff-only DOM markers. When a friend's coords change, smoothly
   // tween the marker between the old and new positions so it looks like they
   // are walking, not teleporting.
   const friendAnims = useRef<Map<string, number>>(new Map());
@@ -1503,7 +1592,7 @@ export function RomaniaMap3D({
           fromLat = cur.lat;
         const toLng = f.lng,
           toLat = f.lat;
-        // Large corrections (GPS refine) ΓÇö snap "me" instead of sliding across town.
+        // Large corrections (GPS refine) — snap "me" instead of sliding across town.
         const jumpM =
           Math.hypot((toLat - fromLat) * 111000, (toLng - fromLng) * 111000 * Math.cos((toLat * Math.PI) / 180));
         if (f.is_me && jumpM > 280) {
@@ -1549,7 +1638,7 @@ export function RomaniaMap3D({
       const pulseSize = f.is_me ? 68 : 54;
 
       const pulse = document.createElement("div");
-      // Skip pulse animation on compact/Android ΓÇö big GPU cost while panning.
+      // Skip pulse animation on compact/Android — big GPU cost while panning.
       if (!compactMapRef.current) {
         pulse.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${pulseSize}px;height:${pulseSize}px;border-radius:9999px;background:${accent};opacity:0.35;animation:oxi-pulse-strong 1.8s ease-out infinite;pointer-events:none;`;
         wrap.appendChild(pulse);
@@ -1648,7 +1737,7 @@ export function RomaniaMap3D({
         .maplibregl-map { position:absolute !important; inset:0 !important; overflow:hidden !important; width:100% !important; height:100% !important; background:#0d0b1e !important; }
         .maplibregl-canvas-container, .maplibregl-canvas { position:absolute !important; inset:0 !important; width:100% !important; height:100% !important; }
         .maplibregl-canvas { outline:none !important; background:#0d0b1e !important; }
-        .maplibregl-marker { position:absolute !important; top:0; left:0; will-change:transform; z-index:2; }
+        .maplibregl-marker { position:absolute !important; top:0; left:0; z-index:2; }
         .oxi-city-bottle { transform: scale(var(--city-scale, 1)); transform-origin: center bottom; }
         .oxi-city-label { transform: scale(var(--city-scale, 1)); transform-origin: top center; }
         .oxi-map-recovering .maplibregl-canvas { opacity:0.001; }
@@ -1664,7 +1753,7 @@ export function RomaniaMap3D({
 
       <div ref={containerRef} className="absolute inset-0" style={{ touchAction: "pan-x pan-y" }} />
 
-      {/* Loading skeleton ΓÇö removed from DOM after first paint so it cannot cover the map in PWA. */}
+      {/* Loading skeleton — removed from DOM after first paint so it cannot cover the map in PWA. */}
       {!firstPaintDone && !mapFailed && (
         <div
           className="absolute inset-0 z-10 pointer-events-none grid place-items-center overflow-hidden transition-opacity duration-300"
@@ -1688,7 +1777,7 @@ export function RomaniaMap3D({
               <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#ff3d8b] animate-spin" />
             </div>
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
-              se ├«ncarc─â harta
+              se încarcă harta
             </div>
           </div>
         </div>
@@ -1697,9 +1786,9 @@ export function RomaniaMap3D({
       {mapFailed && (
         <div className="absolute inset-0 z-20 grid place-items-center bg-background/95 px-6 text-center">
           <div>
-            <div className="font-display font-black text-xl">harta se re├«ncarc─â</div>
+            <div className="font-display font-black text-xl">harta se reîncarcă</div>
             <div className="mt-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              telefonul a pierdut randarea h─âr╚¢ii
+              telefonul a pierdut randarea hărții
             </div>
             <button
               onClick={() => {
@@ -1708,13 +1797,13 @@ export function RomaniaMap3D({
               }}
               className="mt-4 rounded-lg border border-neon-green/40 px-4 py-2 font-mono text-[10px] uppercase tracking-widest text-neon-green"
             >
-              re├«ncarc─â
+              reîncarcă
             </button>
           </div>
         </div>
       )}
 
-      {/* Zoom + recenter controls ΓÇö stacked bottom-right */}
+      {/* Zoom + recenter controls — stacked bottom-right */}
       <div className="absolute bottom-3 right-3 z-20 flex flex-col gap-2">
         <div className="flex flex-col rounded-full overflow-hidden bg-black/60 border border-white/15 shadow-lg shadow-black/40 transition-colors hover:border-white/25">
           <button
@@ -1726,7 +1815,7 @@ export function RomaniaMap3D({
           </button>
           <button
             onClick={() => mapRef.current?.zoomOut({ duration: 220 })}
-            aria-label="Dep─ârteaz─â harta"
+            aria-label="Depărtează harta"
             className="h-10 w-10 grid place-items-center text-white/90 active:scale-95 transition-all duration-200 ease-out hover:scale-105 hover:bg-black/70 will-change-transform"
           >
             <Minus size={18} />

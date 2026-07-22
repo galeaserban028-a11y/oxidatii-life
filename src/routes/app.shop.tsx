@@ -1,8 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
+import { useEntitlements, type PremiumTier } from "@/lib/entitlements";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Rocket,
@@ -40,6 +41,7 @@ type Frame = {
   name: string;
   price_coins: number | null;
   emoji?: string | null;
+  premium_tier_required?: PremiumTier | string | null;
 };
 
 type Gift = {
@@ -51,7 +53,11 @@ type Gift = {
 
 type Party = { id: string; title: string; expires_at: string };
 
-type RpcBalance = { balance?: number } | null;
+type BuyFrameResult = {
+  ok?: boolean;
+  balance?: number;
+  already_owned?: boolean;
+} | null;
 
 const drink = (n: number) => `${n} ${n === 1 ? "șpriț" : "șprițuri"}`;
 
@@ -64,7 +70,8 @@ type Confirm = {
 } | null;
 
 function ShopPage() {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, patchProfile } = useAuth();
+  const ent = useEntitlements();
   const qc = useQueryClient();
   const nav = useNavigate();
   const [tab, setTab] = useState<Tab>("boost");
@@ -101,6 +108,17 @@ function ShopPage() {
     },
   });
 
+  // Hide referral-only / absurd-priced frames from the buy grid unless owned.
+  const shopFrames = useMemo(() => {
+    const list = (frames ?? []) as Frame[];
+    return list.filter((f) => {
+      if (f.id === "founding-member" || (f.price_coins ?? 0) >= 99999) {
+        return !!ownedFrames?.has(f.id);
+      }
+      return true;
+    });
+  }, [frames, ownedFrames]);
+
   const { data: myParties } = useQuery({
     queryKey: ["my-parties", user?.id],
     enabled: !!user && tab === "party",
@@ -114,6 +132,25 @@ function ShopPage() {
       return data ?? [];
     },
   });
+
+  function markFrameOwned(frameId: string) {
+    qc.setQueryData(["owned-frames", user?.id], (prev: Set<string> | undefined) => {
+      const next = new Set(prev ?? []);
+      next.add(frameId);
+      return next;
+    });
+  }
+
+  async function syncProfileAfterFrame(frameId: string, balanceHint?: number) {
+    patchProfile({
+      active_frame_id: frameId,
+      ...(typeof balanceHint === "number" ? { coin_balance: balanceHint } : {}),
+    });
+    markFrameOwned(frameId);
+    qc.invalidateQueries({ queryKey: ["owned-frames", user?.id] });
+    qc.invalidateQueries({ queryKey: ["active-frame"] });
+    await refreshProfile().catch(() => undefined);
+  }
 
   function notEnough(price: number) {
     toast.error(`Nu ai destule șprițuri. Îți trebuie ${drink(price)}, ai ${drink(balance)}.`, {
@@ -131,9 +168,10 @@ function ShopPage() {
     try {
       const { data, error } = await supabase.rpc("buy_boost", { _kind: "profile" });
       if (error) throw error;
-      const newBal = (data as RpcBalance)?.balance ?? 0;
+      const newBal = (data as BuyFrameResult)?.balance ?? 0;
       toast.success(`Profil boostat 24h! Mai ai ${drink(newBal)}`);
-      await refreshProfile();
+      patchProfile({ coin_balance: newBal });
+      await refreshProfile().catch(() => undefined);
       qc.invalidateQueries({ queryKey: ["discover-suggestions"] });
     } catch (e) {
       toast.error(errorMessage(e) || "Eroare");
@@ -151,9 +189,10 @@ function ShopPage() {
         _target_id: partyId,
       });
       if (error) throw error;
-      const newBal = (data as RpcBalance)?.balance ?? 0;
+      const newBal = (data as BuyFrameResult)?.balance ?? 0;
       toast.success(`Petrecere boostată 12h! Mai ai ${drink(newBal)}`);
-      await refreshProfile();
+      patchProfile({ coin_balance: newBal });
+      await refreshProfile().catch(() => undefined);
     } catch (e) {
       toast.error(errorMessage(e) || "Eroare");
     } finally {
@@ -167,11 +206,15 @@ function ShopPage() {
     try {
       const { data, error } = await supabase.rpc("buy_frame", { _frame_id: frame.id });
       if (error) throw error;
-      const newBal = (data as RpcBalance)?.balance ?? 0;
+      const result = data as BuyFrameResult;
+      if (result?.already_owned) {
+        toast.success(`Rama „${frame.name}" e deja a ta — activată pe profil`);
+        await syncProfileAfterFrame(frame.id);
+        return;
+      }
+      const newBal = typeof result?.balance === "number" ? result.balance : balance;
       toast.success(`Ai luat „${frame.name}" și e activă pe profil! Mai ai ${drink(newBal)}`);
-      await refreshProfile();
-      qc.invalidateQueries({ queryKey: ["owned-frames", user.id] });
-      qc.invalidateQueries({ queryKey: ["active-frame"] });
+      await syncProfileAfterFrame(frame.id, newBal);
     } catch (e) {
       toast.error(errorMessage(e) || "Eroare");
     } finally {
@@ -181,21 +224,43 @@ function ShopPage() {
 
   async function activateFrame(frame: Frame) {
     if (!user) return;
-    const { error } = await supabase
-      .from("profiles")
-      .update({ active_frame_id: frame.id })
-      .eq("id", user.id);
-    if (error) return toast.error(error.message);
-    toast.success(`Rama „${frame.name}" activată pe profil`);
-    await refreshProfile();
-    qc.invalidateQueries({ queryKey: ["active-frame"] });
+    setBusy(`frame-${frame.id}`);
+    const previous = profile?.active_frame_id ?? null;
+    patchProfile({ active_frame_id: frame.id });
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ active_frame_id: frame.id })
+        .eq("id", user.id);
+      if (error) throw error;
+      toast.success(`Rama „${frame.name}" activată pe profil`);
+      markFrameOwned(frame.id);
+      qc.invalidateQueries({ queryKey: ["active-frame"] });
+      await refreshProfile().catch(() => undefined);
+    } catch (e) {
+      patchProfile({ active_frame_id: previous });
+      toast.error(errorMessage(e) || "Nu am putut activa rama");
+    } finally {
+      setBusy(null);
+    }
   }
 
   async function deactivateFrame() {
     if (!user) return;
-    await supabase.from("profiles").update({ active_frame_id: null }).eq("id", user.id);
-    toast.success("Rama dezactivată");
-    await refreshProfile();
+    const previous = profile?.active_frame_id ?? null;
+    patchProfile({ active_frame_id: null });
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ active_frame_id: null })
+        .eq("id", user.id);
+      if (error) throw error;
+      toast.success("Rama dezactivată");
+      await refreshProfile().catch(() => undefined);
+    } catch (e) {
+      patchProfile({ active_frame_id: previous });
+      toast.error(errorMessage(e) || "Nu am putut scoate rama");
+    }
   }
 
   // Confirmation triggers
@@ -222,6 +287,13 @@ function ShopPage() {
   function askFrame(frame: Frame) {
     if (ownedFrames?.has(frame.id)) {
       activateFrame(frame);
+      return;
+    }
+    const required = frame.premium_tier_required as PremiumTier | null | undefined;
+    if (required && !ent.hasTier(required)) {
+      toast.error(`Rama „${frame.name}" e inclusă în planul ${required.toUpperCase()}.`, {
+        action: { label: "Vezi planuri", onClick: () => nav({ to: "/app/premium" }) },
+      });
       return;
     }
     const price = frame.price_coins ?? 0;
@@ -341,12 +413,14 @@ function ShopPage() {
 
       {tab === "frames" && (
         <div className="grid grid-cols-2 gap-3">
-          {(frames ?? []).map((f: Frame) => {
+          {shopFrames.map((f: Frame) => {
             const owned = ownedFrames?.has(f.id);
             const active = profile?.active_frame_id === f.id;
             const meta = FRAME_STYLES[f.id];
             const tier = meta?.tier ?? "starter";
             const price = f.price_coins ?? 0;
+            const required = f.premium_tier_required as PremiumTier | null | undefined;
+            const lockedPremium = !owned && !!required && !ent.hasTier(required);
             return (
               <div
                 key={f.id}
@@ -372,6 +446,7 @@ function ShopPage() {
                     <AvatarFrame
                       frameId={f.id}
                       size={88}
+                      preview
                       innerClassName="bg-gradient-to-br from-purple-500/40 to-pink-500/40 grid place-items-center text-3xl"
                     >
                       {f.emoji ?? "👤"}
@@ -381,7 +456,11 @@ function ShopPage() {
                   <div className="text-center">
                     <div className="font-display text-base leading-tight">{f.name}</div>
                     <div className="mt-1 inline-flex items-center gap-1 text-amber-300 text-[13px] font-semibold">
-                      {price === 0 ? (
+                      {lockedPremium ? (
+                        <span className="text-fuchsia-300 inline-flex items-center gap-1">
+                          <Crown size={12} /> {String(required).toUpperCase()}
+                        </span>
+                      ) : price === 0 ? (
                         <span className="text-emerald-300">Gratis</span>
                       ) : (
                         <>
@@ -404,7 +483,19 @@ function ShopPage() {
                       disabled={busy === `frame-${f.id}`}
                       className="w-full py-2 rounded-lg bg-white/10 border border-white/20 text-white text-xs disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
-                      <Sparkles size={12} /> Activează
+                      {busy === `frame-${f.id}` ? (
+                        <Loader2 className="animate-spin" size={12} />
+                      ) : (
+                        <Sparkles size={12} />
+                      )}
+                      Activează
+                    </button>
+                  ) : lockedPremium ? (
+                    <button
+                      onClick={() => nav({ to: "/app/premium" })}
+                      className="w-full py-2 rounded-lg bg-fuchsia-500/15 border border-fuchsia-500/35 text-fuchsia-200 text-xs flex items-center justify-center gap-1.5"
+                    >
+                      <Crown size={12} /> Deblochează
                     </button>
                   ) : (
                     <button

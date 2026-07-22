@@ -485,8 +485,8 @@ function MePage() {
         <header
           className="sticky top-0 z-30 px-3 h-12 flex items-center justify-between bg-[#050505]/80"
           style={{
-            paddingTop: "calc(env(safe-area-inset-top) + 0.25rem)",
-            height: "calc(env(safe-area-inset-top) + 3rem)",
+            paddingTop: "calc(var(--oxi-top-inset, env(safe-area-inset-top, 0px)) + 0.25rem)",
+            height: "calc(var(--oxi-top-inset, env(safe-area-inset-top, 0px)) + 3rem)",
           }}
         >
           <Link
@@ -663,10 +663,11 @@ function MePage() {
               className={`relative shrink-0 active:scale-95 transition ${activeFrameId ? "h-[92px] w-[92px]" : theme ? "" : "h-[92px] w-[92px] rounded-full p-[2.5px] bg-gradient-to-br from-[#ff3d8b] via-[#ffea00] to-[#c724ff] shadow-[0_0_28px_rgba(199,36,255,0.4)]"}`}
               aria-label="Schimbă poza de profil"
             >
-              {activeFrameId && !lightProfile ? (
+              {activeFrameId ? (
                 <AvatarFrame
                   frameId={activeFrameId}
                   className="h-full w-full"
+                  preview={lightProfile}
                   innerClassName="bg-[#0a0a0a] flex items-center justify-center text-3xl"
                   style={instrument}
                 >
@@ -676,14 +677,6 @@ function MePage() {
                     (profile.handle ?? "?")[0].toUpperCase()
                   )}
                 </AvatarFrame>
-              ) : activeFrameId && lightProfile ? (
-                <div className="h-full w-full rounded-full overflow-hidden bg-[#0a0a0a] flex items-center justify-center text-3xl ring-2 ring-white/20">
-                  {profile.avatar_url ? (
-                    <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    (profile.handle ?? "?")[0].toUpperCase()
-                  )}
-                </div>
               ) : theme && !lightProfile ? (
                 <AvatarAura theme={theme} size={92}>
                   {profile.avatar_url ? (

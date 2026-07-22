@@ -11,7 +11,12 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { warmAuthStorage } from "@/integrations/supabase/auth-storage";
+import {
+  ensureAuthStorageReady,
+  flushAuthSessionToPreferences,
+  readLastAppPath,
+  warmAuthStorage,
+} from "@/integrations/supabase/auth-storage";
 
 type Profile = {
   id: string;
@@ -58,6 +63,8 @@ type Ctx = {
   initializing: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  /** Optimistic local merge — survives refreshProfile timeouts. */
+  patchProfile: (partial: Partial<Profile>) => void;
 };
 
 const AuthCtx = createContext<Ctx | null>(null);
@@ -166,28 +173,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    const { data: sub } = supabase.auth.onAuthStateChange((event, sess) => {
-      applySession(sess, event);
-
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
-        router.invalidate();
-        if (event === "USER_UPDATED") qc.invalidateQueries();
-      }
-    });
-
     let cancelled = false;
+    let removeResume: (() => void) | undefined;
+    let sub: { subscription: { unsubscribe: () => void } } | null = null;
+
     const fallbackTimer = window.setTimeout(() => {
       bootDoneRef.current = true;
       if (mountedRef.current) setInitializing(false);
-    }, 8000);
+    }, 12000);
+
+    const isNativeRuntime = () => {
+      try {
+        const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+          .Capacitor;
+        if (cap?.isNativePlatform?.() === true) return true;
+        if (/; wv\)/.test(navigator.userAgent ?? "")) return true;
+        if (document.documentElement.classList.contains("oxi-native-android")) return true;
+      } catch {
+        /* noop */
+      }
+      return false;
+    };
 
     const restoreSession = async (): Promise<Session | null> => {
-      await warmAuthStorage();
+      await ensureAuthStorageReady();
       let { data } = await supabase.auth.getSession();
       if (data.session) return data.session;
 
-      // Retry with backoff — cold Android starts often miss the first read.
-      for (const wait of [200, 450, 800]) {
+      if (!isNativeRuntime()) return null;
+
+      for (const wait of [150, 350, 700, 1200]) {
         await new Promise((r) => setTimeout(r, wait));
         if (cancelled) return null;
         await warmAuthStorage();
@@ -195,7 +210,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (data.session) return data.session;
       }
 
-      // Last resort: force refresh from stored refresh_token.
       try {
         const refreshed = await supabase.auth.refreshSession();
         if (refreshed.data.session) return refreshed.data.session;
@@ -207,11 +221,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     (async () => {
       try {
+        await ensureAuthStorageReady();
+        if (cancelled) return;
+
+        const { data: authSub } = supabase.auth.onAuthStateChange((event, sess) => {
+          applySession(sess, event);
+
+          if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+            void flushAuthSessionToPreferences();
+          }
+
+          if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+            router.invalidate();
+            if (event === "USER_UPDATED") qc.invalidateQueries();
+          }
+        });
+        sub = authSub;
+
         const sess = await restoreSession();
         if (cancelled) return;
         bootDoneRef.current = true;
         applySession(sess, sess ? "SIGNED_IN" : undefined);
-        if (sess?.user) await loadProfile(sess.user.id);
+        if (sess?.user) {
+          await flushAuthSessionToPreferences();
+          await loadProfile(sess.user.id);
+          try {
+            const rawHash = window.location.hash.replace(/^#/, "");
+            const path =
+              (rawHash.split("?")[0] || window.location.pathname).replace(/\/$/, "") || "/";
+            if (!path.startsWith("/app") && path !== "/onboarding" && path !== "/signup") {
+              const last = await readLastAppPath();
+              router.history.replace(last || "/app");
+            }
+          } catch {
+            /* noop */
+          }
+        }
       } catch (error) {
         console.error("Could not restore session", error);
         bootDoneRef.current = true;
@@ -226,22 +271,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     })();
 
-    // On resume, re-hydrate from Preferences and refresh tokens.
-    let removeResume: (() => void) | undefined;
+    // On resume / background: flush tokens so kill/reopen keeps login.
     (async () => {
       try {
         const { App } = await import("@capacitor/app");
         const handle = await App.addListener("appStateChange", ({ isActive }) => {
-          if (!isActive) return;
+          if (!isActive) {
+            void flushAuthSessionToPreferences();
+            return;
+          }
           void (async () => {
             await warmAuthStorage();
             const { data } = await supabase.auth.getSession();
             if (data.session) {
               applySession(data.session);
+              await flushAuthSessionToPreferences();
               await supabase.auth.refreshSession().catch(() => null);
             } else {
               const again = await restoreSession();
-              if (again) applySession(again, "SIGNED_IN");
+              if (again) {
+                applySession(again, "SIGNED_IN");
+                await flushAuthSessionToPreferences();
+              }
             }
           })();
         });
@@ -257,7 +308,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       mountedRef.current = false;
       window.clearTimeout(fallbackTimer);
-      sub.subscription.unsubscribe();
+      sub?.subscription.unsubscribe();
       removeResume?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -283,6 +334,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         refreshProfile: async () => {
           if (user) await loadProfile(user.id);
+        },
+        patchProfile: (partial) => {
+          setProfile((prev) => (prev ? { ...prev, ...partial } : prev));
         },
       }}
     >
