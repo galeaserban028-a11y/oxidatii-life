@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { createUserVenueFn } from "@/lib/venue.functions";
 
 export type VenueType = "club" | "bar" | "terasa" | "after" | "pub";
 
@@ -45,7 +46,7 @@ function slugify(name: string) {
   );
 }
 
-/** Create a venue with GPS — prefers RPC, falls back to direct insert. */
+/** Create a venue with GPS — server (service role) → RPC → direct insert. */
 export async function createUserVenue(input: {
   name: string;
   type: VenueType;
@@ -55,28 +56,46 @@ export async function createUserVenue(input: {
   address?: string | null;
 }): Promise<CreatedVenue> {
   const name = input.name.trim();
+  const payload = {
+    name,
+    type: input.type,
+    cityId: input.cityId,
+    lat: input.lat,
+    lng: input.lng,
+    address: input.address?.trim() || null,
+  };
+
+  // 1) ServerFn with service role — works without SQL migration (Lovable Cloud).
+  try {
+    const row = await createUserVenueFn({ data: payload });
+    if (row?.id) return row as CreatedVenue;
+  } catch (e) {
+    console.warn("createUserVenueFn failed, trying RPC/insert", e);
+  }
+
+  // 2) Optional RPC if applied later
   const { data: rpcData, error: rpcErr } = await supabase.rpc("create_user_venue", {
     _name: name,
     _type: input.type,
     _city_id: input.cityId,
     _lat: input.lat,
     _lng: input.lng,
-    _address: input.address?.trim() || null,
+    _address: payload.address,
   });
 
   if (!rpcErr && rpcData) {
     const id = typeof rpcData === "string" ? rpcData : (rpcData as { id?: string }).id;
-    if (!id) throw rpcErr ?? new Error("create_user_venue returned empty id");
-    const { data: venue, error: fetchErr } = await supabase
-      .from("venues")
-      .select("id, name, city:cities(name)")
-      .eq("id", id)
-      .single();
-    if (fetchErr || !venue) throw fetchErr ?? new Error("Venue created but not readable");
-    return venue as unknown as CreatedVenue;
+    if (id) {
+      const { data: venue, error: fetchErr } = await supabase
+        .from("venues")
+        .select("id, name, city:cities(name)")
+        .eq("id", id)
+        .single();
+      if (!fetchErr && venue) return venue as unknown as CreatedVenue;
+    }
   }
 
-  // Fallback if RPC not applied yet
+  // 3) Direct insert (works only if RLS allows)
   const slug = `${slugify(name)}-${Math.random().toString(36).slice(2, 8)}`;
   const { data, error } = await supabase
     .from("venues")
@@ -87,10 +106,10 @@ export async function createUserVenue(input: {
       city_id: input.cityId,
       lat: input.lat,
       lng: input.lng,
-      address: input.address?.trim() || null,
+      address: payload.address,
     })
     .select("id, name, city:cities(name)")
     .single();
-  if (error) throw rpcErr ?? error;
+  if (error) throw error;
   return data as unknown as CreatedVenue;
 }
