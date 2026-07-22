@@ -244,11 +244,11 @@ if ($absAssetHits.Count -gt 0) {
 Ok "SPA index.html + capacitor.config.json + zero /assets/ absolute - OK pentru Play/AAB"
 
 if (-not $env:ANDROID_VERSION_CODE) {
-  $env:ANDROID_VERSION_CODE = "3"
+  $env:ANDROID_VERSION_CODE = "5"
   Info "ANDROID_VERSION_CODE = $($env:ANDROID_VERSION_CODE)"
 }
 if (-not $env:ANDROID_VERSION_NAME) {
-  $env:ANDROID_VERSION_NAME = "1.2"
+  $env:ANDROID_VERSION_NAME = "1.1.1"
   Info "ANDROID_VERSION_NAME = $($env:ANDROID_VERSION_NAME)"
 }
 Info "Construiesc AAB + APK release semnate din ACELASI sync (versionCode=$($env:ANDROID_VERSION_CODE) name=$($env:ANDROID_VERSION_NAME))"
