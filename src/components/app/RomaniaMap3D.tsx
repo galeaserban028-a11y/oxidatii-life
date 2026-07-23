@@ -822,33 +822,26 @@ export function RomaniaMap3D({
         } catch { /* noop */ }
       }
 
-      // Cluster bubbles while zoomed out — keeps ~5k venues performant and visible.
+      // Cluster bubbles → wine-bottle icons (no more colored dots).
       map.addLayer({
         id: "venues-clusters",
-        type: "circle",
+        type: "symbol",
         source: VENUES_SRC,
         filter: ["has", "point_count"],
-        paint: {
-          "circle-color": [
+        layout: {
+          "icon-image": "pin-bottle-v3-bar",
+          "icon-size": [
             "step",
             ["get", "point_count"],
-            "rgba(255,234,0,0.55)",
+            lowGpu ? 0.9 : 1.05,
             25,
-            "rgba(255,61,139,0.6)",
+            lowGpu ? 1.1 : 1.3,
             80,
-            "rgba(199,36,255,0.65)",
+            lowGpu ? 1.3 : 1.55,
           ],
-          "circle-radius": [
-            "step",
-            ["get", "point_count"],
-            lowGpu ? 14 : 16,
-            25,
-            lowGpu ? 18 : 22,
-            80,
-            lowGpu ? 24 : 28,
-          ],
-          "circle-stroke-width": 1.5,
-          "circle-stroke-color": "rgba(255,255,255,0.35)",
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+          "icon-anchor": "center",
         },
       });
       map.addLayer({
@@ -858,12 +851,15 @@ export function RomaniaMap3D({
         filter: ["has", "point_count"],
         layout: {
           "text-field": ["get", "point_count_abbreviated"],
-          "text-size": lowGpu ? 11 : 12,
+          "text-size": lowGpu ? 10 : 11,
           "text-font": ["Noto Sans Bold"],
           "text-allow-overlap": true,
+          "text-offset": [0, -0.2],
         },
         paint: {
           "text-color": "#0a0a0a",
+          "text-halo-color": "rgba(255,255,255,0.9)",
+          "text-halo-width": 1,
         },
       });
 
