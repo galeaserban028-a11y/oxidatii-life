@@ -2914,34 +2914,6 @@ export type Database = {
       }
     }
     Functions: {
-      create_user_venue: {
-        Args: {
-          _name: string
-          _type: string
-          _city_id: string
-          _lat: number
-          _lng: number
-          _address?: string | null
-        }
-        Returns: {
-          address: string | null
-          city_id: string
-          cover_url: string | null
-          created_at: string
-          description: string | null
-          id: string
-          ig_handle: string | null
-          lat: number | null
-          lng: number | null
-          name: string
-          opening_hours: Json | null
-          phone: string | null
-          slug: string
-          street_id: string | null
-          type: Database["public"]["Enums"]["venue_type"]
-          verified: boolean
-        }
-      }
       admin_business_wallet_total: { Args: never; Returns: number }
       admin_grant_coins: {
         Args: { _amount: number; _user_id: string }
@@ -3109,7 +3081,6 @@ export type Database = {
         }[]
       }
       generate_referral_code: { Args: never; Returns: string }
-      get_or_create_dm: { Args: { other_user: string }; Returns: string }
       get_active_campaigns: {
         Args: { _kinds?: string[]; _limit?: number }
         Returns: {
