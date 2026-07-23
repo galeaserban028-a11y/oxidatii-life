@@ -74,7 +74,7 @@ export async function createUserVenue(input: {
   }
 
   // 2) Optional RPC if applied later
-  const { data: rpcData, error: rpcErr } = await supabase.rpc("create_user_venue", {
+  const { data: rpcData, error: rpcErr } = await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>)("create_user_venue", {
     _name: name,
     _type: input.type,
     _city_id: input.cityId,

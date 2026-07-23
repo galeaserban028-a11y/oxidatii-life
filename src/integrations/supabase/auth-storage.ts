@@ -160,3 +160,37 @@ export function shouldDetectSessionInUrl(): boolean {
   if (typeof window === "undefined") return false;
   return !shouldUsePreferences();
 }
+
+/** Compat shims for callers that expect these helpers. */
+export async function ensureAuthStorageReady(): Promise<void> {
+  await warmAuthStorage();
+}
+
+export async function flushAuthSessionToPreferences(): Promise<void> {
+  if (typeof window === "undefined") return;
+  if (!shouldUsePreferences()) return;
+  try {
+    const { Preferences } = await loadPreferences();
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (!key || !key.startsWith("sb-")) continue;
+      const value = window.localStorage.getItem(key);
+      if (value != null) await Preferences.set({ key, value });
+    }
+  } catch {
+    /* noop */
+  }
+}
+
+export async function readLastAppPath(): Promise<string | null> {
+  try {
+    if (shouldUsePreferences()) {
+      const { Preferences } = await loadPreferences();
+      const { value } = await Preferences.get({ key: "oxi:last_app_path" });
+      if (value) return value;
+    }
+    return webGet("oxi:last_app_path");
+  } catch {
+    return null;
+  }
+}
