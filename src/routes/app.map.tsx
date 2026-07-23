@@ -273,14 +273,16 @@ function MapPage() {
       TR: "Turcia",
     };
     const counts = new Map<string, number>();
-    for (const c of cities) {
-      if (!c.country) continue;
-      counts.set(c.country, (counts.get(c.country) ?? 0) + 1);
-    }
+    // Count actual venues per country (via their city) — this is what the user sees on the map.
     for (const v of venues) {
       const cc = cityMap.get(v.city_id)?.country;
       if (!cc) continue;
-      if (!counts.has(cc)) counts.set(cc, 0);
+      counts.set(cc, (counts.get(cc) ?? 0) + 1);
+    }
+    // Make sure every country that has cities still appears in the chip list, even with 0 venues.
+    for (const c of cities) {
+      if (!c.country) continue;
+      if (!counts.has(c.country)) counts.set(c.country, 0);
     }
     return Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
