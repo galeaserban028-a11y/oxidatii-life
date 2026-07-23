@@ -965,7 +965,7 @@ export function RomaniaMap3D({
         const clusterId = (f.properties as { cluster_id?: number })?.cluster_id;
         const src = map.getSource(VENUES_SRC) as maplibregl.GeoJSONSource | undefined;
         if (clusterId == null || !src?.getClusterExpansionZoom) return;
-        const coords = (f.geometry as { coordinates: [number, number] }).coordinates.slice() as [
+        const coords = (f.geometry as unknown as { coordinates: [number, number] }).coordinates.slice() as [
           number,
           number,
         ];
