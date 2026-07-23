@@ -32,10 +32,10 @@ interface Props {
   country: string | "all";
   setCountry: (v: string | "all") => void;
   countries: { code: string; label: string; count: number }[];
-  maxKm?: number;
-  setMaxKm?: (v: number) => void;
-  hasGeo?: boolean;
-  requestGeo?: () => void;
+  maxKm: number;
+  setMaxKm: (v: number) => void;
+  hasGeo: boolean;
+  requestGeo: () => void;
   count: number;
 }
 
