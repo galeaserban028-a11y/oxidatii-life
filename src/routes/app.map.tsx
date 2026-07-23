@@ -465,6 +465,10 @@ function MapPage() {
           setCountry={setCountry}
           countries={countries}
           count={filtered.length}
+          maxKm={0}
+          setMaxKm={() => {}}
+          hasGeo={false}
+          requestGeo={() => {}}
         />
 
         {/* Country chips */}
